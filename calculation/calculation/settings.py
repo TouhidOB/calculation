@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     
     'home',
     'basic_calculator',
+    'finance',
 ]
 
 MIDDLEWARE = [

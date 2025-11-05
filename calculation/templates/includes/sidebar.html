@@ -1,0 +1,12 @@
+<div class="sidebar">
+    <input id="searchInputMobile" type="text" placeholder="Search calculators..." class="form-control" onkeyup="filterCalculators()">
+
+    <h5 class="mt-3">All Calculators</h5>
+
+    <a href="{% url 'budget_calculator' %}" class="{% if request.resolver_match.url_name == 'budget_calculator' %}active{% endif %}">Budget Calculator</a>
+    <a href="{% url 'net_worth' %}" class="{% if request.resolver_match.url_name == 'net_worth' %}active{% endif %}">Net Worth Calculator</a>
+    <a href="{% url 'dti' %}" class="{% if request.resolver_match.url_name == 'dti' %}active{% endif %}">Debt To Income Ratio Calculator</a>
+    <a href="{% url 'bmi_calculator' %}" class="{% if request.resolver_match.url_name == 'bmi_calculator' %}active{% endif %}">BMI Calculator</a>
+    <a href="#" >Loan EMI Calculator</a>
+    <a href="#">Savings Calculator</a>
+</div>

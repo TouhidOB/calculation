@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Calculator - Manage Your Personal Finances{% endblock %}
+{% block meta_description %}Use this free Budget Calculator to track your income and expenses. Understand your financial
+situation and make smarter money decisions.{% endblock %}
+{% block meta_keywords %}budget calculator, personal finance calculator, monthly expenses calculator, income vs expense,
+savings calculator{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 25px;
+        font-size: 18px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Budget Calculator</h1>
+
+    <p style="font-size:1.1rem; line-height:1.6;">
+        The Budget Calculator helps you understand your **income versus expenses**, so you can manage money smarter.
+        This is the **foundation of personal finance** — knowing where your money goes every month.
+    </p>
+
+    <div class="calc-wrapper mt-4">
+        <form id="budget-form">
+
+            <h5 class="section-title">✅ Monthly Income</h5>
+            <input type="number" class="form-control my-2" id="income" placeholder="Total Monthly Income" required>
+
+            <h5 class="section-title">💸 Monthly Expenses</h5>
+
+            <input type="number" class="form-control my-2" id="rent" placeholder="Rent / Housing">
+            <input type="number" class="form-control my-2" id="food" placeholder="Food & Groceries">
+            <input type="number" class="form-control my-2" id="transport" placeholder="Transportation">
+            <input type="number" class="form-control my-2" id="utilities"
+                placeholder="Utilities (Electricity, Gas, Internet)">
+            <input type="number" class="form-control my-2" id="entertainment" placeholder="Entertainment & Others">
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Budget</button>
+        </form>
+
+        <div id="result" class="alert alert-info mt-4 d-none"></div>
+    </div>
+
+    <div class="mt-4 p-3 bg-white rounded shadow-sm">
+        <h3>How This Budget Calculation Works</h3>
+        <p>We calculate your monthly savings using a simple formula:</p>
+
+        <pre>Savings = Total Income − Total Expenses</pre>
+
+        <ul>
+            <li>If Savings > 0 → You are managing finances well ✅</li>
+            <li>If Savings = 0 → You're breaking even ⚖️</li>
+            <li>If Savings < 0 → You are overspending ❌</li>
+        </ul>
+
+        <h4>Financial Tip</h4>
+        <p>A good rule of thumb is the <strong>50/30/20 rule</strong>:
+            <br>50% Needs, 30% Wants, 20% Savings.
+        </p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById("budget-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const income = parseFloat(document.getElementById("income").value) || 0;
+        const rent = parseFloat(document.getElementById("rent").value) || 0;
+        const food = parseFloat(document.getElementById("food").value) || 0;
+        const transport = parseFloat(document.getElementById("transport").value) || 0;
+        const utilities = parseFloat(document.getElementById("utilities").value) || 0;
+        const entertainment = parseFloat(document.getElementById("entertainment").value) || 0;
+
+        const expenses = rent + food + transport + utilities + entertainment;
+        const savings = income - expenses;
+
+        const resultBox = document.getElementById("result");
+        resultBox.classList.remove("d-none");
+        resultBox.innerHTML =
+            `<strong>Total Income:</strong> $${income.toFixed(2)}<br>
+       <strong>Total Expenses:</strong> $${expenses.toFixed(2)}<br>
+       <strong>Your Monthly Savings:</strong> $${savings.toFixed(2)}<br><br>` +
+            (savings > 0
+                ? "<span style='color:green;font-weight:bold;'>✅ You are saving money! Keep it up.</span>"
+                : savings < 0
+                    ? "<span style='color:red;font-weight:bold;'>❌ You are overspending. Adjust your budget.</span>"
+                    : "<span style='color:blue;font-weight:bold;'>⚖️ You are breaking even.</span>");
+    });
+</script>
+{% endblock %}

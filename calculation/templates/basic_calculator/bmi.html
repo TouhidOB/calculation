@@ -1,28 +1,50 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>BMI Calculator</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="p-4">
-  <div class="container">
-    <h1>BMI Calculator</h1>
-    <form method="post">{% csrf_token %}
-      <div class="mb-3">
-        <label>Weight (kg)</label>
-        <input name="weight" class="form-control" required>
-      </div>
-      <div class="mb-3">
-        <label>Height (cm)</label>
-        <input name="height" class="form-control" required>
-      </div>
-      <button class="btn btn-primary">Calculate</button>
-    </form>
+{% extends "base.html" %}
 
-    {% if result %}
-      <div class="alert alert-success mt-3">BMI: {{ result }}</div>
-    {% endif %}
-  </div>
-</body>
-</html>
+{% block title %}BMI Calculator{% endblock %}
+{% block meta_description %}Free online BMI calculator with interpretation guide.{% endblock %}
+{% block meta_keywords %}BMI, Body Mass Index, Health Calculator{% endblock %}
+
+{% block extra_css %}
+<style>
+.calc-box { background:white; padding:25px; border-radius:10px; box-shadow:0 0 10px #ddd; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-3">BMI Calculator</h1>
+<p>BMI (Body Mass Index) is used to measure body fat based on height and weight.</p>
+
+<div class="calc-box mt-4">
+  <form id="calc-form">
+
+    <label class="form-label">Weight (kg)</label>
+    <input type="number" class="form-control mb-3" id="weight" required>
+
+    <label class="form-label">Height (cm)</label>
+    <input type="number" class="form-control mb-3" id="height" required>
+
+    <button class="btn btn-primary mt-2" type="submit">Calculate</button>
+  </form>
+
+  <div id="result" class="alert alert-info mt-4 d-none"></div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById("calc-form").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const w = parseFloat(document.getElementById("weight").value);
+    const h = parseFloat(document.getElementById("height").value) / 100;
+
+    const bmi = (w / (h*h)).toFixed(2);
+
+    const r = document.getElementById("result");
+    r.classList.remove("d-none");
+    r.textContent = "Your BMI is: " + bmi;
+});
+</script>
+{% endblock %}
