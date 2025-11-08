@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Car Affordability Calculator{% endblock %}
+{% block meta_description %}Determine how much car you can afford based on your income and expenses{% endblock %}
+{% block meta_keywords %}car affordability, auto loan, budget{% endblock %}
+{% block extra_head %}
+<style>.calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
+.section-title{font-weight:bold;margin-top:20px;}canvas{margin-top:20px;}</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+<h1 class="mb-3">Car Affordability Calculator</h1>
+<div class="calc-wrapper mt-4">
+<ul class="nav nav-tabs">
+<li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#car-monthly">Monthly</a></li>
+<li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#car-annual">Annual</a></li>
+<li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#car-daily">Daily</a></li>
+</ul>
+<div class="tab-content mt-3">
+{% for period in ["monthly","annual","daily"] %}
+<div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="car-{{period}}">
+<form class="car-form" data-period="{{period}}">
+<input type="number" class="form-control my-2 income" placeholder="Monthly Income" required>
+<input type="number" class="form-control my-2 debts" placeholder="Monthly Debts" required>
+<input type="number" class="form-control my-2 rate" placeholder="Loan Interest (%)" required>
+<input type="number" class="form-control my-2 term" placeholder="Loan Term (Months)" required>
+<button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
+</div>
+{% endfor %}
+</div>
+<div class="alert alert-info mt-4 d-none" id="car-result"></div>
+<table class="table table-bordered mt-4 d-none" id="car-table">
+<thead><tr><th>Metric</th><th>Value</th></tr></thead>
+<tbody id="car-body"></tbody>
+</table>
+<canvas id="car-chart" class="d-none"></canvas>
+</div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.querySelectorAll('.car-form').forEach(function(form){
+form.addEventListener('submit',function(e){
+e.preventDefault();
+const period=form.dataset.period;
+const income=parseFloat(form.querySelector('.income').value);
+const debts=parseFloat(form.querySelector('.debts').value);
+const rate=parseFloat(form.querySelector('.rate').value)/100;
+const term=parseInt(form.querySelector('.term').value);
+let mult=(period==='monthly'?1/12:(period==='annual'?1:1/365));
+
+const maxPayment=(income-debts)*0.20; // 20% auto loan rule
+const carPrice=maxPayment*(Math.pow(1+rate*mult,term)-1)/(rate*mult*Math.pow(1+rate*mult,term));
+
+const res=document.getElementById('car-result');
+res.classList.remove('d-none');
+res.innerHTML=`<strong>Max Monthly Payment:</strong> $${maxPayment.toFixed(2)}<br>
+<strong>Affordable Car Price:</strong> $${carPrice.toFixed(2)}<br>
+${carPrice>0?'<span style="color:green;font-weight:bold;">✅ Affordable</span>':'<span style="color:red;font-weight:bold;">❌ Too high</span>'}`;
+
+document.getElementById('car-table').classList.remove('d-none');
+document.getElementById('car-body').innerHTML=`<tr><td>Max Monthly Payment</td><td>$${maxPayment.toFixed(2)}</td></tr>
+<tr><td>Affordable Car Price</td><td>$${carPrice.toFixed(2)}</td></tr>`;
+
+const ctx=document.getElementById('car-chart').getContext('2d');
+document.getElementById('car-chart').classList.remove('d-none');
+if(window.carChart) carChart.destroy();
+window.carChart=new Chart(ctx,{type:'pie',data:{labels:['Payment','Remaining Income'],datasets:[{data:[maxPayment,income-maxPayment]}]}});
+});
+});
+</script>
+{% endblock %}

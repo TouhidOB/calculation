@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Debt Consolidation Savings Calculator{% endblock %}
+{% block meta_description %}Compare your current debts vs. a consolidated loan to determine monthly and lifetime savings.{% endblock %}
+{% block meta_keywords %}debt consolidation calculator, loan comparison, debt payoff{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .section-title { font-weight: bold; margin-top: 20px; }
+    canvas { margin-top: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Debt Consolidation Savings Calculator</h1>
+
+    <p style="font-size:1.1rem;">
+        Use this calculator to determine if combining multiple debts into one consolidated loan will save you money.
+    </p>
+
+    <div class="calc-wrapper mt-4">
+        <form id="debt-consolidation-form">
+
+            <h5 class="section-title">💳 Current Debts (Enter Totals)</h5>
+            <input type="number" class="form-control my-2" id="current-balance" placeholder="Total Balance Owed" required>
+            <input type="number" class="form-control my-2" id="current-interest" placeholder="Average Interest Rate (%)" required>
+            <input type="number" class="form-control my-2" id="current-term" placeholder="Months Remaining" required>
+
+            <h5 class="section-title">🔁 New Consolidation Loan</h5>
+            <input type="number" class="form-control my-2" id="new-interest" placeholder="New Interest Rate (%)" required>
+            <input type="number" class="form-control my-2" id="new-term" placeholder="New Loan Term (Months)" required>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Savings</button>
+        </form>
+
+        <div id="result" class="alert alert-info mt-4 d-none"></div>
+
+        <table class="table table-bordered mt-4 d-none" id="result-table">
+            <thead>
+                <tr><th>Category</th><th>Amount</th></tr>
+            </thead>
+            <tbody id="result-body"></tbody>
+        </table>
+
+        <canvas id="savingsChart" class="d-none"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.getElementById("debt-consolidation-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const balance = parseFloat(document.getElementById("current-balance").value);
+    const currentRate = parseFloat(document.getElementById("current-interest").value) / 100 / 12;
+    const currentTerm = parseInt(document.getElementById("current-term").value);
+
+    const newRate = parseFloat(document.getElementById("new-interest").value) / 100 / 12;
+    const newTerm = parseInt(document.getElementById("new-term").value);
+
+    // Monthly payment formula: M = P * (r*(1+r)^n) / ((1+r)^n - 1)
+    const monthlyCurrent = balance * (currentRate * Math.pow(1+currentRate, currentTerm)) / (Math.pow(1+currentRate, currentTerm)-1);
+    const monthlyNew = balance * (newRate * Math.pow(1+newRate, newTerm)) / (Math.pow(1+newRate, newTerm)-1);
+
+    const totalCurrent = monthlyCurrent * currentTerm;
+    const totalNew = monthlyNew * newTerm;
+    const savings = totalCurrent - totalNew;
+
+    const resultBox = document.getElementById("result");
+    resultBox.classList.remove("d-none");
+    resultBox.innerHTML = `
+        <strong>Monthly Payment Before:</strong> $${monthlyCurrent.toFixed(2)}<br>
+        <strong>Monthly Payment After:</strong> $${monthlyNew.toFixed(2)}<br>
+        <strong>Total Savings:</strong> $${savings.toFixed(2)}<br><br>
+        ${
+            savings > 0 
+            ? "<span style='color:green;font-weight:bold;'>✅ Consolidation Saves You Money.</span>"
+            : "<span style='color:red;font-weight:bold;'>❌ Consolidation Will Cost More.</span>"
+        }
+    `;
+
+    document.getElementById("result-table").classList.remove("d-none");
+    document.getElementById("result-body").innerHTML = `
+        <tr><td>Current Monthly Payment</td><td>$${monthlyCurrent.toFixed(2)}</td></tr>
+        <tr><td>New Monthly Payment</td><td>$${monthlyNew.toFixed(2)}</td></tr>
+        <tr><td>Total Cost (Current)</td><td>$${totalCurrent.toFixed(2)}</td></tr>
+        <tr><td>Total Cost (New Loan)</td><td>$${totalNew.toFixed(2)}</td></tr>
+        <tr><td>Total Savings</td><td>$${savings.toFixed(2)}</td></tr>
+    `;
+
+    const ctx = document.getElementById('savingsChart').getContext('2d');
+    document.getElementById("savingsChart").classList.remove("d-none");
+    if(window.saveChart) window.saveChart.destroy();
+
+    window.saveChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ["Current Total Cost", "New Loan Total Cost"],
+            datasets: [{
+                data: [totalCurrent, totalNew]
+            }]
+        }
+    });
+});
+</script>
+{% endblock %}

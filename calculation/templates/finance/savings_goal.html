@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Savings Goal Calculator{% endblock %}
+{% block meta_description %}Calculate how much to save monthly or how long to reach your savings goal. Supports interest rate.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .calc{background:#fff;padding:20px;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,0.04)}
+  .analysis { white-space:pre-wrap; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1>Savings Goal Calculator</h1>
+  <p class="small-muted">Enter your target and current savings. Choose either months to reach the target or monthly contribution to compute the other.</p>
+
+  <div class="calc mt-3">
+    <form id="saving-form">
+      <div class="mb-2">
+        <label>Target Amount ($)</label>
+        <input id="target-amount" type="number" class="form-control" min="0" step="0.01" required>
+      </div>
+      <div class="mb-2">
+        <label>Current Savings ($)</label>
+        <input id="current-savings" type="number" class="form-control" min="0" step="0.01" value="0">
+      </div>
+
+      <div class="mb-2">
+        <label>Annual Return (optional %) — expected interest (compounded monthly)</label>
+        <input id="annual-rate" type="number" class="form-control" min="0" step="0.01" placeholder="e.g., 5 for 5%">
+      </div>
+
+      <div class="mb-2">
+        <label>Either specify monthly contribution OR months to reach (leave the other blank)</label>
+        <div class="input-group my-2">
+          <input id="monthly-contrib" type="number" class="form-control" placeholder="Monthly contribution ($)" min="0" step="0.01">
+          <input id="months-to" type="number" class="form-control" placeholder="Months to reach (integer)" min="1" step="1">
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <button class="btn btn-primary" type="submit">Compute</button>
+        <button id="reset-savings" type="button" class="btn btn-secondary">Reset</button>
+      </div>
+    </form>
+
+    <div id="saving-result" class="mt-4 d-none">
+      <h5>Results</h5>
+      <div><strong>Needed monthly contribution:</strong> $<span id="needed-monthly">0.00</span></div>
+      <div><strong>Months to reach (if provided):</strong> <span id="needed-months">0</span> months</div>
+
+      <h6 class="mt-3">Deep Analysis</h6>
+      <div id="saving-analysis" class="analysis alert alert-light"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function futureValueMonthlyContribution(PV, monthly, rMonthly, n) {
+    // FV = PV*(1+r)^n + monthly * [ ((1+r)^n -1)/r ]
+    if(rMonthly === 0) return PV + monthly * n;
+    return PV * Math.pow(1 + rMonthly, n) + monthly * ((Math.pow(1+rMonthly, n) - 1) / rMonthly);
+  }
+
+  document.getElementById('saving-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const target = parseFloat(document.getElementById('target-amount').value) || 0;
+    const pv = parseFloat(document.getElementById('current-savings').value) || 0;
+    const annual = parseFloat(document.getElementById('annual-rate').value) || 0;
+    const monthlyContrib = document.getElementById('monthly-contrib').value ? parseFloat(document.getElementById('monthly-contrib').value) : null;
+    const monthsTo = document.getElementById('months-to').value ? parseInt(document.getElementById('months-to').value) : null;
+
+    const r = annual/100;
+    const rMonthly = r/12;
+
+    let neededMonthly = 0;
+    let neededMonths = 0;
+    let analysis = '';
+
+    if(monthlyContrib !== null && (monthsTo === null)){
+      // compute months required via iteration (because with interest, closed form uses logs)
+      let n = 0, fv = pv;
+      while(fv < target && n < 1000){
+        n++;
+        fv = futureValueMonthlyContribution(pv, monthlyContrib, rMonthly, n);
+      }
+      neededMonths = n;
+      neededMonthly = monthlyContrib;
+      analysis += `With a monthly contribution of $${monthlyContrib.toFixed(2)} and annual return ${annual}%:\n- You will reach $${target.toFixed(2)} in approximately ${n} months (${(n/12).toFixed(1)} years).\n`;
+    } else if(monthsTo !== null && (monthlyContrib === null)){
+      // compute required monthly contribution using formula:
+      // monthly * [ ((1+r)^n -1)/r ] = target - PV*(1+r)^n
+      const n = monthsTo;
+      const pow = Math.pow(1+rMonthly, n);
+      let monthly;
+      if(rMonthly === 0){
+        monthly = (target - pv) / n;
+      } else {
+        monthly = (target - pv * pow) * rMonthly / (pow - 1);
+      }
+      neededMonthly = monthly;
+      neededMonths = n;
+      analysis += `To reach $${target.toFixed(2)} in ${n} months with ${annual}% annual return:\n- You must save $${monthly.toFixed(2)} per month.\n`;
+    } else if(monthlyContrib !== null && monthsTo !== null){
+      // both provided - compute final amount after monthsTo
+      const fv = futureValueMonthlyContribution(pv, monthlyContrib, rMonthly, monthsTo);
+      neededMonthly = monthlyContrib;
+      neededMonths = monthsTo;
+      analysis += `Given $${monthlyContrib.toFixed(2)} monthly for ${monthsTo} months at ${annual}% yearly, you'll reach $${fv.toFixed(2)}.\n- Target comparison: ${(fv >= target) ? 'You will reach or exceed your target.' : 'You will NOT reach your target.'}\n`;
+    } else {
+      analysis = 'Please enter either a monthly contribution OR the desired months to reach the goal.';
+      alert(analysis);
+      return;
+    }
+
+    // general recommendations
+    if(neededMonthly > 0 && neededMonthly > (0.3 * (pv || 1))){
+      analysis += `\nRecommendation:\n- Check if the monthly amount fits your budget.\n- Consider increasing time horizon or seeking higher-yield but diversified investments.\n`;
+    } else {
+      analysis += `\nRecommendation:\n- This plan seems reasonable. Keep contributions automated and review annually.\n`;
+    }
+
+    document.getElementById('needed-monthly').textContent = Math.max(0, neededMonthly).toFixed(2);
+    document.getElementById('needed-months').textContent = Math.max(0, neededMonths);
+    document.getElementById('saving-analysis').textContent = analysis;
+    document.getElementById('saving-result').classList.remove('d-none');
+  });
+
+  document.getElementById('reset-savings').addEventListener('click', ()=>{
+    ['target-amount','current-savings','annual-rate','monthly-contrib','months-to'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('saving-result').classList.add('d-none');
+  });
+</script>
+{% endblock %}

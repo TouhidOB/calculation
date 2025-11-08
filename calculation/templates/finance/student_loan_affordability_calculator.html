@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Student Loan Affordability Calculator{% endblock %}
+{% block meta_description %}Check if your student loan payments fit your budget{% endblock %}
+{% block meta_keywords %}student loan calculator, affordability, monthly payment{% endblock %}
+{% block extra_head %}
+<style>
+    .calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
+    .section-title{font-weight:bold;margin-top:20px;}canvas{margin-top:20px;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Student Loan Affordability Calculator</h1>
+    <div class="calc-wrapper mt-4">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#stu-monthly">Monthly</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#stu-annual">Annual</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#stu-daily">Daily</a></li>
+        </ul>
+        <div class="tab-content mt-3">
+            {% for period in ["monthly","annual","daily"] %}
+            <div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="stu-{{period}}">
+                <form class="stu-form" data-period="{{period}}">
+                    <h5 class="section-title">Loan Details</h5>
+                    <input type="number" class="form-control my-2 principal" placeholder="Loan Amount" required>
+                    <input type="number" class="form-control my-2 rate" placeholder="Interest Rate (%)" required>
+                    <input type="number" class="form-control my-2 term" placeholder="Term (Months)" required>
+                    <input type="number" class="form-control my-2 income" placeholder="Monthly Income" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="alert alert-info mt-4 d-none" id="stu-result"></div>
+        <table class="table table-bordered mt-4 d-none" id="stu-table">
+            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+            <tbody id="stu-body"></tbody>
+        </table>
+        <canvas id="stu-chart" class="d-none"></canvas>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.querySelectorAll('.stu-form').forEach(function(form){
+    form.addEventListener('submit',function(e){
+        e.preventDefault();
+        const period=form.dataset.period;
+        const P=parseFloat(form.querySelector('.principal').value);
+        const R=parseFloat(form.querySelector('.rate').value)/100;
+        const N=parseInt(form.querySelector('.term').value);
+        const income=parseFloat(form.querySelector('.income').value);
+        let mult=(period==='monthly'?1/12:(period==='annual'?1:1/365));
+        const M=P*(R*mult*Math.pow(1+R*mult,N))/(Math.pow(1+R*mult,N)-1);
+        const total=M*N;
+        const affordability=(M/income)*100;
+
+        const res=document.getElementById('stu-result');
+        res.classList.remove('d-none');
+        res.innerHTML=`<strong>Monthly Payment:</strong> $${M.toFixed(2)}<br>
+        <strong>Total Payment:</strong> $${total.toFixed(2)}<br>
+        <strong>Payment/Income Ratio:</strong> ${affordability.toFixed(2)}%<br>
+        ${affordability<30?'<span style="color:green;font-weight:bold;">✅ Affordable</span>':'<span style="color:red;font-weight:bold;">❌ Too high</span>'}`;
+
+        document.getElementById('stu-table').classList.remove('d-none');
+        document.getElementById('stu-body').innerHTML=`<tr><td>Monthly Payment</td><td>$${M.toFixed(2)}</td></tr>
+        <tr><td>Total Payment</td><td>$${total.toFixed(2)}</td></tr>
+        <tr><td>Income Ratio</td><td>${affordability.toFixed(2)}%</td></tr>`;
+
+        const ctx=document.getElementById('stu-chart').getContext('2d');
+        document.getElementById('stu-chart').classList.remove('d-none');
+        if(window.stuChart) stuChart.destroy();
+        window.stuChart=new Chart(ctx,{type:'pie',data:{labels:['Payment','Remaining Income'],datasets:[{data:[M,income-M]}]}});
+    });
+});
+</script>
+{% endblock %}

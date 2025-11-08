@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Net Worth Projection Calculator{% endblock %}
+{% block meta_description %}Project your net worth over time based on assets, debts, and growth rate{% endblock %}
+{% block meta_keywords %}net worth projection, financial planning, assets, debts{% endblock %}
+
+{% block extra_head %}
+<style>
+.calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
+.section-title{font-weight:bold;margin-top:20px;}canvas{margin-top:20px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<h1 class="mb-3">Net Worth Projection Calculator</h1>
+<div class="calc-wrapper mt-4">
+<form id="networth-form">
+<h5 class="section-title">Financial Details</h5>
+<input type="number" class="form-control my-2" id="current-assets" placeholder="Current Assets ($)" required>
+<input type="number" class="form-control my-2" id="current-debts" placeholder="Current Debts ($)" required>
+<input type="number" class="form-control my-2" id="annual-contribution" placeholder="Annual Contribution ($)" required>
+<input type="number" class="form-control my-2" id="annual-growth" placeholder="Expected Annual Growth (%)" required>
+<input type="number" class="form-control my-2" id="years" placeholder="Number of Years" required>
+<button class="btn btn-primary mt-3" type="submit">Project Net Worth</button>
+</form>
+<div class="alert alert-info mt-4 d-none" id="networth-result"></div>
+<canvas id="networth-chart" class="d-none"></canvas>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.getElementById('networth-form').addEventListener('submit', function(e){
+e.preventDefault();
+let assets = parseFloat(document.getElementById('current-assets').value);
+let debts = parseFloat(document.getElementById('current-debts').value);
+let contribution = parseFloat(document.getElementById('annual-contribution').value);
+let growth = parseFloat(document.getElementById('annual-growth').value)/100;
+let years = parseInt(document.getElementById('years').value);
+
+let netWorthArr = [];
+let netWorth = assets - debts;
+for(let i=0;i<=years;i++){
+netWorthArr.push(netWorth.toFixed(2));
+netWorth = (netWorth + contribution)*(1+growth);
+}
+
+const res = document.getElementById('networth-result');
+res.classList.remove('d-none');
+res.innerHTML = `<strong>Projected Net Worth After ${years} Years:</strong> $${netWorthArr[netWorthArr.length-1]}<br>
+<span style="color:green;font-weight:bold;">✅ Plan your financial growth effectively</span>`;
+
+const ctx = document.getElementById('networth-chart').getContext('2d');
+document.getElementById('networth-chart').classList.remove('d-none');
+if(window.networthChart) networthChart.destroy();
+window.networthChart = new Chart(ctx,{
+type:'line',
+data:{
+labels:Array.from({length:years+1},(_,i)=>i),
+datasets:[{label:'Net Worth ($)', data:netWorthArr, borderColor:'#1cc88a', fill:false}]
+}
+});
+});
+</script>
+{% endblock %}

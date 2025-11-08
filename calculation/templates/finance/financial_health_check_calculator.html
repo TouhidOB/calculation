@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Health Check Calculator{% endblock %}
+{% block meta_description %}A simple financial health score and tailored recommendations based on income, expenses, debt
+and emergency savings.{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #fff;
+        padding: 22px;
+        border-radius: 10px
+    }
+
+    .analysis {
+        white-space: pre-wrap
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1>Financial Health Check</h1>
+    <p class="small-muted">Receive a quick score (0–100) and prioritized recommendations.</p>
+
+    <div class="calc-wrapper mt-3">
+        <form id="fh-form">
+            <div class="row">
+                <div class="col-md-3 mb-2"><label>Total Monthly Income</label><input id="fh-income" type="number"
+                        class="form-control"></div>
+                <div class="col-md-3 mb-2"><label>Total Monthly Expenses</label><input id="fh-expenses" type="number"
+                        class="form-control"></div>
+                <div class="col-md-3 mb-2"><label>Total Debt (all)</label><input id="fh-debt" type="number"
+                        class="form-control"></div>
+                <div class="col-md-3 mb-2"><label>Emergency Savings</label><input id="fh-savings" type="number"
+                        class="form-control"></div>
+            </div>
+
+            <div class="mt-2">
+                <button class="btn btn-primary" type="submit">Check Health</button>
+                <button id="fh-reset" type="button" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+
+        <div id="fh-result" class="mt-4 d-none">
+            <h5>Result</h5>
+            <div><strong>Financial Health Score:</strong> <span id="fh-score">0</span>/100</div>
+
+            <h6 class="mt-3">Deep Analysis & Prioritized Actions</h6>
+            <div id="fh-analysis" class="analysis alert alert-light"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    document.getElementById('fh-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const income = parseFloat(document.getElementById('fh-income').value) || 0;
+        const expenses = parseFloat(document.getElementById('fh-expenses').value) || 0;
+        const debt = parseFloat(document.getElementById('fh-debt').value) || 0;
+        const savings = parseFloat(document.getElementById('fh-savings').value) || 0;
+
+        // Components: savings coverage (30%), expense management (30%), debt burden (25%), cashflow stability (15%)
+        const monthsCover = income === 0 ? 0 : (savings / Math.max(1, expenses));
+        const scoreSavings = clamp((monthsCover / 6) * 30, 0, 30); // target 6 months
+        const surplus = income - expenses;
+        const scoreCashflow = surplus <= 0 ? clamp((surplus / Math.max(1, income)) * 15 + 15, 0, 15) : clamp((surplus / income) * 15 + 5, 0, 15);
+        const debtToIncomeRatio = income === 0 ? 1 : (debt / (income * 12));
+        const scoreDebt = clamp((1 - clamp(debtToIncomeRatio / 2, 0, 1)) * 25, 0, 25); // lower debt better
+        const scoreExpense = clamp((1 - (expenses / Math.max(1, income))) * 30, 0, 30);
+
+        const total = Math.round(scoreSavings + scoreCashflow + scoreDebt + scoreExpense);
+
+        document.getElementById('fh-score').textContent = total;
+        document.getElementById('fh-result').classList.remove('d-none');
+
+        // Analysis text
+        let analysis = `Components:
+- Savings coverage (months of expenses): ${monthsCover.toFixed(1)} months (score ${scoreSavings.toFixed(0)}/30)
+- Expense vs income: ${(expenses / income * 100 || 0).toFixed(1)}% (score ${scoreExpense.toFixed(0)}/30)
+- Debt-to-annual-income: ${(debt / (income * 12) || 0).toFixed(2)} (score ${scoreDebt.toFixed(0)}/25)
+- Cashflow surplus monthly: $${surplus.toFixed(2)} (score ${scoreCashflow.toFixed(0)}/15)
+
+Priority recommendations:\n`;
+
+        if (total < 40) {
+            analysis += "- High priority: reduce expenses and build emergency savings. Focus on high-interest debt payoff.\n";
+        } else if (total < 70) {
+            analysis += "- Moderate priority: improve savings and reduce non-essential expenses. Refinance debt where possible.\n";
+        } else {
+            analysis += "- Good: maintain current plan, automate savings and consider investment diversification.\n";
+        }
+
+        analysis += `\nQuick actions:\n- Automate a small transfer to savings weekly.\n- List top 3 expenses and cut one by 10% immediately.\n- If debt carries >8% interest, pay extra to that debt first.`;
+
+        document.getElementById('fh-analysis').textContent = analysis;
+    });
+
+    document.getElementById('fh-reset').addEventListener('click', function () {
+        ['fh-income', 'fh-expenses', 'fh-debt', 'fh-savings'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('fh-result').classList.add('d-none');
+    });
+</script>
+{% endblock %}

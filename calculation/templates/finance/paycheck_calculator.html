@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Paycheck (Take-Home Pay) Calculator{% endblock %}
+{% block meta_description %}Calculate net pay per paycheck after taxes and pre-tax deductions.{% endblock %}
+
+{% block extra_head %}
+<style>
+.calc-wrapper{background:#fff;padding:22px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.04)}
+.analysis{white-space:pre-wrap}
+.small-muted{font-size:.95rem;color:#6c757d}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1>Paycheck / Take-Home Pay Calculator</h1>
+  <p class="small-muted">Estimate net pay per period after taxes, retirement and fixed deductions.</p>
+
+  <div class="calc-wrapper mt-3">
+    <form id="paycheck-form">
+      <div class="row">
+        <div class="col-md-4 mb-2"><label>Gross Annual Salary ($)</label><input id="pay-gross" type="number" class="form-control" step="0.01"></div>
+        <div class="col-md-4 mb-2"><label>Pay Frequency</label>
+          <select id="pay-frequency" class="form-control">
+            <option value="12">Monthly</option>
+            <option value="24">Semi-Monthly</option>
+            <option value="26">Bi-Weekly</option>
+            <option value="52">Weekly</option>
+          </select>
+        </div>
+        <div class="col-md-4 mb-2"><label>Estimated Tax Rate (%)</label><input id="pay-tax" type="number" class="form-control" step="0.01" placeholder="e.g., 20"></div>
+      </div>
+
+      <div class="row mt-2">
+        <div class="col-md-4 mb-2"><label>Pre-tax Retirement % (401k)</label><input id="pay-ret" type="number" class="form-control" step="0.01" placeholder="e.g., 5"></div>
+        <div class="col-md-4 mb-2"><label>Fixed Deductions per period ($)</label><input id="pay-fixed" type="number" class="form-control" step="0.01" placeholder="Insurance, union dues..."></div>
+        <div class="col-md-4 mb-2 align-self-end">
+          <button class="btn btn-primary" type="submit">Calculate</button>
+          <button id="pay-reset" type="button" class="btn btn-secondary">Reset</button>
+        </div>
+      </div>
+    </form>
+
+    <div id="pay-result" class="mt-4 d-none">
+      <h5>Result</h5>
+      <div><strong>Gross per period:</strong> $<span id="pay-gross-period">0.00</span></div>
+      <div><strong>Net per period (take-home):</strong> $<span id="pay-net-period">0.00</span></div>
+      <div><strong>Annual Take-Home:</strong> $<span id="pay-annual-net">0.00</span></div>
+
+      <h6 class="mt-3">Deep Analysis</h6>
+      <div id="pay-analysis" class="analysis alert alert-light"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('paycheck-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const grossAnnual = parseFloat(document.getElementById('pay-gross').value) || 0;
+  const freq = parseInt(document.getElementById('pay-frequency').value) || 12;
+  const taxRate = parseFloat(document.getElementById('pay-tax').value)/100 || 0;
+  const ret = parseFloat(document.getElementById('pay-ret').value)/100 || 0;
+  const fixed = parseFloat(document.getElementById('pay-fixed').value) || 0;
+
+  const grossPeriod = grossAnnual / freq;
+  const pretaxRet = grossPeriod * ret;
+  const taxable = grossPeriod - pretaxRet;
+  const taxes = taxable * taxRate;
+  const netPeriod = taxable - taxes - fixed;
+
+  const annualNet = netPeriod * freq;
+
+  document.getElementById('pay-gross-period').textContent = grossPeriod.toFixed(2);
+  document.getElementById('pay-net-period').textContent = netPeriod.toFixed(2);
+  document.getElementById('pay-annual-net').textContent = annualNet.toFixed(2);
+  document.getElementById('pay-result').classList.remove('d-none');
+
+  // Deep analysis
+  let savingsRate = (pretaxRet / grossPeriod) * 100;
+  let analysis = `Pre-tax retirement per period: $${pretaxRet.toFixed(2)} (${savingsRate.toFixed(1)}% of gross per period).\nTax withheld approx: $${taxes.toFixed(2)} per period.\n\nSuggestions:\n- If net feels tight, consider adjusting retirement deferral vs. immediate cash needs.\n- Compare tax withholding to real annual tax liability annually to avoid big refunds/owed amounts.\n- Automate contributions for long-term wealth building.`;
+
+  document.getElementById('pay-analysis').textContent = analysis;
+});
+
+document.getElementById('pay-reset').addEventListener('click', function(){
+  ['pay-gross','pay-frequency','pay-tax','pay-ret','pay-fixed'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pay-result').classList.add('d-none');
+});
+</script>
+{% endblock %}

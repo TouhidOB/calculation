@@ -1,12 +1,61 @@
 <div class="sidebar">
     <input id="searchInputMobile" type="text" placeholder="Search calculators..." class="form-control" onkeyup="filterCalculators()">
 
-    <h5 class="mt-3">All Calculators</h5>
-
+    <h3 class="mt-3">All Calculators</h3>
+    
+    <h5 class="mt-4">Finance Calculators</h5>
     <a href="{% url 'budget_calculator' %}" class="{% if request.resolver_match.url_name == 'budget_calculator' %}active{% endif %}">Budget Calculator</a>
     <a href="{% url 'net_worth' %}" class="{% if request.resolver_match.url_name == 'net_worth' %}active{% endif %}">Net Worth Calculator</a>
     <a href="{% url 'dti' %}" class="{% if request.resolver_match.url_name == 'dti' %}active{% endif %}">Debt To Income Ratio Calculator</a>
-    <a href="{% url 'bmi_calculator' %}" class="{% if request.resolver_match.url_name == 'bmi_calculator' %}active{% endif %}">BMI Calculator</a>
+    <a href="{% url 'savings_goal' %}" class="{% if request.resolver_match.url_name == 'savings_goal' %}active{% endif %}">Savings Goal Calculator</a>
+    <a href="{% url 'emergency_fund' %}" class="{% if request.resolver_match.url_name == 'emergency_fund' %}active{% endif %}">Emergency Fund Calculator</a>
+    <a href="{% url 'cash_flow' %}" class="{% if request.resolver_match.url_name == 'cash_flow' %}active{% endif %}">Cash Flow Calculator</a>
+    <a href="{% url 'spending_tracker' %}" class="{% if request.resolver_match.url_name == 'spending_tracker' %}active{% endif %}">Spending Tracker Calculator</a>
+    <a href="{% url 'inflation_calculator' %}" class="{% if request.resolver_match.url_name == 'inflation_calculator' %}active{% endif %}">Inflation Calculator</a>
+    <a href="{% url 'cost_of_living_comparison_calculator' %}" class="{% if request.resolver_match.url_name == 'cost_of_living_comparison_calculator' %}active{% endif %}">Cost Of Living Comparison Calculator</a>
+    <a href="{% url 'paycheck_calculator' %}" class="{% if request.resolver_match.url_name == 'paycheck_calculator' %}active{% endif %}">Paycheck Calculator</a>
+    <a href="{% url 'overtime_pay_calculator' %}" class="{% if request.resolver_match.url_name == 'overtime_pay_calculator' %}active{% endif %}">Overtime Pay Calculator</a>
+    <a href="{% url 'hourly_to_salary_converter' %}" class="{% if request.resolver_match.url_name == 'hourly_to_salary_converter' %}active{% endif %}">Hourly to Salary Calculator</a>
+    <a href="{% url 'salary_to_hourly_converter' %}" class="{% if request.resolver_match.url_name == 'salary_to_hourly_converter' %}active{% endif %}">Salary to Hourly Calculator</a>
+    <a href="{% url 'disposable_income_calculator' %}" class="{% if request.resolver_match.url_name == 'disposable_income_calculator' %}active{% endif %}">Disposable Income Calculator</a>
+    <a href="{% url 'discretionary_income_calculator' %}" class="{% if request.resolver_match.url_name == 'discretionary_income_calculator' %}active{% endif %}">Discretionary Income Calculator</a>
+    <a href="{% url 'financial_health_check_calculator' %}" class="{% if request.resolver_match.url_name == 'financial_health_check_calculator' %}active{% endif %}">Financial Health Check Calculator</a>
+    <a href="{% url 'bill_splitting_calculator' %}" class="{% if request.resolver_match.url_name == 'bill_splitting_calculator' %}active{% endif %}">Bill Splitting Calculator</a>
+    <a href="{% url 'yearly_expense_planner' %}" class="{% if request.resolver_match.url_name == 'yearly_expense_planner' %}active{% endif %}">Yearly Expense Planner Calculator</a>
+    <a href="{% url 'sinking_fund_calculator' %}" class="{% if request.resolver_match.url_name == 'sinking_fund_calculator' %}active{% endif %}">Sinking Fund Calculator</a>
+    <a href="{% url 'gift_tax_calculator' %}" class="{% if request.resolver_match.url_name == 'gift_tax_calculator' %}active{% endif %}">Gift Tax Calculator</a>
+    <a href="{% url 'allowance_calculator' %}" class="{% if request.resolver_match.url_name == 'allowance_calculator' %}active{% endif %}">Allowance Calculator</a>
+    <a href="{% url 'latte_factor_calculator' %}" class="{% if request.resolver_match.url_name == 'latte_factor_calculator' %}active{% endif %}">Latte Factor Calculator</a>
+    <a href="{% url 'expense_report_calculator' %}" class="{% if request.resolver_match.url_name == 'expense_report_calculator' %}active{% endif %}">Expense Report Calculator</a>
+    <a href="{% url 'personal_inflation_rate_calculator' %}" class="{% if request.resolver_match.url_name == 'personal_inflation_rate_calculator' %}active{% endif %}">Personal Inflation Rate Calculator</a>
+    <a href="{% url 'rainy_day_fund_calculator' %}" class="{% if request.resolver_match.url_name == 'rainy_day_fund_calculator' %}active{% endif %}">Rainy Day Fund Calculator</a>
+    <a href="{% url 'fire_calculator' %}" class="{% if request.resolver_match.url_name == 'fire_calculator' %}active{% endif %}">Fire Calculator</a>
+    <a href="{% url 'wage_garnishment_calculator' %}" class="{% if request.resolver_match.url_name == 'wage_garnishment_calculator' %}active{% endif %}">Wage Garnishment Calculator</a>
+    <a href="{% url 'severance_pay_calculator' %}" class="{% if request.resolver_match.url_name == 'severance_pay_calculator' %}active{% endif %}">Severance Pay Calculator</a>
+    <a href="{% url 'windfall_tax_calculator' %}" class="{% if request.resolver_match.url_name == 'windfall_tax_calculator' %}active{% endif %}">Windfall Tax Calculator</a>
+    <a href="{% url 'holiday_budget_calculator' %}" class="{% if request.resolver_match.url_name == 'holiday_budget_calculator' %}active{% endif %}">Holiday Budget Calculator</a>
+    <a href="{% url 'charitable_donation_tax_deduction_calculator' %}" class="{% if request.resolver_match.url_name == 'charitable_donation_tax_deduction_calculator' %}active{% endif %}">Charitable Donation Tax Deduction Calculator</a>
+    <a href="{% url 'moving_cost_calculator' %}" class="{% if request.resolver_match.url_name == 'moving_cost_calculator' %}active{% endif %}">Moving Cost Calculator</a>
+    <a href="{% url 'subscription_management_calculator' %}" class="{% if request.resolver_match.url_name == 'subscription_management_calculator' %}active{% endif %}">Subscription Management Calculator</a>
+    <a href="{% url 'personal_loan_comparison_calculator' %}" class="{% if request.resolver_match.url_name == 'personal_loan_comparison_calculator' %}active{% endif %}">Personal Loan Comparison Calculator</a>
+    <a href="{% url 'credit_utilization_calculator' %}" class="{% if request.resolver_match.url_name == 'credit_utilization_calculator' %}active{% endif %}">Credit Utilization Calculator</a>
+    <a href="{% url 'debt_consolidation_savings_calculator' %}" class="{% if request.resolver_match.url_name == 'debt_consolidation_savings_calculator' %}active{% endif %}">Debt Consolidation Savings Calculator</a>
+    <a href="{% url 'balance_transfer_calculator' %}" class="{% if request.resolver_match.url_name == 'balance_transfer_calculator' %}active{% endif %}">Balance Transfer Calculator</a>
+    <a href="{% url 'student_loan_affordability_calculator' %}" class="{% if request.resolver_match.url_name == 'student_loan_affordability_calculator' %}active{% endif %}">Student Loan Affordability Calculator</a>
+    <a href="{% url 'mortgage_affordability_calculator' %}" class="{% if request.resolver_match.url_name == 'mortgage_affordability_calculator' %}active{% endif %}">Mortgage Affordability Calculator</a>
+    <a href="{% url 'car_affordability_calculator' %}" class="{% if request.resolver_match.url_name == 'car_affordability_calculator' %}active{% endif %}">Car Affordability Calculator</a>
+    <a href="{% url 'rent_affordability_calculator' %}" class="{% if request.resolver_match.url_name == 'rent_affordability_calculator' %}active{% endif %}">Rent Affordability Calculator</a>
+    <a href="{% url 'no_spend_challenge_calculator' %}" class="{% if request.resolver_match.url_name == 'no_spend_challenge_calculator' %}active{% endif %}">No Spend Challenge Calculator</a>
+    <a href="{% url 'cash_envelope_system_planner' %}" class="{% if request.resolver_match.url_name == 'cash_envelope_system_planner' %}active{% endif %}">Cash Envelope System Planner Calculator</a>
+    <a href="{% url 'biweekly_budget_converter' %}" class="{% if request.resolver_match.url_name == 'biweekly_budget_converter' %}active{% endif %}">Biweekly Budget Converter Calculator</a>
+    <a href="{% url 'annual_budget_planner' %}" class="{% if request.resolver_match.url_name == 'annual_budget_planner' %}active{% endif %}">Annual Budget Planner Calculator</a>
+    <a href="{% url 'sp500_historical_return_simulator' %}" class="{% if request.resolver_match.url_name == 'sp500_historical_return_simulator' %}active{% endif %}">sp500 Historical Return Simulator</a>
+    <a href="{% url 'rule_of_72_calculator' %}" class="{% if request.resolver_match.url_name == 'rule_of_72_calculator' %}active{% endif %}">Rule of 72 Calculator</a>
+    <a href="{% url 'rule_of_114_144_calculator' %}" class="{% if request.resolver_match.url_name == 'rule_of_114_144_calculator' %}active{% endif %}">Rule of 114 144 Calculator</a>
+    <a href="{% url 'net_worth_projection_calculator' %}" class="{% if request.resolver_match.url_name == 'net_worth_projection_calculator' %}active{% endif %}">Net Worth Projection Calculator</a>
+    
     <a href="#" >Loan EMI Calculator</a>
-    <a href="#">Savings Calculator</a>
+    
+    <h5 class="mt-3">Health Calculators</h5>
+    <a href="{% url 'bmi_calculator' %}" class="{% if request.resolver_match.url_name == 'bmi_calculator' %}active{% endif %}">BMI Calculator</a>
 </div>

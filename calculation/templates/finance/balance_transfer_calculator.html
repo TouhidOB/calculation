@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Balance Transfer Calculator{% endblock %}
+{% block meta_description %}Calculate balance transfer options and save on interest payments.{% endblock %}
+{% block meta_keywords %}balance transfer calculator, credit card transfer, interest savings{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper { background:white; padding:25px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.05);}
+    .section-title { font-weight:bold; margin-top:20px; }
+    canvas { margin-top:20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Balance Transfer Calculator</h1>
+
+    <div class="calc-wrapper mt-4">
+        <!-- Tabs for A/B/C -->
+        <ul class="nav nav-tabs" id="btTabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" id="bt-monthly-tab" data-bs-toggle="tab" href="#bt-monthly" role="tab">Monthly</a></li>
+            <li class="nav-item"><a class="nav-link" id="bt-annual-tab" data-bs-toggle="tab" href="#bt-annual" role="tab">Annual</a></li>
+            <li class="nav-item"><a class="nav-link" id="bt-daily-tab" data-bs-toggle="tab" href="#bt-daily" role="tab">Daily</a></li>
+        </ul>
+
+        <div class="tab-content mt-3">
+            {% for period in ["monthly","annual","daily"] %}
+            <div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="bt-{{period}}" role="tabpanel">
+                <form class="bt-form" data-period="{{period}}">
+                    <h5 class="section-title">💳 Existing Balance & Rate</h5>
+                    <input type="number" class="form-control my-2 balance" placeholder="Current Balance" required>
+                    <input type="number" class="form-control my-2 rate" placeholder="Current Interest (%)" required>
+                    <input type="number" class="form-control my-2 months" placeholder="Remaining Months" required>
+
+                    <h5 class="section-title">🔁 New Transfer Rate</h5>
+                    <input type="number" class="form-control my-2 new-rate" placeholder="New Interest (%)" required>
+                    <input type="number" class="form-control my-2 new-term" placeholder="New Term (Months)" required>
+
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="alert alert-info mt-4 d-none" id="bt-result"></div>
+        <table class="table table-bordered mt-4 d-none" id="bt-table">
+            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+            <tbody id="bt-body"></tbody>
+        </table>
+        <canvas id="bt-chart" class="d-none"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.querySelectorAll('.bt-form').forEach(function(form){
+    form.addEventListener('submit', function(e){
+        e.preventDefault();
+        const period = form.dataset.period;
+        const balance = parseFloat(form.querySelector('.balance').value);
+        const rate = parseFloat(form.querySelector('.rate').value)/100;
+        const months = parseInt(form.querySelector('.months').value);
+        const newRate = parseFloat(form.querySelector('.new-rate').value)/100;
+        const newTerm = parseInt(form.querySelector('.new-term').value);
+
+        let multiplier;
+        if(period==='monthly'){ multiplier=1/12; }
+        else if(period==='annual'){ multiplier=1; }
+        else{ multiplier=1/365; }
+
+        const monthlyOld = balance * (rate*multiplier*Math.pow(1+rate*multiplier,months)) / (Math.pow(1+rate*multiplier,months)-1);
+        const monthlyNew = balance * (newRate*multiplier*Math.pow(1+newRate*multiplier,newTerm)) / (Math.pow(1+newRate*multiplier,newTerm)-1);
+
+        const totalOld = monthlyOld*months;
+        const totalNew = monthlyNew*newTerm;
+        const savings = totalOld-totalNew;
+
+        const res = document.getElementById('bt-result');
+        res.classList.remove('d-none');
+        res.innerHTML = `<strong>Monthly Payment Before:</strong> $${monthlyOld.toFixed(2)}<br>
+                        <strong>Monthly Payment After:</strong> $${monthlyNew.toFixed(2)}<br>
+                        <strong>Total Savings:</strong> $${savings.toFixed(2)}<br>
+                        ${savings>0?'<span style="color:green;font-weight:bold;">✅ Saves money!</span>':'<span style="color:red;font-weight:bold;">❌ Costs more!</span>'}`;
+
+        document.getElementById('bt-table').classList.remove('d-none');
+        document.getElementById('bt-body').innerHTML = `
+            <tr><td>Old Monthly Payment</td><td>$${monthlyOld.toFixed(2)}</td></tr>
+            <tr><td>New Monthly Payment</td><td>$${monthlyNew.toFixed(2)}</td></tr>
+            <tr><td>Total Cost (Old)</td><td>$${totalOld.toFixed(2)}</td></tr>
+            <tr><td>Total Cost (New)</td><td>$${totalNew.toFixed(2)}</td></tr>
+            <tr><td>Total Savings</td><td>$${savings.toFixed(2)}</td></tr>
+        `;
+
+        const ctx = document.getElementById('bt-chart').getContext('2d');
+        document.getElementById('bt-chart').classList.remove('d-none');
+        if(window.btChart) window.btChart.destroy();
+        window.btChart = new Chart(ctx,{
+            type:'bar',
+            data:{
+                labels:['Old Total Cost','New Total Cost'],
+                datasets:[{data:[totalOld,totalNew]}]
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

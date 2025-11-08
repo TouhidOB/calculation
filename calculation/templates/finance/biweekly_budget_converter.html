@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Bi-Weekly Budget Converter{% endblock %}
+{% block meta_description %}Convert monthly budget into bi-weekly budget for better planning{% endblock %}
+{% block meta_keywords %}bi-weekly budget, budgeting, finance{% endblock %}
+{% block extra_head %}
+<style>
+.calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
+.section-title{font-weight:bold;margin-top:20px;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+<h1 class="mb-3">Bi-Weekly Budget Converter</h1>
+<div class="calc-wrapper mt-4">
+<form id="biweekly-form">
+<h5 class="section-title">Monthly Budget</h5>
+<input type="number" class="form-control my-2" id="monthly-income" placeholder="Total Monthly Income" required>
+<button class="btn btn-primary mt-3" type="submit">Convert</button>
+</form>
+<div class="alert alert-info mt-4 d-none" id="biweekly-result"></div>
+</div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('biweekly-form').addEventListener('submit', function(e){
+e.preventDefault();
+let monthly = parseFloat(document.getElementById('monthly-income').value);
+let biweekly = (monthly*12)/26; // 26 bi-weekly periods in a year
+const res = document.getElementById('biweekly-result');
+res.classList.remove('d-none');
+res.innerHTML = `<strong>Bi-Weekly Budget:</strong> $${biweekly.toFixed(2)}<br>
+<span style="color:green;font-weight:bold;">✅ Use this for bi-weekly planning</span>`;
+});
+</script>
+{% endblock %}

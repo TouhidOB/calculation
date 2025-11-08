@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Rent Affordability Calculator{% endblock %}
+{% block meta_description %}Determine the maximum rent you can afford based on your income and debts{% endblock %}
+{% block meta_keywords %}rent affordability, housing budget, monthly rent{% endblock %}
+
+{% block extra_head %}
+<style>
+.calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
+.section-title{font-weight:bold;margin-top:20px;}
+canvas{margin-top:20px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<h1 class="mb-3">Rent Affordability Calculator</h1>
+<div class="calc-wrapper mt-4">
+
+<ul class="nav nav-tabs">
+<li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#rent-monthly">Monthly</a></li>
+<li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#rent-annual">Annual</a></li>
+<li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#rent-daily">Daily</a></li>
+</ul>
+
+<div class="tab-content mt-3">
+{% for period in ["monthly","annual","daily"] %}
+<div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="rent-{{period}}">
+<form class="rent-form" data-period="{{period}}">
+<h5 class="section-title">Income & Expenses</h5>
+<input type="number" class="form-control my-2 income" placeholder="Monthly Income" required>
+<input type="number" class="form-control my-2 debts" placeholder="Monthly Debts" required>
+<button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
+</div>
+{% endfor %}
+</div>
+
+<div class="alert alert-info mt-4 d-none" id="rent-result"></div>
+<table class="table table-bordered mt-4 d-none" id="rent-table">
+<thead><tr><th>Metric</th><th>Value</th></tr></thead>
+<tbody id="rent-body"></tbody>
+</table>
+<canvas id="rent-chart" class="d-none"></canvas>
+
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.querySelectorAll('.rent-form').forEach(function(form){
+form.addEventListener('submit', function(e){
+e.preventDefault();
+const period = form.dataset.period;
+const income = parseFloat(form.querySelector('.income').value);
+const debts = parseFloat(form.querySelector('.debts').value);
+
+let multiplier = (period==='monthly')?1:(period==='annual')?1/12:1/30; // normalize to monthly
+
+const maxRent = (income - debts) * 0.30; // 30% rule
+
+const res = document.getElementById('rent-result');
+res.classList.remove('d-none');
+res.innerHTML = `<strong>Maximum Affordable Rent:</strong> $${maxRent.toFixed(2)}<br>
+${maxRent>0?'<span style="color:green;font-weight:bold;">✅ You can afford this rent</span>':'<span style="color:red;font-weight:bold;">❌ Too high</span>'}`;
+
+document.getElementById('rent-table').classList.remove('d-none');
+document.getElementById('rent-body').innerHTML = `
+<tr><td>Monthly Income</td><td>$${income.toFixed(2)}</td></tr>
+<tr><td>Monthly Debts</td><td>$${debts.toFixed(2)}</td></tr>
+<tr><td>Max Rent</td><td>$${maxRent.toFixed(2)}</td></tr>
+`;
+
+const ctx = document.getElementById('rent-chart').getContext('2d');
+document.getElementById('rent-chart').classList.remove('d-none');
+if(window.rentChart) rentChart.destroy();
+window.rentChart = new Chart(ctx,{
+type:'pie',
+data:{
+labels:['Max Rent','Remaining Income'],
+datasets:[{data:[maxRent,income-maxRent]}]
+}
+});
+});
+});
+</script>
+{% endblock %}

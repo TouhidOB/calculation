@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Cost of Living Comparison Calculator{% endblock %}
+{% block meta_description %}Compare cost of living between two cities and the salary needed to maintain standard of living.{% endblock %}
+
+{% block extra_head %}
+<style>
+.calc-wrapper{background:#fff;padding:22px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.04)}
+.analysis{white-space:pre-wrap}
+.small-muted{font-size:.95rem;color:#6c757d}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1>Cost of Living Comparison Calculator</h1>
+  <p class="small-muted">Estimate how much salary you'd need in a new city to keep your current lifestyle.</p>
+
+  <div class="calc-wrapper mt-3">
+    <form id="col-form">
+      <div class="row">
+        <div class="col-md-4 mb-2"><label>Current City</label><input id="col-current-city" class="form-control" placeholder="City A"></div>
+        <div class="col-md-4 mb-2"><label>Target City</label><input id="col-target-city" class="form-control" placeholder="City B"></div>
+        <div class="col-md-4 mb-2"><label>Current Annual Salary ($)</label><input id="col-salary" type="number" class="form-control" step="0.01"></div>
+      </div>
+
+      <p class="small-muted mt-2">If you know approximate category differences, enter them. Use negative for cheaper (e.g., -10).</p>
+
+      <div class="row">
+        <div class="col-md-4 mb-2"><label>Housing difference (%)</label><input id="col-housing" type="number" class="form-control" placeholder="e.g., 20"></div>
+        <div class="col-md-4 mb-2"><label>Food difference (%)</label><input id="col-food" type="number" class="form-control" placeholder="e.g., 5"></div>
+        <div class="col-md-4 mb-2"><label>Transport difference (%)</label><input id="col-transport" type="number" class="form-control" placeholder="e.g., -3"></div>
+      </div>
+
+      <div class="mt-2">
+        <button class="btn btn-primary" type="submit">Compare</button>
+        <button id="col-reset" type="button" class="btn btn-secondary">Reset</button>
+      </div>
+    </form>
+
+    <div id="col-result" class="mt-4 d-none">
+      <h5>Result</h5>
+      <div><strong>Estimated Salary Needed in Target City:</strong> $<span id="col-needed">0.00</span></div>
+      <div><strong>Overall Cost Change:</strong> <span id="col-pct">0.00</span>%</div>
+
+      <h6 class="mt-3">Deep Analysis</h6>
+      <div id="col-analysis" class="analysis alert alert-light"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('col-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const salary = parseFloat(document.getElementById('col-salary').value) || 0;
+  const housing = parseFloat(document.getElementById('col-housing').value) || 0;
+  const food = parseFloat(document.getElementById('col-food').value) || 0;
+  const transport = parseFloat(document.getElementById('col-transport').value) || 0;
+
+  // Weighted categories (simple model): housing 50%, food 25%, transport 15%, others 10%
+  const weights = {housing:0.5, food:0.25, transport:0.15, others:0.10};
+  const overallPct = housing*weights.housing + food*weights.food + transport*weights.transport;
+  const multiplier = 1 + overallPct / 100;
+  const needed = salary * multiplier;
+
+  document.getElementById('col-needed').textContent = needed.toFixed(2);
+  document.getElementById('col-pct').textContent = overallPct.toFixed(2);
+  document.getElementById('col-result').classList.remove('d-none');
+
+  // Deep analysis
+  let msg = `Estimated cost shift: ${overallPct.toFixed(2)}%.\n`;
+  if(overallPct > 10) msg += "- Target city is significantly more expensive. Consider negotiating higher pay or prepare to cut discretionary spending.\n";
+  else if(overallPct < -10) msg += "- Target city is notably cheaper. You may enjoy higher disposable income or savings.\n";
+  else msg += "- Costs are broadly comparable. Minor budget adjustments should be sufficient.\n";
+
+  msg += `\nPractical tips:\n- Focus on housing since it often drives the biggest change.\n- If accepted job offer is lower than $${needed.toFixed(2)}, compute exact budget categories to identify gaps.\n- Use local cost-of-living databases for precise rents & groceries before moving.`;
+
+  document.getElementById('col-analysis').textContent = msg;
+});
+
+document.getElementById('col-reset').addEventListener('click', function(){
+  ['col-current-city','col-target-city','col-salary','col-housing','col-food','col-transport'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('col-result').classList.add('d-none');
+});
+</script>
+{% endblock %}

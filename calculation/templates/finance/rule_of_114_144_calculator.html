@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Rule of 114/144 Calculator{% endblock %}
+{% block meta_description %}Estimate how long it will take to triple or quadruple your investment{% endblock %}
+{% block meta_keywords %}rule of 114, rule of 144, investment calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+.calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
+.section-title{font-weight:bold;margin-top:20px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<h1 class="mb-3">Rule of 114 / 144 Calculator</h1>
+<div class="calc-wrapper mt-4">
+<form id="rule114-form">
+<h5 class="section-title">Investment Details</h5>
+<input type="number" class="form-control my-2" id="annual-return" placeholder="Expected Annual Return (%)" required>
+<button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
+<div class="alert alert-info mt-4 d-none" id="rule114-result"></div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('rule114-form').addEventListener('submit', function(e){
+e.preventDefault();
+let rate = parseFloat(document.getElementById('annual-return').value);
+let tripleYears = 114 / rate;
+let quadrupleYears = 144 / rate;
+
+const res = document.getElementById('rule114-result');
+res.classList.remove('d-none');
+res.innerHTML = `<strong>Years to Triple Investment:</strong> ${tripleYears.toFixed(1)} years<br>
+<strong>Years to Quadruple Investment:</strong> ${quadrupleYears.toFixed(1)} years<br>
+<span style="color:green;font-weight:bold;">✅ Useful for long-term planning</span>`;
+});
+</script>
+{% endblock %}

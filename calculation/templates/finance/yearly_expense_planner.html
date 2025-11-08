@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Yearly Expense Planner{% endblock %}
+{% block meta_description %}Plan and track your total yearly expenses to understand budget distribution and improve savings.{% endblock %}
+{% block meta_keywords %}yearly expense planner, yearly budget calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper { background: white; padding:25px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.05); }
+    .section-title { font-weight:bold; margin-top:20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Yearly Expense Planner</h1>
+    <p>This calculator helps you estimate your total yearly expenses and understand where your money goes.</p>
+
+    <div class="calc-wrapper">
+        <form id="expense-planner-form">
+            <h5 class="section-title">Monthly Expenses</h5>
+            <input type="number" class="form-control my-2" id="housing" placeholder="Housing / Rent / Mortgage">
+            <input type="number" class="form-control my-2" id="food" placeholder="Food & Groceries">
+            <input type="number" class="form-control my-2" id="transport" placeholder="Transportation">
+            <input type="number" class="form-control my-2" id="utilities" placeholder="Utilities">
+            <input type="number" class="form-control my-2" id="health" placeholder="Medical / Insurance">
+            <input type="number" class="form-control my-2" id="entertainment" placeholder="Entertainment & Others">
+            <button class="btn btn-primary mt-3" type="submit">Calculate Yearly Expenses</button>
+        </form>
+
+        <div id="result" class="alert alert-info mt-4 d-none"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById("expense-planner-form").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const totalMonthly = ["housing","food","transport","utilities","health","entertainment"]
+        .map(id => parseFloat(document.getElementById(id).value) || 0)
+        .reduce((a,b)=>a+b,0);
+
+    const yearly = totalMonthly * 12;
+
+    const result = document.getElementById("result");
+    result.classList.remove("d-none");
+    result.innerHTML = `
+        <strong>Total Monthly Expenses:</strong> $${totalMonthly.toFixed(2)}<br>
+        <strong>Total Yearly Expenses:</strong> $${yearly.toFixed(2)}<br><br>
+        <strong>Analysis:</strong><br>
+        ${yearly > 20000 
+            ? "Your yearly expenses are high. Review areas where cost reductions are possible."
+            : "Your expense level appears reasonable. Continue monitoring to maintain savings."}
+    `;
+});
+</script>
+{% endblock %}

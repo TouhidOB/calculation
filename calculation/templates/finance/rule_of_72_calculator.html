@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Rule of 72 Calculator{% endblock %}
+{% block meta_description %}Estimate how long it will take to double your investment using the Rule of 72{% endblock %}
+{% block meta_keywords %}rule of 72, doubling time, investment calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+.calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
+.section-title{font-weight:bold;margin-top:20px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<h1 class="mb-3">Rule of 72 Calculator</h1>
+<div class="calc-wrapper mt-4">
+<form id="rule72-form">
+<h5 class="section-title">Investment Details</h5>
+<input type="number" class="form-control my-2" id="annual-return" placeholder="Expected Annual Return (%)" required>
+<button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
+<div class="alert alert-info mt-4 d-none" id="rule72-result"></div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('rule72-form').addEventListener('submit', function(e){
+e.preventDefault();
+let rate = parseFloat(document.getElementById('annual-return').value);
+let years = 72 / rate;
+
+const res = document.getElementById('rule72-result');
+res.classList.remove('d-none');
+res.innerHTML = `<strong>Approximate Years to Double Investment:</strong> ${years.toFixed(1)} years<br>
+<span style="color:green;font-weight:bold;">✅ Use this to plan long-term growth</span>`;
+});
+</script>
+{% endblock %}

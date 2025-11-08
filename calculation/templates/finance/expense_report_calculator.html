@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Expense Report Calculator{% endblock %}
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Expense Report Calculator</h1>
+
+    <div class="calc-wrapper mt-4">
+        <form id="expense-report-form">
+
+            <h5 class="section-title">💰 Monthly Income</h5>
+            <input type="number" class="form-control my-2" id="income" placeholder="Total Monthly Income" required>
+
+            <h5 class="section-title">📊 Expense Categories</h5>
+            <input type="number" class="form-control my-2" id="housing" placeholder="Housing / Rent / Mortgage">
+            <input type="number" class="form-control my-2" id="food" placeholder="Food & Groceries">
+            <input type="number" class="form-control my-2" id="transport" placeholder="Transportation">
+            <input type="number" class="form-control my-2" id="health" placeholder="Health / Medical">
+            <input type="number" class="form-control my-2" id="subscriptions" placeholder="Subscriptions (Netflix, etc)">
+            <input type="number" class="form-control my-2" id="others" placeholder="Other Expenses">
+
+            <button class="btn btn-primary mt-3" type="submit">Generate Expense Report</button>
+        </form>
+
+        <div id="result" class="alert alert-info mt-4 d-none"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById("expense-report-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const income = +document.getElementById("income").value || 0;
+    const housing = +document.getElementById("housing").value || 0;
+    const food = +document.getElementById("food").value || 0;
+    const transport = +document.getElementById("transport").value || 0;
+    const health = +document.getElementById("health").value || 0;
+    const subscriptions = +document.getElementById("subscriptions").value || 0;
+    const others = +document.getElementById("others").value || 0;
+
+    const expenses = housing + food + transport + health + subscriptions + others;
+    const savings = income - expenses;
+
+    const percentSpent = ((expenses / income) * 100).toFixed(1);
+    
+    const result = `
+        <strong>Total Monthly Income:</strong> $${income.toFixed(2)} <br>
+        <strong>Total Monthly Expenses:</strong> $${expenses.toFixed(2)} <br>
+        <strong>Savings:</strong> $${savings.toFixed(2)} <br><br>
+        <h5>📉 Spending Breakdown</h5>
+        Housing: ${(housing / income * 100).toFixed(1)}%<br>
+        Food: ${(food / income * 100).toFixed(1)}%<br>
+        Transport: ${(transport / income * 100).toFixed(1)}%<br>
+        Health: ${(health / income * 100).toFixed(1)}%<br>
+        Subscriptions: ${(subscriptions / income * 100).toFixed(1)}%<br>
+        Others: ${(others / income * 100).toFixed(1)}%<br><br>
+        <strong>Overall Spending Rate:</strong> ${percentSpent}% of your income.<br><br>
+        ${percentSpent > 80 
+            ? "<span style='color:red;font-weight:bold;'>⚠️ Warning: Your spending is too high. Reduce optional categories.</span>"
+            : percentSpent > 60 
+                ? "<span style='color:orange;font-weight:bold;'>⚠️ Try to reduce variable expenses.</span>"
+                : "<span style='color:green;font-weight:bold;'>✅ Healthy spending pattern.</span>"
+        }
+    `;
+
+    const box = document.getElementById("result");
+    box.classList.remove("d-none");
+    box.innerHTML = result;
+});
+</script>
+{% endblock %}

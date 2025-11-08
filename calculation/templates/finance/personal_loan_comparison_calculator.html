@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Personal Loan Comparison Calculator{% endblock %}
+{% block meta_description %}Compare up to multiple loan offers by monthly payment, total interest and APR (universal — enter rates and fees).{% endblock %}
+
+{% block extra_head %}
+<style>
+.calc-wrapper{background:#fff;padding:22px;border-radius:10px}
+.loan-row{display:flex;gap:.5rem;margin-bottom:.5rem}
+.analysis{white-space:pre-wrap}
+.canvas-holder{max-width:700px}
+.small-muted{font-size:.95rem;color:#6c757d}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1>Personal Loan Comparison</h1>
+  <p class="small-muted">Add loan offers (principal, annual interest, term, fees) to compare monthly payments and total cost.</p>
+
+  <div class="calc-wrapper mt-3">
+    <form id="loan-form">
+      <div id="loan-list">
+        <div class="loan-row">
+          <input class="form-control loan-name" placeholder="Lender name">
+          <input class="form-control loan-amount" type="number" placeholder="Loan amount ($)" min="0" step="0.01">
+          <input class="form-control loan-rate" type="number" placeholder="Annual rate (%)" min="0" step="0.01">
+          <input class="form-control loan-term" type="number" placeholder="Term (years)" min="0" step="1">
+          <input class="form-control loan-fees" type="number" placeholder="Upfront fees ($)" min="0" step="0.01">
+          <button class="btn btn-outline-danger btn-sm remove-loan" type="button">−</button>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <button id="loan-add" type="button" class="btn btn-sm btn-outline-primary">+ Add Offer</button>
+        <button class="btn btn-primary" type="submit">Compare Loans</button>
+        <button id="loan-reset" type="button" class="btn btn-secondary">Reset</button>
+      </div>
+    </form>
+
+    <div id="loan-result" class="mt-4 d-none">
+      <h5>Result</h5>
+      <div id="loan-summary"></div>
+      <div class="mt-3 canvas-holder"><canvas id="loan-chart"></canvas></div>
+
+      <h6 class="mt-3">Deep Analysis</h6>
+      <div id="loan-analysis" class="analysis alert alert-light"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Helper: monthly payment formula
+function monthlyPayment(principal, annualRate, years){
+  const r = annualRate/100/12;
+  const n = years*12;
+  if(r === 0) return principal / n;
+  return (principal * r) / (1 - Math.pow(1+r, -n));
+}
+
+function makeLoanRow(){
+  const d=document.createElement('div'); d.className='loan-row';
+  d.innerHTML = `
+    <input class="form-control loan-name" placeholder="Lender name">
+    <input class="form-control loan-amount" type="number" placeholder="Loan amount ($)" min="0" step="0.01">
+    <input class="form-control loan-rate" type="number" placeholder="Annual rate (%)" min="0" step="0.01">
+    <input class="form-control loan-term" type="number" placeholder="Term (years)" min="0" step="1">
+    <input class="form-control loan-fees" type="number" placeholder="Upfront fees ($)" min="0" step="0.01">
+    <button class="btn btn-outline-danger btn-sm remove-loan" type="button">−</button>
+  `;
+  return d;
+}
+document.getElementById('loan-add').addEventListener('click', ()=>document.getElementById('loan-list').appendChild(makeLoanRow()));
+document.addEventListener('click', e=>{ if(e.target.classList.contains('remove-loan')) e.target.parentElement.remove(); });
+
+let loanChart=null;
+document.getElementById('loan-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const offers = Array.from(document.querySelectorAll('.loan-name')).map((el,i)=>({
+    name: el.value || `Offer ${i+1}`,
+    principal: parseFloat(document.querySelectorAll('.loan-amount')[i].value) || 0,
+    rate: parseFloat(document.querySelectorAll('.loan-rate')[i].value) || 0,
+    term: parseFloat(document.querySelectorAll('.loan-term')[i].value) || 0,
+    fees: parseFloat(document.querySelectorAll('.loan-fees')[i].value) || 0
+  })).filter(o=>o.principal>0 && o.term>0);
+
+  if(offers.length === 0){ alert('Add at least one valid loan offer (principal & term).'); return; }
+
+  const comparisons = offers.map(o=>{
+    const monthly = monthlyPayment(o.principal, o.rate, o.term);
+    const totalPaid = monthly * o.term * 12 + o.fees;
+    const totalInterest = totalPaid - o.principal - o.fees;
+    return {...o, monthly, totalPaid, totalInterest};
+  });
+
+  // Prepare summary
+  const summaryDiv = document.getElementById('loan-summary'); summaryDiv.innerHTML='';
+  comparisons.forEach(c=>{
+    const div=document.createElement('div');
+    div.innerHTML = `<strong>${c.name}:</strong> Monthly $${c.monthly.toFixed(2)} | Total paid $${c.totalPaid.toFixed(2)} | Interest $${c.totalInterest.toFixed(2)} | Fees $${c.fees.toFixed(2)}`;
+    summaryDiv.appendChild(div);
+  });
+
+  // Chart: totalPaid comparison
+  const ctx = document.getElementById('loan-chart').getContext('2d');
+  if(loanChart) loanChart.destroy();
+  loanChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: comparisons.map(c=>c.name), datasets:[{ label:'Total Paid ($)', data: comparisons.map(c=>c.totalPaid) }, { label:'Principal ($)', data: comparisons.map(c=>c.principal) }] },
+    options:{scales:{y:{beginAtZero:true}}}
+  });
+
+  document.getElementById('loan-result').classList.remove('d-none');
+
+  // Deep analysis
+  let analysis = `Comparison summary for ${comparisons.length} offers:\n\n`;
+  // find best by totalPaid
+  const bestTotal = comparisons.reduce((a,b)=> a.totalPaid<b.totalPaid?a:b);
+  const bestMonthly = comparisons.reduce((a,b)=> a.monthly<b.monthly?a:b);
+  analysis += `- Lowest total cost: ${bestTotal.name} (Total $${bestTotal.totalPaid.toFixed(2)})\n`;
+  analysis += `- Lowest monthly payment: ${bestMonthly.name} ($${bestMonthly.monthly.toFixed(2)} / month)\n\n`;
+  analysis += `Advice:\n- If you prioritize cashflow choose lower monthly payment even if total cost is higher.\n- If minimizing cost, pick the lowest total paid (watch for higher fees).\n- Consider prepayment penalties and flexibility (payoff options) which are not in this simple model.\n- Use APR from lender for more precise comparison if available (includes fees amortized).`;
+
+  document.getElementById('loan-analysis').textContent = analysis;
+});
+
+// init
+document.getElementById('loan-list').innerHTML=''; document.getElementById('loan-list').appendChild(makeLoanRow());
+document.getElementById('loan-reset').addEventListener('click', function(){
+  document.getElementById('loan-list').innerHTML=''; document.getElementById('loan-list').appendChild(makeLoanRow());
+  document.getElementById('loan-result').classList.add('d-none');
+});
+</script>
+{% endblock %}

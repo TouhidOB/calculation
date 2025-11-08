@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}No-Spend Challenge Savings Calculator{% endblock %}
+
+{% block meta_description %}Calculate potential savings during a no-spend challenge{% endblock %}
+
+{% block meta_keywords %}no-spend challenge, savings, budgeting{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">No-Spend Challenge Savings Calculator</h1>
+    <div class="calc-wrapper mt-4">
+
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#nospend-monthly">Monthly</a>
+            </li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#nospend-annual">Annual</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#nospend-daily">Daily</a></li>
+        </ul>
+
+        <div class="tab-content mt-3">
+            {% for period in ["monthly","annual","daily"] %}
+            <div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="nospend-{{period}}">
+                <form class="nospend-form" data-period="{{period}}">
+                    <h5 class="section-title">Expenses</h5>
+                    <input type="number" class="form-control my-2 monthly-spend" placeholder="Typical Monthly Spend"
+                        required>
+                    <input type="number" class="form-control my-2 challenge-days"
+                        placeholder="Days of No-Spend Challenge" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="alert alert-info mt-4 d-none" id="nospend-result"></div>
+        <table class="table table-bordered mt-4 d-none" id="nospend-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="nospend-body"></tbody>
+        </table>
+        <canvas id="nospend-chart" class="d-none"></canvas>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.querySelectorAll('.nospend-form').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const period = form.dataset.period;
+            let spend = parseFloat(form.querySelector('.monthly-spend').value);
+            let days = parseInt(form.querySelector('.challenge-days').value);
+            let multiplier = (period === 'monthly') ? 1 : (period === 'annual' ? 1 / 12 : 1 / 30);
+
+            let dailySpend = spend / 30;
+            let saved = dailySpend * days * multiplier;
+
+            const res = document.getElementById('nospend-result');
+            res.classList.remove('d-none');
+            res.innerHTML = `<strong>Potential Savings:</strong> $${saved.toFixed(2)}<br>
+${saved > 0 ? '<span style="color:green;font-weight:bold;">✅ Great job!</span>' : '<span style="color:red;font-weight:bold;">❌ No savings</span>'}`;
+
+            document.getElementById('nospend-table').classList.remove('d-none');
+            document.getElementById('nospend-body').innerHTML = `
+<tr><td>Typical Monthly Spend</td><td>$${spend.toFixed(2)}</td></tr>
+<tr><td>Days No-Spend</td><td>${days}</td></tr>
+<tr><td>Saved Amount</td><td>$${saved.toFixed(2)}</td></tr>
+`;
+
+            const ctx = document.getElementById('nospend-chart').getContext('2d');
+            document.getElementById('nospend-chart').classList.remove('d-none');
+            if (window.nospendChart) nospendChart.destroy();
+            window.nospendChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Saved', 'Spent'],
+                    datasets: [{ data: [saved, spend - saved] }]
+                }
+            });
+        });
+</script>
+
+{% endblock %}

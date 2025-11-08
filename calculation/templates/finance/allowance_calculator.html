@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Allowance Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+<h1>Allowance Calculator</h1>
+<p>Determine a fair weekly or monthly allowance amount based on age and responsibility.</p>
+
+<div class="calc-wrapper">
+<form id="allowance-form">
+    <input type="number" class="form-control my-2" id="age" placeholder="Child's Age" required>
+    <input type="number" class="form-control my-2" id="responsibility" placeholder="Responsibility Level (1-5)" required>
+    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
+
+<div id="result" class="alert alert-info mt-4 d-none"></div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById("allowance-form").addEventListener("submit", function(e){
+e.preventDefault();
+const age = parseFloat(document.getElementById("age").value);
+const responsibility = parseFloat(document.getElementById("responsibility").value);
+const allowance = (age * 1.5) * (responsibility / 3);
+document.getElementById("result").classList.remove("d-none");
+document.getElementById("result").innerHTML = `<strong>Recommended Allowance:</strong> $${allowance.toFixed(2)} / week`;
+});
+</script>
+{% endblock %}

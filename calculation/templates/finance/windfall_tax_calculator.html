@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Windfall Tax Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Windfall (Lottery / Inheritance) Tax Calculator</h1>
+
+    <div class="calc-wrapper mt-4">
+        <form id="windfall-form">
+
+            <h5 class="section-title">🎉 Windfall Amount</h5>
+            <input type="number" class="form-control my-2" id="amount" placeholder="Total Amount Received" required>
+
+            <h5 class="section-title">🏛 Local Tax / Withholding</h5>
+            <input type="number" class="form-control my-2" id="taxRate" placeholder="Tax Rate (%) — Enter local value" value="0">
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate After-Tax Amount</button>
+        </form>
+
+        <div id="result" class="alert alert-info mt-4 d-none"></div>
+        <canvas id="chart" class="mt-4 d-none"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.getElementById("windfall-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const amount = +document.getElementById("amount").value || 0;
+    const taxRate = +document.getElementById("taxRate").value || 0;
+
+    const taxAmount = amount * (taxRate / 100);
+    const finalAmount = amount - taxAmount;
+
+    let analysis = "";
+    if (taxRate === 0) analysis = "Your location appears to have no windfall tax. Confirm with local tax rules.";
+    else analysis = `You lose ${taxRate}% of the windfall due to taxation. Consider allocating part to debt payoff or emergency funds.`;
+
+    const resultText = `
+        <strong>Gross Amount:</strong> $${amount.toFixed(2)}<br>
+        <strong>Tax Amount (${taxRate}%):</strong> $${taxAmount.toFixed(2)}<br>
+        <strong>Net Amount You Keep:</strong> $${finalAmount.toFixed(2)}<br><br>
+        <h5>📘 Analysis</h5>
+        ${analysis}
+    `;
+
+    const box = document.getElementById("result");
+    box.classList.remove("d-none");
+    box.innerHTML = resultText;
+
+    document.getElementById("chart").classList.remove("d-none");
+    new Chart(document.getElementById("chart"), {
+        type: 'pie',
+        data: {
+            labels: ["Net Amount", "Tax Paid"],
+            datasets: [{ data: [finalAmount, taxAmount] }]
+        },
+        options: { responsive: true }
+    });
+});
+</script>
+{% endblock %}

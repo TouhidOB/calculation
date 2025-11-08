@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}S&P 500 Historical Return Simulator{% endblock %}
+{% block meta_description %}Simulate historical returns of the S&P 500 index for investment planning{% endblock %}
+{% block meta_keywords %}S&P 500, investment, historical return{% endblock %}
+{% block extra_head %}
+<style>
+.calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
+.section-title{font-weight:bold;margin-top:20px;}canvas{margin-top:20px;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+<h1 class="mb-3">S&P 500 Historical Return Simulator</h1>
+<div class="calc-wrapper mt-4">
+<form id="sp500-form">
+<h5 class="section-title">Investment Details</h5>
+<input type="number" class="form-control my-2" id="initial-investment" placeholder="Initial Investment ($)" required>
+<input type="number" class="form-control my-2" id="years" placeholder="Investment Years" required>
+<input type="number" class="form-control my-2" id="annual-return" placeholder="Expected Annual Return (%)" required>
+<button class="btn btn-primary mt-3" type="submit">Simulate</button>
+</form>
+<div class="alert alert-info mt-4 d-none" id="sp500-result"></div>
+<canvas id="sp500-chart" class="d-none"></canvas>
+</div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.getElementById('sp500-form').addEventListener('submit', function(e){
+e.preventDefault();
+let principal = parseFloat(document.getElementById('initial-investment').value);
+let years = parseInt(document.getElementById('years').value);
+let rate = parseFloat(document.getElementById('annual-return').value)/100;
+
+let balances = [principal];
+for(let i=1;i<=years;i++){
+principal = principal*(1+rate);
+balances.push(principal);
+}
+
+const res = document.getElementById('sp500-result');
+res.classList.remove('d-none');
+res.innerHTML = `<strong>End Value After ${years} Years:</strong> $${balances[balances.length-1].toFixed(2)}`;
+
+const ctx = document.getElementById('sp500-chart').getContext('2d');
+document.getElementById('sp500-chart').classList.remove('d-none');
+if(window.sp500Chart) sp500Chart.destroy();
+window.sp500Chart = new Chart(ctx,{
+type:'line',
+data:{
+labels:Array.from({length:years+1}, (_,i)=>i),
+datasets:[{label:'Portfolio Value ($)', data:balances, borderColor:'#4e73df', fill:false}]
+}
+});
+});
+</script>
+{% endblock %}

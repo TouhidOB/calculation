@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Holiday Budget Calculator{% endblock %}
+{% block meta_description %}Plan a holiday budget with dynamic cost items and deep analysis.{% endblock %}
+
+{% block extra_head %}
+<style>
+.calc-wrapper{background:#fff;padding:22px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.04)}
+.item-row{display:flex;gap:.5rem;margin-bottom:.5rem}
+.analysis{white-space:pre-wrap}
+.canvas-holder{max-width:700px}
+.small-muted{font-size:.95rem;color:#6c757d}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1>Holiday Budget Planner</h1>
+  <p class="small-muted">Add travel costs, accommodation, food, activities — build a full holiday budget.</p>
+
+  <div class="calc-wrapper mt-3">
+    <form id="holiday-form">
+      <div class="mb-2">
+        <label>Trip Name / Destination</label>
+        <input id="hol-name" class="form-control" placeholder="e.g., Bali getaway">
+      </div>
+
+      <div id="holiday-items">
+        <div class="item-row">
+          <input class="form-control item-name" placeholder="Item (Flight / Hotel / Food)">
+          <input class="form-control item-amount" type="number" placeholder="Amount ($)" min="0" step="0.01">
+          <button class="btn btn-outline-danger btn-sm remove-item" type="button">−</button>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <button id="hol-add" type="button" class="btn btn-sm btn-outline-primary">+ Add Item</button>
+        <button class="btn btn-primary" type="submit">Calculate Holiday Budget</button>
+        <button id="hol-reset" type="button" class="btn btn-secondary">Reset</button>
+      </div>
+    </form>
+
+    <div id="hol-result" class="mt-4 d-none">
+      <h5>Result</h5>
+      <div><strong>Total Estimated Cost:</strong> $<span id="hol-total">0.00</span></div>
+      <div class="mt-3 canvas-holder"><canvas id="hol-chart"></canvas></div>
+
+      <h6 class="mt-3">Deep Analysis</h6>
+      <div id="hol-analysis" class="analysis alert alert-light"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function makeItemRow(){
+  const d=document.createElement('div'); d.className='item-row';
+  d.innerHTML = `
+    <input class="form-control item-name" placeholder="Item (Flight / Hotel / Food)">
+    <input class="form-control item-amount" type="number" placeholder="Amount ($)" min="0" step="0.01">
+    <button class="btn btn-outline-danger btn-sm remove-item" type="button">−</button>
+  `;
+  return d;
+}
+document.getElementById('hol-add').addEventListener('click', ()=>document.getElementById('holiday-items').appendChild(makeItemRow()));
+document.addEventListener('click', e=>{ if(e.target.classList.contains('remove-item')) e.target.parentElement.remove(); });
+
+let holChart=null;
+document.getElementById('holiday-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const items = Array.from(document.querySelectorAll('.item-name')).map((el,i)=>({
+    name: el.value || `Item ${i+1}`,
+    amount: parseFloat(document.querySelectorAll('.item-amount')[i].value) || 0
+  })).filter(it=>it.amount>0);
+
+  const total = items.reduce((s,i)=>s+i.amount,0);
+  document.getElementById('hol-total').textContent = total.toFixed(2);
+  document.getElementById('hol-result').classList.remove('d-none');
+
+  // Chart
+  const ctx = document.getElementById('hol-chart').getContext('2d');
+  if(holChart) holChart.destroy();
+  holChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: items.map(i=>i.name),
+      datasets: [{ data: items.map(i=>i.amount) }]
+    }
+  });
+
+  // Deep analysis
+  let analysis = `Trip: ${document.getElementById('hol-name').value || 'Unnamed trip'}\nTotal estimated cost: $${total.toFixed(2)}.\n\nCategory highlights:\n`;
+  items.sort((a,b)=>b.amount-a.amount).slice(0,5).forEach(it=> analysis += `- ${it.name}: $${it.amount.toFixed(2)} (${(it.amount/total*100).toFixed(1)}%)\n`);
+  analysis += `\nRecommendations:\n- Review top 2 cost items for savings (flexible dates, cheaper lodging, bundle flights).\n- Build a simple savings schedule: e.g., if trip is in 6 months, save $${(total/6).toFixed(2)} per month.\n- Add a 10–15% buffer for unexpected costs.`;
+  document.getElementById('hol-analysis').textContent = analysis;
+});
+
+// init
+document.getElementById('holiday-items').innerHTML=''; document.getElementById('holiday-items').appendChild(makeItemRow());
+
+document.getElementById('hol-reset').addEventListener('click', function(){
+  document.getElementById('hol-name').value=''; document.getElementById('holiday-items').innerHTML=''; document.getElementById('holiday-items').appendChild(makeItemRow());
+  document.getElementById('hol-result').classList.add('d-none');
+});
+</script>
+{% endblock %}

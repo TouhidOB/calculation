@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}"Latte Factor" Savings Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+<h1>"Latte Factor" Savings Calculator</h1>
+<p>See how reducing small daily expenses can grow your savings long-term.</p>
+
+<div class="calc-wrapper">
+<form id="latte-form">
+    <input type="number" class="form-control my-2" id="dailyCost" placeholder="Daily Expense (Coffee, Snacks, etc.)" required>
+    <input type="number" class="form-control my-2" id="days" placeholder="Days per Month (e.g., 30)" required>
+    <input type="number" class="form-control my-2" id="months" placeholder="Months to Track (e.g., 12)" required>
+    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
+
+<div id="result" class="alert alert-info mt-4 d-none"></div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById("latte-form").addEventListener("submit", function(e){
+e.preventDefault();
+const daily = parseFloat(document.getElementById("dailyCost").value);
+const days = parseFloat(document.getElementById("days").value);
+const months = parseFloat(document.getElementById("months").value);
+
+const monthly = daily * days;
+const total = monthly * months;
+
+document.getElementById("result").classList.remove("d-none");
+document.getElementById("result").innerHTML = `
+<strong>Total Spent:</strong> $${total.toFixed(2)}<br><br>
+<strong>Analysis:</strong><br>
+Saving this amount monthly could build a strong emergency fund or investment growth.
+`;
+});
+</script>
+{% endblock %}

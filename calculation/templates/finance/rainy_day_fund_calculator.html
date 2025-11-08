@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Rainy Day Fund Calculator{% endblock %}
+{% block meta_description %}Calculate a short-term Rainy Day Fund tailored to your income & volatility.{% endblock %}
+
+{% block extra_head %}
+<style>
+.calc-wrapper{background:#fff;padding:22px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.04)}
+.analysis{white-space:pre-wrap}
+.canvas-holder{max-width:600px}
+.small-muted{font-size:.95rem;color:#6c757d}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1>Rainy Day Fund Calculator</h1>
+  <p class="small-muted">A Rainy Day Fund is a smaller, short-term emergency buffer (1–3 months) for minor disruptions.</p>
+
+  <div class="calc-wrapper mt-3">
+    <form id="rdf-form">
+      <div class="row">
+        <div class="col-md-4 mb-2"><label>Monthly Essential Expenses ($)</label><input id="rdf-monthly" type="number" class="form-control" step="0.01" required></div>
+        <div class="col-md-4 mb-2"><label>Income Stability (1-5)</label>
+          <select id="rdf-stability" class="form-control"><option value="1">1 — Very Stable</option><option value="2">2</option><option value="3" selected>3 — Moderate</option><option value="4">4</option><option value="5">5 — Unstable</option></select></div>
+        <div class="col-md-4 mb-2"><label>Desired Coverage (months)</label><input id="rdf-months" type="number" class="form-control" value="1" min="1" max="3"></div>
+      </div>
+
+      <div class="mt-2">
+        <button class="btn btn-primary" type="submit">Calculate</button>
+        <button id="rdf-reset" type="button" class="btn btn-secondary">Reset</button>
+      </div>
+    </form>
+
+    <div id="rdf-result" class="mt-4 d-none">
+      <h5>Result</h5>
+      <div><strong>Target Rainy Day Fund:</strong> $<span id="rdf-target">0.00</span></div>
+      <div class="mt-3 canvas-holder"><canvas id="rdf-chart"></canvas></div>
+
+      <h6 class="mt-3">Deep Analysis</h6>
+      <div id="rdf-analysis" class="analysis alert alert-light"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.getElementById('rdf-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const monthly = parseFloat(document.getElementById('rdf-monthly').value) || 0;
+  const stability = parseInt(document.getElementById('rdf-stability').value) || 3;
+  let months = parseInt(document.getElementById('rdf-months').value) || 1;
+
+  // Adjust months based on stability: more unstable -> suggest higher months (1->1, 5->3)
+  const suggested = Math.min(3, Math.max(1, Math.round(1 + (stability - 1)*0.5)));
+  // If user picks lower than suggested, recommend suggested
+  const finalMonths = Math.max(months, suggested);
+
+  const target = monthly * finalMonths;
+  document.getElementById('rdf-target').textContent = target.toFixed(2);
+  document.getElementById('rdf-result').classList.remove('d-none');
+
+  // Chart: fund vs monthly expenses
+  const ctx = document.getElementById('rdf-chart').getContext('2d');
+  if(window.rdfChart) window.rdfChart.destroy();
+  window.rdfChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: ['Rainy Day Fund','Monthly Expenses (1 month)'], datasets:[{ data:[target, monthly] }] },
+    options: { plugins: { legend:{position:'bottom'} } }
+  });
+
+  // Deep analysis
+  let analysis = `Target: $${target.toFixed(2)} for ${finalMonths} month(s) of essential expenses.\n\n`;
+  analysis += `Interpretation:\n- Stability level: ${stability} (1=stable,5=unstable). We suggested ${suggested} month(s).\n`;
+  analysis += `Recommendations:\n- Build this fund first before longer-term emergency funds.\n- Automate weekly transfers equal to target/12 for faster build-up.\n- If your job or income is volatile (stability 4–5), prioritize reaching 2–3 months as soon as possible.\n`;
+  analysis += `\nPractical plan example:\n- If you save $${(target/12).toFixed(2)} per month, you'll reach it in 12 months.\n- If you save $${(target/6).toFixed(2)} monthly, you'll reach it in 6 months.`;
+
+  document.getElementById('rdf-analysis').textContent = analysis;
+});
+
+document.getElementById('rdf-reset').addEventListener('click', function(){
+  ['rdf-monthly','rdf-stability','rdf-months'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('rdf-result').classList.add('d-none');
+});
+</script>
+{% endblock %}

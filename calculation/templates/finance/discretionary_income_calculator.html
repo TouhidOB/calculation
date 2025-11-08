@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Discretionary Income Calculator{% endblock %}
+{% block meta_description %}Calculate money left for wants after taxes and essential needs.{% endblock %}
+
+{% block extra_head %}
+<style>.calc-wrapper{background:#fff;padding:22px;border-radius:10px}.analysis{white-space:pre-wrap}</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1>Discretionary Income Calculator</h1>
+  <p class="small-muted">Money available for wants after taxes and essentials (needs).</p>
+
+  <div class="calc-wrapper mt-3">
+    <form id="disc-form">
+      <div class="row">
+        <div class="col-md-4 mb-2"><label>Gross Monthly Income ($)</label><input id="disc-gross" type="number" class="form-control"></div>
+        <div class="col-md-4 mb-2"><label>Estimated Tax Rate (%)</label><input id="disc-tax" type="number" class="form-control" placeholder="e.g., 20"></div>
+        <div class="col-md-4 mb-2"><label>Monthly Essential Expenses ($)</label><input id="disc-needs" type="number" class="form-control" placeholder="Rent, utilities, groceries..."></div>
+      </div>
+
+      <div class="mt-2">
+        <button class="btn btn-primary" type="submit">Calculate</button>
+        <button id="disc-reset" type="button" class="btn btn-secondary">Reset</button>
+      </div>
+    </form>
+
+    <div id="disc-result" class="mt-4 d-none">
+      <h5>Result</h5>
+      <div><strong>Disposable Income:</strong> $<span id="disc-disposable">0.00</span></div>
+      <div><strong>Discretionary Income (for wants):</strong> $<span id="disc-discr">0.00</span></div>
+
+      <h6 class="mt-3">Deep Analysis</h6>
+      <div id="disc-analysis" class="analysis alert alert-light"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('disc-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const gross = parseFloat(document.getElementById('disc-gross').value) || 0;
+  const tax = parseFloat(document.getElementById('disc-tax').value)/100 || 0;
+  const needs = parseFloat(document.getElementById('disc-needs').value) || 0;
+
+  const disposable = gross * (1 - tax);
+  const discretionary = disposable - needs;
+
+  document.getElementById('disc-disposable').textContent = disposable.toFixed(2);
+  document.getElementById('disc-discr').textContent = discretionary.toFixed(2);
+  document.getElementById('disc-result').classList.remove('d-none');
+
+  let pct = gross === 0 ? 0 : (discretionary / disposable) * 100;
+  let analysis = `After taxes, you have $${disposable.toFixed(2)} disposable monthly. After essentials of $${needs.toFixed(2)}, discretionary = $${discretionary.toFixed(2)} (${pct.toFixed(1)}% of disposable).\n\nRecommendations:\n- If discretionary < 20% consider reducing non-essential spend or boosting income.\n- Automate savings from discretionary to avoid impulse spending.`;
+
+  document.getElementById('disc-analysis').textContent = analysis;
+});
+
+document.getElementById('disc-reset').addEventListener('click', function(){
+  ['disc-gross','disc-tax','disc-needs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('disc-result').classList.add('d-none');
+});
+</script>
+{% endblock %}

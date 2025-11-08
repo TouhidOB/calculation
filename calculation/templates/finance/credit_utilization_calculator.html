@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Credit Utilization Calculator{% endblock %}
+{% block meta_description %}Calculate your credit utilization ratio to understand your credit score health.{% endblock %}
+{% block meta_keywords %}credit utilization calculator, credit score, credit card usage{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    canvas { margin-top: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Credit Utilization Calculator</h1>
+
+    <p style="font-size:1.1rem;">Credit utilization is a major factor in your credit score. 
+    Keeping it below <strong>30%</strong> is usually recommended for good financial health.</p>
+
+    <div class="calc-wrapper mt-4">
+        <form id="credit-utilization-form">
+
+            <h5 class="section-title">💳 Total Credit Limit</h5>
+            <input type="number" class="form-control my-2" id="credit-limit" placeholder="Total Credit Limit" required>
+
+            <h5 class="section-title">💰 Current Credit Used</h5>
+            <input type="number" class="form-control my-2" id="credit-used" placeholder="Total Credit Balance Used" required>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+        </form>
+
+        <div id="result" class="alert alert-info mt-4 d-none"></div>
+
+        <table class="table table-bordered mt-4 d-none" id="result-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="result-body"></tbody>
+        </table>
+
+        <canvas id="utilizationChart" class="d-none"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.getElementById("credit-utilization-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const limit = parseFloat(document.getElementById("credit-limit").value) || 0;
+    const used = parseFloat(document.getElementById("credit-used").value) || 0;
+    const utilization = (used / limit) * 100;
+
+    const resultBox = document.getElementById("result");
+    resultBox.classList.remove("d-none");
+    resultBox.innerHTML = `
+        <strong>Your Credit Utilization:</strong> ${utilization.toFixed(2)}%<br><br>
+        ${
+            utilization < 30
+            ? "<span style='color:green;font-weight:bold;'>✅ Great! This is a healthy credit usage level.</span>"
+            : utilization < 50
+            ? "<span style='color:orange;font-weight:bold;'>⚠️ Moderate. Try lowering usage for a better credit score.</span>"
+            : "<span style='color:red;font-weight:bold;'>❌ High Utilization! Reduce balances to improve your credit score.</span>"
+        }
+    `;
+
+    // Fill table
+    document.getElementById("result-table").classList.remove("d-none");
+    document.getElementById("result-body").innerHTML = `
+        <tr><td>Total Credit Limit</td><td>$${limit.toFixed(2)}</td></tr>
+        <tr><td>Credit Used</td><td>$${used.toFixed(2)}</td></tr>
+        <tr><td>Credit Utilization</td><td>${utilization.toFixed(2)}%</td></tr>
+    `;
+
+    // Chart
+    const ctx = document.getElementById('utilizationChart').getContext('2d');
+    document.getElementById("utilizationChart").classList.remove("d-none");
+    if(window.utilChart) window.utilChart.destroy();
+
+    window.utilChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Used Credit', 'Available Credit'],
+            datasets: [{
+                data: [used, limit - used]
+            }]
+        }
+    });
+});
+</script>
+{% endblock %}

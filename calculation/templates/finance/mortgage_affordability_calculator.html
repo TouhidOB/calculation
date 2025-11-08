@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Mortgage Affordability Calculator{% endblock %}
+{% block meta_description %}Determine how much mortgage you can afford based on income and interest rates.{% endblock %}
+{% block meta_keywords %}mortgage calculator, affordability, home loan{% endblock %}
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Mortgage Affordability Calculator</h1>
+    <div class="calc-wrapper mt-4">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#mort-monthly">Monthly</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#mort-annual">Annual</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#mort-daily">Daily</a></li>
+        </ul>
+        <div class="tab-content mt-3">
+            {% for period in ["monthly","annual","daily"] %}
+            <div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="mort-{{period}}">
+                <form class="mort-form" data-period="{{period}}">
+                    <h5 class="section-title">Income & Expenses</h5>
+                    <input type="number" class="form-control my-2 income" placeholder="Monthly Income" required>
+                    <input type="number" class="form-control my-2 debts" placeholder="Monthly Debts" required>
+                    <h5 class="section-title">Mortgage Details</h5>
+                    <input type="number" class="form-control my-2 rate" placeholder="Interest Rate (%)" required>
+                    <input type="number" class="form-control my-2 term" placeholder="Term (Months)" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="alert alert-info mt-4 d-none" id="mort-result"></div>
+        <table class="table table-bordered mt-4 d-none" id="mort-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="mort-body"></tbody>
+        </table>
+        <canvas id="mort-chart" class="d-none"></canvas>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.querySelectorAll('.mort-form').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const period = form.dataset.period;
+            const income = parseFloat(form.querySelector('.income').value);
+            const debts = parseFloat(form.querySelector('.debts').value);
+            const rate = parseFloat(form.querySelector('.rate').value) / 100;
+            const term = parseInt(form.querySelector('.term').value);
+            let mult = (period === 'monthly' ? 1 / 12 : (period === 'annual' ? 1 : 1 / 365));
+
+            const maxPayment = (income - debts) * 0.36; // 36% rule
+            const loan = maxPayment * (Math.pow(1 + rate * mult, term) - 1) / (rate * mult * Math.pow(1 + rate * mult, term));
+
+            const res = document.getElementById('mort-result');
+            res.classList.remove('d-none');
+            res.innerHTML = `<strong>Max Monthly Payment:</strong> $${maxPayment.toFixed(2)}<br>
+<strong>Affordable Loan Amount:</strong> $${loan.toFixed(2)}<br>
+${loan > 0 ? '<span style="color:green;font-weight:bold;">✅ You can afford this mortgage</span>' : '<span style="color:red;font-weight:bold;">❌ Too high</span>'}`;
+
+            document.getElementById('mort-table').classList.remove('d-none');
+            document.getElementById('mort-body').innerHTML = `<tr><td>Max Monthly Payment</td><td>$${maxPayment.toFixed(2)}</td></tr>
+<tr><td>Affordable Loan</td><td>$${loan.toFixed(2)}</td></tr>`;
+
+            const ctx = document.getElementById('mort-chart').getContext('2d');
+            document.getElementById('mort-chart').classList.remove('d-none');
+            if (window.mortChart) mortChart.destroy();
+            window.mortChart = new Chart(ctx, { type: 'pie', data: { labels: ['Payment', 'Remaining Income'], datasets: [{ data: [maxPayment, income - maxPayment] }] } });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Sinking Fund Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Sinking Fund Calculator</h1>
+    <p>Use this calculator to determine how much you need to save monthly to cover future large expenses.</p>
+
+    <div class="calc-wrapper">
+        <form id="sinking-form">
+            <input type="number" class="form-control my-2" id="goal" placeholder="Total Goal Amount" required>
+            <input type="number" class="form-control my-2" id="months" placeholder="Months to Save" required>
+            <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+        </form>
+
+        <div id="result" class="alert alert-info mt-4 d-none"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById("sinking-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    const goal = parseFloat(document.getElementById("goal").value);
+    const months = parseFloat(document.getElementById("months").value);
+
+    const monthly = goal / months;
+    const result = document.getElementById("result");
+    result.classList.remove("d-none");
+    result.innerHTML = `
+        <strong>Monthly Savings Needed:</strong> $${monthly.toFixed(2)}<br><br>
+        <strong>Advice:</strong> Automate this savings transfer each month to stay consistent.
+    `;
+});
+</script>
+{% endblock %}

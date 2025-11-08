@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Annual Budget Planner{% endblock %}
+{% block meta_description %}Plan your full-year budget including income and expenses{% endblock %}
+{% block meta_keywords %}annual budget, yearly planner, finance{% endblock %}
+{% block extra_head %}
+<style>
+.calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
+.section-title{font-weight:bold;margin-top:20px;}canvas{margin-top:20px;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+<h1 class="mb-3">Annual Budget Planner</h1>
+<div class="calc-wrapper mt-4">
+<form id="annual-form">
+<h5 class="section-title">Monthly Income & Expenses</h5>
+<input type="number" class="form-control my-2" id="monthly-income" placeholder="Monthly Income" required>
+<input type="number" class="form-control my-2" id="monthly-expenses" placeholder="Monthly Expenses" required>
+<button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
+<div class="alert alert-info mt-4 d-none" id="annual-result"></div>
+<canvas id="annual-chart" class="d-none"></canvas>
+</div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.getElementById('annual-form').addEventListener('submit', function(e){
+e.preventDefault();
+let income = parseFloat(document.getElementById('monthly-income').value)*12;
+let expenses = parseFloat(document.getElementById('monthly-expenses').value)*12;
+let savings = income - expenses;
+
+const res = document.getElementById('annual-result');
+res.classList.remove('d-none');
+res.innerHTML = `<strong>Total Annual Income:</strong> $${income.toFixed(2)}<br>
+<strong>Total Annual Expenses:</strong> $${expenses.toFixed(2)}<br>
+<strong>Annual Savings:</strong> $${savings.toFixed(2)}<br>
+${savings>0?'<span style="color:green;font-weight:bold;">✅ Good saving!</span>':'<span style="color:red;font-weight:bold;">❌ Review expenses</span>'}`;
+
+const ctx=document.getElementById('annual-chart').getContext('2d');
+document.getElementById('annual-chart').classList.remove('d-none');
+if(window.annualChart) annualChart.destroy();
+window.annualChart = new Chart(ctx,{
+type:'pie',
+data:{
+labels:['Expenses','Savings'],
+datasets:[{data:[expenses,savings],backgroundColor:['#e74a3b','#1cc88a'] }]
+}
+});
+});
+</script>
+{% endblock %}

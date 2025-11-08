@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Spending Tracker & Analyzer{% endblock %}
+{% block meta_description %}Track category-wise spending and receive a deep analyzer with suggestions and category
+percentages.{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.04)
+    }
+
+    .cat-row {
+        display: flex;
+        gap: .5rem;
+        margin-bottom: .5rem;
+    }
+
+    .bar {
+        height: 16px;
+        border-radius: 8px;
+        background: linear-gradient(90deg, #e9ecef, #dee2e6);
+        overflow: hidden;
+    }
+
+    .bar-inner {
+        height: 100%;
+        background: linear-gradient(90deg, #cfe9ff, #7fbfff);
+        width: 0%;
+    }
+
+    .analysis {
+        white-space: pre-wrap;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1>Spending Tracker & Analyzer</h1>
+    <p class="small-muted">Enter your monthly spending by category. Get category percentages and suggestions.</p>
+
+    <div class="calc mt-3">
+        <form id="spend-form">
+            <div id="category-list">
+                <div class="cat-row">
+                    <input class="form-control cat-name" placeholder="Category (e.g., Groceries)">
+                    <input class="form-control cat-value" type="number" placeholder="Amount" min="0" step="0.01">
+                    <button class="btn btn-outline-danger btn-sm remove-cat" type="button">−</button>
+                </div>
+            </div>
+
+            <div class="mt-2">
+                <button id="add-cat" type="button" class="btn btn-sm btn-outline-primary">+ Add Category</button>
+            </div>
+
+            <div class="mt-3">
+                <button class="btn btn-primary" type="submit">Analyze Spending</button>
+                <button id="reset-spend" type="button" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+
+        <div id="spend-result" class="mt-4 d-none">
+            <h5>Results</h5>
+            <div><strong>Total Spending:</strong> $<span id="sp-total">0.00</span></div>
+
+            <h6 class="mt-3">Category Breakdown</h6>
+            <div id="breakdown"></div>
+
+            <h6 class="mt-3">Deep Analysis & Tips</h6>
+            <div id="sp-analysis" class="analysis alert alert-light"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function categoryRow() {
+        const d = document.createElement('div'); d.className = 'cat-row';
+        d.innerHTML = `
+      <input class="form-control cat-name" placeholder="Category (e.g., Transport)">
+      <input class="form-control cat-value" type="number" placeholder="Amount" min="0" step="0.01">
+      <button class="btn btn-outline-danger btn-sm remove-cat" type="button">−</button>
+    `;
+        return d;
+    }
+    document.getElementById('add-cat').addEventListener('click', () => document.getElementById('category-list').appendChild(categoryRow()));
+    document.addEventListener('click', function (e) { if (e.target && e.target.classList.contains('remove-cat')) e.target.parentElement.remove(); });
+
+    document.getElementById('spend-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const cats = Array.from(document.querySelectorAll('.cat-name')).map((el, i) => ({
+            name: el.value || `Category ${i + 1}`,
+            value: parseFloat(document.querySelectorAll('.cat-value')[i].value) || 0
+        })).filter(c => c.value > 0);
+
+        const total = cats.reduce((s, c) => s + c.value, 0);
+        document.getElementById('sp-total').textContent = total.toFixed(2);
+        document.getElementById('spend-result').classList.remove('d-none');
+
+        // breakdown
+        const breakdown = document.getElementById('breakdown');
+        breakdown.innerHTML = '';
+        cats.sort((a, b) => b.value - a.value);
+        cats.forEach(c => {
+            const pct = total === 0 ? 0 : (c.value / total) * 100;
+            const row = document.createElement('div');
+            row.className = 'mb-2';
+            row.innerHTML = `
+        <div class="d-flex justify-content-between"><strong>${c.name}</strong><span>$${c.value.toFixed(2)} (${pct.toFixed(1)}%)</span></div>
+        <div class="bar mt-1"><div class="bar-inner" style="width:${pct}%"></div></div>
+      `;
+            breakdown.appendChild(row);
+        });
+
+        // analysis and suggestions
+        let analysis = `Top categories:\n` + cats.slice(0, 3).map(c => `- ${c.name}: $${c.value.toFixed(2)} (${((c.value / total) * 100).toFixed(1)}%)`).join('\n') + `\n\n`;
+
+        // Flag high % in wants vs needs (basic check based on names)
+        const wantsKeywords = ['entertain', 'dining', 'coffee', 'movies', 'subscription', 'travel', 'shopping'];
+        const needsKeywords = ['rent', 'mortgage', 'utility', 'electric', 'gas', 'food', 'grocer', 'insurance', 'transport', 'loan', 'debt'];
+
+        const wants = cats.filter(c => wantsKeywords.some(k => c.name.toLowerCase().includes(k))).reduce((s, c) => s + c.value, 0);
+        const needs = cats.filter(c => needsKeywords.some(k => c.name.toLowerCase().includes(k))).reduce((s, c) => s + c.value, 0);
+        const wantsPct = total === 0 ? 0 : (wants / total) * 100;
+        const needsPct = total === 0 ? 0 : (needs / total) * 100;
+
+        analysis += `Estimated needs: ${needsPct.toFixed(1)}%, wants: ${wantsPct.toFixed(1)}% (keywords based estimate).\n\n`;
+
+        if (wantsPct > 35) analysis += "- High spending on wants detected. Consider reducing discretionary expenses by 10-20%.\n";
+        if (needsPct > 70) analysis += "- Large portion allocated to needs. Check for possible savings (refinance, cheaper plans).\n";
+        if (total === 0) analysis += "No spending entered.\n";
+
+        analysis += `\nPractical tips:\n- Automate 10–20% of income into savings.\n- Review top 3 categories for immediate cuts.\n- Use monthly review to track progress.`;
+
+        document.getElementById('sp-analysis').textContent = analysis;
+    });
+
+    document.getElementById('reset-spend').addEventListener('click', () => {
+        document.getElementById('category-list').innerHTML = ''; document.getElementById('category-list').appendChild(categoryRow());
+        document.getElementById('spend-result').classList.add('d-none');
+    });
+
+    // init one row
+    document.getElementById('category-list').innerHTML = ''; document.getElementById('category-list').appendChild(categoryRow());
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Cash Envelope System Planner{% endblock %}
+{% block meta_description %}Plan your budget using the cash envelope method{% endblock %}
+{% block meta_keywords %}cash envelope, budgeting, money management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Cash Envelope System Planner</h1>
+    <div class="calc-wrapper mt-4">
+
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#envelope-monthly">Monthly</a>
+            </li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#envelope-annual">Annual</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#envelope-daily">Daily</a></li>
+        </ul>
+
+        <div class="tab-content mt-3">
+            {% for period in ["monthly","annual","daily"] %}
+            <div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="envelope-{{period}}">
+                <form class="envelope-form" data-period="{{period}}">
+                    <h5 class="section-title">Budget Categories</h5>
+                    <input type="number" class="form-control my-2 groceries" placeholder="Groceries" required>
+                    <input type="number" class="form-control my-2 transport" placeholder="Transport" required>
+                    <input type="number" class="form-control my-2 entertainment" placeholder="Entertainment" required>
+                    <input type="number" class="form-control my-2 savings" placeholder="Savings" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="alert alert-info mt-4 d-none" id="envelope-result"></div>
+        <table class="table table-bordered mt-4 d-none" id="envelope-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="envelope-body"></tbody>
+        </table>
+        <canvas id="envelope-chart" class="d-none"></canvas>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.querySelectorAll('.envelope-form').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const period = form.dataset.period;
+            let groceries = parseFloat(form.querySelector('.groceries').value);
+            let transport = parseFloat(form.querySelector('.transport').value);
+            let entertainment = parseFloat(form.querySelector('.entertainment').value);
+            let savings = parseFloat(form.querySelector('.savings').value);
+
+            let multiplier = (period === 'monthly') ? 1 : (period === 'annual' ? 1 / 12 : 1 / 30);
+
+            groceries *= multiplier; transport *= multiplier; entertainment *= multiplier; savings *= multiplier;
+            let total = groceries + transport + entertainment + savings;
+
+            const res = document.getElementById('envelope-result');
+            res.classList.remove('d-none');
+            res.innerHTML = `<strong>Total Budget:</strong> $${total.toFixed(2)}`;
+
+            document.getElementById('envelope-table').classList.remove('d-none');
+            document.getElementById('envelope-body').innerHTML = `
+<tr><td>Groceries</td><td>$${groceries.toFixed(2)}</td></tr>
+<tr><td>Transport</td><td>$${transport.toFixed(2)}</td></tr>
+<tr><td>Entertainment</td><td>$${entertainment.toFixed(2)}</td></tr>
+<tr><td>Savings</td><td>$${savings.toFixed(2)}</td></tr>
+<tr><td>Total</td><td>$${total.toFixed(2)}</td></tr>
+`;
+
+            const ctx = document.getElementById('envelope-chart').getContext('2d');
+            document.getElementById('envelope-chart').classList.remove('d-none');
+            if (window.envelopeChart) envelopeChart.destroy();
+            window.envelopeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Groceries', 'Transport', 'Entertainment', 'Savings'],
+                    datasets: [{ data: [groceries, transport, entertainment, savings], backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'] }]
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

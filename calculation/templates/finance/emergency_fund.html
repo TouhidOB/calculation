@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency Fund Calculator{% endblock %}
+{% block meta_description %}Find out how much emergency savings you need based on your expenses and desired months of coverage.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .calc{background:#fff;padding:20px;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,0.04)}
+  .analysis { white-space:pre-wrap; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1>Emergency Fund Calculator</h1>
+  <p class="small-muted">Calculate how many months of living expenses you have covered and how much you should save.</p>
+
+  <div class="calc mt-3">
+    <form id="ef-form">
+      <div class="mb-2">
+        <label>Monthly Essential Expenses</label>
+        <input id="monthly-expenses" type="number" class="form-control" min="0" step="0.01" placeholder="Sum of rent, food, utilities, etc." required>
+      </div>
+
+      <div class="mb-2">
+        <label>Desired Months of Coverage</label>
+        <select id="ef-months" class="form-control">
+          <option value="3">3 months (minimum)</option>
+          <option value="6" selected>6 months (recommended)</option>
+          <option value="9">9 months</option>
+          <option value="12">12 months</option>
+        </select>
+      </div>
+
+      <div class="mt-2">
+        <button class="btn btn-primary" type="submit">Calculate</button>
+        <button id="reset-ef" type="button" class="btn btn-secondary">Reset</button>
+      </div>
+    </form>
+
+    <div id="ef-result" class="mt-4 d-none">
+      <h5>Results</h5>
+      <div><strong>Required Emergency Fund:</strong> $<span id="ef-required">0.00</span></div>
+
+      <h6 class="mt-3">Deep Analysis</h6>
+      <div id="ef-analysis" class="analysis alert alert-light"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('ef-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const monthly = parseFloat(document.getElementById('monthly-expenses').value) || 0;
+    const months = parseInt(document.getElementById('ef-months').value) || 6;
+    const required = monthly * months;
+    document.getElementById('ef-required').textContent = required.toFixed(2);
+    document.getElementById('ef-result').classList.remove('d-none');
+
+    // Analysis - coverage check if user has existing savings (ask via prompt?) — we'll suggest.
+    let analysis = `You should aim for at least ${months} months of essential expenses: $${required.toFixed(2)}.\n\nRecommendations:\n- If you have any existing savings, subtract that from the required fund.\n- Build the fund gradually: automate transfers into a liquid, low-risk account (high yield savings / money market).\n- If your income is unstable, consider increasing coverage to 9–12 months.`;
+
+    // Extra practical tips
+    analysis += `\n\nPractical plan:\n- If you can save $${(monthly*0.10).toFixed(2)} per month (10%), you'll reach this in approx ${(required / (monthly*0.10)).toFixed(1)} months.\n- If you can save 20% of monthly expenses, time halves.`;
+
+    document.getElementById('ef-analysis').textContent = analysis;
+  });
+
+  document.getElementById('reset-ef').addEventListener('click', ()=>{
+    document.getElementById('monthly-expenses').value = '';
+    document.getElementById('ef-result').classList.add('d-none');
+  });
+</script>
+{% endblock %}

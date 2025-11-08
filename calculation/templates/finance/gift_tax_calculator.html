@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Gift Tax Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+<h1>Gift Tax Calculator</h1>
+<p>Calculate whether your gift triggers tax based on annual exemption limits.</p>
+
+<div class="calc-wrapper">
+<form id="gift-tax-form">
+    <input type="number" class="form-control my-2" id="giftAmount" placeholder="Gift Amount" required>
+    <input type="number" class="form-control my-2" id="exemption" placeholder="Annual Exemption (Default 17000)" value="17000">
+    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
+
+<div id="result" class="alert alert-info mt-4 d-none"></div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById("gift-tax-form").addEventListener("submit",function(e){
+e.preventDefault();
+const gift = parseFloat(document.getElementById("giftAmount").value);
+const exemption = parseFloat(document.getElementById("exemption").value);
+const taxable = gift > exemption ? gift - exemption : 0;
+
+document.getElementById("result").classList.remove("d-none");
+document.getElementById("result").innerHTML = `
+<strong>Taxable Gift Amount:</strong> $${taxable.toFixed(2)}<br><br>
+${taxable > 0 ? "⚠️ Your gift exceeds the yearly exemption" : "✅ Your gift is fully exempt from tax."}
+`;
+});
+</script>
+{% endblock %}

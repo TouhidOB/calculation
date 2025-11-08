@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Severance Pay Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-3">Severance Pay Calculator</h1>
+
+    <div class="calc-wrapper mt-4">
+        <form id="severance-form">
+
+            <h5 class="section-title">💼 Employment Details</h5>
+            <input type="number" class="form-control my-2" id="years" placeholder="Years Worked (e.g., 5)" required>
+            <input type="number" class="form-control my-2" id="weeklyPay" placeholder="Average Weekly Pay (e.g., 750)" required>
+            <input type="number" class="form-control my-2" id="multiplier" placeholder="Weeks Paid Per Year Worked (Default = 1)" value="1">
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Severance</button>
+        </form>
+
+        <div id="result" class="alert alert-info mt-4 d-none"></div>
+        <canvas id="chart" class="mt-4 d-none"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.getElementById("severance-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const years = +document.getElementById("years").value || 0;
+    const weeklyPay = +document.getElementById("weeklyPay").value || 0;
+    const multiplier = +document.getElementById("multiplier").value || 1;
+
+    const severance = years * weeklyPay * multiplier;
+
+    let analysis = "";
+    if (years < 2) analysis = "Your severance amount is on the low side due to short tenure.";
+    else if (years <= 7) analysis = "This is a reasonable severance for medium tenure.";
+    else analysis = "You qualify for strong severance due to long service.";
+
+    const resultText = `
+        <strong>Severance Pay:</strong> $${severance.toFixed(2)}<br><br>
+        <h5>📘 Analysis</h5>
+        ${analysis}<br><br>
+        A typical severance package ranges from <strong>0.5 to 2 weeks of pay per year of service</strong>.
+        If you feel underpaid, consider negotiating based on:<br>
+        • Industry standards<br>
+        • Performance & role importance<br>
+        • Company size & profitability
+    `;
+
+    const box = document.getElementById("result");
+    box.classList.remove("d-none");
+    box.innerHTML = resultText;
+
+    // Chart
+    document.getElementById("chart").classList.remove("d-none");
+
+    new Chart(document.getElementById("chart"), {
+        type: 'bar',
+        data: {
+            labels: ["Years Worked", "Weekly Pay", "Multiplier", "Total Severance"],
+            datasets: [{
+                data: [years, weeklyPay, multiplier, severance],
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+});
+</script>
+{% endblock %}
