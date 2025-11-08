@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Student Loan Affordability Calculator{% endblock %}
-{% block meta_description %}Check if your student loan payments fit your budget{% endblock %}
-{% block meta_keywords %}student loan calculator, affordability, monthly payment{% endblock %}
+{% block meta_description %}Check if your student loan payments fit your budget by comparing the required monthly payment to your income. Universal calculator.{% endblock %}
+{% block meta_keywords %}student loan calculator, affordability, monthly payment, debt-to-income ratio, amortization{% endblock %}
 {% block extra_head %}
 <style>
     .calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
@@ -9,28 +9,57 @@
 </style>
 {% endblock %}
 {% block content %}
-<div class="container">
+<div class="container my-4">
     <h1 class="mb-3">Student Loan Affordability Calculator</h1>
+    <p class="small-muted">Calculate the required **Monthly Payment** and compare it to your **Normalized Monthly Income** to determine affordability.</p>
     <div class="calc-wrapper mt-4">
+        
         <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#stu-monthly">Monthly</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#stu-annual">Annual</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#stu-daily">Daily</a></li>
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#stu-monthly">Monthly Income</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#stu-annual">Annual Income</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#stu-daily">Daily Income</a></li>
         </ul>
+        
         <div class="tab-content mt-3">
-            {% for period in ["monthly","annual","daily"] %}
-            <div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="stu-{{period}}">
-                <form class="stu-form" data-period="{{period}}">
+            
+            <div class="tab-pane fade show active" id="stu-monthly">
+                <form class="stu-form" data-period="monthly">
                     <h5 class="section-title">Loan Details</h5>
-                    <input type="number" class="form-control my-2 principal" placeholder="Loan Amount" required>
-                    <input type="number" class="form-control my-2 rate" placeholder="Interest Rate (%)" required>
-                    <input type="number" class="form-control my-2 term" placeholder="Term (Months)" required>
-                    <input type="number" class="form-control my-2 income" placeholder="Monthly Income" required>
+                    <input type="number" class="form-control my-2 principal" placeholder="Loan Amount ($)" min="0" step="1000" required>
+                    <input type="number" class="form-control my-2 rate" placeholder="Annual Interest Rate (%)" min="0.01" max="100" step="0.01" required>
+                    <input type="number" class="form-control my-2 term" placeholder="Term (Total Months)" min="1" step="1" required>
+                    <h5 class="section-title mt-4">Income</h5>
+                    <input type="number" class="form-control my-2 income" placeholder="Gross Monthly Income ($)" min="1" step="100" required>
                     <button class="btn btn-primary mt-3" type="submit">Calculate</button>
                 </form>
             </div>
-            {% endfor %}
+            
+            <div class="tab-pane fade" id="stu-annual">
+                <form class="stu-form" data-period="annual">
+                    <h5 class="section-title">Loan Details</h5>
+                    <input type="number" class="form-control my-2 principal" placeholder="Loan Amount ($)" min="0" step="1000" required>
+                    <input type="number" class="form-control my-2 rate" placeholder="Annual Interest Rate (%)" min="0.01" max="100" step="0.01" required>
+                    <input type="number" class="form-control my-2 term" placeholder="Term (Total Months)" min="1" step="1" required>
+                    <h5 class="section-title mt-4">Income</h5>
+                    <input type="number" class="form-control my-2 income" placeholder="Gross Annual Income ($)" min="1" step="1000" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+
+            <div class="tab-pane fade" id="stu-daily">
+                <form class="stu-form" data-period="daily">
+                    <h5 class="section-title">Loan Details</h5>
+                    <input type="number" class="form-control my-2 principal" placeholder="Loan Amount ($)" min="0" step="1000" required>
+                    <input type="number" class="form-control my-2 rate" placeholder="Annual Interest Rate (%)" min="0.01" max="100" step="0.01" required>
+                    <input type="number" class="form-control my-2 term" placeholder="Term (Total Months)" min="1" step="1" required>
+                    <h5 class="section-title mt-4">Income</h5>
+                    <input type="number" class="form-control my-2 income" placeholder="Gross Daily Income ($)" min="1" step="10" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+            
         </div>
+        
         <div class="alert alert-info mt-4 d-none" id="stu-result"></div>
         <table class="table table-bordered mt-4 d-none" id="stu-table">
             <thead><tr><th>Metric</th><th>Value</th></tr></thead>
@@ -43,35 +72,93 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+let stuChart = null; // Declare chart variable globally for easy destruction
+
 document.querySelectorAll('.stu-form').forEach(function(form){
     form.addEventListener('submit',function(e){
         e.preventDefault();
-        const period=form.dataset.period;
-        const P=parseFloat(form.querySelector('.principal').value);
-        const R=parseFloat(form.querySelector('.rate').value)/100;
-        const N=parseInt(form.querySelector('.term').value);
-        const income=parseFloat(form.querySelector('.income').value);
-        let mult=(period==='monthly'?1/12:(period==='annual'?1:1/365));
-        const M=P*(R*mult*Math.pow(1+R*mult,N))/(Math.pow(1+R*mult,N)-1);
-        const total=M*N;
-        const affordability=(M/income)*100;
+        const period = form.dataset.period;
+        const P = parseFloat(form.querySelector('.principal').value);
+        const R = parseFloat(form.querySelector('.rate').value) / 100; // Annual Rate
+        const N = parseInt(form.querySelector('.term').value); // Total Months
+        const inputIncome = parseFloat(form.querySelector('.income').value);
+        
+        // 1. Calculate Standard Monthly Payment (M) using the Amortization Formula
+        // i = Monthly Periodic Rate (Annual Rate / 12)
+        const i = R / 12; 
+        const n_periods = N;
+        let M;
 
+        if (i === 0) {
+            M = P / n_periods; 
+        } else {
+            // M = P * [ i(1 + i)^n ] / [ (1 + i)^n – 1 ]
+            M = P * (i * Math.pow(1 + i, n_periods)) / (Math.pow(1 + i, n_periods) - 1);
+        }
+        
+        // 2. Normalize Income to Monthly Income (for Affordability Check)
+        let monthlyIncome;
+        if (period === 'monthly') {
+            monthlyIncome = inputIncome;
+        } else if (period === 'annual') {
+            // Annual Income / 12 months
+            monthlyIncome = inputIncome / 12; 
+        } else { // daily
+            // Daily Income * (365.25 days / 12 months)
+            monthlyIncome = inputIncome * (365.25 / 12); 
+        }
+
+        const total = M * N; // Total payments
+        
+        // 3. Calculate Affordability Ratio
+        const affordability = (M / monthlyIncome) * 100;
+        
+        // 4. Determine Affordability Status (Standard recommendation is < 30%)
+        const affordabilityStatus = affordability < 30 ? 
+                                    '<span style="color:green;font-weight:bold;">✅ Affordable (Recommended &lt; 30%)</span>' : 
+                                    '<span style="color:red;font-weight:bold;">❌ Potentially Too High (Recommended &lt; 30%)</span>';
+
+
+        // 5. Update Results Display
         const res=document.getElementById('stu-result');
         res.classList.remove('d-none');
         res.innerHTML=`<strong>Monthly Payment:</strong> $${M.toFixed(2)}<br>
         <strong>Total Payment:</strong> $${total.toFixed(2)}<br>
         <strong>Payment/Income Ratio:</strong> ${affordability.toFixed(2)}%<br>
-        ${affordability<30?'<span style="color:green;font-weight:bold;">✅ Affordable</span>':'<span style="color:red;font-weight:bold;">❌ Too high</span>'}`;
+        ${affordabilityStatus}`;
 
         document.getElementById('stu-table').classList.remove('d-none');
         document.getElementById('stu-body').innerHTML=`<tr><td>Monthly Payment</td><td>$${M.toFixed(2)}</td></tr>
+        <tr><td>Total Principal Paid</td><td>$${P.toFixed(2)}</td></tr>
+        <tr><td>Total Interest Paid</td><td>$${(total - P).toFixed(2)}</td></tr>
         <tr><td>Total Payment</td><td>$${total.toFixed(2)}</td></tr>
         <tr><td>Income Ratio</td><td>${affordability.toFixed(2)}%</td></tr>`;
 
+        // 6. Update Chart
         const ctx=document.getElementById('stu-chart').getContext('2d');
         document.getElementById('stu-chart').classList.remove('d-none');
-        if(window.stuChart) stuChart.destroy();
-        window.stuChart=new Chart(ctx,{type:'pie',data:{labels:['Payment','Remaining Income'],datasets:[{data:[M,income-M]}]}});
+        if(stuChart) stuChart.destroy();
+        
+        const remainingIncome = Math.max(0, monthlyIncome - M);
+        
+        stuChart = new Chart(ctx,{
+            type:'pie',
+            data:{
+                labels:['Loan Payment', 'Remaining Income'],
+                datasets:[{
+                    data:[M.toFixed(2), remainingIncome.toFixed(2)],
+                    backgroundColor: ['#ff6384', '#36a2eb'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Allocation of Normalized Monthly Income' }
+                }
+            }
+        });
     });
 });
 </script>

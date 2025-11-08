@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+
 {% block title %}Cash Envelope System Planner{% endblock %}
-{% block meta_description %}Plan your budget using the cash envelope method{% endblock %}
-{% block meta_keywords %}cash envelope, budgeting, money management{% endblock %}
+{% block meta_description %}Plan your budget using the cash envelope method by calculating your required monthly cash allocation for variable spending categories.{% endblock %}
+{% block meta_keywords %}cash envelope, budgeting, money management, monthly budget, variable expenses{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -24,30 +25,54 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container my-4">
     <h1 class="mb-3">Cash Envelope System Planner</h1>
+    <p class="small-muted">Enter your typical spending for variable categories (or your goal budget) to determine the $\mathbf{Monthly}$ cash amount needed for each envelope.</p>
+    
     <div class="calc-wrapper mt-4">
 
         <ul class="nav nav-tabs">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#envelope-monthly">Monthly</a>
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#envelope-monthly">Monthly Input</a>
             </li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#envelope-annual">Annual</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#envelope-daily">Daily</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#envelope-annual">Annual Input</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#envelope-daily">Daily Input</a></li>
         </ul>
 
         <div class="tab-content mt-3">
-            {% for period in ["monthly","annual","daily"] %}
-            <div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="envelope-{{period}}">
-                <form class="envelope-form" data-period="{{period}}">
-                    <h5 class="section-title">Budget Categories</h5>
-                    <input type="number" class="form-control my-2 groceries" placeholder="Groceries" required>
-                    <input type="number" class="form-control my-2 transport" placeholder="Transport" required>
-                    <input type="number" class="form-control my-2 entertainment" placeholder="Entertainment" required>
-                    <input type="number" class="form-control my-2 savings" placeholder="Savings" required>
-                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+            
+            <div class="tab-pane fade show active" id="envelope-monthly">
+                <form class="envelope-form" data-period="monthly">
+                    <h5 class="section-title">Monthly Budget Categories ($)</h5>
+                    <input type="number" class="form-control my-2 groceries" placeholder="Groceries (Monthly)" min="0" step="10" required>
+                    <input type="number" class="form-control my-2 transport" placeholder="Transport/Gas (Monthly)" min="0" step="10" required>
+                    <input type="number" class="form-control my-2 entertainment" placeholder="Entertainment/Fun (Monthly)" min="0" step="10" required>
+                    <input type="number" class="form-control my-2 savings" placeholder="Savings Goal (Monthly)" min="0" step="10" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate Monthly Envelopes</button>
                 </form>
             </div>
-            {% endfor %}
+            
+            <div class="tab-pane fade" id="envelope-annual">
+                <form class="envelope-form" data-period="annual">
+                    <h5 class="section-title">Annual Budget Categories ($)</h5>
+                    <input type="number" class="form-control my-2 groceries" placeholder="Groceries (Annual)" min="0" step="100" required>
+                    <input type="number" class="form-control my-2 transport" placeholder="Transport/Gas (Annual)" min="0" step="100" required>
+                    <input type="number" class="form-control my-2 entertainment" placeholder="Entertainment/Fun (Annual)" min="0" step="100" required>
+                    <input type="number" class="form-control my-2 savings" placeholder="Savings Goal (Annual)" min="0" step="100" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate Monthly Envelopes</button>
+                </form>
+            </div>
+
+            <div class="tab-pane fade" id="envelope-daily">
+                <form class="envelope-form" data-period="daily">
+                    <h5 class="section-title">Daily Budget Categories ($)</h5>
+                    <input type="number" class="form-control my-2 groceries" placeholder="Groceries (Daily)" min="0" step="1" required>
+                    <input type="number" class="form-control my-2 transport" placeholder="Transport/Gas (Daily)" min="0" step="1" required>
+                    <input type="number" class="form-control my-2 entertainment" placeholder="Entertainment/Fun (Daily)" min="0" step="1" required>
+                    <input type="number" class="form-control my-2 savings" placeholder="Savings Goal (Daily)" min="0" step="1" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate Monthly Envelopes</button>
+                </form>
+            </div>
+            
         </div>
 
         <div class="alert alert-info mt-4 d-none" id="envelope-result"></div>
@@ -55,7 +80,7 @@
             <thead>
                 <tr>
                     <th>Category</th>
-                    <th>Amount</th>
+                    <th>Required Monthly Cash</th>
                 </tr>
             </thead>
             <tbody id="envelope-body"></tbody>
@@ -69,44 +94,76 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.querySelectorAll('.envelope-form').forEach(function (form) {
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const period = form.dataset.period;
-            let groceries = parseFloat(form.querySelector('.groceries').value);
-            let transport = parseFloat(form.querySelector('.transport').value);
-            let entertainment = parseFloat(form.querySelector('.entertainment').value);
-            let savings = parseFloat(form.querySelector('.savings').value);
+let envelopeChart = null;
+const DAYS_PER_MONTH = 365.25 / 12; // ~30.4375 days
 
-            let multiplier = (period === 'monthly') ? 1 : (period === 'annual' ? 1 / 12 : 1 / 30);
+document.querySelectorAll('.envelope-form').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const period = form.dataset.period;
+        
+        let groceries = parseFloat(form.querySelector('.groceries').value);
+        let transport = parseFloat(form.querySelector('.transport').value);
+        let entertainment = parseFloat(form.querySelector('.entertainment').value);
+        let savings = parseFloat(form.querySelector('.savings').value);
 
-            groceries *= multiplier; transport *= multiplier; entertainment *= multiplier; savings *= multiplier;
-            let total = groceries + transport + entertainment + savings;
+        let multiplier;
+        
+        // Determine the multiplier needed to convert the input to a MONTHLY figure
+        if (period === 'monthly') {
+            multiplier = 1;
+        } else if (period === 'annual') {
+            multiplier = 1 / 12; // Annual to Monthly
+        } else { // daily
+            multiplier = DAYS_PER_MONTH; // Daily to Monthly
+        }
 
-            const res = document.getElementById('envelope-result');
-            res.classList.remove('d-none');
-            res.innerHTML = `<strong>Total Budget:</strong> $${total.toFixed(2)}`;
+        // Apply multiplier to all input variables to normalize them to MONTHLY figures
+        groceries *= multiplier; 
+        transport *= multiplier; 
+        entertainment *= multiplier; 
+        savings *= multiplier;
+        
+        let total = groceries + transport + entertainment + savings;
 
-            document.getElementById('envelope-table').classList.remove('d-none');
-            document.getElementById('envelope-body').innerHTML = `
+        // 1. Update Results Display
+        const res = document.getElementById('envelope-result');
+        res.classList.remove('d-none');
+        res.innerHTML = `<strong>Total Required Monthly Budget:</strong> $${total.toFixed(2)}`;
+
+        // 2. Update Table
+        document.getElementById('envelope-table').classList.remove('d-none');
+        document.getElementById('envelope-body').innerHTML = `
 <tr><td>Groceries</td><td>$${groceries.toFixed(2)}</td></tr>
-<tr><td>Transport</td><td>$${transport.toFixed(2)}</td></tr>
-<tr><td>Entertainment</td><td>$${entertainment.toFixed(2)}</td></tr>
-<tr><td>Savings</td><td>$${savings.toFixed(2)}</td></tr>
-<tr><td>Total</td><td>$${total.toFixed(2)}</td></tr>
+<tr><td>Transport/Gas</td><td>$${transport.toFixed(2)}</td></tr>
+<tr><td>Entertainment/Fun</td><td>$${entertainment.toFixed(2)}</td></tr>
+<tr><td>Savings Goal</td><td>$${savings.toFixed(2)}</td></tr>
+<tr><td>**TOTAL MONTHLY CASH**</td><td>**$${total.toFixed(2)}**</td></tr>
 `;
 
-            const ctx = document.getElementById('envelope-chart').getContext('2d');
-            document.getElementById('envelope-chart').classList.remove('d-none');
-            if (window.envelopeChart) envelopeChart.destroy();
-            window.envelopeChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Groceries', 'Transport', 'Entertainment', 'Savings'],
-                    datasets: [{ data: [groceries, transport, entertainment, savings], backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'] }]
+        // 3. Update Chart
+        const ctx = document.getElementById('envelope-chart').getContext('2d');
+        document.getElementById('envelope-chart').classList.remove('d-none');
+        if (envelopeChart) envelopeChart.destroy();
+        
+        envelopeChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Groceries', 'Transport', 'Entertainment', 'Savings'],
+                datasets: [{ 
+                    data: [groceries.toFixed(2), transport.toFixed(2), entertainment.toFixed(2), savings.toFixed(2)], 
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Monthly Budget Allocation' }
                 }
-            });
+            }
         });
     });
+});
 </script>
 {% endblock %}

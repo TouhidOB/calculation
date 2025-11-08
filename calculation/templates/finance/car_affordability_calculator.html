@@ -1,73 +1,212 @@
 {% extends "base.html" %}
 {% block title %}Car Affordability Calculator{% endblock %}
-{% block meta_description %}Determine how much car you can afford based on your income and expenses{% endblock %}
-{% block meta_keywords %}car affordability, auto loan, budget{% endblock %}
+{% block meta_description %}Determine the maximum car price you can afford based on your income, existing monthly debts,
+and the 20/4/10 rule of thumb (or similar DTI ratios).{% endblock %}
+{% block meta_keywords %}car affordability, auto loan, budget, 20/4/10 rule{% endblock %}
 {% block extra_head %}
-<style>.calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
-.section-title{font-weight:bold;margin-top:20px;}canvas{margin-top:20px;}</style>
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+</style>
 {% endblock %}
 {% block content %}
-<div class="container">
-<h1 class="mb-3">Car Affordability Calculator</h1>
-<div class="calc-wrapper mt-4">
-<ul class="nav nav-tabs">
-<li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#car-monthly">Monthly</a></li>
-<li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#car-annual">Annual</a></li>
-<li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#car-daily">Daily</a></li>
-</ul>
-<div class="tab-content mt-3">
-{% for period in ["monthly","annual","daily"] %}
-<div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="car-{{period}}">
-<form class="car-form" data-period="{{period}}">
-<input type="number" class="form-control my-2 income" placeholder="Monthly Income" required>
-<input type="number" class="form-control my-2 debts" placeholder="Monthly Debts" required>
-<input type="number" class="form-control my-2 rate" placeholder="Loan Interest (%)" required>
-<input type="number" class="form-control my-2 term" placeholder="Loan Term (Months)" required>
-<button class="btn btn-primary mt-3" type="submit">Calculate</button>
-</form>
-</div>
-{% endfor %}
-</div>
-<div class="alert alert-info mt-4 d-none" id="car-result"></div>
-<table class="table table-bordered mt-4 d-none" id="car-table">
-<thead><tr><th>Metric</th><th>Value</th></tr></thead>
-<tbody id="car-body"></tbody>
-</table>
-<canvas id="car-chart" class="d-none"></canvas>
-</div>
+<div class="container my-4">
+    <h1 class="mb-3">Car Affordability Calculator</h1>
+    <p class="small-muted">Calculates the maximum affordable car price based on the $\mathbf{20\%}$ rule: Total auto
+        expenses should not exceed $\mathbf{20\%}$ of your normalized monthly take-home pay.</p>
+
+    <div class="calc-wrapper mt-4">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#car-monthly">Monthly Income</a>
+            </li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#car-annual">Annual Income</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#car-daily">Daily Income</a></li>
+        </ul>
+
+        <div class="tab-content mt-3">
+
+            <div class="tab-pane fade show active" id="car-monthly">
+                <form class="car-form" data-period="monthly">
+                    <h5 class="section-title">Income & Debts</h5>
+                    <input type="number" class="form-control my-2 income" placeholder="Gross Monthly Income ($)" min="1"
+                        step="100" required>
+                    <input type="number" class="form-control my-2 debts" placeholder="Total Monthly Debts (Non-Car) ($)"
+                        min="0" step="10" required>
+                    <h5 class="section-title">Loan Details</h5>
+                    <input type="number" class="form-control my-2 rate" placeholder="Annual Loan Interest Rate (%)"
+                        min="0.01" max="100" step="0.01" required>
+                    <input type="number" class="form-control my-2 term" placeholder="Loan Term (Total Months, e.g., 60)"
+                        min="12" step="12" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+
+            <div class="tab-pane fade" id="car-annual">
+                <form class="car-form" data-period="annual">
+                    <h5 class="section-title">Income & Debts</h5>
+                    <input type="number" class="form-control my-2 income" placeholder="Gross Annual Income ($)"
+                        min="1000" step="1000" required>
+                    <input type="number" class="form-control my-2 debts" placeholder="Total Monthly Debts (Non-Car) ($)"
+                        min="0" step="10" required>
+                    <h5 class="section-title">Loan Details</h5>
+                    <input type="number" class="form-control my-2 rate" placeholder="Annual Loan Interest Rate (%)"
+                        min="0.01" max="100" step="0.01" required>
+                    <input type="number" class="form-control my-2 term" placeholder="Loan Term (Total Months, e.g., 60)"
+                        min="12" step="12" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+
+            <div class="tab-pane fade" id="car-daily">
+                <form class="car-form" data-period="daily">
+                    <h5 class="section-title">Income & Debts</h5>
+                    <input type="number" class="form-control my-2 income" placeholder="Gross Daily Income ($)" min="10"
+                        step="1" required>
+                    <input type="number" class="form-control my-2 debts" placeholder="Total Monthly Debts (Non-Car) ($)"
+                        min="0" step="10" required>
+                    <h5 class="section-title">Loan Details</h5>
+                    <input type="number" class="form-control my-2 rate" placeholder="Annual Loan Interest Rate (%)"
+                        min="0.01" max="100" step="0.01" required>
+                    <input type="number" class="form-control my-2 term" placeholder="Loan Term (Total Months, e.g., 60)"
+                        min="12" step="12" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+
+        </div>
+        <div class="alert alert-info mt-4 d-none result-alert" id="car-result"></div>
+        <table class="table table-bordered mt-4 d-none" id="car-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="car-body"></tbody>
+        </table>
+        <canvas id="car-chart" class="d-none"></canvas>
+    </div>
 </div>
 {% endblock %}
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.querySelectorAll('.car-form').forEach(function(form){
-form.addEventListener('submit',function(e){
-e.preventDefault();
-const period=form.dataset.period;
-const income=parseFloat(form.querySelector('.income').value);
-const debts=parseFloat(form.querySelector('.debts').value);
-const rate=parseFloat(form.querySelector('.rate').value)/100;
-const term=parseInt(form.querySelector('.term').value);
-let mult=(period==='monthly'?1/12:(period==='annual'?1:1/365));
+    let carChart = null;
 
-const maxPayment=(income-debts)*0.20; // 20% auto loan rule
-const carPrice=maxPayment*(Math.pow(1+rate*mult,term)-1)/(rate*mult*Math.pow(1+rate*mult,term));
+    // Present Value of Annuity formula: P = M * [ (1 - (1 + i)^-n) / i ]
+    // This calculates the initial loan principal (carPrice) given the maximum monthly payment (M)
+    function calculateAffordablePrincipal(M, i, n) {
+        if (i === 0) {
+            return M * n;
+        }
+        // Using Math.pow(1 + i, -n) is equivalent to 1 / Math.pow(1 + i, n)
+        return M * (1 - Math.pow(1 + i, -n)) / i;
+    }
 
-const res=document.getElementById('car-result');
-res.classList.remove('d-none');
-res.innerHTML=`<strong>Max Monthly Payment:</strong> $${maxPayment.toFixed(2)}<br>
-<strong>Affordable Car Price:</strong> $${carPrice.toFixed(2)}<br>
-${carPrice>0?'<span style="color:green;font-weight:bold;">✅ Affordable</span>':'<span style="color:red;font-weight:bold;">❌ Too high</span>'}`;
 
-document.getElementById('car-table').classList.remove('d-none');
-document.getElementById('car-body').innerHTML=`<tr><td>Max Monthly Payment</td><td>$${maxPayment.toFixed(2)}</td></tr>
-<tr><td>Affordable Car Price</td><td>$${carPrice.toFixed(2)}</td></tr>`;
+    document.querySelectorAll('.car-form').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const period = form.dataset.period;
+            const inputIncome = parseFloat(form.querySelector('.income').value);
+            const monthlyDebts = parseFloat(form.querySelector('.debts').value); // Debts are assumed monthly
+            const R = parseFloat(form.querySelector('.rate').value) / 100; // Annual Rate
+            const N = parseInt(form.querySelector('.term').value); // Total Months
 
-const ctx=document.getElementById('car-chart').getContext('2d');
-document.getElementById('car-chart').classList.remove('d-none');
-if(window.carChart) carChart.destroy();
-window.carChart=new Chart(ctx,{type:'pie',data:{labels:['Payment','Remaining Income'],datasets:[{data:[maxPayment,income-maxPayment]}]}});
-});
-});
+            // 1. Normalize Income to Monthly Income
+            let monthlyIncome;
+            if (period === 'monthly') {
+                monthlyIncome = inputIncome;
+            } else if (period === 'annual') {
+                monthlyIncome = inputIncome / 12;
+            } else { // daily
+                monthlyIncome = inputIncome * (365.25 / 12);
+            }
+
+            // 2. Determine Max Car Payment (P&I) based on 20% DTI rule (or similar)
+            // Note: The original code used (income - debts) * 0.20, which is non-standard DTI.
+            // A standard recommendation is: Total monthly car costs (payment, insurance, fuel) should be < 20% of net income.
+            // Let's adhere to the original *mathematical* intent (20% of discretionary income) but clarify it:
+
+            // Discretionary Income (Approximate): Income - Debts (Non-Car)
+            const discretionaryIncome = monthlyIncome - monthlyDebts;
+
+            // Max Car P&I Payment (M) is 20% of the remaining income, 
+            // which roughly incorporates the 10% rule (car payment < 10% of gross income) if debts are low.
+            const maxCarPayment = discretionaryIncome * 0.20;
+
+            // 3. Input Validation
+            if (maxCarPayment <= 0) {
+                const res = document.getElementById('car-result');
+                res.classList.remove('d-none');
+                res.innerHTML = `**Error:** Discretionary income ($${discretionaryIncome.toFixed(2)}) is zero or negative. **Cannot afford a car payment.**`;
+                document.getElementById('car-table').classList.add('d-none');
+                document.getElementById('car-chart').classList.add('d-none');
+                return;
+            }
+
+            // 4. Calculate Affordable Car Price (Principal, P)
+            const i = R / 12; // Monthly periodic rate
+            const affordableCarPrice = calculateAffordablePrincipal(maxCarPayment, i, N);
+
+            // 5. Update Results Display
+            const res = document.getElementById('car-result');
+            res.classList.remove('d-none');
+            res.innerHTML = `**Normalized Monthly Income:** $${monthlyIncome.toFixed(2)}\n
+**Discretionary Income (After Debts):** $${discretionaryIncome.toFixed(2)}\n
+**Max Monthly Payment Affordable (20% Rule):** $${maxCarPayment.toFixed(2)}\n
+---
+**Affordable Car Price (Loan Principal):** **$${affordableCarPrice.toFixed(0)}**\n
+${affordableCarPrice > 0 ? '<span style="color:green;font-weight:bold;">✅ Affordable based on the 20% rule.</span>' : '<span style="color:red;font-weight:bold;">❌ Too high</span>'}`;
+
+            document.getElementById('car-table').classList.remove('d-none');
+            document.getElementById('car-body').innerHTML = `<tr><td>Normalized Monthly Income</td><td>$${monthlyIncome.toFixed(2)}</td></tr>
+<tr><td>Max Monthly P&I Payment</td><td>$${maxCarPayment.toFixed(2)}</td></tr>
+<tr><td>**Affordable Car Price**</td><td>**$${affordableCarPrice.toFixed(0)}**</td></tr>`;
+
+            // 6. Update Chart
+            const ctx = document.getElementById('car-chart').getContext('2d');
+            document.getElementById('car-chart').classList.remove('d-none');
+            if (carChart) carChart.destroy();
+
+            // For the chart, we allocate monthly income to: Debts, Car Payment, Remaining Income
+            const remainingIncome = Math.max(0, monthlyIncome - monthlyDebts - maxCarPayment);
+
+            carChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Existing Debts', 'Max Car Payment', 'Remaining Income'],
+                    datasets: [{
+                        data: [monthlyDebts.toFixed(2), maxCarPayment.toFixed(2), remainingIncome.toFixed(2)],
+                        backgroundColor: ['#ff9f40', '#4bc0c0', '#36a2eb'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: 'Allocation of Normalized Monthly Income' }
+                    }
+                }
+            });
+        });
+    });
 </script>
 {% endblock %}

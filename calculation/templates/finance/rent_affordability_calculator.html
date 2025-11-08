@@ -1,41 +1,62 @@
 {% extends "base.html" %}
 {% block title %}Rent Affordability Calculator{% endblock %}
-{% block meta_description %}Determine the maximum rent you can afford based on your income and debts{% endblock %}
-{% block meta_keywords %}rent affordability, housing budget, monthly rent{% endblock %}
+{% block meta_description %}Determine the maximum rent you can afford based on your income and existing debts (using the 30% rule of thumb).{% endblock %}
+{% block meta_keywords %}rent affordability, housing budget, monthly rent, 30% rule{% endblock %}
 
 {% block extra_head %}
 <style>
 .calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
 .section-title{font-weight:bold;margin-top:20px;}
 canvas{margin-top:20px;}
+.result-alert { white-space: pre-wrap; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container my-4">
 <h1 class="mb-3">Rent Affordability Calculator</h1>
+<p class="small-muted">Calculates the maximum affordable rent based on the $\mathbf{30\%}$ rule: Your gross rent should not exceed $\mathbf{30\%}$ of your normalized gross monthly income.</p>
+
 <div class="calc-wrapper mt-4">
 
 <ul class="nav nav-tabs">
-<li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#rent-monthly">Monthly</a></li>
-<li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#rent-annual">Annual</a></li>
-<li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#rent-daily">Daily</a></li>
+<li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#rent-monthly">Monthly Income</a></li>
+<li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#rent-annual">Annual Income</a></li>
+<li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#rent-daily">Daily Income</a></li>
 </ul>
 
 <div class="tab-content mt-3">
-{% for period in ["monthly","annual","daily"] %}
-<div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="rent-{{period}}">
-<form class="rent-form" data-period="{{period}}">
-<h5 class="section-title">Income & Expenses</h5>
-<input type="number" class="form-control my-2 income" placeholder="Monthly Income" required>
-<input type="number" class="form-control my-2 debts" placeholder="Monthly Debts" required>
+
+<div class="tab-pane fade show active" id="rent-monthly">
+<form class="rent-form" data-period="monthly">
+<h5 class="section-title">Income & Debts</h5>
+<input type="number" class="form-control my-2 income" placeholder="Gross Monthly Income ($)" min="100" step="100" required>
+<input type="number" class="form-control my-2 debts" placeholder="Total Monthly Debts ($)" min="0" step="10" required>
 <button class="btn btn-primary mt-3" type="submit">Calculate</button>
 </form>
 </div>
-{% endfor %}
+
+<div class="tab-pane fade" id="rent-annual">
+<form class="rent-form" data-period="annual">
+<h5 class="section-title">Income & Debts</h5>
+<input type="number" class="form-control my-2 income" placeholder="Gross Annual Income ($)" min="1000" step="1000" required>
+<input type="number" class="form-control my-2 debts" placeholder="Total Monthly Debts ($)" min="0" step="10" required>
+<button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
 </div>
 
-<div class="alert alert-info mt-4 d-none" id="rent-result"></div>
+<div class="tab-pane fade" id="rent-daily">
+<form class="rent-form" data-period="daily">
+<h5 class="section-title">Income & Debts</h5>
+<input type="number" class="form-control my-2 income" placeholder="Gross Daily Income ($)" min="10" step="1" required>
+<input type="number" class="form-control my-2 debts" placeholder="Total Monthly Debts ($)" min="0" step="10" required>
+<button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
+</div>
+
+</div>
+
+<div class="alert alert-info mt-4 d-none result-alert" id="rent-result"></div>
 <table class="table table-bordered mt-4 d-none" id="rent-table">
 <thead><tr><th>Metric</th><th>Value</th></tr></thead>
 <tbody id="rent-body"></tbody>
@@ -49,38 +70,86 @@ canvas{margin-top:20px;}
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+let rentChart = null;
+
 document.querySelectorAll('.rent-form').forEach(function(form){
 form.addEventListener('submit', function(e){
 e.preventDefault();
 const period = form.dataset.period;
-const income = parseFloat(form.querySelector('.income').value);
-const debts = parseFloat(form.querySelector('.debts').value);
+const inputIncome = parseFloat(form.querySelector('.income').value);
+const monthlyDebts = parseFloat(form.querySelector('.debts').value);
 
-let multiplier = (period==='monthly')?1:(period==='annual')?1/12:1/30; // normalize to monthly
+// 1. Normalize Income to Monthly Income
+let monthlyIncome;
+if (period === 'monthly') {
+    monthlyIncome = inputIncome;
+} else if (period === 'annual') {
+    // Annual Income / 12 months
+    monthlyIncome = inputIncome / 12;
+} else { // daily
+    // Daily Income * (365.25 days / 12 months)
+    monthlyIncome = inputIncome * (365.25 / 12);
+}
 
-const maxRent = (income - debts) * 0.30; // 30% rule
+// 2. Calculate Maximum Affordable Rent
+// Housing costs should not exceed 30% of Gross Monthly Income (GMI)
+const maxRent = monthlyIncome * 0.30; 
 
+// 3. Calculate Income remaining after rent and debts
+const incomeAfterRentAndDebts = monthlyIncome - maxRent - monthlyDebts;
+
+// 4. Update Results Display
 const res = document.getElementById('rent-result');
 res.classList.remove('d-none');
-res.innerHTML = `<strong>Maximum Affordable Rent:</strong> $${maxRent.toFixed(2)}<br>
-${maxRent>0?'<span style="color:green;font-weight:bold;">✅ You can afford this rent</span>':'<span style="color:red;font-weight:bold;">❌ Too high</span>'}`;
+
+let affordabilityStatus;
+if (maxRent <= 0) {
+    affordabilityStatus = '<span style="color:red;font-weight:bold;">❌ Cannot afford rent: Income is too low.</span>';
+} else if (incomeAfterRentAndDebts < 0) {
+    // If debts + rent exceed monthly income, this highlights a cash flow issue.
+     affordabilityStatus = '<span style="color:red;font-weight:bold;">⚠️ Caution: Rent and existing debts exceed your monthly income.</span>';
+} else {
+    affordabilityStatus = '<span style="color:green;font-weight:bold;">✅ Affordable based on the 30% rule.</span>';
+}
+
+
+res.innerHTML = `**Normalized Gross Monthly Income:** $${monthlyIncome.toFixed(2)}\n
+**Maximum Affordable Rent (30% Rule):** **$${maxRent.toFixed(2)}**\n
+---
+**Income Remaining After Rent & Debts:** $${incomeAfterRentAndDebts.toFixed(2)}\n
+${affordabilityStatus}`;
 
 document.getElementById('rent-table').classList.remove('d-none');
 document.getElementById('rent-body').innerHTML = `
-<tr><td>Monthly Income</td><td>$${income.toFixed(2)}</td></tr>
-<tr><td>Monthly Debts</td><td>$${debts.toFixed(2)}</td></tr>
-<tr><td>Max Rent</td><td>$${maxRent.toFixed(2)}</td></tr>
+<tr><td>Normalized Monthly Income</td><td>$${monthlyIncome.toFixed(2)}</td></tr>
+<tr><td>Total Monthly Debts</td><td>$${monthlyDebts.toFixed(2)}</td></tr>
+<tr><td>**Max Affordable Rent**</td><td>**$${maxRent.toFixed(2)}**</td></tr>
+<tr><td>Remaining Income (Post Rent/Debts)</td><td>$${incomeAfterRentAndDebts.toFixed(2)}</td></tr>
 `;
 
+// 5. Update Chart
 const ctx = document.getElementById('rent-chart').getContext('2d');
 document.getElementById('rent-chart').classList.remove('d-none');
-if(window.rentChart) rentChart.destroy();
-window.rentChart = new Chart(ctx,{
-type:'pie',
-data:{
-labels:['Max Rent','Remaining Income'],
-datasets:[{data:[maxRent,income-maxRent]}]
-}
+if(rentChart) rentChart.destroy();
+
+const remainingIncomeForChart = Math.max(0, monthlyIncome - maxRent); // Only show remaining after rent for 30% focus
+
+rentChart = new Chart(ctx,{
+    type:'pie',
+    data:{
+        labels:['Max Rent (30%)','Remaining Income'],
+        datasets:[{
+            data:[maxRent.toFixed(2), remainingIncomeForChart.toFixed(2)],
+            backgroundColor: ['#ff6384', '#36a2eb'],
+            hoverOffset: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            title: { display: true, text: 'Allocation of Gross Monthly Income' }
+        }
+    }
 });
 });
 });

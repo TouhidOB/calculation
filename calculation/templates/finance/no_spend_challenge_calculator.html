@@ -2,9 +2,9 @@
 
 {% block title %}No-Spend Challenge Savings Calculator{% endblock %}
 
-{% block meta_description %}Calculate potential savings during a no-spend challenge{% endblock %}
+{% block meta_description %}Calculate potential savings during a no-spend challenge by projecting your typical daily spending over the challenge period.{% endblock %}
 
-{% block meta_keywords %}no-spend challenge, savings, budgeting{% endblock %}
+{% block meta_keywords %}no-spend challenge, savings, budgeting, financial independence{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -23,37 +23,56 @@
     canvas {
         margin-top: 20px;
     }
+    .result-alert { white-space: pre-wrap; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container my-4">
     <h1 class="mb-3">No-Spend Challenge Savings Calculator</h1>
+    <p class="small-muted">Project your potential savings by estimating your typical spend rate over the duration of your no-spend challenge.</p>
+    
     <div class="calc-wrapper mt-4">
 
         <ul class="nav nav-tabs">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#nospend-monthly">Monthly</a>
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#nospend-monthly">Monthly Spend</a>
             </li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#nospend-annual">Annual</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#nospend-daily">Daily</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#nospend-annual">Annual Spend</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#nospend-daily">Daily Spend</a></li>
         </ul>
 
         <div class="tab-content mt-3">
-            {% for period in ["monthly","annual","daily"] %}
-            <div class="tab-pane fade {% if period=='monthly' %}show active{% endif %}" id="nospend-{{period}}">
-                <form class="nospend-form" data-period="{{period}}">
-                    <h5 class="section-title">Expenses</h5>
-                    <input type="number" class="form-control my-2 monthly-spend" placeholder="Typical Monthly Spend"
-                        required>
-                    <input type="number" class="form-control my-2 challenge-days"
-                        placeholder="Days of No-Spend Challenge" required>
+            
+            <div class="tab-pane fade show active" id="nospend-monthly">
+                <form class="nospend-form" data-period="monthly">
+                    <h5 class="section-title">Challenge Inputs</h5>
+                    <input type="number" class="form-control my-2 spend-input" placeholder="Typical Discretionary Monthly Spend ($)" min="0" step="10" required>
+                    <input type="number" class="form-control my-2 challenge-days" placeholder="Days of No-Spend Challenge" min="1" max="365" required>
                     <button class="btn btn-primary mt-3" type="submit">Calculate</button>
                 </form>
             </div>
-            {% endfor %}
+            
+            <div class="tab-pane fade" id="nospend-annual">
+                <form class="nospend-form" data-period="annual">
+                    <h5 class="section-title">Challenge Inputs</h5>
+                    <input type="number" class="form-control my-2 spend-input" placeholder="Typical Discretionary Annual Spend ($)" min="0" step="100" required>
+                    <input type="number" class="form-control my-2 challenge-days" placeholder="Days of No-Spend Challenge" min="1" max="365" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+            
+            <div class="tab-pane fade" id="nospend-daily">
+                <form class="nospend-form" data-period="daily">
+                    <h5 class="section-title">Challenge Inputs</h5>
+                    <input type="number" class="form-control my-2 spend-input" placeholder="Typical Discretionary Daily Spend ($)" min="0" step="1" required>
+                    <input type="number" class="form-control my-2 challenge-days" placeholder="Days of No-Spend Challenge" min="1" max="365" required>
+                    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+                </form>
+            </div>
+            
         </div>
 
-        <div class="alert alert-info mt-4 d-none" id="nospend-result"></div>
+        <div class="alert alert-info mt-4 d-none result-alert" id="nospend-result"></div>
         <table class="table table-bordered mt-4 d-none" id="nospend-table">
             <thead>
                 <tr>
@@ -72,40 +91,79 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.querySelectorAll('.nospend-form').forEach(function (form) {
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const period = form.dataset.period;
-            let spend = parseFloat(form.querySelector('.monthly-spend').value);
-            let days = parseInt(form.querySelector('.challenge-days').value);
-            let multiplier = (period === 'monthly') ? 1 : (period === 'annual' ? 1 / 12 : 1 / 30);
+let nospendChart = null;
 
-            let dailySpend = spend / 30;
-            let saved = dailySpend * days * multiplier;
+document.querySelectorAll('.nospend-form').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const period = form.dataset.period;
+        const inputSpend = parseFloat(form.querySelector('.spend-input').value);
+        const days = parseInt(form.querySelector('.challenge-days').value);
+        
+        let dailySpendRate;
 
-            const res = document.getElementById('nospend-result');
-            res.classList.remove('d-none');
-            res.innerHTML = `<strong>Potential Savings:</strong> $${saved.toFixed(2)}<br>
-${saved > 0 ? '<span style="color:green;font-weight:bold;">✅ Great job!</span>' : '<span style="color:red;font-weight:bold;">❌ No savings</span>'}`;
+        // 1. Normalize Input Spend to Daily Spend Rate
+        if (period === 'monthly') {
+            // Typical month is 30.4375 days (365.25/12)
+            dailySpendRate = inputSpend / (365.25 / 12); 
+        } else if (period === 'annual') {
+            // Annual spend / 365.25 days
+            dailySpendRate = inputSpend / 365.25; 
+        } else { // daily
+            // Already daily
+            dailySpendRate = inputSpend; 
+        }
 
-            document.getElementById('nospend-table').classList.remove('d-none');
-            document.getElementById('nospend-body').innerHTML = `
-<tr><td>Typical Monthly Spend</td><td>$${spend.toFixed(2)}</td></tr>
-<tr><td>Days No-Spend</td><td>${days}</td></tr>
-<tr><td>Saved Amount</td><td>$${saved.toFixed(2)}</td></tr>
+        // 2. Calculate Total Savings
+        const totalSaved = dailySpendRate * days;
+        
+        // Calculate the theoretical 'monthly' spend to compare against for the chart
+        const normalizedMonthlySpend = dailySpendRate * (365.25 / 12);
+
+        // 3. Update Results Display
+        const res = document.getElementById('nospend-result');
+        res.classList.remove('d-none');
+        res.innerHTML = `**Estimated Daily Spend Rate:** $${dailySpendRate.toFixed(2)}\n
+**Days in Challenge:** ${days}\n
+---
+**Potential Savings:** **$${totalSaved.toFixed(2)}**\n
+${totalSaved > 0 ? '<span style="color:green;font-weight:bold;">✅ Great job! This is the amount you avoided spending.</span>' : '<span style="color:red;font-weight:bold;">❌ No potential savings calculated.</span>'}`;
+
+        document.getElementById('nospend-table').classList.remove('d-none');
+        document.getElementById('nospend-body').innerHTML = `
+<tr><td>Estimated Daily Spend Rate</td><td>$${dailySpendRate.toFixed(2)}</td></tr>
+<tr><td>Days of No-Spend</td><td>${days}</td></tr>
+<tr><td>**Potential Savings**</td><td>**$${totalSaved.toFixed(2)}**</td></tr>
 `;
 
-            const ctx = document.getElementById('nospend-chart').getContext('2d');
-            document.getElementById('nospend-chart').classList.remove('d-none');
-            if (window.nospendChart) nospendChart.destroy();
-            window.nospendChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Saved', 'Spent'],
-                    datasets: [{ data: [saved, spend - saved] }]
+        // 4. Update Chart
+        const ctx = document.getElementById('nospend-chart').getContext('2d');
+        document.getElementById('nospend-chart').classList.remove('d-none');
+        if (nospendChart) nospendChart.destroy();
+        
+        // Calculate the hypothetical spend for the chart (if the challenge was a full month)
+        const totalSpentHypothetical = normalizedMonthlySpend - totalSaved;
+        const chartSpent = Math.max(0, totalSpentHypothetical);
+        
+        nospendChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Saved (Challenge Period)', 'Hypothetical Spent (Non-Challenge Period)'],
+                datasets: [{ 
+                    data: [totalSaved.toFixed(2), chartSpent.toFixed(2)],
+                    backgroundColor: ['#4bc0c0', '#ff9f40'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Savings vs. Hypothetical Spend (Normalized)' }
                 }
-            });
+            }
         });
+    });
+});
 </script>
 
 {% endblock %}
