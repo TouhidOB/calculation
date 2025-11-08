@@ -1,0 +1,46 @@
+<form class="bt-form" data-period="{{ period }}">
+    <h5 class="section-title">💳 Existing Balance & Rate</h5>
+    <input type="number" class="form-control my-2 balance" placeholder="Current Balance" required>
+    <input type="number" class="form-control my-2 rate" placeholder="
+        {% if period == 'annual' %}
+            Current Interest (%) per Year
+        {% elif period == 'daily' %}
+            Current Interest (%) per Day
+        {% else %}
+            Current Interest (%) per Month
+        {% endif %}
+    " required>
+
+    <input type="number" class="form-control my-2 months" placeholder="
+        {% if period == 'annual' %}
+            Remaining Years
+        {% elif period == 'daily' %}
+            Remaining Days
+        {% else %}
+            Remaining Months
+        {% endif %}
+    " required>
+
+    <h5 class="section-title">🔁 New Transfer Rate</h5>
+    <input type="number" class="form-control my-2 new-rate" placeholder="
+        {% if period == 'annual' %}
+            New Interest (%) per Year
+        {% elif period == 'daily' %}
+            New Interest (%) per Day
+        {% else %}
+            New Interest (%) per Month
+        {% endif %}
+    " required>
+
+    <input type="number" class="form-control my-2 new-term" placeholder="
+        {% if period == 'annual' %}
+            New Term (Years)
+        {% elif period == 'daily' %}
+            New Term (Days)
+        {% else %}
+            New Term (Months)
+        {% endif %}
+    " required>
+
+    <button class="btn btn-primary mt-3" type="submit">Calculate</button>
+</form>
