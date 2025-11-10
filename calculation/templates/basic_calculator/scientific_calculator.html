@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+
+{% block title %}Scientific Calculator{% endblock %}
+
+{% block meta_description %}Perform complex scientific and trigonometric calculations, including sin, cos, tan, log, power, and roots.{% endblock %}
+
+{% block meta_keywords %}scientific calculator, trigonometry, math, functions, log, power, root, pi, complex calculation{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Calculator specific styles */
+    .calc-wrapper {
+        background: #f7f7f7;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        max-width: 550px; /* Wider for more buttons */
+        margin: 0 auto;
+    }
+
+    .display-screen {
+        background: #e9ecef;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        padding: 10px 15px;
+        text-align: right;
+        margin-bottom: 15px;
+        font-family: 'Consolas', monospace;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    #history-display {
+        font-size: 0.9rem;
+        color: #6c757d;
+        min-height: 20px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #current-input {
+        font-size: 2.5rem;
+        font-weight: bold;
+        min-height: 45px;
+        line-height: 1.2;
+    }
+
+    .calc-keys {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr); /* 6 columns for scientific layout */
+        gap: 8px;
+    }
+
+    .calc-btn {
+        padding: 15px 10px;
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.15s ease, transform 0.05s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        min-width: 0; /* Ensures buttons fit in grid */
+    }
+
+    .calc-btn:hover {
+        opacity: 0.9;
+    }
+
+    .calc-btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .number-btn, .decimal-btn {
+        background-color: #ffffff;
+        color: #333;
+    }
+    
+    .operator-btn {
+        background-color: #ff9500;
+        color: white;
+    }
+    
+    .function-btn {
+        background-color: #c8e6c9; /* Light green for functions */
+        color: #388e3c;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .clear-btn, .special-btn {
+        background-color: #dc3545; /* Red for clear/dangerous actions */
+        color: white;
+        font-weight: bold;
+    }
+
+    .equal-btn {
+        background-color: #007bff; /* Blue for equals */
+        color: white;
+    }
+    
+    /* Grid span adjustments */
+    .zero-btn {
+        grid-column: span 2;
+        text-align: left;
+        padding-left: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🔬 Scientific Calculator</h1>
+    <p class="small-muted">Access advanced math functions including trigonometry, logarithms, powers, and constants ($\pi$, $e$).</p>
+
+    <div class="calc-wrapper mt-4">
+        <div class="display-screen">
+            <div id="history-display"></div>
+            <div id="current-input">0</div>
+        </div>
+
+        <div class="calc-keys">
+            <button class="calc-btn special-btn" data-type="clear">C</button>
+            <button class="calc-btn special-btn" data-type="backspace">⌫</button>
+            <button class="calc-btn function-btn" data-value="pow">xʸ</button>
+            <button class="calc-btn function-btn" data-value="sqrt">√</button>
+            <button class="calc-btn operator-btn" data-value="/">÷</button>
+            <button class="calc-btn function-btn" data-value="percent">%</button>
+
+            <button class="calc-btn function-btn" data-value="sin">sin</button>
+            <button class="calc-btn function-btn" data-value="cos">cos</button>
+            <button class="calc-btn function-btn" data-value="tan">tan</button>
+            <button class="calc-btn function-btn" data-value="pi">π</button>
+            <button class="calc-btn number-btn" data-value="7">7</button>
+            <button class="calc-btn number-btn" data-value="8">8</button>
+            <button class="calc-btn number-btn" data-value="9">9</button>
+            <button class="calc-btn operator-btn" data-value="*">×</button>
+
+            <button class="calc-btn function-btn" data-value="log">log</button>
+            <button class="calc-btn function-btn" data-value="ln">ln</button>
+            <button class="calc-btn function-btn" data-value="exp">e</button>
+            <button class="calc-btn function-btn" data-value="factorial">n!</button>
+            <button class="calc-btn number-btn" data-value="4">4</button>
+            <button class="calc-btn number-btn" data-value="5">5</button>
+            <button class="calc-btn number-btn" data-value="6">6</button>
+            <button class="calc-btn operator-btn" data-value="-">-</button>
+
+            <button class="calc-btn function-btn" data-value="sq">x²</button>
+            <button class="calc-btn function-btn" data-value="inv">1/x</button>
+            <button class="calc-btn function-btn" data-value="(">(</button>
+            <button class="calc-btn function-btn" data-value=")">)</button>
+            <button class="calc-btn number-btn" data-value="1">1</button>
+            <button class="calc-btn number-btn" data-value="2">2</button>
+            <button class="calc-btn number-btn" data-value="3">3</button>
+            <button class="calc-btn operator-btn" data-value="+">+</button>
+
+            <button class="calc-btn special-btn" data-type="sign">+/-</button>
+            <button class="calc-btn number-btn zero-btn" data-value="0">0</button>
+            <button class="calc-btn decimal-btn" data-value=".">.</button>
+            <button class="calc-btn equal-btn" data-type="equals">=</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- State Variables ---
+    let currentInput = '0';
+    let history = '';
+    let waitingForSecondOperand = false;
+    let operator = null;
+    let firstOperand = null;
+    
+    // Flag to handle complex expression parsing for scientific functions
+    // This simplifies the logic by allowing standard JS eval for complex expressions
+    let expression = '0'; 
+
+    const currentDisplay = document.getElementById('current-input');
+    const historyDisplay = document.getElementById('history-display');
+    const keys = document.querySelector('.calc-keys');
+
+    // --- Helper Functions ---
+
+    function updateDisplay() {
+        // Display the current input/result
+        currentDisplay.textContent = currentInput;
+        
+        // Display the full expression in history (more useful for scientific mode)
+        historyDisplay.textContent = history;
+    }
+    
+    function appendToExpression(value) {
+        if (expression === '0') {
+            expression = value;
+        } else {
+            expression += value;
+        }
+        history = expression;
+    }
+
+    function clearCalculator() {
+        currentInput = '0';
+        history = '';
+        expression = '0';
+        firstOperand = null;
+        operator = null;
+        waitingForSecondOperand = false;
+        updateDisplay();
+    }
+    
+    function factorial(n) {
+        if (n < 0) return NaN;
+        if (n === 0 || n === 1) return 1;
+        let result = 1;
+        for (let i = 2; i <= n; i++) {
+            result *= i;
+        }
+        return result;
+    }
+
+    // --- Button Handlers ---
+
+    function handleNumber(digit) {
+        if (currentInput === '0' || waitingForSecondOperand) {
+            currentInput = digit;
+            waitingForSecondOperand = false;
+        } else {
+            currentInput += digit;
+        }
+        appendToExpression(digit);
+        updateDisplay();
+    }
+
+    function handleDecimal() {
+        if (!currentInput.includes('.')) {
+            currentInput += '.';
+        }
+        appendToExpression('.');
+        updateDisplay();
+    }
+    
+    function handleOperator(op) {
+        // In scientific mode, operators are just appended to the expression
+        // We rely on the final 'equals' using eval()
+        if (op === '*') {
+            appendToExpression('*');
+            history += '×';
+        } else if (op === '/') {
+            appendToExpression('/');
+            history += '÷';
+        } else {
+            appendToExpression(op);
+            history += op;
+        }
+        currentInput = '0'; // Clear current input for the next number
+        updateDisplay();
+    }
+
+    function handleFunction(func) {
+        let funcName = '';
+        let funcSymbol = '';
+        const currentVal = parseFloat(currentInput);
+
+        switch (func) {
+            case 'pi':
+                currentInput = Math.PI.toString();
+                appendToExpression(Math.PI.toString());
+                break;
+            case 'exp':
+                currentInput = Math.E.toString();
+                appendToExpression(Math.E.toString());
+                break;
+            case 'sq':
+                // x^2: Immediate calculation on current input
+                currentInput = (currentVal * currentVal).toString();
+                history = `sq(${history})`;
+                expression = currentInput;
+                break;
+            case 'inv':
+                // 1/x: Immediate calculation
+                currentInput = (1 / currentVal).toString();
+                history = `1/(${history})`;
+                expression = currentInput;
+                break;
+            case 'sqrt':
+                // Square Root: Immediate calculation
+                currentInput = Math.sqrt(currentVal).toString();
+                history = `√(${history})`;
+                expression = currentInput;
+                break;
+            case 'factorial':
+                // Factorial: Immediate calculation
+                currentInput = factorial(Math.floor(currentVal)).toString();
+                history = `(${history})!`;
+                expression = currentInput;
+                break;
+            case 'percent':
+                // Percentage: Immediate calculation (used as x/100)
+                currentInput = (currentVal / 100).toString();
+                history = `(${history})%`;
+                expression = currentInput;
+                break;
+            case 'sin':
+            case 'cos':
+            case 'tan':
+            case 'log':
+            case 'ln':
+                // Trigonometric and Logarithmic functions: Treat as prefix
+                funcName = func;
+                funcSymbol = func;
+                
+                // If currentInput is a number, wrap it in the function and evaluate
+                if (currentInput !== '0' && !waitingForSecondOperand) {
+                    let angle = currentVal;
+                    
+                    // Convert degrees to radians for JS Math functions (defaulting to degrees)
+                    // For simplicity here, we assume the user intends degrees.
+                    const radians = angle * (Math.PI / 180);
+                    
+                    let result;
+                    if (func === 'sin') result = Math.sin(radians);
+                    else if (func === 'cos') result = Math.cos(radians);
+                    else if (func === 'tan') result = Math.tan(radians);
+                    else if (func === 'log') result = Math.log10(currentVal);
+                    else if (func === 'ln') result = Math.log(currentVal);
+
+                    currentInput = result.toString();
+                    history = `${funcSymbol}(${currentVal})`;
+                    expression = currentInput; // Reset expression to the result
+                } else {
+                    // Append function call structure to expression
+                    appendToExpression(`${funcName}(`);
+                }
+                break;
+            case 'pow':
+                // Power (x^y): Append structure, user needs to enter the exponent next
+                // Note: The history display logic is simplified here; a full scientific parser would be complex.
+                appendToExpression('**');
+                history += '^';
+                break;
+            case '(':
+            case ')':
+                appendToExpression(func);
+                break;
+        }
+        waitingForSecondOperand = true; // Wait for the next number/input
+        updateDisplay();
+    }
+
+    function handleEquals() {
+        try {
+            // Use eval for the full scientific expression
+            // NOTE: eval() is powerful but generally unsafe in production web apps. 
+            // For a learning example like this, it's the simplest way to implement a scientific calculator.
+            let result = eval(expression);
+
+            if (result === Infinity || isNaN(result)) {
+                currentInput = 'Error';
+            } else {
+                currentInput = result.toFixed(10).replace(/\.?0+$/, ""); // Clean up floating point
+            }
+            
+            history = `${expression} =`;
+            expression = currentInput; // Set expression to the result for further chaining
+            waitingForSecondOperand = true;
+
+        } catch (e) {
+            currentInput = 'Syntax Error';
+            history = '';
+            expression = '0';
+        }
+        updateDisplay();
+    }
+    
+    // --- Event Listener ---
+    keys.addEventListener('click', (event) => {
+        const { target } = event;
+        const value = target.dataset.value;
+        const type = target.dataset.type;
+
+        if (!target.matches('.calc-btn')) return;
+
+        if (type === 'clear') {
+            clearCalculator();
+        } else if (type === 'backspace') {
+            // Simplified backspace for scientific mode: just clear the whole expression
+            clearCalculator(); 
+        } else if (type === 'sign') {
+            currentInput = (parseFloat(currentInput) * -1).toString();
+            // Complex expression modification is omitted for simplicity in this example
+            updateDisplay();
+        } else if (type === 'equals') {
+            handleEquals();
+        } else if (target.classList.contains('number-btn')) {
+            handleNumber(value);
+        } else if (target.classList.contains('decimal-btn')) {
+            handleDecimal();
+        } else if (target.classList.contains('operator-btn')) {
+            handleOperator(value);
+        } else if (target.classList.contains('function-btn')) {
+            handleFunction(value);
+        }
+    });
+
+    // Initialize display
+    updateDisplay();
+</script>
+{% endblock %}

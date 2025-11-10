@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Quadratic Equation Solver{% endblock %}
+
+{% block meta_description %}Solve any quadratic equation (ax² + bx + c = 0) instantly. Calculate real and complex roots using the quadratic formula.{% endblock %}
+
+{% block meta_keywords %}quadratic equation, solver, roots, discriminant, algebra, complex numbers, math calculator{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    .equation-display {
+        font-size: 1.5rem;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f3f4f6;
+        border-radius: 8px;
+        color: #1f2937;
+    }
+    .result-box {
+        margin-top: 20px;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid;
+    }
+    .result-real { border-color: #10b981; background-color: #ecfdf5; }
+    .result-complex { border-color: #3b82f6; background-color: #eff6ff; }
+    .result-error { border-color: #ef4444; background-color: #fee2e2; }
+
+    .input-label {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #4b5563;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Quadratic Equation Solver</h1>
+    <p class="text-gray-600 mb-6 text-center">Find the roots of any equation in the form $ax^2 + bx + c = 0$.</p>
+
+    <div class="solver-wrapper">
+        
+        <!-- Display the standard form of the equation -->
+        <div class="equation-display">
+            $a x^2 + b x + c = 0$
+        </div>
+
+        <form id="quadratic-form" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <!-- Input A -->
+                <div>
+                    <label for="coeff_a" class="input-label">Coefficient $a$</label>
+                    <input type="number" id="coeff_a" value="1" step="any" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <!-- Input B -->
+                <div>
+                    <label for="coeff_b" class="input-label">Coefficient $b$</label>
+                    <input type="number" id="coeff_b" value="0" step="any" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <!-- Input C -->
+                <div>
+                    <label for="coeff_c" class="input-label">Coefficient $c$</label>
+                    <input type="number" id="coeff_c" value="-4" step="any" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.01]">
+                Solve Equation
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Solution</h2>
+            <div id="solution-output" class="result-box hidden">
+                <!-- Results will be injected here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('quadratic-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const a = parseFloat(document.getElementById('coeff_a').value);
+        const b = parseFloat(document.getElementById('coeff_b').value);
+        const c = parseFloat(document.getElementById('coeff_c').value);
+        const outputDiv = document.getElementById('solution-output');
+        
+        outputDiv.classList.add('hidden');
+        outputDiv.classList.remove('result-real', 'result-complex', 'result-error');
+        outputDiv.innerHTML = '';
+
+        if (a === 0) {
+            // Not a quadratic equation if a=0
+            displayResult('result-error', 'Error: Coefficient $a$ cannot be zero for a quadratic equation. This is a linear equation.', 'Discriminant: N/A');
+            return;
+        }
+
+        // 1. Calculate the Discriminant (Delta)
+        const discriminant = b * b - 4 * a * c;
+        const discString = discriminant.toFixed(4);
+        
+        let htmlContent = `<p class="text-xl font-bold mb-3">Discriminant ($\Delta$): ${discString}</p>`;
+        
+        // 2. Determine the Nature of the Roots and Calculate
+        
+        if (discriminant > 0) {
+            // Two distinct real roots
+            const sqrtDisc = Math.sqrt(discriminant);
+            const x1 = (-b + sqrtDisc) / (2 * a);
+            const x2 = (-b - sqrtDisc) / (2 * a);
+            
+            htmlContent += `<p class="text-green-700 mb-3">**Two Distinct Real Roots** ($\Delta > 0$):</p>`;
+            htmlContent += `<p class="text-lg">Root 1 ($x_1$): **${x1.toFixed(6)}**</p>`;
+            htmlContent += `<p class="text-lg">Root 2 ($x_2$): **${x2.toFixed(6)}**</p>`;
+            
+            displayResult('result-real', htmlContent);
+
+        } else if (discriminant === 0) {
+            // One real root (repeated)
+            const x = -b / (2 * a);
+            
+            htmlContent += `<p class="text-green-700 mb-3">**One Repeated Real Root** ($\Delta = 0$):</p>`;
+            htmlContent += `<p class="text-lg">Root 1 & 2 ($x$): **${x.toFixed(6)}**</p>`;
+            
+            displayResult('result-real', htmlContent);
+
+        } else {
+            // Two complex conjugate roots
+            const negDisc = -discriminant; // Positive value under the square root
+            const imaginaryPart = Math.sqrt(negDisc) / (2 * a);
+            const realPart = -b / (2 * a);
+            
+            const imagStr = Math.abs(imaginaryPart).toFixed(6);
+            const realStr = realPart.toFixed(6);
+
+            // Construct complex root strings
+            const x1_complex = `${realStr} + ${imagStr}i`;
+            const x2_complex = `${realStr} - ${imagStr}i`;
+            
+            htmlContent += `<p class="text-blue-700 mb-3">**Two Complex Conjugate Roots** ($\Delta < 0$):</p>`;
+            htmlContent += `<p class="text-lg">Root 1 ($x_1$): **${x1_complex}**</p>`;
+            htmlContent += `<p class="text-lg">Root 2 ($x_2$): **${x2_complex}**</p>`;
+            
+            displayResult('result-complex', htmlContent);
+        }
+    });
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     * @param {string} className - Tailwind class name for coloring (e.g., 'result-real').
+     * @param {string} contentHtml - HTML string containing the calculated results.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('hidden');
+        outputDiv.classList.add(className);
+    }
+</script>
+{% endblock %}

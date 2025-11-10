@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Hill Grade Percentage Calculator{% endblock %}
+
+{% block meta_description %}Calculate the percentage grade (steepness) of a hill, ramp, or road using the vertical gain (Rise) and horizontal distance (Run).{% endblock %}
+
+{% block meta_keywords %}hill grade calculator, steepness percentage, rise over run, incline grade, slope calculator, cycling gradient{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #ef4444; /* Red for steepness/warning */
+    }
+
+    .output-grade {
+        font-size: 3.5rem;
+        font-weight: bold;
+        color: #ef4444;
+        line-height: 1;
+    }
+
+    .output-label {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #b91c1c;
+    }
+
+    .window-card {
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        background-color: #fef2f2; /* Lightest Red */
+        border: 2px solid #fecaca;
+        text-align: center;
+    }
+    
+    .unit-selector {
+        max-width: 120px;
+    }
+
+    .formula-note {
+        font-style: italic;
+        color: #4b5563;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">⛰️ Hill Grade Percentage Calculator</h1>
+    <p class="small-muted">Calculate the **Percentage Grade** ($\%$) of an incline based on the vertical distance ($\text{Rise}$) and horizontal distance ($\text{Run}$).</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="grade-calculator-form">
+            <h5 class="section-title">Step 1: Measurement Unit</h5>
+
+            <!-- Unit Selection -->
+            <label class="form-label d-block mt-3">Select Consistent Unit</label>
+            <select class="form-select unit-selector mb-3" id="measurement_unit">
+                <option value="m" selected>Meters ($\text{m}$)</option>
+                <option value="ft">Feet ($\text{ft}$)</option>
+            </select>
+            
+            <h5 class="section-title mt-4">Step 2: Enter Dimensions</h5>
+
+            <!-- Rise (Vertical Gain) -->
+            <label class="form-label d-block mt-3">Vertical Gain ($\text{Rise}$)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="rise_input" placeholder="e.g., 10" min="0" step="0.1" required>
+                <span class="input-group-text unit-display">m</span>
+            </div>
+            
+            <!-- Run (Horizontal Distance) -->
+            <label class="form-label d-block mt-3">Horizontal Distance ($\text{Run}$)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="run_input" placeholder="e.g., 100" min="0.1" step="0.1" required>
+                <span class="input-group-text unit-display">m</span>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Grade</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Calculated Incline Grade</h5>
+        
+        <div id="results-container" class="mt-3 d-none">
+            
+            <div class="window-card">
+                <h6 class="output-label mb-3">The Grade Percentage is:</h6>
+                
+                <p class="mb-0">
+                    <span id="grade_percentage" class="output-grade">0.0</span> 
+                    <span class="fs-4 text-muted">$\%$</span>
+                </p>
+                
+                <p class="mt-3 fs-5 text-muted">
+                    Ratio: $\text{1}: \text{<span id="grade_ratio">0</span>}$ (You rise $\text{1}$ unit for every $\text{<span id="grade_ratio_run">0</span>}$ units you run horizontally)
+                </p>
+            </div>
+            
+            <p class="formula-note text-center">
+                $$\text{Grade Percentage} = \frac{\text{Rise}}{\text{Run}} \times 100$$
+            </p>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+    const unitSelect = document.getElementById('measurement_unit');
+    const unitDisplays = document.querySelectorAll('.unit-display');
+
+    /** Updates the unit labels based on user selection. */
+    function updateUnitDisplay() {
+        const unit = unitSelect.value;
+        unitDisplays.forEach(span => span.textContent = unit);
+    }
+
+    unitSelect.addEventListener('change', updateUnitDisplay);
+    window.onload = updateUnitDisplay; // Initialize on load
+
+    document.getElementById('grade-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const rise = parseFloat(document.getElementById('rise_input').value);
+        const run = parseFloat(document.getElementById('run_input').value);
+
+        // 2. Validation
+        if (isNaN(rise) || isNaN(run) || run <= 0) {
+            displayError("Please enter valid, positive numbers for Rise and Run. Run (horizontal distance) must be greater than zero.");
+            return;
+        }
+
+        // 3. Calculation Logic
+        
+        // Grade Percentage = (Rise / Run) * 100
+        const gradePercentage = (rise / run) * 100;
+        
+        // Ratio (1:X)
+        const ratioRun = rise === 0 ? 0 : (run / rise); // Horizontal run required for 1 unit of vertical rise
+
+        // 4. Update Result Display
+        
+        document.getElementById('grade_percentage').textContent = gradePercentage.toFixed(2);
+        document.getElementById('grade_ratio_run').textContent = ratioRun.toFixed(1);
+
+        // 5. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

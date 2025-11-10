@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Swimming SET Interval Calculator{% endblock %}
+
+{% block meta_description %}Calculate your precise swimming set interval (send-off time) based on your target pace, distance, and desired rest time for training sets.{% endblock %}
+
+{% block meta_keywords %}swimming interval calculator, send-off time, swim pace, training set, pace clock, swimming rest time{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #06b6d4; /* Cyan for water/swimming */
+    }
+
+    .output-interval {
+        font-size: 3.5rem;
+        font-weight: bold;
+        color: #06b6d4;
+        line-height: 1;
+    }
+
+    .output-label {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #0891b2;
+    }
+
+    .window-card {
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        background-color: #f0faff; /* Lightest Cyan */
+        border: 2px solid #a5f3fc;
+        text-align: center;
+    }
+    
+    .unit-selector {
+        max-width: 120px;
+    }
+    
+    .pace-unit-display {
+        background-color: #e0f2fe;
+        color: #06b6d4;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🏊 Set Interval Planner</h1>
+    <p class="small-muted">Calculate your **Send-Off Interval** ($\text{Swim Time} + \text{Rest}$) for training sets based on your target distance and pace.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="interval-calculator-form">
+            <h5 class="section-title">Step 1: Target Pace & Distance</h5>
+
+            <!-- Distance Unit Selection -->
+            <label class="form-label d-block mt-3">Pool Unit</label>
+            <select class="form-select unit-selector mb-3" id="distance_unit" required>
+                <option value="meters" selected>Meters ($\text{m}$)</option>
+                <option value="yards">Yards ($\text{yd}$)</option>
+            </select>
+            
+            <!-- Target Pace (Time per 100 units) -->
+            <label class="form-label d-block mt-3">Target Pace ($\text{Time}$ per 100 units)</label>
+            <div class="row g-2 mb-3">
+                <div class="col-5">
+                    <input type="number" class="form-control" id="pace_m" placeholder="Min (M)" min="0" max="59" value="1" required>
+                </div>
+                <div class="col-5">
+                    <input type="number" class="form-control" id="pace_s" placeholder="Sec (S)" min="0" max="59" value="30" required>
+                </div>
+                <div class="col-2 input-group-text pace-unit-display">/100</div>
+            </div>
+            
+            <!-- Swim Distance -->
+            <label class="form-label d-block mt-3">Set Swim Distance (e.g., 50, 100, 200)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="swim_distance" placeholder="e.g., 100" min="25" step="1" required>
+                <span class="input-group-text distance-unit-display">m</span>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Desired Rest</h5>
+
+            <!-- Rest Time -->
+            <label class="form-label d-block mt-3">Desired Rest Time (Seconds)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="rest_time" placeholder="e.g., 10" min="0" max="60" step="1" required>
+                <span class="input-group-text">Seconds</span>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Interval</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Set Plan Breakdown</h5>
+        
+        <div id="results-container" class="mt-3 d-none">
+            
+            <div class="window-card">
+                <h6 class="output-label mb-3">Your Required Send-Off Interval is:</h6>
+                
+                <p class="mb-0">
+                    <span id="interval_time_display" class="output-interval">0:00</span> 
+                    <span class="fs-4 text-muted">M:SS</span>
+                </p>
+                
+                <p class="mt-3 fs-5 text-muted">
+                    Swim Time: $\text{<span id="swim_time_display">0:00</span>}$ + Rest Time: $\text{<span id="rest_time_display">0</span>}$ seconds
+                </p>
+            </div>
+            
+            <p class="small-muted text-center mt-3">
+                **Interval** = $\text{Swim Time} + \text{Rest Time}$. Start the next repeat when the pace clock hits the interval mark.
+            </p>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const distanceUnitSelect = document.getElementById('distance_unit');
+    const distanceUnitDisplays = document.querySelectorAll('.distance-unit-display');
+
+    /** Updates the unit labels based on user selection. */
+    function updateUnitDisplay() {
+        const unit = distanceUnitSelect.value.startsWith('m') ? 'm' : 'yd';
+        distanceUnitDisplays.forEach(span => span.textContent = unit);
+    }
+
+    distanceUnitSelect.addEventListener('change', updateUnitDisplay);
+    window.onload = updateUnitDisplay; // Initialize on load
+
+    /** Converts total seconds into a readable M:SS format. */
+    function secondsToPaceTime(totalSeconds) {
+        if (totalSeconds <= 0 || isNaN(totalSeconds)) return 'N/A';
+        const m = Math.floor(totalSeconds / 60);
+        const s = Math.round(totalSeconds % 60);
+
+        const pad = (num) => num.toString().padStart(2, '0');
+        
+        return `${m}:${pad(s)}`;
+    }
+
+    document.getElementById('interval-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const paceM = parseInt(document.getElementById('pace_m').value);
+        const paceS = parseInt(document.getElementById('pace_s').value);
+        const swimDistance = parseFloat(document.getElementById('swim_distance').value);
+        const restTimeSec = parseFloat(document.getElementById('rest_time').value);
+
+        // 2. Validation
+        if (isNaN(paceM) || isNaN(paceS) || isNaN(swimDistance) || swimDistance <= 0 || isNaN(restTimeSec) || restTimeSec < 0) {
+            displayError("Please ensure all fields are filled with valid, non-negative values.");
+            return;
+        }
+
+        // 3. Calculation Logic
+        
+        // Target Pace in seconds per 100 units
+        const pacePer100Sec = (paceM * 60) + paceS;
+        
+        // Swim Time = (Distance / 100) * Pace per 100
+        const swimTimeSec = (swimDistance / 100) * pacePer100Sec;
+        
+        // Interval (Send-Off) Time = Swim Time + Rest Time
+        const intervalTimeSec = swimTimeSec + restTimeSec;
+
+        // 4. Update Result Display
+        
+        document.getElementById('swim_time_display').textContent = secondsToPaceTime(swimTimeSec);
+        document.getElementById('rest_time_display').textContent = restTimeSec.toFixed(0);
+        document.getElementById('interval_time_display').textContent = secondsToPaceTime(intervalTimeSec);
+
+        // 5. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

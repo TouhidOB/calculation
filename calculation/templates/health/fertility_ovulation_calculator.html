@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Fertility & Ovulation Calculator{% endblock %}
+
+{% block meta_description %}Estimate your ovulation date and most fertile window based on the start date of your last period and your average cycle length.{% endblock %}
+
+{% block meta_keywords %}ovulation calculator, fertility window, cycle tracking, conception, LMP, period dates{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #ec4899; /* Pink for Fertility */
+    }
+
+    .output-date {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ec4899; 
+    }
+
+    .window-card {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background-color: #fdf2f8; /* Lightest Pink */
+        border: 2px solid #f9a8d4;
+    }
+
+    .key-info {
+        font-weight: 500;
+        color: #831843;
+    }
+    
+    .disclaimer {
+        font-size: 0.85rem;
+        color: #ef4444; 
+        font-weight: 600;
+        border-top: 1px solid #fca5a5;
+        padding-top: 10px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💖 Fertility & Ovulation Calculator</h1>
+    <p class="small-muted">Estimate your ovulation date and the **most fertile window** based on your cycle history.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="fertility-form">
+            <h5 class="section-title">Step 1: Cycle Information</h5>
+
+            <label class="form-label d-block mt-3">Start Date of Last Period ($\text{LMP}$)</label>
+            <input type="date" class="form-control form-control-lg mb-3" id="lmp_date" required>
+
+            <label class="form-label d-block mt-3">Average Cycle Length (Days)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="cycle_length" placeholder="e.g., 28" min="20" max="45" step="1" value="28" required>
+                <span class="input-group-text">Days</span>
+            </div>
+            <small class="form-text text-muted d-block mb-3">Most cycles range from 24 to 35 days.</small>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Fertility Window</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Your Estimated Fertility Window</h5>
+        
+        <div id="results-container" class="mt-3 d-none">
+            
+            <div class="window-card">
+                <h6 class="key-info text-lg mb-2">Ovulation Date (Most Likely Day)</h6>
+                
+                <p class="mb-0">
+                    <span id="ovulation_date" class="output-date"></span>
+                </p>
+                <small class="text-muted">Ovulation typically occurs $\mathbf{14}$ days before the next period starts.</small>
+            </div>
+
+            <div class="window-card">
+                <h6 class="key-info text-lg mb-2">Peak Fertile Window</h6>
+                <p class="mb-0">
+                    <span id="fertile_start" class="output-date"></span>
+                    <span class="fs-4 text-muted"> to </span>
+                    <span id="fertile_end" class="output-date"></span> 
+                </p>
+                <small class="text-muted">This includes the 5 days before ovulation and the day of ovulation.</small>
+            </div>
+            
+            <div class="window-card">
+                <h6 class="key-info text-lg mb-2">Estimated Next Period Start</h6>
+                <p class="mb-0">
+                    <span id="next_period_start" class="output-date"></span>
+                </p>
+            </div>
+            
+        </div>
+        
+        <p class="disclaimer">
+            ⚠️ DISCLAIMER: This calculator provides an *estimate* based on generalized cycle data. Actual ovulation dates can vary significantly. Always use basal body temperature ($\text{BBT}$) charting or ovulation predictor kits ($\text{OPKs}$) for accurate timing.
+        </p>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MS_PER_DAY = 1000 * 60 * 60 * 24;
+    const LUTEAL_PHASE_DAYS = 14; // Standard time from ovulation to next period
+
+    /** Helper to format a Date object into a readable string (e.g., Mon, Dec 25, 2025). */
+    function formatDate(date) {
+        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+    }
+
+    document.getElementById('fertility-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const lmpDateStr = document.getElementById('lmp_date').value;
+        const cycleLength = parseInt(document.getElementById('cycle_length').value);
+
+        // 2. Validation
+        if (!lmpDateStr || isNaN(cycleLength) || cycleLength < 20 || cycleLength > 45) {
+            displayError("Please enter a valid Last Period Start Date and an average cycle length between 20 and 45 days.");
+            return;
+        }
+        
+        const lmpDate = new Date(lmpDateStr);
+
+        // 3. Calculation Logic
+
+        // A. Estimated Next Period Start (LMP + Cycle Length)
+        let nextPeriodTime = lmpDate.getTime() + (cycleLength * MS_PER_DAY);
+        const nextPeriodDate = new Date(nextPeriodTime);
+
+        // B. Estimated Ovulation Date (Next Period Start - 14 Days)
+        let ovulationTime = nextPeriodTime - (LUTEAL_PHASE_DAYS * MS_PER_DAY);
+        const ovulationDate = new Date(ovulationTime);
+
+        // C. Fertile Window (5 days before ovulation + day of ovulation)
+        const fertileEndTime = ovulationTime;
+        const fertileStartTime = ovulationTime - (5 * MS_PER_DAY);
+        
+        const fertileEndDate = new Date(fertileEndTime);
+        const fertileStartDay = new Date(fertileStartTime);
+
+        // 4. Update Result Display
+        document.getElementById('next_period_start').textContent = formatDate(nextPeriodDate);
+        document.getElementById('ovulation_date').textContent = formatDate(ovulationDate);
+        document.getElementById('fertile_start').textContent = formatDate(fertileStartDay);
+        document.getElementById('fertile_end').textContent = formatDate(fertileEndDate);
+
+        // 5. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

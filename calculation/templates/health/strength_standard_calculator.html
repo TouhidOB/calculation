@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Strength Standard Calculator (Powerlifts){% endblock %}
+
+{% block meta_description %}Categorize your 1-Rep Max (1RM) strength level (Squat, Bench, Deadlift) based on your body weight and gender, using common strength standards (Novice, Intermediate, Advanced).{% endblock %}
+
+{% block meta_keywords %}strength calculator, powerlifting standards, 1RM, novice, intermediate, advanced lift, bench press standards, deadlift standards, squat standards{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #f97316; /* Orange for Strength/Power */
+    }
+
+    .output-category {
+        font-size: 2.5rem;
+        font-weight: bold;
+        line-height: 1.1;
+        margin-bottom: 5px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .output-ratio {
+        font-size: 1.1rem;
+        color: #4b5563;
+        font-style: italic;
+    }
+
+    .window-card {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background-color: #fff7ed; /* Lightest Orange */
+        border: 2px solid #fed7aa;
+        text-align: center;
+    }
+
+    .target-next-level {
+        background-color: #fef3c7;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        font-size: 0.95rem;
+    }
+
+    .unit-selector {
+        max-width: 100px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💪 Strength Standard Calculator (1RM)</h1>
+    <p class="small-muted">Categorize your $1$-Rep Max ($\text{1RM}$) for the main power lifts based on your body weight and gender.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="strength-form">
+            <h5 class="section-title">Step 1: Your Details</h5>
+
+            <!-- Gender -->
+            <label class="form-label d-block mt-3">Gender</label>
+            <select class="form-select mb-3" id="user_gender" required>
+                <option value="" disabled selected>-- Select Gender --</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+            
+            <!-- Body Weight -->
+            <label class="form-label d-block mt-3">Body Weight</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="body_weight" placeholder="e.g., 80" min="30" max="250" step="1" required>
+                <select class="form-select unit-selector" id="weight_unit">
+                    <option value="kg" selected>Kg</option>
+                    <option value="lb">Lbs</option>
+                </select>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Lift Information</h5>
+
+            <!-- Lift Type -->
+            <label class="form-label d-block mt-3">Lift Type</label>
+            <select class="form-select mb-3" id="lift_type" required>
+                <option value="" disabled selected>-- Select Lift --</option>
+                <option value="bench">Bench Press</option>
+                <option value="squat">Squat</option>
+                <option value="deadlift">Deadlift</option>
+            </select>
+            
+            <!-- Lift Weight (1RM) -->
+            <label class="form-label d-block mt-3">Your $1\text{RM}$ Weight</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="lift_weight" placeholder="e.g., 100" min="10" max="500" step="0.5" required>
+                <span class="input-group-text lift-unit-display">Kg</span>
+            </div>
+
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Categorize Strength Level</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Your Strength Standard</h5>
+        
+        <div id="results-container" class="mt-3 d-none">
+            
+            <div class="window-card">
+                <h6 class="text-lg mb-2 text-muted">Result for <span id="lift_name"></span></h6>
+                
+                <p class="mb-0">
+                    <span id="strength_category" class="output-category"></span>
+                </p>
+                <p class="output-ratio">Lift-to-Bodyweight Ratio: <span id="ratio_value"></span></p>
+
+                <div id="target_next_level" class="target-next-level"></div>
+            </div>
+            
+            <p class="small-muted text-center mt-3">
+                Note: Standards are estimated based on general population averages and not official powerlifting classifications.
+            </p>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const LB_PER_KG = 2.20462;
+    const CATEGORIES = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Elite'];
+
+    // Strength Multipliers (Based on Body Weight in KG)
+    // Values represent the minimum Body Weight multiplier required to reach that standard.
+    const STRENGTH_MULTIPLIERS = {
+        male: {
+            bench: [0.5, 0.9, 1.3, 1.7, 2.0],
+            squat: [0.8, 1.2, 1.7, 2.2, 2.7],
+            deadlift: [1.0, 1.5, 2.2, 2.7, 3.2],
+        },
+        female: {
+            bench: [0.3, 0.5, 0.7, 1.0, 1.2],
+            squat: [0.5, 0.8, 1.1, 1.5, 1.8],
+            deadlift: [0.8, 1.2, 1.6, 2.1, 2.5],
+        }
+    };
+
+    // Update the unit display next to the lift weight input
+    const weightUnitSelect = document.getElementById('weight_unit');
+    const liftUnitDisplay = document.querySelector('.lift-unit-display');
+
+    weightUnitSelect.addEventListener('change', () => {
+        liftUnitDisplay.textContent = weightUnitSelect.value.toUpperCase();
+    });
+
+    // Initialize unit display
+    window.onload = () => {
+        liftUnitDisplay.textContent = weightUnitSelect.value.toUpperCase();
+    };
+
+
+    /**
+     * Finds the strength category based on the actual lift-to-BW ratio.
+     */
+    function getStrengthCategory(gender, liftType, ratio) {
+        const multipliers = STRENGTH_MULTIPLIERS[gender][liftType];
+
+        for (let i = multipliers.length - 1; i >= 0; i--) {
+            if (ratio >= multipliers[i]) {
+                return { 
+                    category: CATEGORIES[i],
+                    nextMultiplier: (i < multipliers.length - 1) ? multipliers[i + 1] : null,
+                    nextCategory: (i < multipliers.length - 1) ? CATEGORIES[i + 1] : 'Master',
+                    currentMultiplier: multipliers[i],
+                    color: getCategoryColor(CATEGORIES[i])
+                };
+            }
+        }
+        // Below the lowest defined level
+        return { 
+            category: 'Untrained',
+            nextMultiplier: multipliers[0],
+            nextCategory: CATEGORIES[0],
+            currentMultiplier: 0,
+            color: 'text-gray-500'
+        };
+    }
+
+    function getCategoryColor(category) {
+        switch (category) {
+            case 'Elite': return 'text-purple-600';
+            case 'Advanced': return 'text-red-600';
+            case 'Intermediate': return 'text-green-600';
+            case 'Novice': return 'text-yellow-600';
+            case 'Beginner': return 'text-blue-600';
+            default: return 'text-gray-500';
+        }
+    }
+
+
+    document.getElementById('strength-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const gender = document.getElementById('user_gender').value;
+        const liftType = document.getElementById('lift_type').value;
+        const weightUnit = document.getElementById('weight_unit').value;
+        const bodyWeightInput = parseFloat(document.getElementById('body_weight').value);
+        const liftWeightInput = parseFloat(document.getElementById('lift_weight').value);
+
+        // 2. Validation
+        if (!gender || !liftType || isNaN(bodyWeightInput) || bodyWeightInput <= 0 || isNaN(liftWeightInput) || liftWeightInput <= 0) {
+            displayError("Please ensure all fields are filled with valid, positive values.");
+            return;
+        }
+
+        // 3. Normalize Weights to Kilograms (KG)
+        const bodyWeightKg = weightUnit === 'lb' ? bodyWeightInput / LB_PER_KG : bodyWeightInput;
+        const liftWeightKg = weightUnit === 'lb' ? liftWeightInput / LB_PER_KG : liftWeightInput;
+
+        // 4. Calculate Ratio and Category
+        const liftRatio = liftWeightKg / bodyWeightKg;
+        const result = getStrengthCategory(gender, liftType, liftRatio);
+
+        // 5. Calculate Target for Next Level
+        let nextTargetText = '';
+        if (result.nextMultiplier) {
+            const nextTargetKg = bodyWeightKg * result.nextMultiplier;
+            
+            // Convert target back to user's unit for display
+            const targetDisplayWeight = weightUnit === 'lb' ? nextTargetKg * LB_PER_KG : nextTargetKg;
+            const unitText = weightUnit.toUpperCase();
+            
+            nextTargetText = `To reach the <span class="fw-bold">${result.nextCategory}</span> standard, you need to lift approx. <span class="fw-bold">${targetDisplayWeight.toFixed(1)} ${unitText}</span>.`;
+        } else {
+            nextTargetText = "Congratulations! You have achieved the Elite standard for this lift. Set your own goals!";
+        }
+
+        // 6. Update Result Display
+        
+        document.getElementById('lift_name').textContent = document.querySelector(`#lift_type option[value="${liftType}"]`).textContent;
+        
+        const categorySpan = document.getElementById('strength_category');
+        categorySpan.textContent = result.category;
+        
+        // Remove old color classes and add the new one
+        categorySpan.className = 'output-category'; 
+        categorySpan.classList.add(result.color.substring(5)); // Add tailwind color class
+        categorySpan.style.color = getCategoryColorValue(result.color); // Apply specific color
+
+        document.getElementById('ratio_value').textContent = `${liftRatio.toFixed(2)}x Body Weight (${liftWeightInput.toFixed(1)} ${weightUnit.toUpperCase()})`;
+        
+        document.getElementById('target_next_level').innerHTML = nextTargetText;
+
+
+        // 7. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    // Helper to get actual hex color for better visual consistency
+    function getCategoryColorValue(tailwindClass) {
+        if (tailwindClass.includes('purple')) return '#9333ea';
+        if (tailwindClass.includes('red')) return '#dc2626';
+        if (tailwindClass.includes('green')) return '#10b981';
+        if (tailwindClass.includes('yellow')) return '#f59e0b';
+        if (tailwindClass.includes('blue')) return '#3b82f6';
+        return '#6b7280';
+    }
+
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

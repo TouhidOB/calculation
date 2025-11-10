@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Running Race Time Predictor{% endblock %}
+
+{% block meta_description %}Predict your finish times for 5K, 10K, Half-Marathon, and Marathon based on a recent race result using Riegel's formula.{% endblock %}
+
+{% block meta_keywords %}race time predictor, running calculator, 5K prediction, marathon estimate, Riegel's formula, running pace{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #0d9488; /* Teal for running/endurance */
+    }
+
+    .output-time {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #0d9488;
+        line-height: 1.1;
+    }
+
+    .window-card {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background-color: #f0fdfa; /* Lightest Teal */
+        border: 2px solid #ccfbf1;
+        
+    }
+
+    .target-lift {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0f766e;
+    }
+
+    .formula-note {
+        font-style: italic;
+        color: #4b5563;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">👟 Race Time Predictor</h1>
+    <p class="small-muted">Estimate your finish times for $\text{5K}$, $\text{10K}$, Half-Marathon ($\text{HM}$), and Marathon ($\text{M}$) based on a recent race performance.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="time-predictor-form">
+            <h5 class="section-title">Step 1: Your Recent Race Result</h5>
+
+            <!-- Race Distance Input -->
+            <label class="form-label d-block mt-3">Recent Race Distance</label>
+            <select class="form-select mb-3" id="race_distance_km" required>
+                <option value="" disabled selected>-- Select Distance --</option>
+                <option value="5">5K ($\text{3.1}$ miles)</option>
+                <option value="10">10K ($\text{6.2}$ miles)</option>
+                <option value="21.0975">Half Marathon ($\text{13.1}$ miles)</option>
+                <option value="42.195">Marathon ($\text{26.2}$ miles)</option>
+            </select>
+            
+            <!-- Finish Time Input -->
+            <label class="form-label d-block mt-3">Finish Time (Hours:Minutes:Seconds)</label>
+            <div class="row g-2 mb-3">
+                <div class="col-4">
+                    <input type="number" class="form-control" id="time_h" placeholder="Hours (H)" min="0" max="10" value="0" required>
+                </div>
+                <div class="col-4">
+                    <input type="number" class="form-control" id="time_m" placeholder="Minutes (M)" min="0" max="59" value="30" required>
+                </div>
+                <div class="col-4">
+                    <input type="number" class="form-control" id="time_s" placeholder="Seconds (S)" min="0" max="59" value="0" required>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Predict Finish Times</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Predicted Race Times</h5>
+        
+        <div id="results-container" class="mt-3 d-none">
+            
+            <!-- Prediction Grid -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="window-card">
+                        <h6 class="target-lift mb-1">5 Kilometer ($\text{5K}$)</h6>
+                        <p class="output-time" id="pred_5k"></p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="window-card">
+                        <h6 class="target-lift mb-1">10 Kilometer ($\text{10K}$)</h6>
+                        <p class="output-time" id="pred_10k"></p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="window-card">
+                        <h6 class="target-lift mb-1">Half-Marathon ($\text{HM}$)</h6>
+                        <p class="output-time" id="pred_hm"></p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="window-card">
+                        <h6 class="target-lift mb-1">Marathon ($\text{M}$)</h6>
+                        <p class="output-time" id="pred_m"></p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="formula-note text-center">
+                Prediction uses Riegel's formula: $\text{Time}_2 = \text{Time}_1 \times (\frac{\text{Distance}_2}{\text{Distance}_1})^{1.06}$
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Standard race distances in kilometers
+    const TARGET_DISTANCES_KM = {
+        'pred_5k': 5.0,
+        'pred_10k': 10.0,
+        'pred_hm': 21.0975, // Half Marathon
+        'pred_m': 42.195,   // Marathon
+    };
+
+    /** Converts hours, minutes, and seconds into total seconds. */
+    function timeToSeconds(h, m, s) {
+        return (h * 3600) + (m * 60) + s;
+    }
+
+    /** Converts total seconds into a readable HH:MM:SS format. */
+    function secondsToTime(totalSeconds) {
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = Math.round(totalSeconds % 60);
+
+        const pad = (num) => num.toString().padStart(2, '0');
+        
+        if (h > 0) {
+            return `${h}:${pad(m)}:${pad(s)}`;
+        } else {
+            return `${m}:${pad(s)}`;
+        }
+    }
+
+    /** * Applies Riegel's formula: T2 = T1 * (D2/D1)^1.06
+     * @param {number} t1 - Time of known race (seconds).
+     * @param {number} d1 - Distance of known race (km).
+     * @param {number} d2 - Distance of target race (km).
+     * @returns {number} Predicted time of target race (seconds).
+     */
+    function riegelPredictor(t1, d1, d2) {
+        if (d1 <= 0 || t1 <= 0) return 0;
+        return t1 * Math.pow((d2 / d1), 1.06);
+    }
+
+    document.getElementById('time-predictor-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const distance1Km = parseFloat(document.getElementById('race_distance_km').value);
+        const timeH = parseInt(document.getElementById('time_h').value);
+        const timeM = parseInt(document.getElementById('time_m').value);
+        const timeS = parseInt(document.getElementById('time_s').value);
+
+        const time1Sec = timeToSeconds(timeH, timeM, timeS);
+
+        // 2. Validation
+        if (!distance1Km || isNaN(time1Sec) || time1Sec <= 0) {
+            displayError("Please select a race distance and enter a valid finish time greater than zero.");
+            return;
+        }
+
+        // 3. Calculation and Update
+        let allValid = true;
+        for (const [id, distance2Km] of Object.entries(TARGET_DISTANCES_KM)) {
+            try {
+                const predictedTimeSec = riegelPredictor(time1Sec, distance1Km, distance2Km);
+                document.getElementById(id).textContent = secondsToTime(predictedTimeSec);
+            } catch (error) {
+                // If a prediction fails (e.g., trying to predict a shorter race from a much longer one, though the formula handles it generally), display an error.
+                document.getElementById(id).textContent = 'N/A';
+                allValid = false;
+            }
+        }
+        
+        if (!allValid) {
+             displayError("One or more predictions failed. This may occur when attempting to predict significantly shorter race times from a much longer race result.");
+        }
+
+
+        // 4. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

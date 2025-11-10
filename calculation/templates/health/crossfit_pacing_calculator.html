@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}CrossFit WOD Pacing Calculator{% endblock %}
+
+{% block meta_description %}Plan your CrossFit WOD strategy by calculating required Reps Per Minute (RPM), work/rest ratios, and set breakdowns for a target finish time (For Time WODs).{% endblock %}
+
+{% block meta_keywords %}CrossFit WOD, pacing calculator, Reps per Minute, RPM, workout strategy, For Time, WOD planning{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #dc2626; /* Red for Intensity */
+    }
+
+    .output-rpm {
+        font-size: 3.5rem;
+        font-weight: bold;
+        color: #dc2626;
+        line-height: 1;
+    }
+
+    .output-label {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #991b1b;
+    }
+
+    .window-card {
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        background-color: #fef2f2; /* Lightest Red */
+        border: 2px solid #fca5a5;
+        text-align: center;
+    }
+
+    .metric-value {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #b91c1c;
+    }
+    
+    .strategy-note {
+        font-style: italic;
+        color: #4b5563;
+        margin-top: 15px;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🏋️ WOD Pacing Strategy Planner</h1>
+    <p class="small-muted">Plan your **For Time (FT)** $\text{WOD}$ strategy by setting your target time and breaking down the required intensity and rest.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="wod-pacing-form">
+            <h5 class="section-title">Step 1: WOD Volume & Target Time</h5>
+
+            <!-- Total Reps/Cals -->
+            <label class="form-label d-block mt-3">Total Repetitions or Calories in the WOD</label>
+            <input type="number" class="form-control mb-3" id="total_volume" placeholder="e.g., 150 (for a 30-20-10 pullup WOD)" min="1" step="1" required>
+
+            <!-- Number of Transitions/Sets/Rounds -->
+            <label class="form-label d-block mt-3">Estimated Number of Transitions/Breaks (or Rounds)</label>
+            <input type="number" class="form-control mb-3" id="num_breaks" placeholder="e.g., 5 (for 5 rounds or 5 planned breaks)" min="0" step="1" required>
+            
+            <!-- Target Finish Time -->
+            <label class="form-label d-block mt-3">Target Finish Time (M:SS)</label>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <input type="number" class="form-control" id="time_m" placeholder="Minutes (M)" min="0" max="60" value="10" required>
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control" id="time_s" placeholder="Seconds (S)" min="0" max="59" value="0" required>
+                </div>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Transition Strategy</h5>
+
+            <!-- Estimated Rest Per Break -->
+            <label class="form-label d-block mt-3">Average Rest/Transition Time per Break (Seconds)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="rest_per_break" placeholder="e.g., 5" min="0" max="30" step="1" required>
+                <span class="input-group-text">Seconds</span>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Plan WOD Strategy</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Pacing Strategy Breakdown</h5>
+        
+        <div id="results-container" class="mt-3 d-none">
+            
+            <!-- Required Pace -->
+            <div class="window-card">
+                <h6 class="output-label mb-3">Required Overall Reps Per Minute ($\text{RPM}$):</h6>
+                
+                <p class="mb-0">
+                    <span id="required_rpm" class="output-rpm">0</span> 
+                    <span class="fs-4 text-muted">RPM</span>
+                </p>
+            </div>
+            
+            <!-- Strategic Metrics -->
+            <div class="window-card">
+                <div class="row text-start">
+                    <div class="col-md-6 mb-3">
+                        <span class="output-label d-block">Total Time Spent Resting/Transitioning:</span>
+                        <span class="metric-value" id="total_rest_time">0:00</span> ($\text{M:SS}$)
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <span class="output-label d-block">Net Working Time:</span>
+                        <span class="metric-value" id="net_working_time">0:00</span> ($\text{M:SS}$)
+                    </div>
+                    <div class="col-md-6">
+                        <span class="output-label d-block">Actual $\text{RPM}$ (during Work Time only):</span>
+                        <span class="metric-value" id="actual_rpm">0</span> $\text{RPM}$
+                    </div>
+                    <div class="col-md-6">
+                        <span class="output-label d-block">Suggested Set Size for $30 \text{ Reps/Min}$:</span>
+                        <span class="metric-value" id="suggested_set_size">0</span> $\text{Reps}$
+                    </div>
+                </div>
+            </div>
+            
+            <p class="strategy-note text-center">
+                Use the **Required Overall RPM** to monitor your pace on the clock. The **Actual RPM** shows the intensity required when you are actively working.
+            </p>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+    /** Converts total seconds into a readable M:SS format. */
+    function secondsToTime(totalSeconds) {
+        if (totalSeconds < 0 || isNaN(totalSeconds)) return 'N/A';
+        const m = Math.floor(totalSeconds / 60);
+        const s = Math.round(totalSeconds % 60);
+
+        const pad = (num) => num.toString().padStart(2, '0');
+        
+        return `${m}:${pad(s)}`;
+    }
+
+    document.getElementById('wod-pacing-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const totalVolume = parseFloat(document.getElementById('total_volume').value);
+        const numBreaks = parseFloat(document.getElementById('num_breaks').value);
+        const timeM = parseInt(document.getElementById('time_m').value);
+        const timeS = parseInt(document.getElementById('time_s').value);
+        const restPerBreak = parseFloat(document.getElementById('rest_per_break').value);
+
+        const targetTimeSec = (timeM * 60) + timeS;
+
+        // 2. Validation
+        if (isNaN(totalVolume) || totalVolume <= 0 || isNaN(numBreaks) || numBreaks < 0 || isNaN(targetTimeSec) || targetTimeSec <= 0 || isNaN(restPerBreak) || restPerBreak < 0) {
+            displayError("Please ensure all fields contain valid positive numbers.");
+            return;
+        }
+
+        // 3. Calculation Logic
+        
+        // Total Rest Time
+        const totalRestTimeSec = numBreaks * restPerBreak;
+        
+        if (totalRestTimeSec >= targetTimeSec) {
+             return displayError("Total planned rest time exceeds the target finish time. Please adjust your target time or reduce rest.");
+        }
+
+        // Net Working Time
+        const netWorkingTimeSec = targetTimeSec - totalRestTimeSec;
+
+        // Required Overall RPM (Includes rest and transitions)
+        // This is the pace you must average over the entire WOD time
+        const requiredOverallRPM = (totalVolume / targetTimeSec) * 60;
+
+        // Actual RPM (During active work periods only)
+        // This is the intensity you must maintain when the clock is running and you're moving
+        const actualRPM = (totalVolume / netWorkingTimeSec) * 60;
+        
+        // Suggested Set Size (Based on a manageable pace, e.g., 30 RPM or 2 seconds per rep)
+        // Set Size = (Actual RPM / 60) * Planned Set Time (Let's assume 10 seconds per set)
+        // A better heuristic: if you plan 10 breaks, what set size gets you to the total reps?
+        const numSets = numBreaks + 1; // 5 breaks means 6 sets
+        const suggestedSetSize = totalVolume / numSets;
+
+
+        // 4. Update Result Display
+        
+        document.getElementById('required_rpm').textContent = requiredOverallRPM.toFixed(1);
+        document.getElementById('total_rest_time').textContent = secondsToTime(totalRestTimeSec);
+        document.getElementById('net_working_time').textContent = secondsToTime(netWorkingTimeSec);
+        document.getElementById('actual_rpm').textContent = actualRPM.toFixed(1);
+        document.getElementById('suggested_set_size').textContent = Math.ceil(suggestedSetSize).toFixed(0);
+
+
+        // 5. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Pacing Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

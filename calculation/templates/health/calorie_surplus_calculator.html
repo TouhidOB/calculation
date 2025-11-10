@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Calorie Surplus Calculator for Weight Gain{% endblock %}
+
+{% block meta_description %}Calculate the necessary daily calorie surplus to achieve your desired weekly weight gain target, based on your estimated TDEE. This is essential for muscle building or bulking goals.{% endblock %}
+
+{% block meta_keywords %}calorie surplus, weight gain, bulking, daily calorie target, TDEE, muscle gain calculator, fitness goal{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+
+    .gender-group {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 10px;
+    }
+
+    .goal-text {
+        color: #17a2b8; /* Info blue for surplus */
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">➕ Calorie Surplus Calculator</h1>
+    <p class="small-muted">Determine your daily calorie target for **weight gain** (bulking) by setting a weekly goal. This tool estimates your **Total Daily Energy Expenditure (TDEE)** and adds the necessary surplus.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="surplus-form">
+            <h5 class="section-title">Step 1: Personal Inputs (to calculate TDEE)</h5>
+
+            <!-- Gender Input -->
+            <div class="form-group mb-3">
+                <label class="form-label d-block">Gender</label>
+                <div class="gender-group">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderMale" value="male" required>
+                        <label class="form-check-label" for="genderMale">Male</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="female" required>
+                        <label class="form-check-label" for="genderFemale">Female</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Age Input -->
+            <input type="number" class="form-control my-2" id="age" placeholder="Age (Years)" min="15" max="100" required>
+
+            <!-- Weight Input -->
+            <div class="input-group my-2">
+                <input type="number" class="form-control" id="weight_lb" placeholder="Weight (e.g., 180)" min="50" max="800" step="0.1" required>
+                <span class="input-group-text">lbs</span>
+            </div>
+
+            <!-- Height Input (Feet and Inches) -->
+            <label class="form-label d-block mt-3">Height</label>
+            <div class="row g-2">
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="height_ft" placeholder="Feet (e.g., 5)" min="3" max="7" required>
+                        <span class="input-group-text">ft</span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="height_in" placeholder="Inches (e.g., 10)" min="0" max="11" required>
+                        <span class="input-group-text">in</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Level Input -->
+            <div class="form-group my-3">
+                <label for="activity_level" class="form-label">Select Your Average Activity Level</label>
+                <select class="form-select" id="activity_level" required>
+                    <option value="" disabled selected>Choose your level</option>
+                    <option value="1.2">Sedentary (Little or no exercise)</option>
+                    <option value="1.375">Lightly Active (Light exercise/sports 1-3 days/week)</option>
+                    <option value="1.55">Moderately Active (Moderate exercise/sports 3-5 days/week)</option>
+                    <option value="1.725">Very Active (Hard exercise/sports 6-7 days a week)</option>
+                    <option value="1.9">Extra Active (Very hard exercise/physical job)</option>
+                </select>
+            </div>
+            
+            <h5 class="section-title mt-4">Step 2: Weight Gain Goal</h5>
+
+            <!-- Goal Input -->
+            <div class="input-group my-2">
+                <input type="number" class="form-control" id="weekly_gain" placeholder="Desired Weekly Weight Gain" min="0.25" max="1.5" step="0.25" required>
+                <span class="input-group-text">lbs per week</span>
+            </div>
+            <small class="form-text text-muted">A safe and healthy muscle-focused gain rate is typically between 0.25 to 1.0 lbs per week. Higher rates may increase fat storage.</small>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Calorie Goal</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="surplus-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Weight Gain Metrics Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="surplus-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="surplus-body"></tbody>
+        </table>
+
+        <canvas id="surplus-chart" class="d-none"></canvas>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let surplusChart = null;
+
+    const activityMultipliers = {
+        '1.2': 'Sedentary',
+        '1.375': 'Lightly Active',
+        '1.55': 'Moderately Active',
+        '1.725': 'Very Active',
+        '1.9': 'Extra Active'
+    };
+
+    document.getElementById('surplus-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const age = parseFloat(document.getElementById('age').value);
+        const weight_lb = parseFloat(document.getElementById('weight_lb').value);
+        const height_ft = parseFloat(document.getElementById('height_ft').value);
+        const height_in = parseFloat(document.getElementById('height_in').value);
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        const selected_multiplier = parseFloat(document.getElementById('activity_level').value);
+        const weekly_gain_lb = parseFloat(document.getElementById('weekly_gain').value);
+        
+        // 2. Unit Conversions and Constants
+        const weight_kg = weight_lb * 0.453592;
+        const height_cm = (height_ft * 30.48) + (height_in * 2.54);
+        const CALORIES_PER_LB_TISSUE = 3500; // Standard estimate for tissue gained per pound
+
+        let BMR;
+        // 3. Calculate BMR (Mifflin-St Jeor Equation)
+        if (gender === 'male') {
+            BMR = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) + 5;
+        } else { // female
+            BMR = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) - 161;
+        }
+
+        // 4. Calculate TDEE
+        const TDEE = BMR * selected_multiplier;
+
+        // 5. Calculate Surplus
+        // Weekly Surplus needed = desired_weekly_gain_lb * 3500 kcal
+        const weekly_surplus_kcal = weekly_gain_lb * CALORIES_PER_LB_TISSUE;
+        // Daily Surplus needed = Weekly Surplus / 7 days
+        const daily_surplus_kcal = weekly_surplus_kcal / 7;
+        
+        // 6. Calculate Calorie Target
+        const daily_calorie_target = TDEE + daily_surplus_kcal;
+        
+        // 7. Round Results
+        const BMR_rounded = BMR.toFixed(0);
+        const TDEE_rounded = TDEE.toFixed(0);
+        const daily_surplus_rounded = daily_surplus_kcal.toFixed(0);
+        const daily_target_rounded = daily_calorie_target.toFixed(0);
+
+        // 8. Update Result Text Display
+        const res = document.getElementById('surplus-result');
+        res.classList.remove('d-none');
+        res.innerHTML = `
+**Your Estimated TDEE (Maintenance):** ${TDEE_rounded} calories/day
+**Desired Weekly Gain:** ${weekly_gain_lb} lbs
+**Required Daily Calorie Surplus:** ${daily_surplus_rounded} calories
+
+---
+
+**Your Daily Calorie Target for Weight Gain:**
+<span class="goal-text">${daily_target_rounded} calories/day</span>
+<br><span style="color:green;font-weight:bold;">✨ Aim for this number to support your muscle or mass gain goals.</span>
+`;
+        
+        // 9. Update Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('surplus-table').classList.remove('d-none');
+        const tableBody = document.getElementById('surplus-body');
+        tableBody.innerHTML = `
+        <tr><td>Basal Metabolic Rate (BMR)</td><td>${BMR_rounded}</td></tr>
+        <tr><td>Total Daily Energy Expenditure (TDEE)</td><td>${TDEE_rounded}</td></tr>
+        <tr><td>Daily Calorie Surplus</td><td>${daily_surplus_rounded}</td></tr>
+        <tr><td>**Daily Calorie Target**</td><td>**${daily_target_rounded}**</td></tr>
+        `;
+
+        // 10. Update Chart
+        const ctx = document.getElementById('surplus-chart').getContext('2d');
+        document.getElementById('surplus-chart').classList.remove('d-none');
+        if (surplusChart) surplusChart.destroy();
+        
+        // Data for the chart: TDEE and the Surplus
+        const chartData = [
+            TDEE, // Maintenance Calories
+            daily_surplus_kcal // Surplus Calories
+        ];
+
+        surplusChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['TDEE (Maintenance)', 'Required Calorie Surplus'],
+                datasets: [{
+                    data: chartData,
+                    backgroundColor: [
+                        '#4bc0c0', // TDEE color
+                        '#17a2b8'  // Surplus color (blue)
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Daily Calorie Requirement Breakdown' }
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}

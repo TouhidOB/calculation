@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Calorie Deficit Calculator for Weight Loss{% endblock %}
+
+{% block meta_description %}Calculate the necessary daily calorie deficit to achieve your desired weekly weight loss target, based on your estimated TDEE.
+{% endblock %}
+
+{% block meta_keywords %}calorie deficit, weight loss goal, daily calorie target, TDEE, weight management, fitness calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+
+    .gender-group {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 10px;
+    }
+
+    .goal-text {
+        color: #d9534f; /* Danger red for deficit */
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">📉 Calorie Deficit Calculator</h1>
+    <p class="small-muted">Determine your daily calorie target for weight loss by setting a weekly weight goal. This tool estimates your **Total Daily Energy Expenditure (TDEE)** and subtracts the necessary deficit.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="deficit-form">
+            <h5 class="section-title">Step 1: Personal Inputs (to calculate TDEE)</h5>
+
+            <!-- Gender Input -->
+            <div class="form-group mb-3">
+                <label class="form-label d-block">Gender</label>
+                <div class="gender-group">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderMale" value="male" required>
+                        <label class="form-check-label" for="genderMale">Male</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="female" required>
+                        <label class="form-check-label" for="genderFemale">Female</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Age Input -->
+            <input type="number" class="form-control my-2" id="age" placeholder="Age (Years)" min="15" max="100" required>
+
+            <!-- Weight Input -->
+            <div class="input-group my-2">
+                <input type="number" class="form-control" id="weight_lb" placeholder="Weight (e.g., 180)" min="50" max="800" step="0.1" required>
+                <span class="input-group-text">lbs</span>
+            </div>
+
+            <!-- Height Input (Feet and Inches) -->
+            <label class="form-label d-block mt-3">Height</label>
+            <div class="row g-2">
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="height_ft" placeholder="Feet (e.g., 5)" min="3" max="7" required>
+                        <span class="input-group-text">ft</span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="height_in" placeholder="Inches (e.g., 10)" min="0" max="11" required>
+                        <span class="input-group-text">in</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Level Input -->
+            <div class="form-group my-3">
+                <label for="activity_level" class="form-label">Select Your Average Activity Level</label>
+                <select class="form-select" id="activity_level" required>
+                    <option value="" disabled selected>Choose your level</option>
+                    <option value="1.2">Sedentary (Little or no exercise)</option>
+                    <option value="1.375">Lightly Active (Light exercise/sports 1-3 days/week)</option>
+                    <option value="1.55">Moderately Active (Moderate exercise/sports 3-5 days/week)</option>
+                    <option value="1.725">Very Active (Hard exercise/sports 6-7 days a week)</option>
+                    <option value="1.9">Extra Active (Very hard exercise/physical job)</option>
+                </select>
+            </div>
+            
+            <h5 class="section-title mt-4">Step 2: Weight Loss Goal</h5>
+
+            <!-- Goal Input -->
+            <div class="input-group my-2">
+                <input type="number" class="form-control" id="weekly_loss" placeholder="Desired Weekly Weight Loss" min="0.25" max="2" step="0.25" required>
+                <span class="input-group-text">lbs per week</span>
+            </div>
+            <small class="form-text text-muted">A safe and sustainable weight loss rate is typically between 0.5 to 2.0 lbs per week.</small>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Calorie Goal</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none result-alert" id="deficit-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Weight Loss Metrics Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="deficit-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="deficit-body"></tbody>
+        </table>
+
+        <canvas id="deficit-chart" class="d-none"></canvas>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let deficitChart = null;
+
+    const activityMultipliers = {
+        '1.2': 'Sedentary',
+        '1.375': 'Lightly Active',
+        '1.55': 'Moderately Active',
+        '1.725': 'Very Active',
+        '1.9': 'Extra Active'
+    };
+
+    document.getElementById('deficit-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const age = parseFloat(document.getElementById('age').value);
+        const weight_lb = parseFloat(document.getElementById('weight_lb').value);
+        const height_ft = parseFloat(document.getElementById('height_ft').value);
+        const height_in = parseFloat(document.getElementById('height_in').value);
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        const selected_multiplier = parseFloat(document.getElementById('activity_level').value);
+        const selected_level_name = activityMultipliers[selected_multiplier.toString()];
+        const weekly_loss_lb = parseFloat(document.getElementById('weekly_loss').value);
+        
+        // Safety check for minimal calorie intake (e.g., cannot go below 1200 for women, 1500 for men)
+        const MIN_CALORIES = gender === 'male' ? 1500 : 1200; 
+
+        // 2. Unit Conversions and Constants
+        const weight_kg = weight_lb * 0.453592;
+        const height_cm = (height_ft * 30.48) + (height_in * 2.54);
+        const CALORIES_PER_LB_FAT = 3500; // Standard estimate for fat stored per pound
+
+        let BMR;
+        // 3. Calculate BMR (Mifflin-St Jeor Equation)
+        if (gender === 'male') {
+            BMR = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) + 5;
+        } else { // female
+            BMR = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) - 161;
+        }
+
+        // 4. Calculate TDEE
+        const TDEE = BMR * selected_multiplier;
+
+        // 5. Calculate Deficit
+        // Weekly Deficit needed = desired_weekly_loss_lb * 3500 kcal
+        const weekly_deficit_kcal = weekly_loss_lb * CALORIES_PER_LB_FAT;
+        // Daily Deficit needed = Weekly Deficit / 7 days
+        const daily_deficit_kcal = weekly_deficit_kcal / 7;
+        
+        // 6. Calculate Calorie Target
+        let daily_calorie_target = TDEE - daily_deficit_kcal;
+        let safety_warning = '';
+
+        // Apply safety floor
+        if (daily_calorie_target < MIN_CALORIES) {
+            safety_warning = `<br><span style="color:orange;font-weight:bold;">⚠️ Warning: Your calculated target (${daily_calorie_target.toFixed(0)}) is below the recommended minimum safe intake of ${MIN_CALORIES} calories/day. We recommend adjusting your weight loss goal to maintain at least ${MIN_CALORIES} calories/day.</span>`;
+            daily_calorie_target = MIN_CALORIES;
+        }
+        
+        // 7. Round Results
+        const BMR_rounded = BMR.toFixed(0);
+        const TDEE_rounded = TDEE.toFixed(0);
+        const daily_deficit_rounded = daily_deficit_kcal.toFixed(0);
+        const daily_target_rounded = daily_calorie_target.toFixed(0);
+
+
+        // 8. Update Result Text Display
+        const res = document.getElementById('deficit-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+        res.innerHTML = `
+**Your Estimated TDEE (Maintenance):** ${TDEE_rounded} calories/day
+**Desired Weekly Loss:** ${weekly_loss_lb} lbs
+**Required Daily Calorie Deficit:** ${daily_deficit_rounded} calories
+
+---
+
+**Your Daily Calorie Target for Weight Loss:**
+<span class="goal-text">${daily_target_rounded} calories/day</span>
+${safety_warning}
+`;
+        
+        // 9. Update Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('deficit-table').classList.remove('d-none');
+        const tableBody = document.getElementById('deficit-body');
+        tableBody.innerHTML = `
+        <tr><td>Basal Metabolic Rate (BMR)</td><td>${BMR_rounded}</td></tr>
+        <tr><td>Total Daily Energy Expenditure (TDEE)</td><td>${TDEE_rounded}</td></tr>
+        <tr><td>Daily Calorie Deficit</td><td>${daily_deficit_rounded}</td></tr>
+        <tr><td>**Daily Calorie Target**</td><td>**${daily_target_rounded}**</td></tr>
+        `;
+
+        // 10. Update Chart
+        const ctx = document.getElementById('deficit-chart').getContext('2d');
+        document.getElementById('deficit-chart').classList.remove('d-none');
+        if (deficitChart) deficitChart.destroy();
+
+        deficitChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Target Calorie Intake', 'Calorie Deficit', 'BMR (Resting Energy)'],
+                datasets: [{
+                    data: [
+                        Math.max(0, daily_calorie_target - BMR), // Intake above BMR
+                        daily_deficit_kcal, // The portion you cut
+                        BMR // The basic energy requirement
+                    ],
+                    backgroundColor: [
+                        '#4bc0c0', // Intake above BMR (Fuel for activity)
+                        '#ff6384', // Deficit (The part you eliminate)
+                        '#ff9f40'  // BMR (Core energy)
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Daily Calorie Breakdown (TDEE = Maintenance)' }
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}

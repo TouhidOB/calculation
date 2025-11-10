@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Basic Arithmetic Calculator{% endblock %}
+
+{% block meta_description %}Perform basic arithmetic calculations (+, -, *, /) using a simple, advanced calculator interface.{% endblock %}
+
+{% block meta_keywords %}calculator, arithmetic, math, plus, minus, multiply, divide, advanced calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Calculator specific styles */
+    .calc-wrapper {
+        background: #f7f7f7; /* Light background for the calculator block */
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-width: 400px; /* Constrain width for a handheld calculator feel */
+        margin: 0 auto;
+    }
+
+    .display-screen {
+        background: #e0e0e0; /* Slightly darker screen background */
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        text-align: right;
+        margin-bottom: 15px;
+        font-family: 'Consolas', monospace; /* Monospaced font for numbers */
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    #history-display {
+        font-size: 0.8rem;
+        color: #666;
+        min-height: 18px; /* Maintain height to prevent layout shift */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #current-input {
+        font-size: 2.2rem;
+        font-weight: bold;
+        min-height: 40px;
+        line-height: 1.2;
+    }
+
+    .calc-keys {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+
+    .calc-btn {
+        padding: 20px;
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.15s ease, transform 0.05s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .calc-btn:hover {
+        opacity: 0.9;
+    }
+
+    .calc-btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .number-btn, .decimal-btn {
+        background-color: #ffffff; /* White for numbers */
+        color: #333;
+    }
+    
+    .operator-btn {
+        background-color: #ff9500; /* Orange for operators */
+        color: white;
+    }
+
+    .clear-btn, .special-btn {
+        background-color: #dcdcdc; /* Light grey for clear/special */
+        color: #333;
+    }
+
+    .equal-btn {
+        background-color: #1abc9c; /* Teal/Green for equals */
+        color: white;
+    }
+
+    /* Span two columns for the zero button */
+    .zero-btn {
+        grid-column: span 2;
+        text-align: left;
+        padding-left: 30px; /* Adjust padding for better look */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">➕ Advanced Basic Arithmetic Calculator</h1>
+    <p class="small-muted">Perform standard arithmetic operations with a responsive, easy-to-use digital interface.</p>
+
+    <div class="calc-wrapper mt-4">
+        <div class="display-screen">
+            <div id="history-display"></div>
+            <div id="current-input">0</div>
+        </div>
+
+        <div class="calc-keys">
+            <button class="calc-btn clear-btn" data-type="clear">C</button>
+            <button class="calc-btn special-btn" data-type="sign">+/-</button>
+            <button class="calc-btn special-btn" data-type="backspace">⌫</button>
+            <button class="calc-btn operator-btn" data-value="/">÷</button>
+
+            <button class="calc-btn number-btn" data-value="7">7</button>
+            <button class="calc-btn number-btn" data-value="8">8</button>
+            <button class="calc-btn number-btn" data-value="9">9</button>
+            <button class="calc-btn operator-btn" data-value="*">×</button>
+
+            <button class="calc-btn number-btn" data-value="4">4</button>
+            <button class="calc-btn number-btn" data-value="5">5</button>
+            <button class="calc-btn number-btn" data-value="6">6</button>
+            <button class="calc-btn operator-btn" data-value="-">-</button>
+
+            <button class="calc-btn number-btn" data-value="1">1</button>
+            <button class="calc-btn number-btn" data-value="2">2</button>
+            <button class="calc-btn number-btn" data-value="3">3</button>
+            <button class="calc-btn operator-btn" data-value="+">+</button>
+
+            <button class="calc-btn number-btn zero-btn" data-value="0">0</button>
+            <button class="calc-btn decimal-btn" data-value=".">.</button>
+            <button class="calc-btn equal-btn" data-type="equals">=</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // State variables for the calculator logic
+    let currentInput = '0';
+    let history = '';
+    let waitingForSecondOperand = false;
+    let operator = null;
+    let firstOperand = null;
+
+    const currentDisplay = document.getElementById('current-input');
+    const historyDisplay = document.getElementById('history-display');
+    const keys = document.querySelector('.calc-keys');
+
+    // Function to update the display
+    function updateDisplay() {
+        // Limit display size and handle scientific notation for large numbers
+        if (currentInput.length > 12) {
+            currentDisplay.textContent = parseFloat(currentInput).toExponential(5);
+        } else {
+            currentDisplay.textContent = currentInput;
+        }
+        historyDisplay.textContent = history;
+    }
+
+    // Function to handle number input
+    function inputDigit(digit) {
+        if (waitingForSecondOperand === true) {
+            currentInput = digit;
+            waitingForSecondOperand = false;
+        } else {
+            currentInput = currentInput === '0' ? digit : currentInput + digit;
+        }
+        updateDisplay();
+    }
+
+    // Function to handle the decimal point
+    function inputDecimal() {
+        if (waitingForSecondOperand === true) {
+            currentInput = '0.';
+            waitingForSecondOperand = false;
+        } else if (!currentInput.includes('.')) {
+            currentInput += '.';
+        }
+        updateDisplay();
+    }
+    
+    // Function to toggle the sign (+/-)
+    function toggleSign() {
+        currentInput = (parseFloat(currentInput) * -1).toString();
+        updateDisplay();
+    }
+
+    // Function to handle clear operation
+    function clearCalculator() {
+        currentInput = '0';
+        history = '';
+        firstOperand = null;
+        operator = null;
+        waitingForSecondOperand = false;
+        updateDisplay();
+    }
+    
+    // Function to handle backspace
+    function backspace() {
+        if (currentInput.length > 1) {
+            currentInput = currentInput.slice(0, -1);
+        } else {
+            currentInput = '0';
+        }
+        updateDisplay();
+    }
+
+    // Function to perform the calculation
+    function calculate(first, second, op) {
+        first = parseFloat(first);
+        second = parseFloat(second);
+        if (op === '+') return first + second;
+        if (op === '-') return first - second;
+        if (op === '*') return first * second;
+        if (op === '/') {
+            if (second === 0) {
+                alert("Error: Division by zero!");
+                return 'Error';
+            }
+            return first / second;
+        }
+        return second; // Should not happen
+    }
+
+    // Function to handle operator selection
+    function handleOperator(nextOperator) {
+        const inputValue = parseFloat(currentInput);
+
+        if (operator && waitingForSecondOperand) {
+            // Allows chaining operations without hitting equals first
+            operator = nextOperator;
+            history = `${firstOperand} ${operatorSymbol(nextOperator)}`;
+            updateDisplay();
+            return;
+        }
+
+        if (firstOperand === null) {
+            firstOperand = inputValue;
+        } else if (operator) {
+            const result = calculate(firstOperand, inputValue, operator);
+            
+            if (result === 'Error') {
+                clearCalculator();
+                currentInput = 'Error';
+                updateDisplay();
+                return;
+            }
+
+            currentInput = String(result);
+            firstOperand = result;
+        }
+
+        waitingForSecondOperand = true;
+        operator = nextOperator;
+        history = `${firstOperand} ${operatorSymbol(nextOperator)}`;
+        updateDisplay();
+    }
+
+    // Utility to convert internal operator to display symbol
+    function operatorSymbol(op) {
+        if (op === '/') return '÷';
+        if (op === '*') return '×';
+        return op;
+    }
+
+    // Event listener for all calculator buttons
+    keys.addEventListener('click', (event) => {
+        const { target } = event;
+        const buttonValue = target.dataset.value;
+        const buttonType = target.dataset.type;
+
+        if (!target.matches('.calc-btn')) {
+            return;
+        }
+
+        if (buttonType === 'clear') {
+            clearCalculator();
+            return;
+        }
+        
+        if (buttonType === 'backspace') {
+            backspace();
+            return;
+        }
+        
+        if (buttonType === 'sign') {
+            toggleSign();
+            return;
+        }
+
+        if (buttonType === 'equals') {
+            if (firstOperand === null || operator === null) {
+                // If only one number is entered, just show it on the display
+                return;
+            }
+            
+            const secondOperand = parseFloat(currentInput);
+            const result = calculate(firstOperand, secondOperand, operator);
+            
+            if (result === 'Error') {
+                clearCalculator();
+                currentInput = 'Error';
+                updateDisplay();
+                return;
+            }
+
+            // Update history to show the full equation and result
+            history = `${firstOperand} ${operatorSymbol(operator)} ${secondOperand} =`;
+            currentInput = String(result);
+            firstOperand = null; // Clear state for a new calculation
+            operator = null;
+            waitingForSecondOperand = false;
+            updateDisplay();
+            return;
+        }
+
+        if (target.classList.contains('operator-btn')) {
+            handleOperator(buttonValue);
+            return;
+        }
+
+        if (target.classList.contains('number-btn')) {
+            inputDigit(buttonValue);
+            return;
+        }
+        
+        if (target.classList.contains('decimal-btn')) {
+            inputDecimal();
+            return;
+        }
+    });
+
+    // Initialize display on load
+    updateDisplay();
+</script>
+{% endblock %}

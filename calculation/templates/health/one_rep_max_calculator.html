@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}One-Rep Max (1RM) Calculator{% endblock %}
+
+{% block meta_description %}Estimate your theoretical One-Rep Max (1RM) for any lift based on the weight and repetitions you achieved, using multiple popular formulas (Epley, Brzycki, etc.).{% endblock %}
+
+{% block meta_keywords %}1RM calculator, one rep max, strength training, weightlifting, Epley formula, Brzycki formula, training max{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .rep-chart-container {
+        max-height: 400px;
+        margin-top: 20px;
+    }
+    
+    .best-1rm {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #0d6efd; /* Blue color for emphasis */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💪 One-Rep Max (1RM) Calculator</h1>
+    <p class="small-muted">Estimate your **One-Rep Max (1RM)**, the maximum weight you can lift for a single repetition, based on a sub-maximal set. You can use this to gauge progress and set training weights.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="1rm-form">
+            <h5 class="section-title">Inputs</h5>
+
+            <!-- Weight Lifted Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="weight_lifted" placeholder="Weight Lifted" min="10" max="1000" step="1" required>
+                <span class="input-group-text">lbs/kg (use the same unit consistently)</span>
+            </div>
+
+            <!-- Repetitions Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="repetitions" placeholder="Successful Repetitions (Reps)" min="2" max="12" step="1" required>
+                <span class="input-group-text">reps (max 12 recommended)</span>
+            </div>
+            <small class="form-text text-muted mb-3 d-block">Using more than 12 reps often leads to less accurate 1RM estimates.</small>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate 1RM</button>
+        </form>
+
+        <div class="alert alert-primary mt-4 d-none result-alert" id="1rm-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Formula Estimates & Training Percentages</h5>
+        <table class="table table-bordered mt-2 d-none" id="1rm-table">
+            <thead>
+                <tr>
+                    <th>Formula</th>
+                    <th>Estimated 1RM</th>
+                </tr>
+            </thead>
+            <tbody id="1rm-body"></tbody>
+        </table>
+
+        <div class="rep-chart-container">
+            <canvas id="1rm-chart" class="d-none"></canvas>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let trainingChart = null;
+
+    // Formulas adapted from Wikipedia/common sources
+    const formulas = {
+        'Epley': (w, r) => w * (1 + (r / 30)),
+        'Brzycki': (w, r) => w * (36 / (37 - r)),
+        'Lander': (w, r) => w * (100 / (101.3 - 2.6713 * r)),
+        'Lombardi': (w, r) => w * Math.pow(r, 0.10), // Note: Often yields high results
+        'O\'Conner': (w, r) => w * (1 + (r * 0.025))
+    };
+
+    document.getElementById('1rm-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const weight = parseFloat(document.getElementById('weight_lifted').value);
+        const reps = parseInt(document.getElementById('repetitions').value);
+        
+        if (reps < 1 || reps > 12) {
+            displayError("Please enter between 2 and 12 successful repetitions for an accurate 1RM estimate.");
+            return;
+        }
+        
+        // 1. Calculate 1RM using all formulas
+        const estimates = [];
+        let total1RM = 0;
+        let count = 0;
+
+        for (const [name, func] of Object.entries(formulas)) {
+            const max = func(weight, reps);
+            if (!isNaN(max) && isFinite(max)) {
+                estimates.push({ name: name, value: max });
+                total1RM += max;
+                count++;
+            }
+        }
+        
+        // 2. Determine Average and Best Estimate
+        const average1RM = count > 0 ? total1RM / count : 0;
+        const bestEstimate = estimates.find(e => e.name === 'Epley') || estimates[0]; // Prefer Epley as a standard
+        const best1RM = bestEstimate ? bestEstimate.value : 0;
+        
+        if (best1RM === 0) {
+            displayError("Calculation failed. Please check your input values.");
+            return;
+        }
+
+        // 3. Update Result Display
+        const res = document.getElementById('1rm-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-primary');
+        res.innerHTML = `
+**Lifting Data:** ${weight} x ${reps} reps
+---
+**Estimated One-Rep Max (1RM):** <span class="best-1rm">${best1RM.toFixed(1)}</span> (using the Epley formula)
+<br>Your theoretical maximum lift is **${best1RM.toFixed(1)}** units.
+`;
+        
+        // 4. Update Estimates Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('1rm-table').classList.remove('d-none');
+        const tableBody = document.getElementById('1rm-body');
+        tableBody.innerHTML = ''; // Clear previous results
+
+        estimates.forEach(est => {
+            let rowClass = est.name === 'Epley' ? 'table-primary' : '';
+            tableBody.innerHTML += `
+            <tr class="${rowClass}">
+                <td>${est.name}</td>
+                <td>${est.value.toFixed(1)}</td>
+            </tr>
+            `;
+        });
+        
+        // 5. Generate Training Percentages (Based on the best 1RM)
+        const percentages = [
+            { pct: 100, label: '100% (1 Rep Max)', reps: 1, color: '#ff6384' },
+            { pct: 95, label: '95% (2-3 Reps)', reps: 3, color: '#ff9f40' },
+            { pct: 90, label: '90% (3-4 Reps)', reps: 4, color: '#4bc0c0' },
+            { pct: 85, label: '85% (5-6 Reps)', reps: 6, color: '#36a2eb' },
+            { pct: 80, label: '80% (6-8 Reps)', reps: 8, color: '#9966ff' },
+            { pct: 75, label: '75% (8-10 Reps)', reps: 10, color: '#ffcd56' },
+            { pct: 70, label: '70% (10-12+ Reps)', reps: 12, color: '#cc65fe' }
+        ];
+
+        const tableHeadRow = document.querySelector('#1rm-table thead tr');
+        if (tableHeadRow.cells.length < 3) {
+             tableHeadRow.innerHTML += '<th>Reps @ % of 1RM</th>';
+        }
+        
+        tableBody.innerHTML += '<tr><td colspan="3" class="table-dark">Training Max Estimates</td></tr>';
+        
+        percentages.forEach(p => {
+            const trainingWeight = (best1RM * (p.pct / 100)).toFixed(1);
+            tableBody.innerHTML += `
+            <tr class="${p.pct === 100 ? 'table-success' : ''}">
+                <td>${p.label}</td>
+                <td>${trainingWeight}</td>
+                <td>${p.reps}</td>
+            </tr>
+            `;
+        });
+
+
+        // 6. Update Chart
+        const ctx = document.getElementById('1rm-chart').getContext('2d');
+        document.getElementById('1rm-chart').classList.remove('d-none');
+        if (trainingChart) trainingChart.destroy();
+        
+        trainingChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: percentages.map(p => `${p.pct}% - ${p.reps} Reps`),
+                datasets: [{
+                    label: 'Training Weight',
+                    data: percentages.map(p => (best1RM * (p.pct / 100)).toFixed(1)),
+                    backgroundColor: percentages.map(p => p.color),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: `Training Weights Based on ${best1RM.toFixed(1)} 1RM` },
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: 'Weight (Units)' }
+                    },
+                    x: {
+                        title: { display: true, text: 'Intensity & Rep Range' }
+                    }
+                }
+            }
+        });
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('1rm-result');
+        res.classList.remove('d-none', 'alert-primary');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('1rm-table').classList.add('d-none');
+        document.getElementById('1rm-chart').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

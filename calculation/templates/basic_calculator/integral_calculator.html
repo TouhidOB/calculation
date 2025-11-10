@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}Function Integral Calculator (Definite & Indefinite){% endblock %}
+
+{% block meta_description %}Calculate definite integrals numerically (Trapezoidal Rule) and find indefinite integrals symbolically for polynomials and basic functions.{% endblock %}
+
+{% block meta_keywords %}integral calculator, calculus, integration, antiderivative, definite integral, indefinite integral, math solver, trapezoidal rule{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #fff8f8;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 750px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-group {
+        display: flex;
+        align-items: center;
+        background-color: #fef2f2; /* Light red/pink background for input area */
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .input-group label {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #991b1b;
+        margin-right: 15px;
+    }
+
+    #function-input {
+        flex-grow: 1;
+        padding: 10px;
+        font-size: 1.2rem;
+        border: 2px solid #f87171;
+        border-radius: 6px;
+        font-family: 'Consolas', monospace;
+    }
+    
+    .bounds-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .result-box {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid #ef4444; /* Red color for calculus theme */
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .result-success {
+        border-left: 5px solid #10b981;
+        background-color: #ecfdf5;
+        color: #065f46;
+    }
+
+    /* Styling for the LaTeX output */
+    .latex-output {
+        font-size: 1.6rem;
+        text-align: center;
+        padding: 10px 0;
+        overflow-x: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Calculus: Integral Solver</h1>
+    <p class="text-gray-600 mb-6 text-center">Enter the function $f(x)$. Add bounds $a$ and $b$ for a definite integral.</p>
+
+    <div class="solver-wrapper">
+        <form id="integral-form" class="space-y-6">
+            
+            <!-- Function Input -->
+            <div class="input-group shadow-md">
+                <label for="function-input">$$f(x) =$$</label>
+                <input type="text" id="function-input" value="x^2 + cos(x)" required
+                       placeholder="e.g., 3*x^2 - 4*x + 1"
+                       class="shadow-inner focus:shadow-lg transition-shadow">
+            </div>
+
+            <!-- Bounds Input -->
+            <div class="bounds-grid">
+                <div>
+                    <label for="lower-bound" class="block text-sm font-medium text-gray-700">Lower Bound $a$ (for definite integral)</label>
+                    <input type="number" id="lower-bound" step="any"
+                           placeholder="Optional, e.g., 0"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label for="upper-bound" class="block text-sm font-medium text-gray-700">Upper Bound $b$ (for definite integral)</label>
+                    <input type="number" id="upper-bound" step="any"
+                           placeholder="Optional, e.g., 5"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-red-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-red-700 transition duration-150 transform hover:scale-[1.01]">
+                Calculate Integral
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Results</h2>
+            <div id="solution-output" class="result-box hidden">
+                <!-- Results will be injected here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const N_STEPS = 5000; // Number of trapezoids for numerical integration
+    
+    /**
+     * Converts a user-input function string into a safe, executable JavaScript function.
+     * @param {string} funcStr - The user input function string.
+     * @returns {Function} An executable JavaScript function f(x).
+     */
+    function createExecutableFunction(funcStr) {
+        let safeFuncStr = funcStr.toLowerCase().replace(/\s+/g, '');
+        
+        // 1. Replace exponents and common math functions
+        safeFuncStr = safeFuncStr
+            .replace(/\^/g, '**') // Exponentiation operator
+            .replace(/log\(([^)]+)\)/g, 'Math.log10($1)') // Base 10 Log
+            .replace(/ln\(([^)]+)\)/g, 'Math.log($1)')    // Natural Log (base e)
+            .replace(/abs\(([^)]+)\)/g, 'Math.abs($1)')  // Absolute value
+            .replace(/e\^x/g, 'Math.exp(x)') // e^x
+            .replace(/pi/g, 'Math.PI') // Pi constant
+            // Ensure all trigonometric functions are prefixed with Math.
+            .replace(/sin\(([^)]+)\)/g, 'Math.sin($1)')
+            .replace(/cos\(([^)]+)\)/g, 'Math.cos($1)')
+            .replace(/tan\(([^)]+)\)/g, 'Math.tan($1)');
+            
+        // 2. Safely create and return the function
+        return new Function('x', 'return ' + safeFuncStr);
+    }
+    
+    /**
+     * Calculates the definite integral using the Trapezoidal Rule.
+     * @param {Function} func - The executable function f(x).
+     * @param {number} a - Lower bound.
+     * @param {number} b - Upper bound.
+     * @param {number} n - Number of steps.
+     * @returns {number} The numerical approximation of the definite integral.
+     */
+    function trapezoidalRule(func, a, b, n) {
+        const h = (b - a) / n;
+        let sum = 0.5 * (func(a) + func(b));
+
+        for (let i = 1; i < n; i++) {
+            const x_i = a + i * h;
+            sum += func(x_i);
+        }
+
+        return sum * h;
+    }
+
+    /**
+     * Attempts to find the indefinite integral (antiderivative) symbolically.
+     * This is a simple implementation primarily handling power rule and basic trig/exp.
+     * @param {string} funcStr - The input function string.
+     * @returns {string} The antiderivative string in LaTeX format (without +C).
+     */
+    function calculateSymbolicIntegral(funcStr) {
+        // Clean and normalize the string
+        let cleanedStr = funcStr.toLowerCase().replace(/\s+/g, '');
+        cleanedStr = cleanedStr.replace(/-/g, '+-'); // Replace subtraction with '+-'
+        
+        const terms = cleanedStr.split('+').filter(term => term.length > 0);
+        let integratedTerms = [];
+
+        for (let term of terms) {
+            let sign = term.startsWith('-') ? -1 : 1;
+            let currentTerm = term.replace('-', '');
+            let coeff = 1;
+            let integratedTerm = '';
+
+            // --- Case 1: Constant (e.g., 5, -2) ---
+            if (!currentTerm.includes('x') && !currentTerm.includes('sin') && !currentTerm.includes('cos') && !currentTerm.includes('ln') && !currentTerm.includes('e')) {
+                // Integral of constant c is c*x
+                coeff = parseFloat(currentTerm);
+                integratedTerm = `${Math.abs(coeff).toFixed(4).replace(/\.?0+$/, "")}x`;
+            }
+            
+            // --- Case 2: e^x ---
+            else if (currentTerm === 'e^x' || currentTerm === 'ex') {
+                integratedTerm = 'e^x'; // Integral of e^x is e^x
+            }
+
+            // --- Case 3: 1/x (x^-1) or ln(x) (unhandled) ---
+            else if (currentTerm === '1/x') {
+                integratedTerm = '\\ln|x|';
+            }
+            
+            // --- Case 4: Basic Trigonometry ---
+            else if (currentTerm === 'sin(x)') {
+                integratedTerm = '-\\cos(x)'; // Integral of sin(x) is -cos(x)
+            }
+            else if (currentTerm === 'cos(x)') {
+                integratedTerm = '\\sin(x)'; // Integral of cos(x) is sin(x)
+            }
+
+            // --- Case 5: Power Rule (c*x^n) ---
+            else {
+                // Parse coefficient and exponent
+                const parts = currentTerm.split('*');
+                let xTerm = parts.find(p => p.includes('x'));
+                let cTerm = parts.find(p => !p.includes('x'));
+
+                if (!cTerm) { cTerm = '1'; } // Default coefficient
+                coeff = parseFloat(cTerm);
+                
+                let exponent = 1; 
+
+                if (xTerm) {
+                    if (xTerm.includes('^')) {
+                        exponent = parseFloat(xTerm.split('^')[1]);
+                    } 
+                    
+                    if (exponent === -1) {
+                         // Case: 1/x or x^-1
+                         integratedTerm = `${Math.abs(coeff).toFixed(4).replace(/\.?0+$/, "")}\\ln|x|`;
+                    } else {
+                        // Apply Reverse Power Rule: c/(n+1) * x^(n+1)
+                        const newCoeff = coeff / (exponent + 1);
+                        const newExp = exponent + 1;
+                        
+                        let coeffStr = newCoeff.toFixed(4).replace(/\.?0+$/, "");
+                        
+                        if (newExp === 1) {
+                            integratedTerm = `${Math.abs(newCoeff).toFixed(4).replace(/\.?0+$/, "")}x`;
+                        } else {
+                            // If coefficient simplifies to 1 or -1, omit the number
+                            if (Math.abs(newCoeff) === 1) { coeffStr = ''; }
+                            
+                            // If coefficient is a fraction, keep it outside the number formatting for now
+                            if (Math.abs(newCoeff) > 0 && Math.abs(newCoeff) < 1) {
+                                // Simple fraction display (e.g., 1/2) is too complex here, just use decimal
+                                integratedTerm = `${Math.abs(newCoeff).toFixed(4).replace(/\.?0+$/, "")}x^{${newExp}}`;
+                            } else {
+                                integratedTerm = `${Math.abs(newCoeff).toFixed(4).replace(/\.?0+$/, "")}x^{${newExp}}`;
+                            }
+                        }
+                    }
+                } else {
+                    // Constant case already handled above
+                    continue;
+                }
+            }
+            
+            // Apply sign and clean up
+            let fullTerm = integratedTerm;
+            if (sign * coeff < 0) {
+                fullTerm = '-' + fullTerm;
+            } else if (integratedTerms.length > 0) {
+                fullTerm = '+' + fullTerm;
+            }
+            
+            integratedTerms.push(fullTerm);
+        }
+
+        let result = integratedTerms.join('');
+        if (result.startsWith('+')) {
+            result = result.substring(1);
+        }
+        
+        return result || '0'; // Should not happen if a constant was present
+    }
+    
+    document.getElementById('integral-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const funcStr = document.getElementById('function-input').value.trim();
+        const aStr = document.getElementById('lower-bound').value.trim();
+        const bStr = document.getElementById('upper-bound').value.trim();
+
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add('hidden');
+        outputDiv.classList.remove('result-success', 'result-error');
+        outputDiv.innerHTML = '';
+
+        let htmlContent = '';
+
+        try {
+            if (funcStr === '') {
+                throw new Error("Function input cannot be empty.");
+            }
+            
+            const func = createExecutableFunction(funcStr);
+            const a = aStr === '' ? null : parseFloat(aStr);
+            const b = bStr === '' ? null : parseFloat(bStr);
+
+            // --- 1. Symbolic (Indefinite) Integration ---
+            const antiderivative = calculateSymbolicIntegral(funcStr);
+            
+            htmlContent += `<p class="text-xl font-bold mb-3 text-red-800">Indefinite Integral:</p>`;
+            htmlContent += `<div class="latex-output">$$\\int f(x) dx = ${antiderivative} + C$$</div>`;
+            
+            // --- 2. Numerical (Definite) Integration ---
+            if (a !== null && b !== null) {
+                if (isNaN(a) || isNaN(b)) {
+                     throw new Error("Bounds must be valid numbers for a definite integral.");
+                }
+                if (a >= b) {
+                    htmlContent += `<p class="mt-4 text-sm font-semibold text-red-600">Note: The upper bound ($b$) must be strictly greater than the lower bound ($a$) for a standard calculation.</p>`;
+                }
+
+                const definiteResult = trapezoidalRule(func, a, b, N_STEPS);
+                
+                htmlContent += `<hr class="my-4 border-red-300">`;
+                htmlContent += `<p class="text-xl font-bold mb-3 text-red-800">Definite Integral Value:</p>`;
+                htmlContent += `<p class="text-3xl font-extrabold text-center">$$\\int_{${a}}^{${b}} f(x) dx \\approx \\mathbf{${definiteResult.toFixed(6)}}$$</p>`;
+                htmlContent += `<p class="text-xs text-center mt-2">(Calculated numerically using ${N_STEPS} steps)</p>`;
+                
+                displayResult('result-success', htmlContent);
+                
+            } else {
+                htmlContent += `<p class="text-sm font-semibold mt-4 text-red-600">Enter both the lower and upper bounds to calculate the definite integral numerically.</p>`;
+                displayResult('result-success', htmlContent);
+            }
+
+        } catch (error) {
+            console.error(error);
+            displayResult('result-error', `<p class="font-bold">Error:</p><p>${error.message || "An internal error occurred during calculation. Check the function syntax."}</p>`);
+        }
+    });
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.className = 'result-box'; 
+        if (className) {
+            outputDiv.classList.add(className);
+        }
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

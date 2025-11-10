@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Treadmill Pace Converter{% endblock %}
+
+{% block meta_description %}Convert running pace between speed (km/h, mph) and time per distance (pace per km, pace per mile) instantly for treadmill use.{% endblock %}
+
+{% block meta_keywords %}treadmill calculator, pace converter, km/h to min/km, mph to min/mile, running speed, running pace, conversion tool{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #ca8a04; /* Amber for Conversion/Utility */
+    }
+
+    .output-item {
+        padding: 12px 0;
+        border-bottom: 1px dashed #fcd34d;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .output-item:last-child {
+        border-bottom: none;
+    }
+
+    .output-value {
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: #ca8a04;
+    }
+
+    .window-card {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background-color: #fffbeb; /* Lightest Amber */
+        border: 2px solid #fde68a;
+    }
+
+    .output-label {
+        font-weight: 500;
+        color: #a16207;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🔄 Treadmill Pace Converter</h1>
+    <p class="small-muted">Convert between **Speed** ($\text{km/h}$, $\text{mph}$) and **Pace** (time per $\text{km}$ or $\text{mi}$) instantly.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="pace-converter-form">
+            <h5 class="section-title">Step 1: Input Format & Value</h5>
+
+            <!-- Input Format Selector -->
+            <label class="form-label d-block mt-3">Input Format</label>
+            <select class="form-select mb-3" id="input_format" required>
+                <option value="" disabled selected>-- Select Input Format --</option>
+                <option value="kmh">Speed: Kilometers per hour ($\text{km/h}$)</option>
+                <option value="mph">Speed: Miles per hour ($\text{mph}$)</option>
+                <option value="pace_km">Pace: Time per Kilometre ($\text{M:SS/km}$)</option>
+                <option value="pace_mi">Pace: Time per Mile ($\text{M:SS/mi}$)</option>
+            </select>
+            
+            <!-- Input Value Fields -->
+            <label class="form-label d-block mt-3" id="value_label">Speed Value</label>
+            <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6">
+                    <input type="number" class="form-control" id="speed_input" placeholder="e.g., 10" min="0.1" max="50" step="0.1">
+                    <small class="form-text text-muted d-block mt-1 speed-hint">Enter the speed (e.g., $10$ for $10 \text{ km/h}$).</small>
+                </div>
+                <div class="col-6 col-sm-3 d-none pace-fields">
+                    <input type="number" class="form-control" id="pace_m" placeholder="Min (M)" min="0" max="59" value="0">
+                </div>
+                <div class="col-6 col-sm-3 d-none pace-fields">
+                    <input type="number" class="form-control" id="pace_s" placeholder="Sec (S)" min="0" max="59" value="0">
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Convert Pace</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Conversion Results</h5>
+        
+        <div id="results-container" class="mt-3 d-none">
+            
+            <div class="window-card">
+                <div class="output-item">
+                    <span class="output-label">Speed in Kilometers per Hour ($\text{km/h}$)</span>
+                    <span class="output-value" id="res_kmh">0.0</span>
+                </div>
+                <div class="output-item">
+                    <span class="output-label">Speed in Miles per Hour ($\text{mph}$)</span>
+                    <span class="output-value" id="res_mph">0.0</span>
+                </div>
+                <div class="output-item">
+                    <span class="output-label">Pace per Kilometre ($\text{M:SS/km}$)</span>
+                    <span class="output-value" id="res_pace_km">0:00</span>
+                </div>
+                <div class="output-item">
+                    <span class="output-label">Pace per Mile ($\text{M:SS/mi}$)</span>
+                    <span class="output-value" id="res_pace_mi">0:00</span>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const KM_PER_MILE = 1.60934;
+    const SEC_PER_HOUR = 3600;
+
+    const inputFormatSelect = document.getElementById('input_format');
+    const speedInput = document.getElementById('speed_input');
+    const paceM = document.getElementById('pace_m');
+    const paceS = document.getElementById('pace_s');
+    const paceFields = document.querySelectorAll('.pace-fields');
+    const speedHint = document.querySelector('.speed-hint');
+    const valueLabel = document.getElementById('value_label');
+    
+    /** Converts total seconds of pace into a readable M:SS format. */
+    function secondsToPaceTime(totalSeconds) {
+        if (totalSeconds <= 0 || isNaN(totalSeconds)) return 'N/A';
+        const m = Math.floor(totalSeconds / 60);
+        const s = Math.round(totalSeconds % 60);
+
+        const pad = (num) => num.toString().padStart(2, '0');
+        
+        return `${m}:${pad(s)}`;
+    }
+    
+    /**
+     * Determines the display state of the input fields based on the selected format.
+     */
+    function updateInputFields() {
+        const format = inputFormatSelect.value;
+        const isPace = format.startsWith('pace');
+
+        if (isPace) {
+            // Show pace fields, hide speed field
+            speedInput.classList.add('d-none');
+            paceFields.forEach(el => el.classList.remove('d-none'));
+            speedHint.classList.add('d-none');
+            valueLabel.textContent = 'Pace Time (M:SS)';
+
+            // Make pace fields required and speed input optional/disabled
+            paceM.setAttribute('required', 'required');
+            paceS.setAttribute('required', 'required');
+            speedInput.removeAttribute('required');
+            speedInput.value = ''; // Clear speed if switching to pace
+        } else {
+            // Show speed field, hide pace fields
+            speedInput.classList.remove('d-none');
+            paceFields.forEach(el => el.classList.add('d-none'));
+            speedHint.classList.remove('d-none');
+            valueLabel.textContent = 'Speed Value';
+            
+            // Make speed input required and pace fields optional/disabled
+            speedInput.setAttribute('required', 'required');
+            paceM.removeAttribute('required');
+            paceS.removeAttribute('required');
+            paceM.value = 0; // Clear pace if switching to speed
+            paceS.value = 0;
+        }
+    }
+
+    inputFormatSelect.addEventListener('change', updateInputFields);
+    window.onload = updateInputFields; // Initialize on load
+
+    document.getElementById('pace-converter-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const format = inputFormatSelect.value;
+        let speed_kmh = 0;
+        let pace_sec_km = 0;
+
+        // 2. Normalize Input to KM/H or Sec/KM
+        const isPace = format.startsWith('pace');
+
+        if (!isPace) {
+            // Input is Speed (km/h or mph)
+            const speedValue = parseFloat(speedInput.value);
+            if (isNaN(speedValue) || speedValue <= 0) {
+                return displayError("Please enter a valid speed value greater than zero.");
+            }
+            
+            if (format === 'kmh') {
+                speed_kmh = speedValue;
+            } else if (format === 'mph') {
+                speed_kmh = speedValue * KM_PER_MILE;
+            }
+            // Convert speed (km/h) to pace (sec/km)
+            pace_sec_km = SEC_PER_HOUR / speed_kmh;
+
+        } else {
+            // Input is Pace (sec/km or sec/mi)
+            const minutes = parseInt(paceM.value);
+            const seconds = parseInt(paceS.value);
+
+            if (isNaN(minutes) || isNaN(seconds) || (minutes === 0 && seconds === 0)) {
+                return displayError("Please enter a valid pace time (Minutes and/or Seconds).");
+            }
+            
+            const totalPaceSec = (minutes * 60) + seconds;
+
+            if (format === 'pace_km') {
+                pace_sec_km = totalPaceSec;
+            } else if (format === 'pace_mi') {
+                // Convert pace/mi to pace/km: pace_sec_km = totalPaceSec / 1.60934
+                pace_sec_km = totalPaceSec / KM_PER_MILE;
+            }
+            
+            // Convert pace (sec/km) to speed (km/h)
+            speed_kmh = SEC_PER_HOUR / pace_sec_km;
+        }
+
+
+        // 3. Final Conversion Calculations (All derived from speed_kmh or pace_sec_km)
+
+        // Speed MPH: km/h / 1.60934
+        const speed_mph = speed_kmh / KM_PER_MILE;
+
+        // Pace Sec/Mile: sec/km * 1.60934
+        const pace_sec_mi = pace_sec_km * KM_PER_MILE;
+
+
+        // 4. Update Result Display
+        
+        document.getElementById('res_kmh').textContent = speed_kmh.toFixed(1);
+        document.getElementById('res_mph').textContent = speed_mph.toFixed(1);
+        document.getElementById('res_pace_km').textContent = secondsToPaceTime(pace_sec_km);
+        document.getElementById('res_pace_mi').textContent = secondsToPaceTime(pace_sec_mi);
+
+        // 5. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Conversion Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

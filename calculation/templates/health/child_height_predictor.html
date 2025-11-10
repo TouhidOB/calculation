@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Child Height Predictor (Mid-Parental Method){% endblock %}
+
+{% block meta_description %}Estimate a child's adult height potential using the Mid-Parental Height (MPH) method, adjusting for gender, and providing a final predicted range.{% endblock %}
+
+{% block meta_keywords %}child height predictor, adult height calculator, mid-parental height, MPH, genetics, pediatric height estimation{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #16a34a; /* Green for Growth/Healthy development */
+    }
+
+    .output-range {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #16a34a; 
+    }
+
+    .output-unit-label {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #065f46;
+    }
+
+    .window-card {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background-color: #f0fdf4; /* Lightest Green */
+        border: 2px solid #bbf7d0;
+    }
+
+    .unit-selector {
+        max-width: 100px;
+    }
+
+    .formula-note {
+        font-style: italic;
+        color: #4b5563;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🧍 Child Height Predictor</h1>
+    <p class="small-muted">Predict a child's estimated adult height range using the **Mid-Parental Height (MPH)** method.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="height-predictor-form">
+            <h5 class="section-title">Step 1: Parents' Heights</h5>
+
+            <!-- Unit Selector for Parents -->
+            <label class="form-label d-block mt-3">Measurement Unit</label>
+            <select class="form-select unit-selector mb-3" id="height_unit_select">
+                <option value="in" selected>Inches</option>
+                <option value="cm">Centimeters</option>
+            </select>
+            
+            <!-- Father's Height -->
+            <label class="form-label d-block mt-3">Father's Height</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="father_height" placeholder="e.g., 70 (in)" min="40" max="100" step="0.5" required>
+                <span class="input-group-text unit-display">in</span>
+            </div>
+
+            <!-- Mother's Height -->
+            <label class="form-label d-block mt-3">Mother's Height</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="mother_height" placeholder="e.g., 65 (in)" min="40" max="100" step="0.5" required>
+                <span class="input-group-text unit-display">in</span>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Child's Gender</h5>
+
+            <!-- Child's Gender -->
+            <label class="form-label d-block mt-3">Child's Gender</label>
+            <select class="form-select mb-3" id="child_gender" required>
+                <option value="" disabled selected>-- Select Child's Gender --</option>
+                <option value="male">Boy</option>
+                <option value="female">Girl</option>
+            </select>
+            
+            <small class="form-text text-muted d-block mb-3">The formula uses a $\pm 5$ cm ($\pm 2$ in) adjustment based on gender.</small>
+
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Predict Adult Height</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Predicted Adult Height Range</h5>
+        
+        <div id="results-container" class="mt-3 d-none text-center">
+            
+            <div class="window-card">
+                <h6 class="output-unit-label mb-2">Estimated Adult Height</h6>
+                
+                <p class="mb-0">
+                    <span id="predicted_min" class="output-range">0.0</span>
+                    <span class="fs-4 text-muted"> to </span>
+                    <span id="predicted_max" class="output-range">0.0</span> 
+                    <span class="fs-4 text-muted unit-display-result">in</span>
+                </p>
+            </div>
+            
+            <p class="formula-note">
+                <span class="fw-bold">Formula:</span> $\text{MPH} = \frac{(\text{Father's Height} + \text{Mother's Height})}{2} \pm \text{Gender Adjustment}$
+            </p>
+            <p class="small-muted">
+                The final predicted height can fall within $\pm 4 \text{ inches}$ ($\pm 10 \text{ cm}$) of the MPH.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const CM_PER_INCH = 2.54;
+    const GENDER_ADJUSTMENT_IN = 2.5; // Used for converting parents' heights to MPH
+    const HEIGHT_RANGE_IN = 4.0; // +/- 4 inches range
+    
+    // Selectors
+    const heightUnitSelect = document.getElementById('height_unit_select');
+    const unitDisplays = document.querySelectorAll('.unit-display');
+    const unitDisplayResult = document.querySelector('.unit-display-result');
+
+    /**
+     * Toggles the display unit text based on user selection.
+     */
+    function toggleUnits() {
+        const unit = heightUnitSelect.value;
+        unitDisplays.forEach(span => span.textContent = unit);
+        unitDisplayResult.textContent = unit;
+        
+        // Update placeholders to give users a hint
+        const fatherInput = document.getElementById('father_height');
+        const motherInput = document.getElementById('mother_height');
+
+        if (unit === 'in') {
+            fatherInput.placeholder = 'e.g., 70 (in)';
+            motherInput.placeholder = 'e.g., 65 (in)';
+        } else {
+            fatherInput.placeholder = 'e.g., 178 (cm)';
+            motherInput.placeholder = 'e.g., 165 (cm)';
+        }
+    }
+
+    heightUnitSelect.addEventListener('change', toggleUnits);
+    // Initialize the display units on load
+    window.onload = toggleUnits;
+
+
+    /**
+     * Converts a height from the input unit (cm or in) to the target unit.
+     */
+    function convertHeight(height, fromUnit, toUnit) {
+        if (fromUnit === toUnit) return height;
+        if (fromUnit === 'cm' && toUnit === 'in') {
+            return height / CM_PER_INCH;
+        } else if (fromUnit === 'in' && toUnit === 'cm') {
+            return height * CM_PER_INCH;
+        }
+        return height; 
+    }
+    
+    /**
+     * Calculates the Mid-Parental Height (MPH) and the predicted adult height range.
+     * The method uses INCHES internally for the gender adjustment before converting back.
+     * MPH Formula (Inches):
+     * Boy: (Father's Height + Mother's Height + 5 in) / 2
+     * Girl: (Father's Height + Mother's Height - 5 in) / 2
+     */
+    function calculatePredictedHeight(fatherHeight, motherHeight, childGender, inputUnit) {
+        // Convert all inputs to INCHES for the standardized MPH formula
+        const fatherIn = convertHeight(fatherHeight, inputUnit, 'in');
+        const motherIn = convertHeight(motherHeight, inputUnit, 'in');
+        
+        let adjustedTotalIn;
+        if (childGender === 'male') {
+            // Boy: Add 2.5 inches (approx 6.35 cm)
+            adjustedTotalIn = fatherIn + motherIn + GENDER_ADJUSTMENT_IN;
+        } else {
+            // Girl: Subtract 2.5 inches (approx 6.35 cm)
+            adjustedTotalIn = fatherIn + motherIn - GENDER_ADJUSTMENT_IN;
+        }
+        
+        const mphIn = adjustedTotalIn / 2;
+
+        // Calculate the range (+/- 4 inches)
+        const predictedMinIn = mphIn - HEIGHT_RANGE_IN;
+        const predictedMaxIn = mphIn + HEIGHT_RANGE_IN;
+
+        // Convert results back to the original input unit if necessary
+        const predictedMin = convertHeight(predictedMinIn, 'in', inputUnit);
+        const predictedMax = convertHeight(predictedMaxIn, 'in', inputUnit);
+        const decimalPlaces = inputUnit === 'in' ? 1 : 0; // Inches usually 1 decimal, cm usually whole number
+        
+        return {
+            min: predictedMin.toFixed(decimalPlaces),
+            max: predictedMax.toFixed(decimalPlaces),
+        };
+    }
+
+    document.getElementById('height-predictor-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const fatherHeight = parseFloat(document.getElementById('father_height').value);
+        const motherHeight = parseFloat(document.getElementById('mother_height').value);
+        const childGender = document.getElementById('child_gender').value;
+        const inputUnit = heightUnitSelect.value;
+
+        // 2. Validation
+        if (isNaN(fatherHeight) || isNaN(motherHeight) || !childGender) {
+            displayError("Please enter valid heights for both parents and select the child's gender.");
+            return;
+        }
+
+        // 3. Calculation
+        const result = calculatePredictedHeight(fatherHeight, motherHeight, childGender, inputUnit);
+
+        // 4. Update Result Display
+        document.getElementById('predicted_min').textContent = result.min;
+        document.getElementById('predicted_max').textContent = result.max;
+
+        // 5. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

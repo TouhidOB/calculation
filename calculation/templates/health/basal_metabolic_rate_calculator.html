@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Basal Metabolic Rate (BMR) & TDEE Calculator{% endblock %}
+
+{% block meta_description %}Calculate your Basal Metabolic Rate (BMR) and Total Daily Energy Expenditure (TDEE) using the Mifflin-St Jeor equation.{% endblock %}
+
+{% block meta_keywords %}BMR calculator, TDEE, basal metabolic rate, daily calories, energy expenditure, calorie calculator, fitness, weight loss{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+
+    /* Group radio buttons neatly */
+    .gender-group {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🔥 BMR & TDEE Calculator</h1>
+    <p class="small-muted">Estimate your **Basal Metabolic Rate (BMR)** and **Total Daily Energy Expenditure (TDEE)**, which are key for managing your caloric intake. Calculations use the Mifflin-St Jeor equation.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="bmr-form">
+            <h5 class="section-title">Personal Inputs (US/Imperial)</h5>
+
+            <div class="form-group mb-3">
+                <label class="form-label d-block">Gender</label>
+                <div class="gender-group">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderMale" value="male" required>
+                        <label class="form-check-label" for="genderMale">Male</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="female" required>
+                        <label class="form-check-label" for="genderFemale">Female</label>
+                    </div>
+                </div>
+            </div>
+
+            <input type="number" class="form-control my-2" id="age" placeholder="Age (Years)" min="15" max="100" required>
+
+            <div class="input-group my-2">
+                <input type="number" class="form-control" id="weight_lb" placeholder="Weight (e.g., 180)" min="50" max="800" step="0.1" required>
+                <span class="input-group-text">lbs</span>
+            </div>
+
+            <label class="form-label d-block mt-3">Height</label>
+            <div class="row g-2">
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="height_ft" placeholder="Feet (e.g., 5)" min="3" max="7" required>
+                        <span class="input-group-text">ft</span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="height_in" placeholder="Inches (e.g., 10)" min="0" max="11" required>
+                        <span class="input-group-text">in</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group my-3">
+                <label for="activity_level" class="form-label">Select Activity Level for TDEE</label>
+                <select class="form-select" id="activity_level" required>
+                    <option value="" disabled selected>Choose your level</option>
+                    <option value="1.2">Sedentary (Little or no exercise)</option>
+                    <option value="1.375">Lightly Active (Light exercise/sports 1-3 days/week)</option>
+                    <option value="1.55">Moderately Active (Moderate exercise/sports 3-5 days/week)</option>
+                    <option value="1.725">Very Active (Hard exercise/sports 6-7 days a week)</option>
+                    <option value="1.9">Extra Active (Very hard exercise/physical job)</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate BMR & TDEE</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="bmr-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Total Daily Energy Expenditure (TDEE) by Activity</h5>
+        <table class="table table-bordered mt-2 d-none" id="bmr-table">
+            <thead>
+                <tr>
+                    <th>Activity Level</th>
+                    <th>TDEE (Calories/day)</th>
+                </tr>
+            </thead>
+            <tbody id="bmr-body"></tbody>
+        </table>
+
+        <canvas id="bmr-chart" class="d-none"></canvas>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let bmrChart = null;
+
+    const activityMultipliers = {
+        '1.2': 'Sedentary',
+        '1.375': 'Lightly Active',
+        '1.55': 'Moderately Active',
+        '1.725': 'Very Active',
+        '1.9': 'Extra Active'
+    };
+
+    document.getElementById('bmr-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs and Convert Units (Imperial to Metric)
+        const age = parseFloat(document.getElementById('age').value);
+        const weight_lb = parseFloat(document.getElementById('weight_lb').value);
+        const height_ft = parseFloat(document.getElementById('height_ft').value);
+        const height_in = parseFloat(document.getElementById('height_in').value);
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        const selected_multiplier = parseFloat(document.getElementById('activity_level').value);
+
+        // Unit Conversions:
+        // 1 lb = 0.453592 kg
+        // 1 ft = 30.48 cm
+        // 1 in = 2.54 cm
+
+        const weight_kg = weight_lb * 0.453592;
+        const height_cm = (height_ft * 30.48) + (height_in * 2.54);
+
+        let BMR;
+        // 2. Calculate BMR (Mifflin-St Jeor Equation)
+        // Men: BMR = 10 * weight(kg) + 6.25 * height(cm) - 5 * age(years) + 5
+        // Women: BMR = 10 * weight(kg) + 6.25 * height(cm) - 5 * age(years) - 161
+        if (gender === 'male') {
+            BMR = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) + 5;
+        } else { // female
+            BMR = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) - 161;
+        }
+
+        const BMR_rounded = BMR.toFixed(0);
+
+        // 3. Calculate TDEE for selected activity level
+        const TDEE_selected = BMR * selected_multiplier;
+        const TDEE_selected_rounded = TDEE_selected.toFixed(0);
+
+        // 4. Update Result Text Display
+        const res = document.getElementById('bmr-result');
+        res.classList.remove('d-none');
+        res.innerHTML = `
+**Your Basal Metabolic Rate (BMR):** **${BMR_rounded} calories/day**
+(This is the minimum energy required to keep you alive at rest.)
+
+---
+
+**Selected Activity Level ( ${activityMultipliers[selected_multiplier]} ):**
+**Your Estimated Total Daily Energy Expenditure (TDEE):** **${TDEE_selected_rounded} calories/day**
+(This is the estimated number of calories you burn daily, including activity.)
+`;
+
+        // 5. Update TDEE Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('bmr-table').classList.remove('d-none');
+        const tableBody = document.getElementById('bmr-body');
+        tableBody.innerHTML = ''; // Clear previous results
+
+        const chartLabels = ['BMR'];
+        const chartData = [BMR_rounded];
+
+        // Calculate and populate TDEE for all levels
+        for (const multiplier in activityMultipliers) {
+            const TDEE_level = BMR * parseFloat(multiplier);
+            const levelName = activityMultipliers[multiplier];
+            const isSelected = parseFloat(multiplier) === selected_multiplier;
+
+            tableBody.innerHTML += `
+            <tr class="${isSelected ? 'table-primary' : ''}">
+                <td>${levelName} ${isSelected ? '**(Selected)**' : ''}</td>
+                <td>${TDEE_level.toFixed(0)}</td>
+            </tr>
+            `;
+            chartLabels.push(levelName);
+            chartData.push(TDEE_level.toFixed(0));
+        }
+
+        // 6. Update Chart
+        const ctx = document.getElementById('bmr-chart').getContext('2d');
+        document.getElementById('bmr-chart').classList.remove('d-none');
+        if (bmrChart) bmrChart.destroy();
+
+        bmrChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Calories (kcal/day)',
+                    data: chartData,
+                    backgroundColor: [
+                        '#4bc0c0', // BMR color
+                        '#ff9f40', '#ff9f40', '#ff9f40', '#ff9f40', '#ff9f40' // TDEE colors
+                    ],
+                    borderColor: [
+                        '#4bc0c0',
+                        '#ff9f40', '#ff9f40', '#ff9f40', '#ff9f40', '#ff9f40'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Energy Expenditure Breakdown (TDEE = BMR x Activity Multiplier)' },
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Calories (kcal/day)' }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}
