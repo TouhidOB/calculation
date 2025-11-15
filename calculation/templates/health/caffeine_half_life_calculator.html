@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Caffeine Half-Life Calculator{% endblock %}
+
+{% block meta_description %}Calculate the estimated amount of caffeine remaining in your system at various time points after consumption, based on the half-life principle.{% endblock %}
+
+{% block meta_keywords %}caffeine half-life, caffeine calculator, sleep quality, energy levels, dosage tracker{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #ef4444; /* Red for Alert/Stimulant */
+    }
+
+    .result-table th, .result-table td {
+        vertical-align: middle;
+        font-size: 1.1rem;
+    }
+
+    .result-table th {
+        background-color: #fef2f2;
+        color: #dc2626;
+    }
+
+    .remaining-mg {
+        font-weight: bold;
+        font-size: 1.2rem;
+        color: #ef4444; 
+    }
+    
+    .final-time {
+        font-weight: bold;
+        color: #6b7280;
+    }
+    
+    .half-life-note {
+        font-style: italic;
+        color: #9ca3af;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">☕ Caffeine Half-Life Calculator</h1>
+    <p class="small-muted">Track how much caffeine remains in your system over the day and night to optimize your sleep quality.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="caffeine-form">
+            <h5 class="section-title">Step 1: Consumption Details</h5>
+
+            <!-- Caffeine Dose Input -->
+            <label class="form-label d-block mt-3">Initial Caffeine Dose (mg)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="initial_dose" placeholder="e.g., 200" min="10" max="1000" step="10" value="200" required>
+                <span class="input-group-text">mg</span>
+            </div>
+            <small class="form-text text-muted d-block mb-3">A standard strong cup of coffee is about 100-200 mg.</small>
+
+            <!-- Time of Consumption Input -->
+            <label class="form-label d-block mt-3">Time of Consumption</label>
+            <input type="time" class="form-control form-control-lg mb-3" id="consumption_time" value="08:00" required>
+
+            <h5 class="section-title">Step 2: Half-Life Estimate</h5>
+
+            <!-- Half-Life Input -->
+            <label class="form-label d-block mt-3">Caffeine Half-Life (Hours)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="half_life" placeholder="e.g., 5" min="2" max="10" step="0.5" value="5" required>
+                <span class="input-group-text">Hours</span>
+            </div>
+            <p class="half-life-note">The average half-life is 5 hours, but can range from 2 to 10 hours based on genetics and lifestyle.</p>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Track Caffeine Breakdown</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Remaining Caffeine Levels</h5>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped mt-3 d-none result-table" id="caffeine-table">
+                <thead>
+                    <tr>
+                        <th style="width: 33%;">Time Elapsed</th>
+                        <th style="width: 33%;">Estimated Clock Time</th>
+                        <th style="width: 34%;">Caffeine Remaining (mg)</th>
+                    </tr>
+                </thead>
+                <tbody id="caffeine-body"></tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Time points in hours after consumption to display in the chart
+    const TIME_POINTS = [
+        { hours: 0, label: "Initial Consumption" },
+        { hours: 4, label: "4 Hours Post-Dose" },
+        { hours: 6, label: "6 Hours Post-Dose" },
+        { hours: 8, label: "8 Hours Post-Dose (Evening)" },
+        { hours: 12, label: "12 Hours Post-Dose (Bedtime)" },
+        { hours: 16, label: "16 Hours Post-Dose (Next Day)" }
+    ];
+
+    /** Helper to format 24h time into HH:MM AM/PM. */
+    function formatClockTime(date) {
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        return hours + ':' + minutes + ' ' + ampm;
+    }
+
+    /**
+     * Calculates remaining caffeine using the half-life decay formula.
+     * Formula: Remaining = Initial Dose * (0.5) ^ (Time Elapsed / Half-Life)
+     */
+    function calculateRemaining(initialDose, halfLife, timeElapsed) {
+        if (halfLife <= 0) return 0;
+        return initialDose * Math.pow(0.5, timeElapsed / halfLife);
+    }
+
+    document.getElementById('caffeine-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const initialDose = parseFloat(document.getElementById('initial_dose').value);
+        const halfLife = parseFloat(document.getElementById('half_life').value);
+        const consumptionTime24h = document.getElementById('consumption_time').value; // "HH:MM"
+        
+        const [startHour, startMinute] = consumptionTime24h.split(':').map(Number);
+        
+        // Use a dummy date object to calculate future times
+        const consumptionDate = new Date();
+        consumptionDate.setHours(startHour, startMinute, 0, 0);
+
+        // 2. Validation
+        if (initialDose <= 0 || halfLife <= 0 || isNaN(initialDose) || isNaN(halfLife)) {
+            displayError("Please enter valid, positive values for Dose and Half-Life.");
+            return;
+        }
+
+        // 3. Calculation & Table Generation
+        const tableBody = document.getElementById('caffeine-body');
+        tableBody.innerHTML = '';
+        
+        TIME_POINTS.forEach(point => {
+            const timeElapsed = point.hours;
+            
+            // Calculate Remaining Dose
+            const remainingDose = calculateRemaining(initialDose, halfLife, timeElapsed);
+            
+            // Calculate Clock Time
+            const newDate = new Date(consumptionDate.getTime() + (timeElapsed * 60 * 60 * 1000));
+            const clockTime = formatClockTime(newDate);
+
+            // Add Row to Table
+            tableBody.innerHTML += `
+            <tr>
+                <td>${point.label}</td>
+                <td class="final-time">${clockTime}</td>
+                <td class="remaining-mg">${remainingDose.toFixed(remainingDose > 10 ? 0 : 1)} mg</td>
+            </tr>
+            `;
+        });
+
+        // 4. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('caffeine-table').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('caffeine-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

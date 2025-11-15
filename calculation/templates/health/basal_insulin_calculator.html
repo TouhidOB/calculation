@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Basal Insulin Dose Calculator{% endblock %}
+
+{% block meta_description %}Estimate your starting daily basal insulin dose (units) based on your body weight and common total daily dose factors (0.3 to 0.7 units/kg).{% endblock %}
+
+{% block meta_keywords %}basal insulin dose, diabetes calculator, TDD factor, long-acting insulin, basal rate, insulin units per day{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #0393c3; /* Blue/Cyan for Clinical/Health */
+    }
+
+    .output-dose {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #0393c3; 
+    }
+
+    .dose-label {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #0c4a6e;
+    }
+
+    .window-card {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background-color: #f0f9ff; /* Lightest Blue */
+        border: 2px solid #bae6fd;
+    }
+
+    .unit-selector {
+        max-width: 100px;
+    }
+    
+    .disclaimer {
+        font-size: 0.85rem;
+        color: #ef4444; /* Red warning */
+        font-weight: bold;
+        border-top: 1px solid #fca5a5;
+        padding-top: 10px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💉 Basal Insulin Dose Calculator</h1>
+    <p class="small-muted">Estimate your starting daily basal (long-acting) insulin dose based on your body weight. **Note: Consult a medical professional before adjusting insulin doses.**</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="basal-dose-form">
+            <h5 class="section-title">Step 1: Enter Body Weight</h5>
+
+            <label class="form-label d-block mt-3">Body Weight</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="weight_input" placeholder="e.g., 80" min="20" max="250" step="1" required>
+                <select class="form-select unit-selector" id="weight_unit">
+                    <option value="kg" selected>Kg</option>
+                    <option value="lb">Lbs</option>
+                </select>
+            </div>
+            
+            <h5 class="section-title mt-4">Step 2: Total Daily Dose (TDD) Factor</h5>
+            <small class="form-text text-muted d-block mb-3">The TDD is the total insulin needed per day, typically $0.3$ to $0.7$ units/kg.</small>
+            
+            <div class="input-group mb-3">
+                <span class="input-group-text">Min Factor (units/kg)</span>
+                <input type="number" class="form-control" id="tdd_factor_min" value="0.4" min="0.1" max="1.0" step="0.05" required>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Max Factor (units/kg)</span>
+                <input type="number" class="form-control" id="tdd_factor_max" value="0.5" min="0.1" max="1.0" step="0.05" required>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Basal Dose Range</button>
+        </form>
+        
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Recommended Basal Dose Range</h5>
+        
+        <div id="results-container" class="mt-3 d-none text-center">
+            
+            <div class="window-card">
+                <h6 class="dose-label text-lg mb-2">Total Daily Insulin Dose (TDD) Estimate:</h6>
+                
+                <p class="mb-0">
+                    <span id="tdd_range_min" class="output-dose">0</span>
+                    <span class="fs-4 text-muted"> to </span>
+                    <span id="tdd_range_max" class="output-dose">0</span> 
+                    <span class="fs-4 text-muted">units/day</span>
+                </p>
+                <small class="text-muted">Formula: $\text{Weight (kg)} \times \text{TDD Factor}$</small>
+            </div>
+
+            <div class="window-card">
+                <h6 class="dose-label text-lg mb-2">Starting Basal Dose (40%-50% of TDD):</h6>
+                <p class="mb-0">
+                    <span id="basal_range_min" class="output-dose">0</span>
+                    <span class="fs-4 text-muted"> to </span>
+                    <span id="basal_range_max" class="output-dose">0</span> 
+                    <span class="fs-4 text-muted">units/day</span>
+                </p>
+                <small class="text-muted">This range is often used as a starting point for basal insulin.</small>
+            </div>
+            
+        </div>
+        
+        <p class="disclaimer">
+            ⚠️ DISCLAIMER: This calculator provides an *estimate* for informational purposes only. Basal insulin doses MUST be determined and managed by a qualified healthcare provider. Do not make changes to your insulin therapy without professional medical advice.
+        </p>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const LB_PER_KG = 2.20462;
+    const BASAL_PERCENT_MIN = 0.40; // 40% of TDD for basal
+    const BASAL_PERCENT_MAX = 0.50; // 50% of TDD for basal
+
+    document.getElementById('basal-dose-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const weightInput = parseFloat(document.getElementById('weight_input').value);
+        const weightUnit = document.getElementById('weight_unit').value;
+        const tddFactorMin = parseFloat(document.getElementById('tdd_factor_min').value);
+        const tddFactorMax = parseFloat(document.getElementById('tdd_factor_max').value);
+
+        // 2. Validation
+        if (weightInput <= 0 || isNaN(weightInput) || isNaN(tddFactorMin) || isNaN(tddFactorMax) || tddFactorMin <= 0 || tddFactorMax <= 0) {
+            displayError("Please enter valid, positive values for Weight and TDD Factors.");
+            return;
+        }
+        if (tddFactorMin > tddFactorMax) {
+            displayError("The Minimum TDD Factor cannot be greater than the Maximum TDD Factor.");
+            return;
+        }
+
+        // 3. Normalize Weight to Kilograms
+        const weightKg = weightUnit === 'lb' ? weightInput / LB_PER_KG : weightInput;
+
+        // 4. Calculation Logic
+        
+        // Step 1: Calculate TDD Range
+        const tddMin = weightKg * tddFactorMin;
+        const tddMax = weightKg * tddFactorMax;
+        
+        // Step 2: Calculate Basal Dose Range (40-50% of TDD)
+        const basalMin = tddMin * BASAL_PERCENT_MIN;
+        const basalMax = tddMax * BASAL_PERCENT_MAX;
+
+        // 5. Update Result Display (Round to the nearest whole unit, or 0.5 unit for precision)
+        document.getElementById('tdd_range_min').textContent = Math.round(tddMin);
+        document.getElementById('tdd_range_max').textContent = Math.round(tddMax);
+        
+        document.getElementById('basal_range_min').textContent = roundToNearestHalf(basalMin);
+        document.getElementById('basal_range_max').textContent = roundToNearestHalf(basalMax);
+
+        // 6. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+    
+    /** Rounds a number to the nearest 0.5 (half unit). */
+    function roundToNearestHalf(num) {
+        return Math.round(num * 2) / 2;
+    }
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

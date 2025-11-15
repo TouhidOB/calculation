@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}PSA Density (PSAD) Calculator{% endblock %}
+
+{% block meta_description %}Calculate your Prostate-Specific Antigen Density (PSAD) by dividing Total PSA by Prostate Volume, and receive a preliminary risk assessment for prostate cancer.{% endblock %}
+
+{% block meta_keywords %}PSA density, PSAD calculator, prostate cancer risk, PSA level, prostate volume, urology calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #b91c1c; /* Red for cancer risk assessment */
+    }
+
+    .output-psad {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #b91c1c; 
+        line-height: 1;
+    }
+    
+    .output-interpretation {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 6px;
+        color: #b91c1c;
+        background-color: #fee2e2;
+    }
+    
+    .disclaimer {
+        font-size: 0.85rem;
+        color: #ef4444; 
+        font-weight: 600;
+        border-top: 1px solid #fca5a5;
+        padding-top: 10px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🩺 PSA Density ($\text{PSAD}$) Calculator</h1>
+    <p class="small-muted">Calculate the ratio of your Total PSA to your Prostate Volume to aid in prostate cancer risk assessment.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="psad-form">
+            <h5 class="section-title">Step 1: Enter Clinical Values</h5>
+
+            <!-- Total PSA Input -->
+            <label class="form-label d-block mt-3">Total PSA ($\text{ng}/\text{mL}$)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="total_psa" placeholder="e.g., 6.5" min="0.1" max="100" step="0.1" required>
+                <span class="input-group-text">$\text{ng}/\text{mL}$</span>
+            </div>
+            <small class="form-text text-muted d-block mb-3">Value obtained from blood test.</small>
+
+
+            <!-- Prostate Volume Input -->
+            <label class="form-label d-block mt-3">Prostate Volume ($\text{mL}$)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="prostate_volume" placeholder="e.g., 40" min="10" max="300" step="1" required>
+                <span class="input-group-text">$\text{mL}$</span>
+            </div>
+            <small class="form-text text-muted d-block mb-3">Value obtained from transrectal ultrasound (TRUS) or MRI.</small>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate PSAD</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">PSA Density Result & Risk</h5>
+        
+        <div id="results-container" class="mt-3 d-none text-center">
+            
+            <div class="mb-2 text-muted">Calculated $\text{PSAD}$ ($\text{ng}/\text{mL}^2$)</div>
+            
+            <p class="mb-0">
+                <span id="psad_value" class="output-psad">0.00</span>
+            </p>
+            
+            <div id="psad_interpretation" class="output-interpretation"></div>
+            
+            <p class="small-muted mt-3">
+                <span class="fw-bold">Formula:</span> $\text{PSAD} = \frac{\text{Total PSA}}{\text{Prostate Volume}}$
+            </p>
+            
+        </div>
+        
+        <p class="disclaimer">
+            ⚠️ MEDICAL DISCLAIMER: This calculator is for informational purposes only. PSAD calculation is part of a comprehensive clinical evaluation. The results should **NOT** be used to self-diagnose or determine the need for a biopsy. All results must be discussed with a urologist or healthcare provider.
+        </p>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /** Determines the clinical interpretation based on the calculated PSAD value. */
+    function getPsadInterpretation(psad) {
+        if (psad >= 0.20) {
+            return { text: "High Risk", style: "text-danger", desc: "A high PSAD suggests a significantly increased risk of prostate cancer, potentially indicating a need for biopsy." };
+        } else if (psad >= 0.15) {
+            return { text: "Moderate Risk", style: "text-warning", desc: "Moderate risk of prostate cancer; closer monitoring or biopsy consideration may be warranted." };
+        } else {
+            return { text: "Lower Risk", style: "text-success", desc: "A lower PSAD is generally associated with a reduced risk of prostate cancer." };
+        }
+    }
+
+    document.getElementById('psad-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const totalPsa = parseFloat(document.getElementById('total_psa').value);
+        const prostateVolume = parseFloat(document.getElementById('prostate_volume').value);
+
+        // 2. Validation
+        if (isNaN(totalPsa) || totalPsa <= 0) {
+            displayError("Please enter a valid, positive Total PSA value.");
+            return;
+        }
+        if (isNaN(prostateVolume) || prostateVolume <= 0) {
+            displayError("Please enter a valid, positive Prostate Volume value.");
+            return;
+        }
+
+        // 3. Calculation
+        // PSAD = Total PSA / Prostate Volume
+        const psad = totalPsa / prostateVolume;
+        const interpretationData = getPsadInterpretation(psad);
+
+        // 4. Update Result Display
+        document.getElementById('psad_value').textContent = psad.toFixed(2);
+        
+        const interpretationDiv = document.getElementById('psad_interpretation');
+        interpretationDiv.innerHTML = `<span class="${interpretationData.style}">${interpretationData.text}</span>: ${interpretationData.desc}`;
+        
+        // Update the score color based on interpretation
+        const psadValueSpan = document.getElementById('psad_value');
+        psadValueSpan.classList.remove('text-success', 'text-warning', 'text-danger');
+        
+        // Determine the base color from the interpretation style class
+        let baseColorClass = interpretationData.style.replace('text-', '');
+        if (baseColorClass === 'danger') {
+            baseColorClass = 'text-danger';
+        } else if (baseColorClass === 'warning') {
+            baseColorClass = 'text-warning';
+        } else {
+            baseColorClass = 'text-success';
+        }
+        
+        // Apply the correct color for the result text
+        psadValueSpan.style.color = interpretationData.style.split('-')[1] === 'danger' ? '#b91c1c' : 
+                                    interpretationData.style.split('-')[1] === 'warning' ? '#f59e0b' : '#10b981';
+
+
+        // 5. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

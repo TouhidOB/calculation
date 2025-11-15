@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Sleep Cycle Calculator (Wake-up Time){% endblock %}
+
+{% block meta_description %}Calculate the optimal time to wake up feeling refreshed by setting a bedtime and letting the calculator suggest wake-up times based on 90-minute sleep cycles.{% endblock %}
+
+{% block meta_keywords %}sleep cycle calculator, wake up time, bedtime, sleep quality, 90 minute cycle, refreshed waking{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .wake-time-output {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #6f42c1; /* Purple color for sleep/rest */
+    }
+
+    .time-input-group > .col {
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+    
+    .cycle-highlight {
+        font-weight: bold;
+        color: #28a745; /* Green for good timing */
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🛌 Sleep Cycle Calculator (Wake-up Time)</h1>
+    <p class="small-muted">Find the ideal time to **wake up** feeling refreshed by planning your sleep around full **90-minute sleep cycles**.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="sleep-form">
+            <h5 class="section-title">Step 1: When Do You Go to Bed?</h5>
+
+            <label class="form-label d-block mt-3">Bedtime (Time you close your eyes)</label>
+            <div class="row g-2 time-input-group">
+                <div class="col-4">
+                    <select class="form-select" id="bedtime_h" required>
+                        <option value="0">12 AM</option>
+                        {% for i in range(1, 12) %}
+                            <option value="{{ i }}">{{ i }} AM</option>
+                        {% endfor %}
+                        <option value="12">12 PM</option>
+                        {% for i in range(13, 24) %}
+                            <option value="{{ i }}">{{ i-12 }} PM</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Hour</small>
+                </div>
+                <div class="col-4">
+                    <select class="form-select" id="bedtime_m" required>
+                        <option value="0">00</option>
+                        <option value="15">15</option>
+                        <option value="30" selected>30</option>
+                        <option value="45">45</option>
+                    </select>
+                    <small class="form-text text-muted">Minute</small>
+                </div>
+            </div>
+            
+            <h5 class="section-title mt-4">Step 2: Sleep Cycle Preferences</h5>
+            
+            <small class="form-text text-muted d-block mb-3">
+                Calculations include a 14-minute average time to fall asleep (sleep latency).
+            </small>
+
+            <button class="btn btn-primary mt-4" type="submit">Suggest Wake-up Times</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="sleep-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Optimal Wake-up Times (90-Minute Cycles)</h5>
+        <table class="table table-bordered mt-2 d-none" id="sleep-table">
+            <thead>
+                <tr>
+                    <th>Sleep Cycles</th>
+                    <th>Total Sleep Time</th>
+                    <th>Optimal Wake-up Time</th>
+                </tr>
+            </thead>
+            <tbody id="sleep-body"></tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const SLEEP_CYCLE_MINUTES = 90;
+    const SLEEP_LATENCY_MINUTES = 14; // Average time to fall asleep
+    
+    // Suggest between 4 and 6 full cycles
+    const CYCLE_COUNTS = [
+        { cycles: 6, ideal: true, hours: 9 }, 
+        { cycles: 5, ideal: true, hours: 7.5 },
+        { cycles: 4, ideal: true, hours: 6 },
+        { cycles: 3, ideal: false, hours: 4.5 } 
+    ];
+
+    function timeToHHMM(totalMinutes) {
+        // Handle negative minutes (crossing midnight backwards)
+        while (totalMinutes < 0) {
+            totalMinutes += 1440; // Add 24 hours (1440 minutes)
+        }
+        
+        const hours = Math.floor(totalMinutes / 60) % 24;
+        const minutes = Math.round(totalMinutes % 60);
+
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHour = hours % 12 || 12; // Convert 0 (midnight) to 12
+        const displayMinute = minutes.toString().padStart(2, '0');
+        
+        return `${displayHour}:${displayMinute} ${ampm}`;
+    }
+    
+    document.getElementById('sleep-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const bedtime_h = parseInt(document.getElementById('bedtime_h').value);
+        const bedtime_m = parseInt(document.getElementById('bedtime_m').value);
+
+        // 2. Convert Bedtime to Total Minutes from Midnight (00:00)
+        const bedtime_minutes_total = (bedtime_h * 60) + bedtime_m;
+
+        // 3. Calculate Sleep Start Time (after latency)
+        const sleep_start_minutes = bedtime_minutes_total + SLEEP_LATENCY_MINUTES;
+
+        // 4. Calculate Optimal Wake-up Times
+        const results = [];
+
+        CYCLE_COUNTS.forEach(cycleInfo => {
+            const total_sleep_duration_minutes = cycleInfo.cycles * SLEEP_CYCLE_MINUTES;
+            
+            // Wake-up time = Sleep Start Time + Total Sleep Duration
+            const wake_up_minutes_total = sleep_start_minutes + total_sleep_duration_minutes;
+            
+            const wake_up_time_formatted = timeToHHMM(wake_up_minutes_total);
+            
+            // Format total sleep hours for display (e.g., 7h 30m)
+            const sleep_h = Math.floor(total_sleep_duration_minutes / 60);
+            const sleep_m = total_sleep_duration_minutes % 60;
+            const total_sleep_formatted = `${sleep_h}h ${sleep_m}m`;
+
+            results.push({
+                ...cycleInfo,
+                wake_time: wake_up_time_formatted,
+                total_sleep: total_sleep_formatted
+            });
+        });
+
+        // 5. Update Result Display
+        const res = document.getElementById('sleep-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-info');
+        
+        const idealResults = results.filter(r => r.ideal);
+        const bestWakeTime = idealResults.length > 0 ? idealResults[0].wake_time : results[0].wake_time;
+
+        res.innerHTML = `
+**If you go to bed at ${timeToHHMM(bedtime_minutes_total)}...**
+
+Your estimated time to fall asleep (14 mins) is ${timeToHHMM(sleep_start_minutes)}.
+---
+
+**Your Best Suggested Wake-up Time is:** <span class="wake-time-output">${bestWakeTime}</span> (This aligns with **6** full 90-minute cycles.)
+`;
+        
+        // 6. Update Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('sleep-table').classList.remove('d-none');
+        const tableBody = document.getElementById('sleep-body');
+        tableBody.innerHTML = ''; // Clear previous results
+
+        results.forEach(r => {
+            const highlightClass = r.ideal ? 'cycle-highlight' : '';
+            tableBody.innerHTML += `
+            <tr class="${r.ideal ? 'table-success' : ''}">
+                <td class="${highlightClass}">${r.cycles} Cycles</td>
+                <td>${r.total_sleep}</td>
+                <td class="wake-time-output">${r.wake_time}</td>
+            </tr>
+            `;
+        });
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('sleep-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('sleep-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

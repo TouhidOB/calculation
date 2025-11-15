@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Body Surface Area (BSA) Calculator{% endblock %}
+
+{% block meta_description %}Calculate your Body Surface Area (BSA) in square meters using the Mosteller formula, based on your height and weight.{% endblock %}
+
+{% block meta_keywords %}BSA calculator, body surface area, Mosteller formula, chemotherapy dosage, drug dosing, square meters{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .bsa-output {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0d6efd; /* Blue color for clinical metrics */
+    }
+
+    .formula {
+        font-style: italic;
+        font-size: 0.9rem;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+        overflow-x: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">📐 Body Surface Area (BSA) Calculator</h1>
+    <p class="small-muted">Calculate your **Body Surface Area** ($\text{m}^2$)—a key metric for clinical drug dosage—using your height and weight with the **Mosteller Formula**.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="bsa-form">
+            <h5 class="section-title">Step 1: Your Height</h5>
+
+            <!-- Height Input (Feet and Inches) -->
+            <label class="form-label d-block mt-3">Height</label>
+            <div class="row g-2">
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="height_ft" placeholder="Feet (e.g., 5)" min="3" max="7" required>
+                        <span class="input-group-text">ft</span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="height_in" placeholder="Inches (e.g., 5)" min="0" max="11" required>
+                        <span class="input-group-text">in</span>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Your Weight</h5>
+
+            <!-- Weight Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="weight_input" placeholder="Weight" min="5" max="500" step="0.1" required>
+                <select class="form-select" id="weight_unit" style="max-width: 100px;">
+                    <option value="lb" selected>Lbs</option>
+                    <option value="kg">Kg</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate BSA</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="bsa-result"></div>
+
+        <div class="formula">
+            **Mosteller Formula:** $$\text{BSA} (\text{m}^2) = \sqrt{\frac{\text{Height} (\text{cm}) \times \text{Weight} (\text{kg})}{3600}}$$
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const KG_PER_LB = 0.453592;
+    const CM_PER_INCH = 2.54;
+
+    document.getElementById('bsa-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const weight_input = parseFloat(document.getElementById('weight_input').value);
+        const weight_unit = document.getElementById('weight_unit').value;
+        const height_ft = parseFloat(document.getElementById('height_ft').value);
+        const height_in = parseFloat(document.getElementById('height_in').value);
+
+        // Simple validation
+        if (weight_input <= 0 || height_ft < 0 || height_in < 0) {
+            displayError("Weight and height values must be valid and greater than zero.");
+            return;
+        }
+
+        // 2. Normalize Units for Mosteller Formula
+        
+        // Convert Weight to Kilograms (kg)
+        let weight_kg;
+        if (weight_unit === 'lb') {
+            weight_kg = weight_input * KG_PER_LB;
+        } else { // kg
+            weight_kg = weight_input;
+        }
+        
+        // Convert Height to Centimeters (cm)
+        const total_height_in = (height_ft * 12) + height_in;
+        const height_cm = total_height_in * CM_PER_INCH;
+
+        // 3. Calculate BSA using Mosteller Formula
+        // BSA = sqrt( (Height_cm * Weight_kg) / 3600 )
+        const product = height_cm * weight_kg;
+        const bsa_squared = product / 3600;
+        const bsa = Math.sqrt(bsa_squared);
+
+        const bsa_rounded = bsa.toFixed(2);
+        
+        // 4. Update Result Display
+        const res = document.getElementById('bsa-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-info');
+        res.innerHTML = `
+**Normalized Inputs:**
+Weight: ${weight_kg.toFixed(1)} kg
+Height: ${height_cm.toFixed(1)} cm
+---
+
+**Estimated Body Surface Area (BSA):**
+
+<span class="bsa-output">${bsa_rounded} $\text{m}^2$</span>
+`;
+        
+        // 5. Update Table (Self-Correction: Displaying the result in the alert is sufficient for this simple metric)
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('timeline-table').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('bsa-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('timeline-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

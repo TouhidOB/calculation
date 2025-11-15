@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Prime Number Checker{% endblock %}
+
+{% block meta_description %}Check if any positive integer is a prime number quickly and efficiently using optimized algorithms. {% endblock %}
+
+{% block meta_keywords %}prime number, primality test, number theory, integer checker, prime finder{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #fafafa;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 550px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #f7f7f7;
+    }
+
+    .input-group label {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+
+    #number-input {
+        width: 100%;
+        max-width: 300px;
+        padding: 12px;
+        font-size: 1.5rem;
+        border: 2px solid #3b82f6;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+    }
+    
+    .result-box {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 5px solid;
+    }
+
+    /* Custom result styles */
+    .result-prime {
+        border-left-color: #10b981; /* Green */
+        background-color: #ecfdf5;
+        color: #065f46;
+    }
+    .result-not-prime {
+        border-left-color: #f59e0b; /* Amber/Yellow */
+        background-color: #fffbeb;
+        color: #b45309;
+    }
+    .result-special {
+        border-left-color: #6366f1; /* Indigo */
+        background-color: #eef2ff;
+        color: #4338ca;
+    }
+    .result-error {
+        border-left-color: #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .output-text {
+        font-size: 1.8rem;
+        font-weight: 800;
+        text-align: center;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Prime Number Checker</h1>
+    <p class="text-gray-600 mb-6 text-center">Enter a positive integer to quickly determine if it is prime.</p>
+
+    <div class="solver-wrapper">
+        <form id="prime-checker-form" class="space-y-6">
+            
+            <div class="input-group shadow-lg">
+                <label for="number-input">Check the Integer ($N$):</label>
+                <input type="number" id="number-input" value="17" required min="1" step="1"
+                       placeholder="Enter a whole number"
+                       class="shadow-inner focus:shadow-xl transition-shadow">
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01]">
+                Check Primality
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Result</h2>
+            <div id="solution-output" class="result-box hidden">
+                <!-- Result will be displayed here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Efficiently checks if a positive integer is prime.
+     * Implements basic trial division up to the square root of n.
+     * @param {number} n - The integer to check.
+     * @returns {{isPrime: boolean, reason: string}}
+     */
+    function isPrime(n) {
+        if (n <= 1) return { isPrime: false, reason: "By definition, prime numbers are greater than 1." };
+        if (n === 2) return { isPrime: true, reason: "The smallest and only even prime number." };
+        if (n % 2 === 0) return { isPrime: false, reason: "It is an even number greater than 2." };
+
+        // Check for divisibility from 3 up to the square root of n, skipping even numbers
+        const limit = Math.sqrt(n);
+        for (let i = 3; i <= limit; i += 2) {
+            if (n % i === 0) {
+                return { isPrime: false, reason: `It is divisible by ${i}.` };
+            }
+        }
+
+        return { isPrime: true, reason: "No divisors found up to its square root." };
+    }
+
+
+    document.getElementById('prime-checker-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const input = document.getElementById('number-input').value.trim();
+        const n = parseInt(input, 10);
+        
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add('hidden');
+        // Clear all custom result classes
+        outputDiv.className = 'result-box'; 
+        outputDiv.innerHTML = '';
+
+        let htmlContent = '';
+        let resultClass = '';
+
+        // --- Input Validation ---
+        if (input === '' || isNaN(n) || n < 1 || !Number.isInteger(n)) {
+            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive whole number (integer $\ge 1$).</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        // --- Primality Check ---
+        const result = isPrime(n);
+        
+        if (result.isPrime) {
+            htmlContent += `<p class="output-text text-green-700">${n} IS A PRIME NUMBER!</p>`;
+            htmlContent += `<p class="text-center mt-2">Definitionally, a prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself.</p>`;
+            resultClass = 'result-prime';
+        } else {
+            // Handle special cases first
+            if (n === 1) {
+                htmlContent += `<p class="output-text text-indigo-700">${n} IS NEITHER PRIME NOR COMPOSITE.</p>`;
+                htmlContent += `<p class="text-center mt-2">The number 1 is a special case and is excluded from the definition of prime and composite numbers.</p>`;
+                resultClass = 'result-special';
+            } else {
+                htmlContent += `<p class="output-text text-yellow-800">${n} IS A COMPOSITE NUMBER.</p>`;
+                htmlContent += `<p class="text-center mt-2">${n} is not prime because ${result.reason}</p>`;
+                resultClass = 'result-not-prime';
+            }
+        }
+        
+        displayResult(resultClass, htmlContent);
+    });
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

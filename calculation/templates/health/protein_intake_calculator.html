@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Protein Intake Calculator{% endblock %}
+
+{% block meta_description %}Estimate your recommended daily protein intake (in grams) based on your body weight and specific fitness goals (muscle building, maintenance, endurance).{% endblock %}
+
+{% block meta_keywords %}protein calculator, daily protein, grams of protein, muscle building, weight loss, maintenance, fitness nutrition{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .protein-output {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745; /* Green color for health/fitness */
+    }
+
+    .unit-label {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🥩 Daily Protein Intake Calculator</h1>
+    <p class="small-muted">Determine your target daily **Protein Intake** (in grams) necessary to support your current body weight and fitness objectives.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="protein-form">
+            <h5 class="section-title">Step 1: Your Metrics</h5>
+
+            <!-- Weight Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="weight_input" placeholder="Body Weight" min="50" max="500" step="1" required>
+                <select class="form-select" id="weight_unit" style="max-width: 100px;">
+                    <option value="lb" selected>Lbs</option>
+                    <option value="kg">Kg</option>
+                </select>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Your Goal</h5>
+
+            <!-- Goal/Activity Level Input -->
+            <div class="form-group my-3">
+                <label for="goal_level" class="form-label">Primary Fitness Goal / Activity Level</label>
+                <select class="form-select" id="goal_level" required>
+                    <option value="" disabled selected>Select your goal</option>
+                    <option value="sedentary">Maintenance / Sedentary (Minimal activity)</option>
+                    <option value="endurance">Endurance Training (Running, cycling)</option>
+                    <option value="strength">Strength Training (Muscle building / Hypertrophy)</option>
+                    <option value="weightloss">Caloric Deficit / Weight Loss (High satiety)</option>
+                </select>
+            </div>
+            <small class="form-text text-muted d-block">Protein requirements increase with training intensity and during periods of weight loss.</small>
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate Protein</button>
+        </form>
+
+        <div class="alert alert-success mt-4 d-none result-alert" id="protein-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Protein Multipliers Used</h5>
+        <table class="table table-bordered mt-2 d-none" id="multiplier-table">
+            <thead>
+                <tr>
+                    <th>Goal</th>
+                    <th>Multiplier (g/lb)</th>
+                    <th>Multiplier (g/kg)</th>
+                </tr>
+            </thead>
+            <tbody id="multiplier-body"></tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const KG_TO_LB = 2.20462;
+    
+    // Protein requirements (g per unit of body weight)
+    // Values are given as { min_g_per_lb, max_g_per_lb }
+    const PROTEIN_MULTIPLIERS = {
+        sedentary: { min: 0.36, max: 0.45, name: "Maintenance / Sedentary" }, // 0.8-1.0 g/kg
+        endurance: { min: 0.55, max: 0.64, name: "Endurance Training" },     // 1.2-1.4 g/kg
+        strength:  { min: 0.73, max: 1.00, name: "Strength Training" },     // 1.6-2.2 g/kg
+        weightloss: { min: 0.82, max: 1.14, name: "Weight Loss / Deficit" } // 1.8-2.5 g/kg
+    };
+
+    document.getElementById('protein-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const weight_input = parseFloat(document.getElementById('weight_input').value);
+        const unit = document.getElementById('weight_unit').value;
+        const goal = document.getElementById('goal_level').value;
+
+        // Simple validation
+        if (weight_input <= 0) {
+            displayError("Weight must be greater than zero.");
+            return;
+        }
+        if (!PROTEIN_MULTIPLIERS[goal]) {
+            displayError("Please select a fitness goal.");
+            return;
+        }
+        
+        // 2. Normalize Weight to Pounds (Lbs)
+        let weight_lb;
+        if (unit === 'kg') {
+            weight_lb = weight_input * KG_TO_LB;
+        } else { // lb
+            weight_lb = weight_input;
+        }
+
+        // 3. Calculation
+        const multipliers = PROTEIN_MULTIPLIERS[goal];
+        
+        const min_protein_g = weight_lb * multipliers.min;
+        const max_protein_g = weight_lb * multipliers.max;
+        
+        // 4. Update Result Display
+        const min_g_rounded = min_protein_g.toFixed(0);
+        const max_g_rounded = max_protein_g.toFixed(0);
+        
+        const res = document.getElementById('protein-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+        res.innerHTML = `
+**Goal:** ${multipliers.name}
+**Weight Used (Lbs):** ${weight_lb.toFixed(1)} lbs
+---
+
+Your recommended daily protein intake range is:
+
+<span class="protein-output">${min_g_rounded} - ${max_g_rounded} <span class="unit-label">grams</span></span>
+
+`;
+        
+        // 5. Update Multiplier Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('multiplier-table').classList.remove('d-none');
+        const tableBody = document.getElementById('multiplier-body');
+        tableBody.innerHTML = ''; // Clear previous results
+
+        for (const key in PROTEIN_MULTIPLIERS) {
+            const m = PROTEIN_MULTIPLIERS[key];
+            const g_per_kg_min = (m.min * KG_TO_LB).toFixed(1);
+            const g_per_kg_max = (m.max * KG_TO_LB).toFixed(1);
+            
+            tableBody.innerHTML += `
+            <tr class="${key === goal ? 'table-success' : ''}">
+                <td>${m.name}</td>
+                <td>${m.min.toFixed(2)} - ${m.max.toFixed(2)}</td>
+                <td>${g_per_kg_min} - ${g_per_kg_max}</td>
+            </tr>
+            `;
+        }
+
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('protein-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('multiplier-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

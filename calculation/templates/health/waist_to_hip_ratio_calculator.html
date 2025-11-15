@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Waist-to-Hip Ratio (WHR) Calculator{% endblock %}
+
+{% block meta_description %}Calculate your Waist-to-Hip Ratio (WHR) and assess your health risk based on fat distribution according to WHO guidelines.{% endblock %}
+
+{% block meta_keywords %}WHR calculator, waist to hip ratio, fat distribution, health risk, WHO guidelines, body shape, central obesity{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+
+    .whr-output {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #dc3545; /* Reddish for risk metric */
+    }
+
+    .gender-group {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">📏 Waist-to-Hip Ratio (WHR) Calculator</h1>
+    <p class="small-muted">Calculate your **Waist-to-Hip Ratio** (WHR) to determine your fat distribution pattern, a key indicator of health risk.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="whr-form">
+            <h5 class="section-title">Step 1: Your Measurements</h5>
+
+            <!-- Gender Input -->
+            <div class="form-group mb-3">
+                <label class="form-label d-block">Gender</label>
+                <div class="gender-group">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderMale" value="male" required>
+                        <label class="form-check-label" for="genderMale">Male</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="female" required>
+                        <label class="form-check-label" for="genderFemale">Female</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Measurement Inputs -->
+            <label class="form-label d-block mt-3">Waist and Hip Circumference</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="waist_input" placeholder="Waist (Smallest point)" min="10" max="100" step="0.1" required>
+                <input type="number" class="form-control" id="hip_input" placeholder="Hips (Widest point)" min="10" max="100" step="0.1" required>
+                <select class="form-select" id="unit_select" style="max-width: 100px;">
+                    <option value="in" selected>In</option>
+                    <option value="cm">Cm</option>
+                </select>
+            </div>
+            <small class="form-text text-muted d-block">Ensure both measurements are taken at the correct location.</small>
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate WHR</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="whr-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Risk Assessment (WHO Guidelines)</h5>
+        <table class="table table-bordered mt-2 d-none" id="whr-table">
+            <thead>
+                <tr>
+                    <th>Gender</th>
+                    <th>Low Risk (WHR)</th>
+                    <th>Moderate Risk (WHR)</th>
+                    <th>High Risk (WHR)</th>
+                </tr>
+            </thead>
+            <tbody id="whr-body"></tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // WHO Guidelines for Risk Classification based on WHR
+    const WHR_RISK_GUIDELINES = {
+        male: {
+            low: 0.95,      // WHR <= 0.95
+            moderate: 1.0,  // 0.96 < WHR <= 1.0
+            high: 1.0       // WHR > 1.0
+        },
+        female: {
+            low: 0.80,      // WHR <= 0.80
+            moderate: 0.85, // 0.81 < WHR <= 0.85
+            high: 0.85      // WHR > 0.85
+        }
+    };
+
+    function getRiskLevel(whr, gender) {
+        const guidelines = WHR_RISK_GUIDELINES[gender];
+        
+        if (whr <= guidelines.low) {
+            return { level: 'Low', color: 'text-success' };
+        } else if (whr <= guidelines.moderate) {
+            return { level: 'Moderate', color: 'text-warning' };
+        } else {
+            return { level: 'High', color: 'text-danger' };
+        }
+    }
+
+    document.getElementById('whr-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const gender = document.querySelector('input[name="gender"]:checked')?.value;
+        const waist = parseFloat(document.getElementById('waist_input').value);
+        const hip = parseFloat(document.getElementById('hip_input').value);
+
+        // Simple validation
+        if (!gender || waist <= 0 || hip <= 0 || waist >= hip) {
+            displayError("Please enter valid measurements and select a gender. Waist should be less than the Hip measurement.");
+            return;
+        }
+
+        // 2. Calculate WHR
+        const whr = waist / hip;
+        const whr_rounded = whr.toFixed(2);
+        
+        // 3. Assess Risk
+        const risk = getRiskLevel(whr, gender);
+
+        // 4. Update Result Display
+        const res = document.getElementById('whr-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-info');
+        res.innerHTML = `
+**Your Waist-to-Hip Ratio (WHR):** <span class="whr-output">${whr_rounded}</span>
+**Gender Used:** ${gender.charAt(0).toUpperCase() + gender.slice(1)}
+---
+
+**Health Risk Assessment:**
+
+<span class="${risk.color} fs-4 fw-bold">Risk Level: ${risk.level}</span>
+`;
+        
+        // 5. Update Risk Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('whr-table').classList.remove('d-none');
+        
+        const tableBody = document.getElementById('whr-body');
+        tableBody.innerHTML = `
+        <tr>
+            <td>Male</td>
+            <td>$\le 0.95$</td>
+            <td>$0.96 - 1.00$</td>
+            <td>$> 1.00$</td>
+        </tr>
+        <tr>
+            <td>Female</td>
+            <td>$\le 0.80$</td>
+            <td>$0.81 - 0.85$</td>
+            <td>$> 0.85$</td>
+        </tr>
+        `;
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('whr-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('whr-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

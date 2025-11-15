@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Least Common Multiple (LCM) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Least Common Multiple (LCM) of two positive integers using their relationship with the Greatest Common Factor (GCF).{% endblock %}
+
+{% block meta_keywords %}LCM, Least Common Multiple, GCF, GCD, factor calculator, multiple, number theory{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #f0fdfa; /* Very light teal/mint background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #f0fdfa;
+        border: 1px solid #ccfbf1; /* Light teal border */
+    }
+
+    .input-box label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #047876; /* Dark teal */
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.4rem;
+        border: 2px solid #2dd4bf; /* Medium teal border */
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: #0d9488;
+    }
+    
+    .result-box {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 5px solid;
+    }
+
+    /* Custom result styles */
+    .result-success {
+        border-left-color: #14b8a6; /* Teal */
+        background-color: #ccfbf1;
+        color: #0f766e;
+    }
+    .result-error {
+        border-left-color: #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .output-text {
+        font-size: 2.25rem;
+        font-weight: 800;
+        text-align: center;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Least Common Multiple (LCM) Calculator</h1>
+    <p class="text-gray-600 mb-6 text-center">Find the smallest positive integer that is a multiple of both $A$ and $B$.</p>
+
+    <div class="solver-wrapper">
+        <form id="lcm-form" class="space-y-6">
+            
+            <div class="input-grid shadow-lg">
+                <div class="input-box">
+                    <label for="number-a">First Integer ($A$):</label>
+                    <input type="number" id="number-a" value="12" required min="1" step="1"
+                           placeholder="e.g., 12"
+                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                </div>
+                <div class="input-box">
+                    <label for="number-b">Second Integer ($B$):</label>
+                    <input type="number" id="number-b" value="18" required min="1" step="1"
+                           placeholder="e.g., 18"
+                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-teal-700 transition duration-150 transform hover:scale-[1.01]">
+                Calculate LCM (A, B)
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Result: LCM(A, B)</h2>
+            <div id="solution-output" class="result-box hidden">
+                <!-- Result will be displayed here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Calculates the Greatest Common Factor (GCF) of two non-negative integers
+     * using the Euclidean Algorithm.
+     * @param {number} a - First integer.
+     * @param {number} b - Second integer.
+     * @returns {number} The GCF of a and b.
+     */
+    function gcd(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        
+        // Euclidean Algorithm
+        while (b) {
+            const temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+    
+    /**
+     * Calculates the Least Common Multiple (LCM) of two positive integers.
+     * LCM(A, B) = (|A * B|) / GCF(A, B)
+     * @param {number} a - First integer.
+     * @param {number} b - Second integer.
+     * @returns {number} The LCM of a and b.
+     */
+    function lcm(a, b) {
+        // Since we validate for positive integers, Math.abs is technically redundant
+        // but kept for robustness, and we check for a * b === 0
+        if (a === 0 || b === 0) return 0;
+        
+        // Calculate GCF first
+        const commonDivisor = gcd(a, b);
+        
+        // Calculate LCM using the formula: LCM(a, b) = (|a * b|) / GCF(a, b)
+        // We use Math.floor(a / commonDivisor) to prevent potential floating point errors
+        // or unnecessary large intermediate products before the division.
+        return Math.abs(a * (b / commonDivisor));
+    }
+
+
+    document.getElementById('lcm-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const inputA = document.getElementById('number-a').value.trim();
+        const inputB = document.getElementById('number-b').value.trim();
+        
+        const A = parseInt(inputA, 10);
+        const B = parseInt(inputB, 10);
+        
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add('hidden');
+        outputDiv.className = 'result-box'; 
+        outputDiv.innerHTML = '';
+
+        let htmlContent = '';
+        let resultClass = '';
+
+        // --- Input Validation ---
+        if (inputA === '' || inputB === '' || isNaN(A) || isNaN(B) || A < 1 || B < 1 || !Number.isInteger(A) || !Number.isInteger(B)) {
+            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter two positive whole numbers (integers $\ge 1$).</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        // --- LCM Calculation ---
+        const result = lcm(A, B);
+        
+        // --- Result Display ---
+        htmlContent += `<p class="text-lg font-bold text-center">The Least Common Multiple of ${A} and ${B} is:</p>`;
+        htmlContent += `<p class="output-text text-teal-700">$$\\mathbf{${result}}$$</p>`;
+        
+        resultClass = 'result-success';
+        
+        displayResult(resultClass, htmlContent);
+    });
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

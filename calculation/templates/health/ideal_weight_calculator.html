@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Ideal Weight Calculator (Multiple Formulas){% endblock %}
+
+{% block meta_description %}Calculate your Ideal Body Weight (IBW) using multiple scientific formulas (Devine, Hamwi, Robinson, Miller) and determine your healthy BMI weight range.{% endblock %}
+
+{% block meta_keywords %}ideal weight calculator, IBW, Devine formula, Hamwi formula, healthy weight range, BMI calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #0d9488; /* Teal for health/wellness */
+    }
+
+    .unit-selector {
+        max-width: 100px;
+    }
+
+    .result-table th, .result-table td {
+        vertical-align: middle;
+    }
+    
+    .result-table th {
+        background-color: #f0fdfa;
+        color: #0d9488;
+    }
+    
+    .average-row {
+        font-weight: bold;
+        background-color: #ccfbf1 !important;
+        font-size: 1.15rem;
+    }
+    
+    .current-weight-input {
+        opacity: 0.8;
+    }
+
+    .pwr-output {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #0d9488;
+    }
+    
+    .pwr-output small {
+        font-size: 1rem;
+        color: #4b5563;
+        margin-left: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">⚖️ Ideal Weight Calculator</h1>
+    <p class="small-muted">Calculate your **Ideal Body Weight (IBW)** range using four widely accepted clinical formulas and determine your healthy $\text{BMI}$ range.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="iw-form">
+            <h5 class="section-title">Step 1: Gender and Height</h5>
+            
+            <!-- Gender Selection -->
+            <label class="form-label d-block mt-3">Gender</label>
+            <select class="form-select mb-3" id="gender_select" required>
+                <option value="" disabled selected>-- Select Gender --</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+
+            <!-- Height Input -->
+            <label class="form-label d-block mt-3">Height</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="height_ft" placeholder="Feet" min="4" max="7" step="1">
+                <input type="number" class="form-control" id="height_in" placeholder="Inches" min="0" max="11" step="1">
+                <select class="form-select unit-selector" id="height_unit">
+                    <option value="ftin" selected>ft / in</option>
+                    <option value="cm">cm</option>
+                </select>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Current Weight (Optional for Comparison)</h5>
+            
+             <!-- Current Weight Input (Optional) -->
+            <label class="form-label d-block mt-3">Current Weight</label>
+            <div class="input-group mb-3 current-weight-input">
+                <input type="number" class="form-control" id="current_weight" placeholder="Optional" min="30" max="300" step="0.1">
+                <select class="form-select unit-selector" id="weight_unit">
+                    <option value="lb" selected>Lbs</option>
+                    <option value="kg">Kg</option>
+                </select>
+            </div>
+
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Ideal Weight</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="iw-result-summary"></div>
+
+        <h5 class="section-title d-none" id="table-title">Ideal Weight Results by Formula</h5>
+        <table class="table table-bordered table-striped mt-3 d-none result-table" id="iw-table">
+            <thead>
+                <tr>
+                    <th style="width: 50%;">Formula</th>
+                    <th style="width: 50%;">Ideal Weight (Kg)</th>
+                </tr>
+            </thead>
+            <tbody id="iw-body"></tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const LB_PER_KG = 2.20462;
+    const CM_PER_INCH = 2.54;
+    const INCHES_PER_FOOT = 12;
+
+    // Helper to switch height inputs based on unit selection
+    document.getElementById('height_unit').addEventListener('change', function() {
+        const unit = this.value;
+        const ftInput = document.getElementById('height_ft');
+        const inInput = document.getElementById('height_in');
+
+        if (unit === 'cm') {
+            ftInput.placeholder = 'Height in CM';
+            ftInput.classList.remove('col-6');
+            inInput.style.display = 'none';
+        } else {
+            ftInput.placeholder = 'Feet';
+            ftInput.classList.add('col-6');
+            inInput.style.display = 'block';
+        }
+    });
+
+    /**
+     * Converts height inputs (ft/in or cm) to total inches for formula use.
+     * Returns total inches (or null if invalid).
+     */
+    function normalizeHeightToInches() {
+        const unit = document.getElementById('height_unit').value;
+        const ftVal = parseFloat(document.getElementById('height_ft').value || 0);
+        const inVal = parseFloat(document.getElementById('height_in').value || 0);
+
+        if (unit === 'cm') {
+            if (ftVal <= 0 || isNaN(ftVal)) return null;
+            return ftVal / CM_PER_INCH;
+        } else {
+            // ft/in
+            if (ftVal <= 0 && inVal <= 0) return null;
+            return (ftVal * INCHES_PER_FOOT) + inVal;
+        }
+    }
+
+    /**
+     * Calculates Ideal Body Weight (IBW) in kg based on standard formulas.
+     * Formulas are only valid for heights >= 5 feet (60 inches).
+     * @param {number} H_in - Total height in inches.
+     * @param {string} gender - 'male' or 'female'.
+     * @returns {Object} Results object with formula names as keys.
+     */
+    function calculateIBW(H_in, gender) {
+        const H_in_adj = Math.max(H_in, 60); // Use 60 inches as minimum for calculation
+
+        const diff_in = H_in_adj - 60; // inches over 5 feet
+
+        // Devine Formula (kg)
+        const devineBase = gender === 'male' ? 50 : 45.5;
+        const devineFactor = 2.3;
+        const devine = devineBase + (devineFactor * diff_in);
+
+        // Hamwi Formula (kg)
+        const hamwiBase = gender === 'male' ? 48 : 45.4;
+        const hamwiFactor = gender === 'male' ? 2.7 : 2.2;
+        const hamwi = hamwiBase + (hamwiFactor * diff_in);
+
+        // Robinson Formula (kg)
+        const robinsonBase = gender === 'male' ? 52 : 49;
+        const robinsonFactor = gender === 'male' ? 1.9 : 1.7;
+        const robinson = robinsonBase + (robinsonFactor * diff_in);
+
+        // Miller Formula (kg)
+        const millerBase = gender === 'male' ? 56.2 : 53.1;
+        const millerFactor = gender === 'male' ? 1.41 : 1.36;
+        const miller = millerBase + (millerFactor * diff_in);
+
+        return { Devine: devine, Hamwi: hamwi, Robinson: robinson, Miller: miller };
+    }
+    
+    /**
+     * Calculates the healthy BMI weight range in kg.
+     * @param {number} H_in - Total height in inches.
+     * @returns {Object} {min_kg, max_kg}
+     */
+    function calculateBMIRange(H_in) {
+        const H_meters = (H_in * CM_PER_INCH) / 100;
+        const H_squared = H_meters * H_meters;
+        
+        const minBMI = 18.5;
+        const maxBMI = 24.9;
+        
+        return {
+            min_kg: minBMI * H_squared,
+            max_kg: maxBMI * H_squared
+        };
+    }
+
+
+    document.getElementById('iw-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const gender = document.getElementById('gender_select').value;
+        const currentWeightInput = parseFloat(document.getElementById('current_weight').value);
+        const weightUnit = document.getElementById('weight_unit').value;
+        const H_in = normalizeHeightToInches();
+        
+        // 1. Validation
+        if (!gender || H_in === null || H_in <= 0) {
+            displayError("Please select a gender and enter a valid height.");
+            return;
+        }
+
+        // 2. Calculation
+        const ibwResultsKg = calculateIBW(H_in, gender);
+        const bmiRangeKg = calculateBMIRange(H_in);
+        
+        // 3. Normalize Current Weight to KG (if provided)
+        let currentWeightKg = null;
+        if (!isNaN(currentWeightInput) && currentWeightInput > 0) {
+            currentWeightKg = weightUnit === 'lb' ? currentWeightInput / LB_PER_KG : currentWeightInput;
+        }
+        
+        // 4. Calculate Average IBW
+        const totalIW = Object.values(ibwResultsKg).reduce((sum, val) => sum + val, 0);
+        const averageIWKg = totalIW / Object.keys(ibwResultsKg).length;
+
+        // 5. Build Table Output
+        const tableBody = document.getElementById('iw-body');
+        tableBody.innerHTML = ''; 
+        let htmlContent = '';
+
+        Object.entries(ibwResultsKg).forEach(([formula, kg]) => {
+            const lb = (kg * LB_PER_KG).toFixed(1);
+            const kg_f = kg.toFixed(1);
+            htmlContent += `
+            <tr>
+                <th>${formula}</th>
+                <td>${kg_f} kg / ${lb} lbs</td>
+            </tr>
+            `;
+        });
+        
+        // Add Average Row
+        const avg_lb = (averageIWKg * LB_PER_KG).toFixed(1);
+        const avg_kg_f = averageIWKg.toFixed(1);
+
+        htmlContent += `
+        <tr class="average-row">
+            <th>Average IBW</th>
+            <td>${avg_kg_f} kg / ${avg_lb} lbs</td>
+        </tr>
+        `;
+        tableBody.innerHTML = htmlContent;
+        
+        // 6. Build Summary (BMI Range & Current Weight Comparison)
+        const range_min_lb = (bmiRangeKg.min_kg * LB_PER_KG).toFixed(1);
+        const range_max_lb = (bmiRangeKg.max_kg * LB_PER_KG).toFixed(1);
+        
+        let comparisonHtml = ``;
+
+        if (currentWeightKg !== null) {
+            const current_lb_f = (currentWeightKg * LB_PER_KG).toFixed(1);
+            const status = (currentWeightKg >= bmiRangeKg.min_kg && currentWeightKg <= bmiRangeKg.max_kg) 
+                ? '<span class="text-success fw-bold">within the healthy BMI range.</span>' 
+                : '<span class="text-danger fw-bold">outside the healthy BMI range.</span>';
+                
+            comparisonHtml = `
+            <div class="mt-3">
+                <span class="fw-bold">Your Current Weight:</span> ${currentWeightKg.toFixed(1)} kg / ${current_lb_f} lbs
+                <br>
+                Your current weight is ${status}
+            </div>
+            `;
+        }
+
+
+        const summaryHtml = `
+            <div class="mb-3 fs-5 fw-bold">Comprehensive Ideal Weight Range:</div>
+            <div class="pwr-output">
+                ${averageIWKg.toFixed(1)} <small>kg (Average of all formulas)</small>
+            </div>
+            <hr>
+            <div class="mb-2">
+                <span class="fw-bold">Healthy BMI Weight Range ($18.5 - 24.9$):</span>
+                <br>
+                ${bmiRangeKg.min_kg.toFixed(1)} - ${bmiRangeKg.max_kg.toFixed(1)} kg 
+                ($${range_min_lb} - ${range_max_lb}$ lbs)
+            </div>
+            ${comparisonHtml}
+        `;
+        
+        // 7. Update Visibility
+        document.getElementById('iw-result-summary').classList.remove('d-none', 'alert-danger');
+        document.getElementById('iw-result-summary').classList.add('alert-info');
+        document.getElementById('iw-result-summary').innerHTML = summaryHtml;
+        
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('iw-table').classList.remove('d-none');
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('iw-result-summary');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('iw-table').classList.add('d-none');
+    }
+    
+    // Initial configuration for ft/in input
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('height_in').style.display = 'block';
+        document.getElementById('height_ft').classList.add('col-6');
+    });
+</script>
+
+{% endblock %}

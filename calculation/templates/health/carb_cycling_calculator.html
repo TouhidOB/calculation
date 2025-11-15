@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Carb Cycling Macro Calculator{% endblock %}
+
+{% block meta_description %}Calculate daily calorie and macronutrient targets for High-Carb and Low-Carb days based on your weight, goals, and cycle length.{% endblock %}
+
+{% block meta_keywords %}carb cycling, macro calculator, high carb day, low carb day, nutrition calculator, weight loss macros, muscle gain macros{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #4f46e5; /* Indigo for nutrition/planning */
+    }
+
+    .unit-selector {
+        max-width: 100px;
+    }
+
+    .macro-table th {
+        background-color: #eef2ff;
+        color: #4f46e5;
+        font-size: 1rem;
+    }
+
+    .macro-table td {
+        vertical-align: middle;
+        font-weight: 500;
+    }
+
+    .high-carb-header {
+        background-color: #a5b4fc !important;
+        color: #312e81 !important;
+    }
+    .low-carb-header {
+        background-color: #c4b5fd !important;
+        color: #4c1d95 !important;
+    }
+    
+    .macro-value {
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🍚 Carb Cycling Macro Calculator</h1>
+    <p class="small-muted">Determine your daily calorie and macro split for **High-Carb** and **Low-Carb** days based on your weight and fitness goals.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="carb-cycle-form">
+            <h5 class="section-title">Step 1: Weight & Goal</h5>
+
+            <!-- Weight Input -->
+            <label class="form-label d-block mt-3">Body Weight</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="weight_input" placeholder="e.g., 180" min="50" max="400" step="1" value="180" required>
+                <select class="form-select unit-selector" id="weight_unit">
+                    <option value="lb" selected>Lbs</option>
+                    <option value="kg">Kg</option>
+                </select>
+            </div>
+            
+            <!-- Goal Selection -->
+            <label class="form-label d-block mt-3">Primary Goal</label>
+            <select class="form-select mb-3" id="goal_select" required>
+                <option value="" disabled>-- Select Goal --</option>
+                <option value="fat_loss" selected>Fat Loss / Cutting</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="muscle_gain">Muscle Gain / Bulking</option>
+            </select>
+            
+            <h5 class="section-title mt-4">Step 2: Cycle Structure (e.g., 2 High / 5 Low)</h5>
+            
+            <!-- Cycle Structure -->
+            <div class="row g-3">
+                <div class="col-6">
+                    <label class="form-label">High-Carb Days (per week)</label>
+                    <input type="number" class="form-control" id="high_days" placeholder="e.g., 2" min="1" max="7" value="2" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Low-Carb Days (per week)</label>
+                    <input type="number" class="form-control" id="low_days" placeholder="e.g., 5" min="0" max="6" value="5" required>
+                </div>
+            </div>
+            <small class="form-text text-muted d-block mt-2">Total days should not exceed 7 for a standard week.</small>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Macros</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="macro-summary"></div>
+
+        <h5 class="section-title d-none" id="table-title">Daily Macro Targets (in Grams)</h5>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped mt-3 d-none macro-table" id="macro-table">
+                <thead>
+                    <tr>
+                        <th>Macro</th>
+                        <th class="high-carb-header">High-Carb Day</th>
+                        <th class="low-carb-header">Low-Carb Day</th>
+                    </tr>
+                </thead>
+                <tbody id="macro-body"></tbody>
+            </table>
+        </div>
+        
+        <p class="small-muted mt-3 d-none" id="note-disclaimer">
+            *This calculation uses estimated maintenance calories (15 kcal/lb or 33 kcal/kg) and standard macro splits. For best results, adjust based on your activity level and progress.
+        </p>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const LB_PER_KG = 2.20462;
+    
+    // Macro Calories per Gram
+    const KCAL_PER_CARB = 4;
+    const KCAL_PER_PROTEIN = 4;
+    const KCAL_PER_FAT = 9;
+
+    // Estimated Maintenance Calorie Multiplier (for baseline, based on weight)
+    const KCAL_PER_LB_MAINTENANCE = 15; 
+
+    // Macro Percentage Splits (High/Low Carb Days)
+    const SPLITS = {
+        HIGH: { C: 0.50, P: 0.30, F: 0.20 }, // 50% Carbs, 30% Protein, 20% Fat
+        LOW:  { C: 0.20, P: 0.40, F: 0.40 }  // 20% Carbs, 40% Protein, 40% Fat
+    };
+
+    // Calorie Adjustment Multipliers based on Goal
+    const GOAL_ADJUSTMENTS = {
+        fat_loss: { HIGH: 0.95, LOW: 0.80 },       // Overall weekly deficit
+        maintenance: { HIGH: 1.00, LOW: 1.00 },   // Maintain overall weekly calories
+        muscle_gain: { HIGH: 1.20, LOW: 1.05 }     // Overall weekly surplus
+    };
+
+    /** Converts total calories and macro split to grams. */
+    function calculateGrams(calories, split) {
+        const C_g = (calories * split.C) / KCAL_PER_CARB;
+        const P_g = (calories * split.P) / KCAL_PER_PROTEIN;
+        const F_g = (calories * split.F) / KCAL_PER_FAT;
+        
+        return {
+            C: Math.round(C_g),
+            P: Math.round(P_g),
+            F: Math.round(F_g)
+        };
+    }
+
+    document.getElementById('carb-cycle-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const weightInput = parseFloat(document.getElementById('weight_input').value);
+        const weightUnit = document.getElementById('weight_unit').value;
+        const goal = document.getElementById('goal_select').value;
+        const highDays = parseInt(document.getElementById('high_days').value);
+        const lowDays = parseInt(document.getElementById('low_days').value);
+        
+        // 2. Validation
+        if (highDays + lowDays > 7 || highDays < 0 || lowDays < 0) {
+            displayError("Total High and Low Carb Days must be 7 or less.");
+            return;
+        }
+        if (weightInput <= 0 || isNaN(weightInput) || !goal) {
+             displayError("Please enter a valid weight and select a goal.");
+            return;
+        }
+
+        // 3. Normalize Weight to Lbs for simplified calculation base
+        const weightLbs = weightUnit === 'kg' ? weightInput * LB_PER_KG : weightInput;
+
+        // 4. Calculate Maintenance & Adjusted Calories
+        const maintenanceKcal = weightLbs * KCAL_PER_LB_MAINTENANCE;
+        const adjustment = GOAL_ADJUSTMENTS[goal];
+        
+        const highKcal = maintenanceKcal * adjustment.HIGH;
+        const lowKcal = maintenanceKcal * adjustment.LOW;
+        
+        // 5. Calculate Macros for High and Low Days
+        const highMacros = calculateGrams(highKcal, SPLITS.HIGH);
+        const lowMacros = calculateGrams(lowKcal, SPLITS.LOW);
+
+        // 6. Calculate Weekly Average Calories (for summary)
+        const weeklyTotalKcal = (highKcal * highDays) + (lowKcal * lowDays);
+        const daysInCycle = highDays + lowDays;
+        const averageDailyKcal = daysInCycle > 0 ? weeklyTotalKcal / daysInCycle : 0;
+
+
+        // 7. Build Table Output
+        const tableBody = document.getElementById('macro-body');
+        tableBody.innerHTML = ''; 
+        
+        const macros = [
+            { name: 'Calories', high: highKcal.toFixed(0), low: lowKcal.toFixed(0) },
+            { name: 'Carbohydrates (g)', high: highMacros.C, low: lowMacros.C },
+            { name: 'Protein (g)', high: highMacros.P, low: lowMacros.P },
+            { name: 'Fat (g)', high: highMacros.F, low: lowMacros.F }
+        ];
+
+        macros.forEach(macro => {
+            tableBody.innerHTML += `
+            <tr>
+                <th>${macro.name}</th>
+                <td class="high-carb-header macro-value">${macro.high}</td>
+                <td class="low-carb-header macro-value">${macro.low}</td>
+            </tr>
+            `;
+        });
+        
+        // 8. Build Summary
+        const summaryHtml = `
+            <div class="mb-2 fs-5 fw-bold">Carb Cycling Plan Summary:</div>
+            <div>
+                <span class="fw-bold">High-Carb Days:</span> ${highDays} per week
+                <span class="ms-4 fw-bold">Low-Carb Days:</span> ${lowDays} per week
+            </div>
+            <div class="mt-2 small text-muted">
+                Estimated Average Daily Calories: **${averageDailyKcal.toFixed(0)} kcal** (over ${daysInCycle} days)
+            </div>
+        `;
+
+        // 9. Update Visibility
+        document.getElementById('macro-summary').classList.remove('d-none', 'alert-danger');
+        document.getElementById('macro-summary').classList.add('alert-info');
+        document.getElementById('macro-summary').innerHTML = summaryHtml;
+        
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('macro-table').classList.remove('d-none');
+        document.getElementById('note-disclaimer').classList.remove('d-none');
+
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('macro-summary');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('macro-table').classList.add('d-none');
+        document.getElementById('note-disclaimer').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Fiber Intake Calculator{% endblock %}
+
+{% block meta_description %}Estimate your recommended daily dietary fiber intake (in grams) based on age and gender, or refine the estimate using your caloric intake.{% endblock %}
+
+{% block meta_keywords %}fiber calculator, dietary fiber, grams of fiber, daily fiber intake, digestive health, nutrition guidelines{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .fiber-output {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #8b4513; /* Earthy brown color for fiber/nutrition */
+    }
+
+    .unit-label {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+    
+    .gender-group {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🌾 Daily Fiber Intake Calculator</h1>
+    <p class="small-muted">Determine your daily **Dietary Fiber** target (in grams) based on standard recommendations for optimal digestive health.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="fiber-form">
+            <h5 class="section-title">Step 1: Your Metrics</h5>
+
+            <!-- Age Input -->
+            <input type="number" class="form-control my-3" id="age" placeholder="Your Age (Years)" min="18" max="100" required>
+
+            <!-- Gender Input -->
+            <div class="form-group mb-3">
+                <label class="form-label d-block">Gender</label>
+                <div class="gender-group">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderMale" value="male" required>
+                        <label class="form-check-label" for="genderMale">Male</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="female" required>
+                        <label class="form-check-label" for="genderFemale">Female</label>
+                    </div>
+                </div>
+            </div>
+            
+            <h5 class="section-title mt-4">Step 2: Caloric Intake (Optional)</h5>
+
+            <!-- Caloric Intake Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="calories" placeholder="Daily Caloric Intake (e.g., 2000)" min="1000" max="6000" step="100">
+                <span class="input-group-text">kcal</span>
+            </div>
+            <small class="form-text text-muted d-block">This input helps refine the recommendation (14g fiber per 1,000 kcal).</small>
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate Fiber Intake</button>
+        </form>
+
+        <div class="alert alert-success mt-4 d-none result-alert" id="fiber-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Guideline Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="fiber-table">
+            <thead>
+                <tr>
+                    <th>Guideline Source</th>
+                    <th>Recommended Fiber (grams)</th>
+                </tr>
+            </thead>
+            <tbody id="fiber-body"></tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Standard Guidelines for Fiber (grams per day)
+    const FIBER_GUIDELINES = {
+        male: {
+            young: 38, // Age 50 and under
+            old: 30    // Age 51 and over
+        },
+        female: {
+            young: 25, // Age 50 and under
+            old: 21    // Age 51 and over
+        }
+    };
+    
+    const FIBER_PER_1000_CAL = 14;
+
+    function getBaselineFiber(age, gender) {
+        if (age <= 50) {
+            return FIBER_GUIDELINES[gender].young;
+        } else {
+            return FIBER_GUIDELINES[gender].old;
+        }
+    }
+
+    function getCalorieFiber(calories) {
+        if (calories && calories > 0) {
+            return (calories / 1000) * FIBER_PER_1000_CAL;
+        }
+        return null;
+    }
+
+    document.getElementById('fiber-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const age = parseInt(document.getElementById('age').value);
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        const calories = parseFloat(document.getElementById('calories').value);
+
+        // 2. Calculate Recommendations
+        const baseline = getBaselineFiber(age, gender);
+        const calorie_based = getCalorieFiber(calories);
+        
+        let final_recommendation = baseline;
+        let primary_source = 'Fixed Guideline (Age/Gender)';
+
+        if (calorie_based) {
+            // Use the average of the fixed guideline and the calorie guideline if provided
+            final_recommendation = (baseline + calorie_based) / 2;
+            primary_source = 'Blended Recommendation (Fixed & Calorie-Based)';
+        }
+
+        const final_g_rounded = final_recommendation.toFixed(0);
+
+        // 3. Update Result Display
+        const res = document.getElementById('fiber-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+        res.innerHTML = `
+**Your Baseline Recommendation:** ${baseline} grams
+**Primary Guideline Used:** ${primary_source}
+---
+
+Your estimated recommended daily fiber intake is:
+
+<span class="fiber-output">${final_g_rounded} <span class="unit-label">grams</span></span>
+
+`;
+        
+        // 4. Update Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('fiber-table').classList.remove('d-none');
+        const tableBody = document.getElementById('fiber-body');
+        tableBody.innerHTML = ''; // Clear previous results
+
+        tableBody.innerHTML += `
+        <tr><td>Fixed Guideline (Age/Gender)</td><td>**${baseline} g**</td></tr>
+        ${calorie_based ? `<tr><td>Calorie-Based (14g/1000 kcal)</td><td>**${calorie_based.toFixed(0)} g**</td></tr>` : ''}
+        <tr><td>Final Recommendation</td><td>**${final_g_rounded} g**</td></tr>
+        `;
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('fiber-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('fiber-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Apgar Score Calculator{% endblock %}
+
+{% block meta_description %}Calculate a newborn's Apgar score (Appearance, Pulse, Grimace, Activity, Respiration) and assess their immediate health status. For clinical use only.{% endblock %}
+
+{% block meta_keywords %}apgar score, newborn health, clinical assessment, baby score, health calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #0d9488; /* Teal for Clinical Assessment */
+    }
+
+    .criteria-group {
+        border: 1px solid #ccfbf1;
+        background-color: #f0fdfa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .output-score {
+        font-size: 3.5rem;
+        font-weight: bold;
+        color: #0d9488;
+        line-height: 1;
+    }
+    
+    .output-interpretation {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 6px;
+        color: #0d9488;
+        background-color: #ccfbf1;
+    }
+    
+    .disclaimer {
+        font-size: 0.85rem;
+        color: #ef4444; 
+        font-weight: 600;
+        border-top: 1px solid #fca5a5;
+        padding-top: 10px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">👶 Apgar Score Calculator (A.P.G.A.R.)</h1>
+    <p class="small-muted">Assess the **Appearance, Pulse, Grimace, Activity, and Respiration** of a newborn to determine their immediate health status.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="apgar-form">
+            <h5 class="section-title">Select Assessment Criteria (0, 1, or 2 points each)</h5>
+
+            <!-- Appearance (Color) -->
+            <div class="criteria-group">
+                <label class="form-label d-block fw-bold fs-5">A: Appearance (Skin Color)</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_A" id="A_0" value="0" required>
+                    <label class="form-check-label" for="A_0">0 Points: Blue, pale all over</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_A" id="A_1" value="1">
+                    <label class="form-check-label" for="A_1">1 Point: Pink body, blue extremities (acrocyanosis)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_A" id="A_2" value="2">
+                    <label class="form-check-label" for="A_2">2 Points: Pink all over</label>
+                </div>
+            </div>
+
+            <!-- Pulse (Heart Rate) -->
+            <div class="criteria-group">
+                <label class="form-label d-block fw-bold fs-5">P: Pulse (Heart Rate)</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_P" id="P_0" value="0" required>
+                    <label class="form-check-label" for="P_0">0 Points: Absent</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_P" id="P_1" value="1">
+                    <label class="form-check-label" for="P_1">1 Point: Slow (Less than 100 beats per minute)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_P" id="P_2" value="2">
+                    <label class="form-check-label" for="P_2">2 Points: Greater than 100 beats per minute</label>
+                </div>
+            </div>
+
+            <!-- Grimace (Reflex Irritability) -->
+            <div class="criteria-group">
+                <label class="form-label d-block fw-bold fs-5">G: Grimace (Reflex Irritability)</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_G" id="G_0" value="0" required>
+                    <label class="form-check-label" for="G_0">0 Points: No response to stimulation</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_G" id="G_1" value="1">
+                    <label class="form-check-label" for="G_1">1 Point: Grimace or weak cry with stimulation</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_G" id="G_2" value="2">
+                    <label class="form-check-label" for="G_2">2 Points: Cries, sneezes, coughs, pulls away</label>
+                </div>
+            </div>
+
+            <!-- Activity (Muscle Tone) -->
+            <div class="criteria-group">
+                <label class="form-label d-block fw-bold fs-5">A: Activity (Muscle Tone)</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_Activity" id="Act_0" value="0" required>
+                    <label class="form-check-label" for="Act_0">0 Points: Limp</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_Activity" id="Act_1" value="1">
+                    <label class="form-check-label" for="Act_1">1 Point: Some flexion of extremities</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_Activity" id="Act_2" value="2">
+                    <label class="form-check-label" for="Act_2">2 Points: Active motion</label>
+                </div>
+            </div>
+
+            <!-- Respiration (Breathing) -->
+            <div class="criteria-group">
+                <label class="form-label d-block fw-bold fs-5">R: Respiration (Breathing)</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_R" id="R_0" value="0" required>
+                    <label class="form-check-label" for="R_0">0 Points: Absent</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_R" id="R_1" value="1">
+                    <label class="form-check-label" for="R_1">1 Point: Slow, irregular, weak cry</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="score_R" id="R_2" value="2">
+                    <label class="form-check-label" for="R_2">2 Points: Good, strong cry</label>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Apgar Score</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Apgar Score & Status</h5>
+        
+        <div id="results-container" class="mt-3 d-none text-center">
+            
+            <div class="mb-2 text-muted">Total Score (Out of 10)</div>
+            
+            <p class="mb-0">
+                <span id="apgar_value" class="output-score">0</span>
+            </p>
+            
+            <div id="apgar_interpretation" class="output-interpretation"></div>
+            
+        </div>
+        
+        <p class="disclaimer">
+            ⚠️ CLINICAL DISCLAIMER: The Apgar Score Calculator is intended solely for educational and informational purposes. It is NOT a substitute for professional medical assessment. This score MUST be determined and interpreted by a licensed healthcare professional (physician, nurse, or midwife).
+        </p>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /** Determines the interpretation based on the total Apgar score. */
+    function getApgarInterpretation(score) {
+        if (score >= 7) {
+            return { text: "Generally Normal", style: "text-success", desc: "The infant is generally in good condition and requires routine post-delivery care." };
+        } else if (score >= 4) {
+            return { text: "Moderately Distressed", style: "text-warning", desc: "The infant requires monitoring and likely some intervention (e.g., suctioning, gentle stimulation)." };
+        } else {
+            return { text: "Severely Distressed", style: "text-danger", desc: "The infant requires immediate and urgent medical intervention or resuscitation." };
+        }
+    }
+
+    document.getElementById('apgar-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs (All inputs are required, so we just sum them up)
+        let totalScore = 0;
+        try {
+            totalScore += parseInt(document.querySelector('input[name="score_A"]:checked').value);
+            totalScore += parseInt(document.querySelector('input[name="score_P"]:checked').value);
+            totalScore += parseInt(document.querySelector('input[name="score_G"]:checked').value);
+            totalScore += parseInt(document.querySelector('input[name="score_Activity"]:checked').value);
+            totalScore += parseInt(document.querySelector('input[name="score_R"]:checked').value);
+        } catch (error) {
+            // Should not happen if all fields are marked 'required'
+            displayError("Please ensure all five criteria are selected.");
+            return;
+        }
+
+        // 2. Calculation & Interpretation
+        const interpretationData = getApgarInterpretation(totalScore);
+
+        // 3. Update Result Display
+        document.getElementById('apgar_value').textContent = totalScore;
+        
+        const interpretationDiv = document.getElementById('apgar_interpretation');
+        interpretationDiv.innerHTML = `<span class="${interpretationData.style}">${interpretationData.text}</span>: ${interpretationData.desc}`;
+        
+        // Update the score color based on interpretation
+        const apgarValueSpan = document.getElementById('apgar_value');
+        apgarValueSpan.classList.remove('text-success', 'text-warning', 'text-danger');
+        apgarValueSpan.classList.add(interpretationData.style.replace('text', '')); 
+
+        // 4. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

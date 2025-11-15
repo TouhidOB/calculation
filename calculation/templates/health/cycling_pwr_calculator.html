@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Cycling Power-to-Weight Ratio Calculator{% endblock %}
+
+{% block meta_description %}Calculate your cycling Power-to-Weight Ratio (PWR) using your FTP and weight, and see your cycling category assessment in W/kg.{% endblock %}
+
+{% block meta_keywords %}cycling PWR, power to weight ratio, FTP calculator, watts per kilogram, cycling performance, cycling categories, FTP{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #059669; /* Green color for cycling/performance */
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+
+    .pwr-output {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #059669; 
+    }
+
+    .unit-selector {
+        max-width: 100px;
+    }
+
+    .w-kg {
+        font-size: 1.5rem;
+        color: #4b5563;
+    }
+
+    .risk-high { color: #dc3545; font-weight: bold; } /* Red for category 5 or poor */
+    .risk-moderate { color: #ffc107; font-weight: bold; } /* Yellow for category 3/4 */
+    .risk-low { color: #28a745; font-weight: bold; } /* Green for category 1/Pro */ 
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🚴 Cycling Power-to-Weight Ratio ($\text{W}/\text{kg}$)</h1>
+    <p class="small-muted">Calculate your **Power-to-Weight Ratio (PWR)** based on your **Functional Threshold Power (FTP)** and body weight. This is the primary metric for cycling climbing ability.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="pwr-form">
+            <h5 class="section-title">Step 1: Functional Threshold Power (FTP)</h5>
+
+            <!-- FTP Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="ftp_input" placeholder="Your FTP (20-minute power x 0.95)" min="50" max="800" step="1" required>
+                <span class="input-group-text">Watts</span>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Body Weight</h5>
+
+            <!-- Weight Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="weight_input" placeholder="Current Riding Weight" min="30" max="250" step="0.1" required>
+                <select class="form-select unit-selector" id="weight_unit">
+                    <option value="kg" selected>Kg</option>
+                    <option value="lb">Lbs</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate PWR & Category</button>
+        </form>
+
+        <div class="alert alert-success mt-4 d-none result-alert text-center" id="pwr-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Category Assessment (FTP W/kg)</h5>
+        <table class="table table-bordered mt-2 d-none" id="pwr-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Women (W/kg)</th>
+                    <th>Men (W/kg)</th>
+                </tr>
+            </thead>
+            <tbody id="pwr-body"></tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const KG_PER_LB = 0.453592;
+    
+    // Coggan Power Profile (FTP W/kg) - Simplified and Averaged
+    const COGGAN_CATEGORIES = [
+        { name: 'Professional / World Class', men_min: 5.5, women_min: 4.8, class: 'risk-low' },
+        { name: 'Category 1 / Elite', men_min: 5.0, women_min: 4.5, class: 'risk-low' },
+        { name: 'Category 2 / Expert', men_min: 4.5, women_min: 4.0, class: 'risk-moderate' },
+        { name: 'Category 3 / Advanced', men_min: 4.0, women_min: 3.5, class: 'risk-moderate' },
+        { name: 'Category 4 / Intermediate', men_min: 3.5, women_min: 3.0, class: 'risk-high' },
+        { name: 'Category 5 / Beginner', men_min: 0.0, women_min: 0.0, class: 'risk-high' } // Default below 3.5/3.0
+    ];
+
+    function getCategoryAssessment(pwr, gender) {
+        // Use a generic gender selection for assessment
+        const pwrField = (gender === 'male' || gender === 'unset') ? 'men_min' : 'women_min';
+
+        for (const cat of COGGAN_CATEGORIES) {
+            if (pwr >= cat[pwrField]) {
+                return cat;
+            }
+        }
+        return COGGAN_CATEGORIES[COGGAN_CATEGORIES.length - 1]; // Should default to Category 5
+    }
+
+    document.getElementById('pwr-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const ftp_watts = parseFloat(document.getElementById('ftp_input').value);
+        const weight_input = parseFloat(document.getElementById('weight_input').value);
+        const weight_unit = document.getElementById('weight_unit').value;
+        
+        // Use an assumed gender since the form doesn't capture it (default to male scale for classification simplicity)
+        // NOTE: In a real app, gender selection would be critical here.
+        const assumed_gender = 'male'; 
+
+        // 2. Normalize Weight to Kilograms (kg)
+        let weight_kg;
+        if (weight_unit === 'lb') {
+            weight_kg = weight_input * KG_PER_LB;
+        } else {
+            weight_kg = weight_input;
+        }
+
+        // 3. Calculate PWR (Watts per Kilogram)
+        // PWR = FTP (Watts) / Weight (kg)
+        if (weight_kg === 0 || isNaN(ftp_watts) || isNaN(weight_kg)) {
+            displayError("Please enter valid, non-zero values for both FTP and weight.");
+            return;
+        }
+        
+        const pwr = ftp_watts / weight_kg;
+        const pwr_rounded = pwr.toFixed(2);
+        
+        // 4. Assess Category (using the male scale as a default assessment)
+        const category = getCategoryAssessment(pwr, assumed_gender);
+
+        // 5. Update Result Display
+        const res = document.getElementById('pwr-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+        res.innerHTML = `
+**Functional Threshold Power (FTP):** ${ftp_watts} Watts
+**Weight Used:** ${weight_kg.toFixed(1)} kg
+---
+
+**Calculated Power-to-Weight Ratio (PWR):**
+
+<span class="pwr-output">${pwr_rounded} <span class="w-kg">W/kg</span></span>
+
+**Estimated Cycling Category:**
+<span class="${category.class} fs-5">${category.name}</span>
+`;
+        
+        // 6. Update Category Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('pwr-table').classList.remove('d-none');
+        
+        const tableBody = document.getElementById('pwr-body');
+        tableBody.innerHTML = ''; 
+
+        // Populate the table with guidelines, highlighting the user's result row
+        COGGAN_CATEGORIES.reverse().forEach(cat => {
+            const isUserCategory = (cat.name === category.name);
+            const rowClass = isUserCategory ? 'table-info' : '';
+            const menRange = cat.men_min >= 5.5 ? `$\ge ${cat.men_min}$` : `${cat.men_min.toFixed(1)} - ${cat.men_min + 0.5 - 0.1 < 0 ? 'NA' : (cat.men_min + 0.5 - 0.1).toFixed(1)}`
+            const womenRange = cat.women_min >= 4.8 ? `$\ge ${cat.women_min}$` : `${cat.women_min.toFixed(1)} - ${cat.women_min + 0.5 - 0.1 < 0 ? 'NA' : (cat.women_min + 0.5 - 0.1).toFixed(1)}`
+
+            tableBody.innerHTML += `
+            <tr class="${rowClass}">
+                <td>${cat.name.split(' / ')[0]}</td>
+                <td>${cat.women_min === 0 ? ' $< 3.0$' : womenRange}</td>
+                <td>${cat.men_min === 0 ? ' $< 3.5$' : menRange}</td>
+            </tr>
+            `;
+        });
+        
+        // Reverse back for display order
+        COGGAN_CATEGORIES.reverse(); 
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('pwr-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('pwr-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

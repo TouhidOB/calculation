@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}eGFR Calculator (CKD-EPI 2021){% endblock %}
+
+{% block meta_description %}Calculate your estimated Glomerular Filtration Rate (eGFR) using the modern CKD-EPI 2021 formula based on serum creatinine, age, and gender, and determine your kidney disease stage.{% endblock %}
+
+{% block meta_keywords %}eGFR calculator, GFR, CKD-EPI 2021, kidney function, serum creatinine, chronic kidney disease staging{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #1d4ed8; /* Blue for Clinical/Medical */
+    }
+
+    .output-egfr {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #10b981; /* Green for healthy results */
+    }
+    
+    .output-stage {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 6px;
+        color: #1e40af;
+        background-color: #eff6ff;
+    }
+
+    .input-group-text {
+        background-color: #f3f4f6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🔬 eGFR Calculator (CKD-EPI 2021)</h1>
+    <p class="small-muted">Calculate your **estimated Glomerular Filtration Rate** using the latest race-independent CKD-EPI 2021 formula.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="egfr-form">
+            <h5 class="section-title">Step 1: Clinical Data</h5>
+
+            <!-- Gender Selection -->
+            <label class="form-label d-block mt-3">Gender</label>
+            <select class="form-select mb-3" id="gender_select" required>
+                <option value="" disabled selected>-- Select Gender --</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+            </select>
+
+            <!-- Creatinine Input -->
+            <label class="form-label d-block mt-3">Serum Creatinine ($S_{\text{cr}}$)</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="creatinine_input" placeholder="e.g., 0.8" min="0.1" max="10" step="0.01" required>
+                <span class="input-group-text">mg/dL</span>
+            </div>
+
+            <!-- Age Input -->
+            <label class="form-label d-block mt-3">Age</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="age_input" placeholder="e.g., 45" min="18" max="120" step="1" required>
+                <span class="input-group-text">Years</span>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate eGFR</button>
+        </form>
+
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">eGFR Result & Staging</h5>
+        
+        <div id="results-container" class="mt-3 d-none text-center">
+            
+            <div class="mb-2 text-muted">Estimated GFR ($\text{mL}/\text{min}/1.73 \text{m}^2$)</div>
+            
+            <p class="mb-0">
+                <span id="egfr_value" class="output-egfr">0</span>
+            </p>
+            
+            <div id="egfr_stage" class="output-stage"></div>
+            
+            <p class="small-muted mt-3">
+                <span class="fw-bold">Formula Used:</span> CKD-EPI 2021 (Creatinine only)
+            </p>
+            
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Calculates eGFR using the CKD-EPI 2021 formula (Creatinine only).
+     * The formula structure is: 
+     * eGFR = 142 * min(Cr/k, 1)^α * max(Cr/k, 1)^-1.200 * 0.9938^Age * (1.012 if female)
+     * @param {number} Scr - Serum Creatinine (mg/dL)
+     * @param {number} Age - Age (years)
+     * @param {string} Gender - 'male' or 'female'
+     * @returns {number} eGFR value
+     */
+    function calculateEgfr(Scr, Age, Gender) {
+        let k, alpha, factor;
+
+        if (Gender === 'female') {
+            k = 0.7;
+            alpha = -0.241;
+            factor = 1.012;
+        } else { // male
+            k = 0.9;
+            alpha = -0.302;
+            factor = 1.0;
+        }
+
+        const ratio = Scr / k;
+
+        // Part 1: min(Cr/k, 1)^α
+        const part1 = Math.pow(Math.min(ratio, 1), alpha);
+
+        // Part 2: max(Cr/k, 1)^-1.200
+        const part2 = Math.pow(Math.max(ratio, 1), -1.200);
+
+        // Part 3: 0.9938^Age
+        const part3 = Math.pow(0.9938, Age);
+
+        // eGFR = 142 * Part1 * Part2 * Part3 * Factor (Gender)
+        const eGFR = 142 * part1 * part2 * part3 * factor;
+
+        return eGFR;
+    }
+
+    /** Determines the CKD stage based on eGFR value. */
+    function getCkdStage(eGFR) {
+        if (eGFR >= 90) {
+            return { stage: "G1: Normal or high", color: "text-success", desc: "Kidney function is normal or high." };
+        } else if (eGFR >= 60) {
+            return { stage: "G2: Mildly decreased", color: "text-success", desc: "Mildly decreased kidney function." };
+        } else if (eGFR >= 45) {
+            return { stage: "G3a: Mildly to moderately decreased", color: "text-warning", desc: "Kidney function is mildly to moderately decreased." };
+        } else if (eGFR >= 30) {
+            return { stage: "G3b: Moderately to severely decreased", color: "text-warning", desc: "Kidney function is moderately to severely decreased." };
+        } else if (eGFR >= 15) {
+            return { stage: "G4: Severely decreased", color: "text-danger", desc: "Severely decreased kidney function." };
+        } else {
+            return { stage: "G5: Kidney Failure", color: "text-danger", desc: "Kidney Failure (End Stage Renal Disease)." };
+        }
+    }
+
+    document.getElementById('egfr-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const gender = document.getElementById('gender_select').value;
+        const creatinine = parseFloat(document.getElementById('creatinine_input').value);
+        const age = parseFloat(document.getElementById('age_input').value);
+
+        // 2. Validation
+        if (!gender || isNaN(creatinine) || creatinine <= 0 || isNaN(age) || age < 18) {
+            displayError("Please ensure all fields are filled with valid values (Creatinine > 0, Age $\ge$ 18, and Gender selected).");
+            return;
+        }
+
+        // 3. Calculation
+        const eGFR = calculateEgfr(creatinine, age, gender);
+        const stageData = getCkdStage(eGFR);
+
+        // 4. Update Result Display
+        document.getElementById('egfr_value').textContent = eGFR.toFixed(0);
+        
+        const egfrStageDiv = document.getElementById('egfr_stage');
+        egfrStageDiv.innerHTML = `<span class="${stageData.color}">${stageData.stage}</span>: ${stageData.desc}`;
+        
+        // Update output color based on health status
+        const egfrValueSpan = document.getElementById('egfr_value');
+        egfrValueSpan.classList.remove('text-success', 'text-warning', 'text-danger');
+        egfrValueSpan.classList.add(stageData.color.replace('text', '')); // Removes "text-" prefix to apply base color
+
+        // 5. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

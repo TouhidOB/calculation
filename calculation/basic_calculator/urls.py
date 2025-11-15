@@ -10,4 +10,10 @@ urlpatterns = [
     path('matrix_calculator/', views.matrix_calculator, name='matrix_calculator'),
     path('derivative_calculator/', views.derivative_calculator, name='derivative_calculator'),
     path('integral_calculator/', views.integral_calculator, name='integral_calculator'),
+    path('limit_calculator/', views.limit_calculator, name='limit_calculator'),
+    path('prime_checker/', views.prime_checker, name='prime_checker'),
+    path('factor_calculator/', views.factor_calculator, name='factor_calculator'),
+    path('gcf_calculator/', views.gcf_calculator, name='gcf_calculator'),
+    path('lcm_calculator/', views.lcm_calculator, name='lcm_calculator'),
+    path('fraction_simplifier/', views.fraction_simplifier, name='fraction_simplifier'),
 ]

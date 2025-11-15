@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Activity Calorie Burn Calculator{% endblock %}
+
+{% block meta_description %}Estimate the total calories burned for various physical activities based on your weight, duration, and the activity's Metabolic Equivalent (MET) value.{% endblock %}
+
+{% block meta_keywords %}calorie burn calculator, activity calories, exercise expenditure, METs, weight loss calories, fitness tracker{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+
+    .calorie-output {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ff5722; /* Vibrant Orange for energy burn */
+    }
+    
+    .formula {
+        font-style: italic;
+        font-size: 0.9rem;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+        overflow-x: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🔥 Activity Calorie Burn Calculator</h1>
+    <p class="small-muted">Estimate the **Total Calories Burned** for common activities by using the activity's intensity (METs), your **weight**, and the **duration**.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="calorie-burn-form">
+            <h5 class="section-title">Step 1: Activity and Duration</h5>
+
+            <!-- Activity Selector -->
+            <label for="activity_select" class="form-label d-block mt-3">Select Activity</label>
+            <select class="form-select" id="activity_select" required>
+                <option value="" disabled selected>-- Choose an Activity --</option>
+                <option value="1.5">Desk Work / Light Office Activity (1.5 METs)</option>
+                <option value="3.5">Walking, moderate pace (3.5 METs)</option>
+                <option value="6.0">Brisk Walking / Hiking (6.0 METs)</option>
+                <option value="7.5">Jogging / Light Running (7.5 METs)</option>
+                <option value="11.5">Running (7.5 mph / 8 min/mile) (11.5 METs)</option>
+                <option value="8.0">Swimming, moderate/vigorous (8.0 METs)</option>
+                <option value="7.0">Elliptical or Stair Climbing (7.0 METs)</option>
+                <option value="6.0">Aerobics / Water Aerobics (6.0 METs)</option>
+                <option value="5.5">Weight Lifting, general (5.5 METs)</option>
+                <option value="4.0">Golf / Yoga (4.0 METs)</option>
+                <option value="7.0">Tennis, singles (7.0 METs)</option>
+            </select>
+
+            <!-- Duration Input -->
+            <label class="form-label d-block mt-3">Activity Duration</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="duration_min" placeholder="Duration" min="1" max="360" step="1" required>
+                <span class="input-group-text">minutes</span>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Your Weight</h5>
+
+            <!-- Weight Input -->
+            <label class="form-label d-block mt-3">Your Weight</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="weight_input" placeholder="Weight" min="5" max="500" step="0.1" required>
+                <select class="form-select" id="weight_unit" style="max-width: 100px;">
+                    <option value="lb" selected>Lbs</option>
+                    <option value="kg">Kg</option>
+                </select>
+            </div>
+
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate Calories Burned</button>
+        </form>
+
+        <div class="alert alert-success mt-4 d-none result-alert" id="calorie-result"></div>
+
+        <div class="formula">
+            **Formula Used:** $$\text{Calories} = \frac{\text{METs} \times \text{Weight}(\text{kg}) \times 3.5 \times \text{Duration}(\text{min})}{200}$$
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const KG_PER_LB = 0.453592;
+    
+    document.getElementById('calorie-burn-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const met_value = parseFloat(document.getElementById('activity_select').value);
+        const weight_input = parseFloat(document.getElementById('weight_input').value);
+        const weight_unit = document.getElementById('weight_unit').value;
+        const duration_min = parseInt(document.getElementById('duration_min').value);
+
+        // Simple validation
+        if (isNaN(met_value) || weight_input <= 0 || duration_min <= 0) {
+            displayError("Please ensure you have selected an activity and entered valid, positive values for weight and duration.");
+            return;
+        }
+
+        // 2. Normalize Weight to Kilograms (kg)
+        let weight_kg;
+        if (weight_unit === 'lb') {
+            weight_kg = weight_input * KG_PER_LB;
+        } else {
+            weight_kg = weight_input;
+        }
+
+        // 3. Calculate Calories Burned (Approximate)
+        // Formula: Calories = (METs * Weight_kg * 3.5 * Duration_min) / 200
+        
+        const total_calories_burned = (met_value * weight_kg * 3.5 * duration_min) / 200;
+
+        const total_calories_rounded = total_calories_burned.toFixed(0);
+        
+        // 4. Get Selected Activity Name
+        const activityName = document.getElementById('activity_select').options[document.getElementById('activity_select').selectedIndex].text.split('(')[0].trim();
+
+
+        // 5. Update Result Display
+        const res = document.getElementById('calorie-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+        res.innerHTML = `
+**Activity:** <span class="fw-bold">${activityName}</span>
+**MET Value:** <span class="fw-bold">${met_value} METs</span>
+**Duration:** ${duration_min} minutes
+---
+
+**Estimated Total Calories Burned:**
+
+<span class="calorie-output">${total_calories_rounded} <span style="font-size: 1.5rem;">Calories</span></span>
+`;
+        
+        // 6. Hide the unnecessary table elements
+        document.getElementById('table-title')?.classList.add('d-none');
+        document.getElementById('timeline-table')?.classList.add('d-none');
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('calorie-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title')?.classList.add('d-none');
+        document.getElementById('timeline-table')?.classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}Swimming Pace Calculator{% endblock %}
+
+{% block meta_description %}Calculate your swimming pace, total time, or distance by inputting any two of the three variables for meters or yards.{% endblock %}
+
+{% block meta_keywords %}swimming pace, swim time, pool distance calculator, yards per 100, meters per 100, swimming metrics{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #0d6efd; /* Blue for water/swimming */
+    }
+
+    .input-row {
+        margin-bottom: 20px;
+    }
+
+    .output-label {
+        color: #ff5722; /* Vibrant orange for calculated value */
+    }
+
+    .pace-output {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #0d6efd; 
+    }
+
+    .unit-selector {
+        max-width: 120px;
+    }
+    
+    .pace-unit-label {
+        font-size: 1.5rem;
+        color: #4b5563;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🏊 Swimming Pace Calculator</h1>
+    <p class="small-muted">Enter any two variables (Distance, Time, Pace) to calculate the missing third variable. Results are always standardized to **per 100 units**.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="swim-pace-form">
+            <h5 class="section-title">Mode Selection: Calculate...</h5>
+            
+            <div class="btn-group w-100 mb-4" role="group" aria-label="Calculation Mode">
+                <input type="radio" class="btn-check" name="mode" id="modePace" value="pace" checked>
+                <label class="btn btn-outline-primary" for="modePace">Pace</label>
+
+                <input type="radio" class="btn-check" name="mode" id="modeTime" value="time">
+                <label class="btn btn-outline-primary" for="modeTime">Time</label>
+
+                <input type="radio" class="btn-check" name="mode" id="modeDistance" value="distance">
+                <label class="btn btn-outline-primary" for="modeDistance">Distance</label>
+            </div>
+
+
+            <!-- 1. DISTANCE INPUT BLOCK -->
+            <div id="distance-block" class="input-row">
+                <label class="form-label d-block fw-bold output-label mb-2" data-type="input">Total Distance</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="distance_val" placeholder="Distance Value" min="1" step="1" value="1500" required>
+                    <select class="form-select unit-selector" id="distance_unit">
+                        <option value="m" selected>Meters (m)</option>
+                        <option value="yd">Yards (yd)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 2. TIME INPUT BLOCK -->
+            <div id="time-block" class="input-row">
+                <label class="form-label d-block fw-bold output-label mb-2" data-type="input">Total Time</label>
+                <div class="row g-2">
+                    <div class="col-4">
+                        <input type="number" class="form-control" id="time_h" placeholder="Hours" value="0" min="0">
+                    </div>
+                    <div class="col-4">
+                        <input type="number" class="form-control" id="time_m" placeholder="Minutes" value="30" min="0" max="59">
+                    </div>
+                    <div class="col-4">
+                        <input type="number" class="form-control" id="time_s" placeholder="Seconds" value="0" min="0" max="59">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. PACE INPUT BLOCK (Always per 100 units) -->
+            <div id="pace-block" class="input-row">
+                <label class="form-label d-block fw-bold output-label mb-2" data-type="input">Pace (Per 100 Units)</label>
+                <div class="row g-2">
+                    <div class="col-4">
+                        <input type="number" class="form-control" id="pace_m" placeholder="Min" value="2" min="0" required>
+                    </div>
+                    <div class="col-4">
+                        <input type="number" class="form-control" id="pace_s" placeholder="Sec" value="0" min="0" max="59" required>
+                    </div>
+                    <div class="col-4">
+                        <select class="form-select" id="pace_unit">
+                            <option value="m" selected>/ 100m</option>
+                            <option value="yd">/ 100yd</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-lg btn-primary w-100 mt-4" type="submit">Calculate</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert text-center" id="swim-result"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const YARDS_TO_METERS = 0.9144;
+    const METERS_TO_YARDS = 1.09361;
+
+    // --- Helper Functions for Time Formatting ---
+
+    /** Converts hours, minutes, and seconds into total seconds. */
+    function normalizeToSeconds(h, m, s) {
+        return (parseInt(h || 0) * 3600) + (parseInt(m || 0) * 60) + parseInt(s || 0);
+    }
+
+    /** Converts total seconds back into HH:MM:SS format. */
+    function formatTime(totalSeconds) {
+        if (totalSeconds < 0) totalSeconds = 0;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = Math.floor(totalSeconds % 60);
+
+        const h = hours > 0 ? hours + 'h ' : '';
+        const m = minutes.toString().padStart(2, '0');
+        const s = seconds.toString().padStart(2, '0');
+        return h + `${m}m ${s}s`;
+    }
+
+    /** Converts seconds-per-100 into MM:SS/100 format. */
+    function formatPace(paceSecPer100, unit) {
+        if (paceSecPer100 < 0) paceSecPer100 = 0;
+        const minutes = Math.floor(paceSecPer100 / 60);
+        const seconds = Math.floor(paceSecPer100 % 60);
+        
+        const m = minutes.toString().padStart(1, '0');
+        const s = seconds.toString().padStart(2, '0');
+        return `${m}:${s} / 100${unit}`;
+    }
+
+    // --- Core Logic for Form Management ---
+
+    function updateFormMode() {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        const blocks = {
+            pace: document.getElementById('pace-block'),
+            time: document.getElementById('time-block'),
+            distance: document.getElementById('distance-block')
+        };
+        const labels = document.querySelectorAll('.form-label');
+
+        // Reset all blocks
+        Object.values(blocks).forEach(block => {
+            block.classList.remove('opacity-25');
+            block.querySelectorAll('input').forEach(input => input.disabled = false);
+            block.querySelectorAll('select').forEach(select => select.disabled = false);
+            const label = block.querySelector('.form-label');
+            if (label) label.classList.remove('output-label');
+        });
+
+        // Disable and style the block being calculated
+        let blockToDisable;
+        if (mode === 'pace') blockToDisable = blocks.pace;
+        if (mode === 'time') blockToDisable = blocks.time;
+        if (mode === 'distance') blockToDisable = blocks.distance;
+
+        if (blockToDisable) {
+            blockToDisable.classList.add('opacity-25');
+            blockToDisable.querySelectorAll('input').forEach(input => {
+                input.disabled = true;
+                input.required = false;
+            });
+            blockToDisable.querySelectorAll('select').forEach(select => select.disabled = true);
+            
+            // Apply output styling to the corresponding label
+            const label = blockToDisable.querySelector('.form-label');
+            if (label) {
+                label.classList.add('output-label');
+            }
+        }
+    }
+
+    function calculate() {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        
+        // --- 1. Get & Normalize Inputs ---
+        
+        // 1a. Distance
+        const distanceVal = parseFloat(document.getElementById('distance_val').value);
+        const distanceUnit = document.getElementById('distance_unit').value; // m or yd
+        
+        // Normalize distance to total meters (m) for standard calculation unit
+        let totalMeters;
+        if (distanceUnit === 'yd') {
+            totalMeters = distanceVal * YARDS_TO_METERS;
+        } else {
+            totalMeters = distanceVal;
+        }
+
+        // 1b. Time (Total Seconds)
+        const timeH = document.getElementById('time_h').value;
+        const timeM = document.getElementById('time_m').value;
+        const timeS = document.getElementById('time_s').value;
+        const timeTotalSeconds = normalizeToSeconds(timeH, timeM, timeS);
+
+        // 1c. Pace (Total Seconds per 100)
+        const paceM = document.getElementById('pace_m').value;
+        const paceS = document.getElementById('pace_s').value;
+        const paceUnit = document.getElementById('pace_unit').value; // m or yd
+        const paceTotalSecPer100 = normalizeToSeconds(0, paceM, paceS);
+
+        // --- 2. Calculation Logic (Time = Pace_per_100 * Distance_in_100s) ---
+        let result = {};
+        const distanceInHundreds = totalMeters / 100; // Total 100-meter segments
+        
+        try {
+            if (mode === 'pace') {
+                // Calculate Pace: Pace_per_100 = Time / Distance_in_100s
+                
+                if (distanceInHundreds === 0) throw new Error("Distance must be greater than zero.");
+
+                // Pace in seconds per 100m
+                const paceSecPer100m = timeTotalSeconds / distanceInHundreds;
+                
+                // If the user wants pace per 100 yards, convert the 100m pace
+                let finalPaceSec, finalPaceUnit;
+                if (paceUnit === 'yd') {
+                    // Pace/100yd = Pace/100m * (METERS_TO_YARDS)
+                    finalPaceSec = paceSecPer100m * METERS_TO_YARDS;
+                    finalPaceUnit = 'yd';
+                } else {
+                    finalPaceSec = paceSecPer100m;
+                    finalPaceUnit = 'm';
+                }
+
+                result = { 
+                    type: 'Pace (Per 100 Units)', 
+                    value: formatPace(finalPaceSec, finalPaceUnit),
+                    details: `(${formatPace(paceSecPer100m, 'm')})`
+                };
+
+            } else if (mode === 'time') {
+                // Calculate Time: Time = Pace_per_100 * Distance_in_100s
+                
+                // Normalize Pace to seconds per 100m, regardless of input unit
+                let paceSecPer100m;
+                if (paceUnit === 'yd') {
+                    // pace/100m = pace/100yd * (YARDS_TO_METERS)
+                    paceSecPer100m = paceTotalSecPer100 * YARDS_TO_METERS;
+                } else {
+                    paceSecPer100m = paceTotalSecPer100;
+                }
+                
+                const timeTotalSeconds = paceSecPer100m * distanceInHundreds;
+                
+                result = { 
+                    type: 'Total Time', 
+                    value: formatTime(timeTotalSeconds),
+                    details: `(${timeTotalSeconds.toFixed(0)} seconds)`
+                };
+
+            } else if (mode === 'distance') {
+                // Calculate Distance: Distance_in_100s = Time / Pace_per_100
+                
+                if (paceTotalSecPer100 === 0) throw new Error("Pace cannot be zero.");
+
+                // Normalize Pace to seconds per 100m, regardless of input unit
+                let paceSecPer100m;
+                if (paceUnit === 'yd') {
+                    paceSecPer100m = paceTotalSecPer100 * YARDS_TO_METERS;
+                } else {
+                    paceSecPer100m = paceTotalSecPer100;
+                }
+                
+                const calculatedDistanceInHundreds = timeTotalSeconds / paceSecPer100m;
+                const calculatedDistanceMeters = calculatedDistanceInHundreds * 100;
+
+                // Convert distance back to desired output unit
+                let finalDistanceVal, finalDistanceUnit;
+                if (distanceUnit === 'yd') {
+                    finalDistanceVal = calculatedDistanceMeters * METERS_TO_YARDS;
+                    finalDistanceUnit = 'yd';
+                } else {
+                    finalDistanceVal = calculatedDistanceMeters;
+                    finalDistanceUnit = 'm';
+                }
+
+                result = { 
+                    type: 'Total Distance', 
+                    value: `${finalDistanceVal.toFixed(0)} ${finalDistanceUnit}`,
+                    details: `(${calculatedDistanceMeters.toFixed(0)} meters)`
+                };
+            }
+        } catch (e) {
+            displayError(e.message || "A calculation error occurred. Check that all input values are valid and non-zero for division.");
+            return;
+        }
+
+        // --- 3. Display Result ---
+        const res = document.getElementById('swim-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-info');
+        res.innerHTML = `
+            <div class="mb-2 fs-5 fw-bold">Calculated ${result.type}:</div>
+            <div class="pace-output">${result.value}</div>
+            <div class="small text-muted">${result.details}</div>
+        `;
+    }
+
+    function displayError(message) {
+        const res = document.getElementById('swim-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Error:** ${message}`;
+    }
+
+    // --- Event Listeners ---
+    document.getElementById('swim-pace-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        calculate();
+    });
+
+    document.querySelectorAll('input[name="mode"]').forEach(radio => {
+        radio.addEventListener('change', updateFormMode);
+    });
+
+    // Initial setup on load
+    document.addEventListener('DOMContentLoaded', updateFormMode);
+</script>
+
+{% endblock %}

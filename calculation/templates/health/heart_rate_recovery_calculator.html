@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Heart Rate Recovery (HRR) Calculator{% endblock %}
+
+{% block meta_description %}Calculate your Heart Rate Recovery (HRR) and assess your cardiovascular fitness level based on the drop in heart rate one minute after peak exercise.{% endblock %}
+
+{% block meta_keywords %}heart rate recovery, HRR calculator, cardiovascular fitness, post-exercise heart rate, autonomic function{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .hrr-output {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ff5722; /* Vibrant Orange/Red for fitness intensity */
+    }
+
+    .risk-low { color: #28a745; font-weight: bold; } /* Green */
+    .risk-moderate { color: #ffc107; font-weight: bold; } /* Yellow */
+    .risk-high { color: #dc3545; font-weight: bold; } /* Red */
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">❤️ Heart Rate Recovery (HRR) Calculator</h1>
+    <p class="small-muted">Measure your **Heart Rate Recovery (HRR)**, the decrease in heart rate one minute after intense exercise, to assess your cardiovascular fitness.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="hrr-form">
+            <h5 class="section-title">Step 1: Your Exercise Metrics (BPM)</h5>
+
+            <!-- Peak HR Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="peak_hr" placeholder="Peak Heart Rate (End of Exercise)" min="80" max="220" required>
+                <span class="input-group-text">BPM</span>
+            </div>
+
+            <!-- 1-Min Post HR Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="post_hr" placeholder="Heart Rate 1 Minute After Stopping" min="60" max="200" required>
+                <span class="input-group-text">BPM</span>
+            </div>
+            
+            <h5 class="section-title mt-4">Step 2: Your Age (Optional Context)</h5>
+            <input type="number" class="form-control my-3" id="age" placeholder="Your Age (Years)" min="15" max="100">
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate HRR & Risk</button>
+        </form>
+
+        <div class="alert alert-warning mt-4 d-none result-alert" id="hrr-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">HRR Risk Classification</h5>
+        <table class="table table-bordered mt-2 d-none" id="hrr-table">
+            <thead>
+                <tr>
+                    <th>HRR Drop (BPM)</th>
+                    <th>Fitness Level</th>
+                </tr>
+            </thead>
+            <tbody id="hrr-body"></tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Standard HRR Risk Guidelines (Drop in BPM 1 minute post-exercise)
+    const HRR_RISK_GUIDELINES = [
+        { threshold: 18, level: 'Low Risk / Good Fitness', class: 'risk-low' },
+        { threshold: 12, level: 'Moderate Risk / Intermediate Fitness', class: 'risk-moderate' },
+        { threshold: 0, level: 'High Risk / Poor Fitness', class: 'risk-high' } // Anything below 12
+    ];
+
+    function getRiskClassification(hrr) {
+        for (const guideline of HRR_RISK_GUIDELINES) {
+            if (hrr >= guideline.threshold) {
+                return guideline;
+            }
+        }
+    }
+
+    document.getElementById('hrr-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const peak_hr = parseInt(document.getElementById('peak_hr').value);
+        const post_hr = parseInt(document.getElementById('post_hr').value);
+        const age = parseInt(document.getElementById('age').value) || null;
+
+        // 2. Simple Validation
+        if (post_hr >= peak_hr || peak_hr < 100 || post_hr < 50) {
+            displayError("The 1-minute HR must be lower than the Peak HR. Please check your inputs.");
+            return;
+        }
+
+        // 3. Calculate HRR
+        const hrr = peak_hr - post_hr;
+        
+        // 4. Assess Risk
+        const risk = getRiskClassification(hrr);
+
+        // 5. Update Result Display
+        const res = document.getElementById('hrr-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-info');
+        res.innerHTML = `
+**Peak HR:** ${peak_hr} BPM
+**1-Minute Post-Exercise HR:** ${post_hr} BPM
+---
+
+**Heart Rate Recovery (HRR) Score:** <span class="hrr-output">${hrr}</span> BPM Drop
+
+**Your Cardiovascular Assessment:**
+<span class="${risk.class}">${risk.level}</span>
+`;
+        
+        // 6. Update Risk Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('hrr-table').classList.remove('d-none');
+        
+        const tableBody = document.getElementById('hrr-body');
+        tableBody.innerHTML = ''; // Clear previous results
+
+        // Populate the table with guidelines
+        tableBody.innerHTML += `<tr class="${hrr >= 18 ? 'table-success' : ''}"><td>$\ge 18$</td><td>Low Risk / Good Fitness</td></tr>`;
+        tableBody.innerHTML += `<tr class="${hrr < 18 && hrr >= 12 ? 'table-warning' : ''}"><td>$12 - 17$</td><td>Moderate Risk / Intermediate Fitness</td></tr>`;
+        tableBody.innerHTML += `<tr class="${hrr < 12 ? 'table-danger' : ''}"><td>$< 12$</td><td>High Risk / Poor Fitness</td></tr>`;
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('hrr-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('hrr-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

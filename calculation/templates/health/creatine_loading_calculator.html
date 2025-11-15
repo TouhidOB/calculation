@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Creatine Loading Dose Calculator{% endblock %}
+
+{% block meta_description %}Calculate your recommended daily Creatine Monohydrate dosage for both the initial 5-7 day loading phase and the ongoing maintenance phase based on your body weight.{% endblock %}
+
+{% block meta_keywords %}creatine calculator, creatine loading, maintenance dose, gym supplement dosage, fitness calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #10b981; /* Emerald Green for Supplements/Gains */
+    }
+
+    .output-dose {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #10b981; 
+    }
+
+    .dose-label {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #047857;
+    }
+
+    .window-card {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background-color: #ecfdf5; /* Lightest Emerald */
+        border: 2px solid #a7f3d0;
+    }
+
+    .unit-selector {
+        max-width: 100px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🧪 Creatine Loading Calculator</h1>
+    <p class="small-muted">Calculate your optimal daily dosage for the initial **Loading Phase** and the ongoing **Maintenance Phase**.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="creatine-form">
+            <h5 class="section-title">Step 1: Enter Body Weight</h5>
+
+            <!-- Weight Input -->
+            <label class="form-label d-block mt-3">Body Weight</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="weight_input" placeholder="e.g., 85" min="30" max="300" step="1" required>
+                <select class="form-select unit-selector" id="weight_unit">
+                    <option value="kg" selected>Kg</option>
+                    <option value="lb">Lbs</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Dosage</button>
+        </form>
+        
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Recommended Daily Dosages</h5>
+        
+        <div id="results-container" class="mt-3 d-none">
+            <!-- Loading Phase Result -->
+            <div class="window-card">
+                <h6 class="dose-label text-lg mb-2">🚀 LOADING PHASE (5-7 Days)</h6>
+                <p class="mb-0">
+                    <span id="loading_dose" class="output-dose">0.0</span> 
+                    <span class="fs-4 text-muted">grams / day</span>
+                </p>
+                <small class="text-muted">Formula: $\text{Weight (kg)} \times 0.3$</small>
+            </div>
+
+            <!-- Maintenance Phase Result -->
+            <div class="window-card">
+                <h6 class="dose-label text-lg mb-2">🗓️ MAINTENANCE PHASE (Ongoing)</h6>
+                <p class="mb-0">
+                    <span id="maintenance_dose" class="output-dose">5</span> 
+                    <span class="fs-4 text-muted">grams / day</span>
+                </p>
+                <small class="text-muted">Standard daily dose after loading is complete.</small>
+            </div>
+            
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const LB_PER_KG = 2.20462;
+    const LOADING_FACTOR = 0.3; // 0.3 grams per kg of body weight
+    const MAINTENANCE_DOSE_G = 5; // Standard maintenance dose (5 grams)
+
+    document.getElementById('creatine-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const weightInput = parseFloat(document.getElementById('weight_input').value);
+        const weightUnit = document.getElementById('weight_unit').value;
+
+        if (weightInput <= 0 || isNaN(weightInput)) {
+            displayError("Please enter a valid, positive body weight.");
+            return;
+        }
+
+        // 2. Normalize Weight to Kilograms
+        const weightKg = weightUnit === 'lb' ? weightInput / LB_PER_KG : weightInput;
+
+        // 3. Calculation Logic
+        
+        // Loading Dose: Weight (kg) * 0.3
+        const loadingDoseGrams = weightKg * LOADING_FACTOR;
+        
+        // Maintenance Dose: Standard 5g
+        const maintenanceDoseGrams = MAINTENANCE_DOSE_G;
+
+
+        // 4. Update Result Display
+        document.getElementById('loading_dose').textContent = loadingDoseGrams.toFixed(1);
+        document.getElementById('maintenance_dose').textContent = maintenanceDoseGrams;
+
+        // 5. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

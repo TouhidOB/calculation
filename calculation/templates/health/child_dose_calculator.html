@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Child Dose Calculator (Weight-Based){% endblock %}
+
+{% block meta_description %}Estimate the appropriate daily dose (mg) for a child based on their body weight and a prescribed mg/kg dosing factor. Consult a physician before use.{% endblock %}
+
+{% block meta_keywords %}child dose calculator, pediatric dosing, mg/kg, weight-based dose, medicine dosage calculator, milligrams per kilogram{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #7c3aed; /* Violet for sensitive clinical data */
+    }
+
+    .output-dose {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #7c3aed; 
+    }
+
+    .dose-label {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #5b21b6;
+    }
+
+    .window-card {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background-color: #f5f3ff; /* Lightest Violet */
+        border: 2px solid #a78bfa;
+    }
+
+    .unit-selector {
+        max-width: 100px;
+    }
+    
+    .disclaimer {
+        font-size: 0.9rem;
+        color: #b91c1c; /* Strong Red warning */
+        font-weight: 600;
+        background-color: #fee2e2;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">👶 Child Dose Calculator (mg/kg)</h1>
+    <p class="small-muted">Estimate a child's medication dose range based on weight and the required $\text{mg}/\text{kg}$ factor.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="child-dose-form">
+            <h5 class="section-title">Step 1: Child's Body Weight</h5>
+
+            <!-- Weight Input -->
+            <label class="form-label d-block mt-3">Body Weight</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="weight_input" placeholder="e.g., 25" min="2" max="100" step="0.5" required>
+                <select class="form-select unit-selector" id="weight_unit">
+                    <option value="kg" selected>Kg</option>
+                    <option value="lb">Lbs</option>
+                </select>
+            </div>
+            
+            <h5 class="section-title mt-4">Step 2: Required Dose Factor ($\text{mg}/\text{kg}$)</h5>
+            <small class="form-text text-muted d-block mb-3">Enter the factor range prescribed by your physician or specified on the medication instructions (e.g., for $10-15 \text{ mg}/\text{kg}$ of Acetaminophen).</small>
+            
+            <!-- Dose Factor Input -->
+            <div class="input-group mb-3">
+                <span class="input-group-text">Min Factor ($\text{mg}/\text{kg}$)</span>
+                <input type="number" class="form-control" id="factor_min" value="10" min="0.1" max="100" step="0.5" required>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Max Factor ($\text{mg}/\text{kg}$)</span>
+                <input type="number" class="form-control" id="factor_max" value="15" min="0.1" max="100" step="0.5" required>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Dose Range</button>
+        </form>
+        
+        <div class="alert alert-danger mt-4 d-none" id="error-message"></div>
+
+        <h5 class="section-title mt-4 d-none" id="result-title">Estimated Single Dose or Daily Dose Range</h5>
+        
+        <div id="results-container" class="mt-3 d-none text-center">
+            
+            <div class="window-card">
+                <h6 class="dose-label text-lg mb-2">Calculated Dose Range:</h6>
+                
+                <p class="mb-0">
+                    <span id="dose_range_min" class="output-dose">0</span>
+                    <span class="fs-4 text-muted"> to </span>
+                    <span id="dose_range_max" class="output-dose">0</span> 
+                    <span class="fs-4 text-muted">mg</span>
+                </p>
+                <small class="text-muted">Formula: $\text{Weight (kg)} \times \text{Dose Factor (mg}/\text{kg})$</small>
+            </div>
+        </div>
+        
+        <p class="disclaimer">
+            ⚠️ MEDICAL DISCLAIMER: This calculator provides an *estimation* tool for weight-based dosing only. This tool should **NOT** be used to determine medication doses without direct consultation and confirmation from a qualified physician or licensed pharmacist. Doses must be tailored to the child's specific condition and the drug's approved uses.
+        </p>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const LB_PER_KG = 2.20462;
+
+    document.getElementById('child-dose-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const weightInput = parseFloat(document.getElementById('weight_input').value);
+        const weightUnit = document.getElementById('weight_unit').value;
+        const factorMin = parseFloat(document.getElementById('factor_min').value);
+        const factorMax = parseFloat(document.getElementById('factor_max').value);
+
+        // 2. Validation
+        if (weightInput <= 0 || isNaN(weightInput) || isNaN(factorMin) || isNaN(factorMax) || factorMin <= 0 || factorMax <= 0) {
+            displayError("Please enter valid, positive values for Weight and Dose Factors.");
+            return;
+        }
+        if (factorMin > factorMax) {
+            displayError("The Minimum Dose Factor cannot be greater than the Maximum Dose Factor.");
+            return;
+        }
+
+        // 3. Normalize Weight to Kilograms
+        const weightKg = weightUnit === 'lb' ? weightInput / LB_PER_KG : weightInput;
+
+        // 4. Calculation Logic
+        
+        // Dose (mg) = Weight (kg) * Factor (mg/kg)
+        const doseMinMg = weightKg * factorMin;
+        const doseMaxMg = weightKg * factorMax;
+
+        // 5. Update Result Display (Rounding to nearest whole number or 0.1 for small doses)
+        const formatDose = (dose) => dose < 10 ? dose.toFixed(1) : dose.toFixed(0);
+
+        document.getElementById('dose_range_min').textContent = formatDose(doseMinMg);
+        document.getElementById('dose_range_max').textContent = formatDose(doseMaxMg);
+
+        // 6. Update Visibility
+        document.getElementById('result-title').classList.remove('d-none');
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+    });
+    
+    function displayError(message) {
+        document.getElementById('error-message').classList.remove('d-none');
+        document.getElementById('error-message').textContent = `Calculation Error: ${message}`;
+        document.getElementById('result-title').classList.add('d-none');
+        document.getElementById('results-container').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

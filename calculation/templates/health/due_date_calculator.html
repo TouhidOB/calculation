@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Pregnancy Due Date Calculator (Naegele's Rule){% endblock %}
+
+{% block meta_description %}Estimate your baby's due date using the Last Menstrual Period (LMP) and Naegele's Rule, and determine the current gestational age.{% endblock %}
+
+{% block meta_keywords %}due date calculator, LMP, pregnancy due date, Naegele's rule, gestational age, expected delivery date{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .date-output {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ff69b4; /* Pink/Rose color for pregnancy */
+    }
+
+    .info-box {
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🤰 Pregnancy Due Date Calculator</h1>
+    <p class="small-muted">Estimate your baby's **Due Date** (Expected Date of Delivery) using the date of your **Last Menstrual Period (LMP)** and the standard Naegele's Rule.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="due-date-form">
+            <h5 class="section-title">Step 1: Last Menstrual Period (LMP)</h5>
+
+            <label for="lmp_date" class="form-label d-block mt-3">Date of the first day of your last period</label>
+            <input type="date" class="form-control" id="lmp_date" required>
+            
+            <h5 class="section-title mt-4">Step 2: Cycle Length</h5>
+
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="cycle_length" placeholder="Average Cycle Length" min="20" max="45" value="28" required>
+                <span class="input-group-text">days</span>
+            </div>
+            <small class="form-text text-muted d-block">The standard formula assumes a 28-day cycle. Adjusting this refines the due date.</small>
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate Due Date</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="due-date-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Summary and Timeline</h5>
+        <table class="table table-bordered mt-2 d-none" id="timeline-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Date/Age</th>
+                </tr>
+            </thead>
+            <tbody id="timeline-body"></tbody>
+        </table>
+
+        <div class="info-box d-none" id="info-box">
+            <p class="mb-0 small-muted">
+                **Note on Naegele's Rule:** The calculation is: **LMP Date - 3 Months + 7 Days + Cycle Adjustment.** The total gestation period is considered to be 280 days (40 weeks) from the LMP.
+            </p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const GESTATION_DAYS = 280; // 40 weeks
+
+    function calculateGestationalAge(lmpDate) {
+        const today = new Date();
+        const diffTime = Math.abs(today.getTime() - lmpDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        const weeks = Math.floor(diffDays / 7);
+        const days = diffDays % 7;
+        
+        return { totalDays: diffDays, weeks, days };
+    }
+
+    document.getElementById('due-date-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const lmp_date_str = document.getElementById('lmp_date').value;
+        const cycle_length = parseInt(document.getElementById('cycle_length').value);
+        
+        if (!lmp_date_str) {
+            displayError("Please select a date for your Last Menstrual Period.");
+            return;
+        }
+
+        const lmpDate = new Date(lmp_date_str);
+        
+        // 2. Naegele's Rule Calculation (Standard 28-day cycle)
+        // Add 280 days (40 weeks) to LMP
+        const due_date = new Date(lmpDate.getTime());
+        due_date.setDate(due_date.getDate() + 280); 
+        
+        // 3. Cycle Length Adjustment
+        const standard_cycle = 28;
+        const cycle_adjustment_days = cycle_length - standard_cycle;
+        
+        due_date.setDate(due_date.getDate() + cycle_adjustment_days);
+
+        // 4. Calculate Gestational Age
+        const { totalDays, weeks, days } = calculateGestationalAge(lmpDate);
+        
+        // 5. Calculate Days Remaining
+        const days_remaining = GESTATION_DAYS - totalDays;
+        
+        if (totalDays < 0) {
+             displayError("The LMP date cannot be in the future. Please check the date.");
+             return;
+        }
+
+        // 6. Format Dates
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const due_date_formatted = due_date.toLocaleDateString('en-US', options);
+        
+        // 7. Update Result Display
+        const res = document.getElementById('due-date-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-info');
+        res.innerHTML = `
+**LMP Date Used:** ${lmpDate.toLocaleDateString('en-US', options)}
+**Cycle Length:** ${cycle_length} days
+---
+
+**Estimated Due Date (EDD):** <span class="date-output">${due_date_formatted}</span>
+`;
+        
+        // 8. Update Timeline Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('timeline-table').classList.remove('d-none');
+        document.getElementById('info-box').classList.remove('d-none');
+        
+        const tableBody = document.getElementById('timeline-body');
+        tableBody.innerHTML = `
+        <tr><td>**Estimated Due Date**</td><td>**${due_date_formatted}**</td></tr>
+        <tr><td>**Current Gestational Age**</td><td>**${weeks} weeks, ${days} days**</td></tr>
+        <tr><td>Days Remaining</td><td>${days_remaining} days</td></tr>
+        <tr><td>Conception Date Estimate</td><td>${new Date(lmpDate.getTime() + (14 * 24 * 60 * 60 * 1000)).toLocaleDateString('en-US', options)}</td></tr>
+        `;
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('due-date-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('timeline-table').classList.add('d-none');
+        document.getElementById('info-box').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

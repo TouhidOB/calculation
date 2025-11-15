@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Rep Max to Percentage Converter{% endblock %}
+
+{% block meta_description %}Convert your 1 Rep Max (1RM) to target training weights across various percentages (e.g., 60%, 80%, 95%) for structured strength training.{% endblock %}
+
+{% block meta_keywords %}1RM calculator, rep max percentage, training weight conversion, strength training program, powerlifting percentage calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #8b5cf6; /* Purple for strength/lifting */
+    }
+
+    .weight-output {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #8b5cf6; 
+    }
+
+    .unit-selector {
+        max-width: 100px;
+    }
+
+    .result-table th, .result-table td {
+        vertical-align: middle;
+        font-size: 1.1rem;
+    }
+
+    .result-table th {
+        background-color: #f3f4f6;
+        color: #1f2937;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💪 1 Rep Max to Percentage Converter</h1>
+    <p class="small-muted">Enter your **1 Rep Max (1RM)** to generate a training table showing the required weight for common working percentages.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="pwr-form">
+            <h5 class="section-title">Step 1: Your 1 Rep Max</h5>
+
+            <!-- 1RM Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="one_rep_max" placeholder="Weight for 1 Rep Max" min="5" max="1000" step="1" required>
+                <select class="form-select unit-selector" id="weight_unit">
+                    <option value="kg" selected>Kg</option>
+                    <option value="lb">Lbs</option>
+                </select>
+            </div>
+            <small class="form-text text-muted d-block mb-3">Ensure this is the absolute maximum weight you can lift for one successful repetition.</small>
+
+            <button class="btn btn-primary mt-4" type="submit">Generate Training Percentages</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert text-center" id="pwr-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Training Weight Chart</h5>
+        <table class="table table-bordered table-striped mt-3 d-none result-table" id="percentage-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Percentage</th>
+                    <th style="width: 60%;" id="result-weight-header">Weight (Kg)</th>
+                </tr>
+            </thead>
+            <tbody id="percentage-body"></tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Standard training percentages
+    const PERCENTAGES = [
+        1.00, // 100%
+        0.95, // 95%
+        0.90, // 90%
+        0.85, // 85%
+        0.80, // 80%
+        0.75, // 75%
+        0.70, // 70%
+        0.65, // 65%
+        0.60, // 60%
+        0.50  // 50%
+    ];
+
+    document.getElementById('pwr-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const one_rep_max = parseFloat(document.getElementById('one_rep_max').value);
+        const weight_unit = document.getElementById('weight_unit').value;
+        
+        if (one_rep_max <= 0 || isNaN(one_rep_max)) {
+            displayError("Please enter a valid, positive weight for your 1 Rep Max.");
+            return;
+        }
+        
+        // 2. Prepare Display
+        const tableBody = document.getElementById('percentage-body');
+        const resultHeader = document.getElementById('result-weight-header');
+        
+        tableBody.innerHTML = ''; // Clear previous results
+        resultHeader.textContent = `Weight (${weight_unit.toUpperCase()})`;
+        
+        // 3. Calculate Weights
+        let htmlContent = '';
+        
+        PERCENTAGES.forEach(percentage => {
+            const targetWeight = one_rep_max * percentage;
+            const targetWeightRounded = targetWeight.toFixed(1);
+
+            let rowClass = '';
+            if (percentage >= 0.90) {
+                rowClass = 'table-danger'; // High intensity
+            } else if (percentage >= 0.80) {
+                rowClass = 'table-warning'; // Moderate-high intensity
+            } else if (percentage >= 0.70) {
+                rowClass = 'table-info'; // Moderate intensity
+            }
+
+            htmlContent += `
+            <tr class="${rowClass}">
+                <th>${(percentage * 100).toFixed(0)}%</th>
+                <td class="weight-output">${targetWeightRounded} ${weight_unit.toUpperCase()}</td>
+            </tr>
+            `;
+        });
+
+        tableBody.innerHTML = htmlContent;
+
+        // 4. Update Visibility
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('percentage-table').classList.remove('d-none');
+        document.getElementById('pwr-result').classList.add('d-none');
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('pwr-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('percentage-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

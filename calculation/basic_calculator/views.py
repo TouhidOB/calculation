@@ -26,3 +26,21 @@ def derivative_calculator(request):
 
 def integral_calculator(request):
     return render(request, 'basic_calculator/integral_calculator.html')
+
+def limit_calculator(request):
+    return render(request, 'basic_calculator/limit_calculator.html')
+
+def prime_checker(request):
+    return render(request, 'basic_calculator/prime_checker.html')
+
+def factor_calculator(request):
+    return render(request, 'basic_calculator/factor_calculator.html')
+
+def gcf_calculator(request):
+    return render(request, 'basic_calculator/gcf_calculator.html')
+
+def lcm_calculator(request):
+    return render(request, 'basic_calculator/lcm_calculator.html')
+
+def fraction_simplifier(request):
+    return render(request, 'basic_calculator/fraction_simplifier.html')

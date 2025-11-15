@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Gym Plate Loading Calculator{% endblock %}
+
+{% block meta_description %}Calculate the exact plate combination (on each side) needed to load an Olympic barbell to a specific target weight in both kilograms and pounds.{% endblock %}
+
+{% block meta_keywords %}plate calculator, barbell loading, gym weight calculator, 45lb plates, 20kg bar, strength training utility{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        color: #ca8a04; /* Gold/Yellow for Barbell/Weight */
+    }
+
+    .target-output {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ca8a04; 
+    }
+
+    .unit-selector {
+        max-width: 100px;
+    }
+
+    .plates-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 15px;
+    }
+
+    .plates-list li {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px dashed #e5e7eb;
+        font-size: 1.1rem;
+    }
+
+    .plate-value {
+        font-weight: bold;
+        color: #1f2937;
+    }
+
+    .plate-count {
+        color: #059669; /* Green for quantity */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🏋️ Gym Plate Loading Calculator</h1>
+    <p class="small-muted">Enter your target lift weight to determine the exact plates needed for each side of the bar.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="plate-form">
+            <h5 class="section-title">Step 1: Weight & Units</h5>
+
+            <!-- Target Weight Input -->
+            <label class="form-label d-block mt-3">Target Lift Weight</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="target_weight" placeholder="e.g., 100" min="5" max="1000" step="0.5" required>
+                <select class="form-select unit-selector" id="weight_unit">
+                    <option value="kg" selected>Kg</option>
+                    <option value="lb">Lbs</option>
+                </select>
+            </div>
+
+            <!-- Bar Weight Input -->
+            <label class="form-label d-block mt-3">Barbell Weight</label>
+            <div class="input-group mb-3">
+                <input type="number" class="form-control" id="bar_weight" placeholder="e.g., 20 or 45" min="5" max="50" step="0.5" value="20" required>
+                <span class="input-group-text" id="bar_weight_unit_label">Kg</span>
+            </div>
+            
+            <button class="btn btn-primary mt-4" type="submit">Calculate Plate Combination</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="plate-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Plates Required (One Side)</h5>
+        
+        <ul class="plates-list d-none" id="plates-output-list">
+            <!-- Plate results will be injected here -->
+        </ul>
+
+        <div class="alert alert-warning mt-3 d-none" id="rounding-note">
+            <small>Note: The total weight was rounded to the nearest available plate combination.</small>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Define available plate denominations (largest to smallest)
+    const PLATE_DENOMINATIONS = {
+        'kg': [25, 20, 15, 10, 5, 2.5, 1.25], // Common KG plates
+        'lb': [45, 35, 25, 10, 5, 2.5]       // Common LB plates
+    };
+
+    // Helper to update the Bar Weight unit label dynamically
+    document.getElementById('weight_unit').addEventListener('change', function() {
+        const unit = this.value;
+        const barWeightInput = document.getElementById('bar_weight');
+        const unitLabel = document.getElementById('bar_weight_unit_label');
+        unitLabel.textContent = unit.toUpperCase();
+
+        // Suggest common bar weights
+        if (unit === 'kg') {
+            barWeightInput.value = 20;
+        } else if (unit === 'lb') {
+            barWeightInput.value = 45;
+        }
+    });
+
+    document.getElementById('plate-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const targetWeight = parseFloat(document.getElementById('target_weight').value);
+        const barWeight = parseFloat(document.getElementById('bar_weight').value);
+        const unit = document.getElementById('weight_unit').value;
+        const unitUpper = unit.toUpperCase();
+        
+        // 2. Initial Validation
+        if (targetWeight <= barWeight) {
+            displayError(`The target weight (${targetWeight}${unitUpper}) must be greater than the bar weight (${barWeight}${unitUpper}).`);
+            return;
+        }
+
+        const platesWeight = targetWeight - barWeight;
+        const weightPerSide = platesWeight / 2;
+        
+        // 3. Calculation Core Logic
+        const denominations = PLATE_DENOMINATIONS[unit];
+        let remainingWeight = weightPerSide;
+        const plateCombination = {};
+        let calculationSuccessful = true;
+
+        for (const plate of denominations) {
+            if (remainingWeight >= plate) {
+                const count = Math.floor(remainingWeight / plate);
+                if (count > 0) {
+                    plateCombination[plate] = count;
+                    remainingWeight -= count * plate;
+                }
+            }
+        }
+
+        // Check for remaining weight (error margin for rounding)
+        const smallestPlate = denominations[denominations.length - 1];
+        const roundingThreshold = smallestPlate / 2;
+
+        if (remainingWeight > roundingThreshold) {
+            // Failed to hit the exact weight, try rounding up to the next smallest plate
+            if (remainingWeight > 0) {
+                remainingWeight = Math.round(remainingWeight / smallestPlate) * smallestPlate;
+                // Recalculate if rounding up made it possible
+                if (remainingWeight > 0 && remainingWeight <= smallestPlate * 2) {
+                    if (plateCombination[smallestPlate]) {
+                        plateCombination[smallestPlate] += 1;
+                    } else {
+                        plateCombination[smallestPlate] = 1;
+                    }
+                    remainingWeight = 0; // Assume successful rounding
+                } else if (remainingWeight > 0) {
+                    // If still unable to hit a clean plate combo, note it as an error/inaccuracy
+                    calculationSuccessful = false;
+                }
+            }
+        } else {
+            // Successful calculation or remaining weight is negligible
+            remainingWeight = 0;
+        }
+        
+        // 4. Calculate Actual Total Weight
+        let actualPlatesWeightPerSide = 0;
+        for (const plate in plateCombination) {
+            actualPlatesWeightPerSide += parseFloat(plate) * plateCombination[plate];
+        }
+        const actualTotalWeight = barWeight + (actualPlatesWeightPerSide * 2);
+
+        // 5. Update Result Display
+        
+        const res = document.getElementById('plate-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-info');
+        
+        let outputMessage = `
+**Target Weight:** ${targetWeight.toFixed(1)} ${unitUpper}
+**Bar Weight:** ${barWeight.toFixed(1)} ${unitUpper}
+---
+
+**Weight Per Side:** <span class="target-output">${weightPerSide.toFixed(1)} ${unitUpper}</span>
+<div class="small text-muted">Actual Total Lift: **${actualTotalWeight.toFixed(1)} ${unitUpper}**</div>
+`;
+
+        res.innerHTML = outputMessage;
+
+        // 6. Update Plates List
+        const platesList = document.getElementById('plates-output-list');
+        platesList.innerHTML = '';
+        
+        document.getElementById('table-title').classList.remove('d-none');
+        platesList.classList.remove('d-none');
+        document.getElementById('rounding-note').classList.add('d-none');
+
+        const platesKeys = Object.keys(plateCombination).sort((a, b) => b - a);
+        
+        if (platesKeys.length > 0) {
+            platesKeys.forEach(plate => {
+                const count = plateCombination[plate];
+                platesList.innerHTML += `
+                <li>
+                    <span>${plate} ${unitUpper} Plate</span>
+                    <span class="plate-count">${count}x</span>
+                </li>
+                `;
+            });
+        } else {
+            platesList.innerHTML = `<li>No plates required (Target weight equals bar weight).</li>`;
+        }
+
+        // Show rounding note if the actual weight deviates significantly from the target
+        if (Math.abs(targetWeight - actualTotalWeight) > 0.01) {
+             document.getElementById('rounding-note').classList.remove('d-none');
+        }
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('plate-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('plates-output-list').classList.add('d-none');
+        document.getElementById('rounding-note').classList.add('d-none');
+    }
+    
+    // Initial unit setting
+    document.getElementById('bar_weight_unit_label').textContent = 'Kg';
+</script>
+
+{% endblock %}

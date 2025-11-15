@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Water Intake Calculator{% endblock %}
+
+{% block meta_description %}Calculate your recommended daily water intake based on your body weight and activity level, giving results in fluid ounces and milliliters.{% endblock %}
+
+{% block meta_keywords %}water intake, hydration calculator, fluid ounces, milliliters, daily recommendation, fitness, health{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .water-output {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #007bff; /* Primary blue color for water */
+    }
+
+    .unit-label {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💧 Daily Water Intake Calculator</h1>
+    <p class="small-muted">Estimate the optimal amount of **water** you should consume daily based on your body weight and exercise habits.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="water-form">
+            <h5 class="section-title">Step 1: Your Metrics</h5>
+
+            <!-- Weight Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="weight_lb" placeholder="Body Weight" min="50" max="500" step="1" required>
+                <span class="input-group-text">lbs</span>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Activity Level</h5>
+
+            <!-- Activity Level Input -->
+            <div class="form-group my-3">
+                <label for="activity_level" class="form-label">Daily Exercise Level</label>
+                <select class="form-select" id="activity_level" required>
+                    <option value="" disabled selected>Select activity level</option>
+                    <option value="0">Sedentary (Little or no exercise)</option>
+                    <option value="12">Moderate (30-60 mins of exercise/day)</option>
+                    <option value="24">High (60+ mins of intense exercise/day)</option>
+                </select>
+            </div>
+            <small class="form-text text-muted d-block">Intense exercise requires additional fluid intake to replace lost sweat.</small>
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate Intake</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="water-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Recommended Daily Fluid Intake</h5>
+        <table class="table table-bordered mt-2 d-none" id="water-table">
+            <thead>
+                <tr>
+                    <th>Unit</th>
+                    <th>Recommended Volume</th>
+                </tr>
+            </thead>
+            <tbody id="water-body"></tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const OZ_PER_POUND = 0.5; // Half an ounce of water per pound of body weight (baseline)
+    const ML_PER_OZ = 29.5735; // Conversion factor
+
+    document.getElementById('water-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const weight_lb = parseFloat(document.getElementById('weight_lb').value);
+        const activity_adjustment_oz = parseFloat(document.getElementById('activity_level').value);
+
+        // Simple validation
+        if (weight_lb <= 0) {
+            displayError("Weight must be greater than zero.");
+            return;
+        }
+
+        // 2. Calculation (Body Weight Method)
+        // Baseline: weight * 0.5 oz
+        const baseline_intake_oz = weight_lb * OZ_PER_POUND;
+        
+        // Final Intake: Baseline + Activity Adjustment
+        const total_intake_oz = baseline_intake_oz + activity_adjustment_oz;
+        
+        // Convert to Milliliters
+        const total_intake_ml = total_intake_oz * ML_PER_OZ;
+
+        // 3. Update Result Display
+        const intake_oz_rounded = total_intake_oz.toFixed(0);
+        const intake_ml_rounded = total_intake_ml.toFixed(0);
+        
+        const res = document.getElementById('water-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-info');
+        res.innerHTML = `
+Based on your weight and activity level, your estimated daily water requirement is:
+
+<span class="water-output">${intake_oz_rounded} <span class="unit-label">fl oz</span></span>
+or
+<span class="water-output">${intake_ml_rounded} <span class="unit-label">mL</span></span>
+
+---
+*Remember that this includes all fluids, but water is best!*
+`;
+        
+        // 4. Update Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('water-table').classList.remove('d-none');
+        const tableBody = document.getElementById('water-body');
+        tableBody.innerHTML = `
+        <tr><td>Fluid Ounces (fl oz)</td><td>**${intake_oz_rounded}**</td></tr>
+        <tr><td>Milliliters (mL)</td><td>**${intake_ml_rounded}**</td></tr>
+        `;
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('water-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('water-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

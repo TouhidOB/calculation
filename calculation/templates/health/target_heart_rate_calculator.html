@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Target Heart Rate Zone Calculator{% endblock %}
+
+{% block meta_description %}Calculate your Maximum Heart Rate (MHR) and determine your personalized Target Heart Rate (THR) zones for fat burning and cardiovascular fitness based on your age.{% endblock %}
+
+{% block meta_keywords %}target heart rate, MHR calculator, heart rate zone, cardiovascular fitness, fat burn zone, exercise intensity, fitness goal{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .zone-table th, .zone-table td {
+        text-align: center;
+    }
+    
+    .zone-row-fat-burn {
+        background-color: #fcf8e3; /* Light yellow */
+    }
+    .zone-row-cardio {
+        background-color: #d9edf7; /* Light blue */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">❤️ Target Heart Rate Zone Calculator</h1>
+    <p class="small-muted">Find your **Target Heart Rate (THR) Zones** to ensure you're training at the right intensity for your goals (e.g., endurance or fat loss). Calculations use the standard **220 - Age** Maximum Heart Rate (MHR) formula.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="thr-form">
+            <h5 class="section-title">Personal Input</h5>
+
+            <input type="number" class="form-control my-2" id="age" placeholder="Your Age (Years)" min="18" max="100" required>
+            <small class="form-text text-muted mb-3 d-block">MHR estimates may be less accurate for highly conditioned athletes or individuals with certain medical conditions.</small>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Heart Rate Zones</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="thr-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Target Heart Rate Zones (Beats Per Minute)</h5>
+        <table class="table table-bordered mt-2 d-none zone-table" id="thr-table">
+            <thead>
+                <tr>
+                    <th>Goal Zone</th>
+                    <th>Intensity (%)</th>
+                    <th>Target Range (BPM)</th>
+                </tr>
+            </thead>
+            <tbody id="thr-body"></tbody>
+        </table>
+
+        <canvas id="thr-chart" class="d-none"></canvas>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let thrChart = null;
+
+    // Standard Heart Rate Zones based on percentage of MHR
+    const HEART_RATE_ZONES = [
+        { name: 'Fat Burning / Recovery', lowPct: 50, highPct: 70, description: 'Best for low-impact, longer duration workouts.', rowClass: 'zone-row-fat-burn' },
+        { name: 'Cardio / Aerobic', lowPct: 70, highPct: 85, description: 'Ideal for improving cardiovascular endurance.', rowClass: 'zone-row-cardio' },
+        { name: 'Peak / Anaerobic', lowPct: 85, highPct: 100, description: 'Short bursts for high-intensity training (requires caution).', rowClass: 'table-danger' }
+    ];
+
+    document.getElementById('thr-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const age = parseInt(document.getElementById('age').value);
+
+        // 1. Calculate Maximum Heart Rate (MHR)
+        // Formula: MHR = 220 - Age (A standard estimate)
+        const mhr = 220 - age;
+
+        // 2. Calculate THR for each zone
+        const zoneResults = HEART_RATE_ZONES.map(zone => {
+            const lowBPM = Math.round(mhr * (zone.lowPct / 100));
+            const highBPM = Math.round(mhr * (zone.highPct / 100));
+            return {
+                ...zone,
+                lowBPM,
+                highBPM,
+                range: `${lowBPM} - ${highBPM}`,
+            };
+        });
+
+        // 3. Update Result Text Display
+        const res = document.getElementById('thr-result');
+        res.classList.remove('d-none');
+        res.innerHTML = `
+**Your Estimated Maximum Heart Rate (MHR):** **${mhr} BPM**
+(This is the highest rate your heart should beat during exercise.)
+
+---
+
+**Target Heart Rate zones are calculated as a percentage of your MHR.**
+`;
+
+        // 4. Update Zones Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('thr-table').classList.remove('d-none');
+        const tableBody = document.getElementById('thr-body');
+        tableBody.innerHTML = ''; // Clear previous results
+
+        zoneResults.forEach(zone => {
+            tableBody.innerHTML += `
+            <tr class="${zone.rowClass}">
+                <td>**${zone.name}**</td>
+                <td>${zone.lowPct}% - ${zone.highPct}%</td>
+                <td>**${zone.range}**</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="small text-muted">${zone.description}</td>
+            </tr>
+            `;
+        });
+
+        // 5. Update Chart (A bar chart to visualize the ranges)
+        const ctx = document.getElementById('thr-chart').getContext('2d');
+        document.getElementById('thr-chart').classList.remove('d-none');
+        if (thrChart) thrChart.destroy();
+
+        thrChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: zoneResults.map(z => z.name),
+                datasets: [
+                    {
+                        label: 'Lowest BPM',
+                        data: zoneResults.map(z => z.lowBPM),
+                        backgroundColor: '#6c757d', // Grey for the baseline
+                        stack: 'stack0'
+                    },
+                    {
+                        label: 'Range (BPM)',
+                        data: zoneResults.map(z => z.highBPM - z.lowBPM),
+                        backgroundColor: ['#f0ad4e', '#5bc0de', '#d9534f'], // Orange, Blue, Red
+                        stack: 'stack0'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y', // Horizontal bars
+                plugins: {
+                    title: { display: true, text: `Heart Rate Zones up to MHR (${mhr} BPM)` },
+                    tooltip: {
+                         callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.x !== null) {
+                                    // Calculate the actual endpoint for the second dataset
+                                    if (context.datasetIndex === 1) {
+                                         const low = context.chart.data.datasets[0].data[context.dataIndex];
+                                         return `Range: ${low} - ${context.parsed.x + low} BPM`;
+                                    }
+                                }
+                                return label + context.parsed.x + ' BPM';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        title: { display: true, text: 'Heart Rate (BPM)' },
+                        min: 0,
+                        max: mhr + 10 
+                    },
+                    y: { stacked: true }
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Blood Alcohol Content (BAC) Calculator{% endblock %}
+
+{% block meta_description %}Estimate your Blood Alcohol Content (BAC) based on weight, gender, number of standard drinks, and time, using the simplified Widmark's formula.{% endblock %}
+
+{% block meta_keywords %}BAC calculator, blood alcohol, alcohol estimation, Widmark formula, drinking safety, legal limit{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+        font-size: 1.1rem;
+    }
+    
+    .bac-output {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #dc3545; /* Red color for caution */
+    }
+
+    .gender-group {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 10px;
+    }
+    
+    .disclaimer {
+        font-size: 0.85rem;
+        color: #6c757d;
+        border-left: 4px solid #dc3545;
+        padding-left: 10px;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🍷 Blood Alcohol Content (BAC) Calculator</h1>
+    <p class="small-muted">Estimate your **Blood Alcohol Content (BAC)** percentage using key personal factors and drinking details.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="bac-form">
+            <h5 class="section-title">Step 1: Personal Data</h5>
+
+            <!-- Gender Input -->
+            <div class="form-group mb-3">
+                <label class="form-label d-block">Gender (Determines Widmark Factor)</label>
+                <div class="gender-group">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderMale" value="male" required>
+                        <label class="form-check-label" for="genderMale">Male (r=0.68)</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="female" required>
+                        <label class="form-check-label" for="genderFemale">Female (r=0.55)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weight Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="weight_lb" placeholder="Body Weight" min="80" max="500" step="1" required>
+                <span class="input-group-text">lbs</span>
+            </div>
+
+            <h5 class="section-title mt-4">Step 2: Consumption Details</h5>
+            
+            <!-- Standard Drinks Input -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="standard_drinks" placeholder="Number of Standard Drinks Consumed" min="0" max="30" step="1" required>
+                <span class="input-group-text">drinks</span>
+            </div>
+            <small class="form-text text-muted mb-3 d-block">A standard drink contains roughly 0.6 fluid ounces of pure alcohol (e.g., 12oz of 5% beer, 5oz of 12% wine, or 1.5oz of 40% liquor).</small>
+
+            <!-- Time Since Drinking Started -->
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="time_h" placeholder="Time since first drink" min="0" max="24" step="0.5" required>
+                <span class="input-group-text">hours</span>
+            </div>
+            <small class="form-text text-muted d-block">Enter the time elapsed since you had your *first* alcoholic drink.</small>
+
+            <button class="btn btn-primary mt-4" type="submit">Estimate BAC</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="bac-result"></div>
+        
+        <div class="disclaimer">
+            **DISCLAIMER: This calculator is for educational purposes only.** The resulting BAC is a mathematical estimate and should **NOT** be used to determine actual fitness to drive, medical condition, or legal intoxication. Individual metabolic rates, food consumption, and other factors can significantly alter actual BAC. **NEVER DRINK AND DRIVE.**
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Standard Constants for Simplified Widmark's Formula (US Units)
+    // Formula: BAC = ( (A * 5.14) / (W * r) ) - (B * T)
+    const ALCOHOL_OZ_PER_DRINK = 0.6; // Ounces of pure alcohol per standard drink
+    const WIDMARK_MALE = 0.68;
+    const WIDMARK_FEMALE = 0.55;
+    const ELIMINATION_RATE = 0.015; // % BAC eliminated per hour (Beta)
+    const CONSTANT_FACTOR = 5.14; 
+    
+    // BAC Risk Categories (Generalized)
+    const BAC_CATEGORIES = [
+        { max: 0.02, label: 'Minimal Impairment', color: 'bg-success', text: 'You may feel relaxed. Effects are negligible.' },
+        { max: 0.05, label: 'Judgment Impairment', color: 'bg-info', text: 'Relaxation, warmth, altered judgment, reduced coordination.' },
+        { max: 0.08, label: 'Driving Limit (Typical)', color: 'bg-warning', text: 'Clear impairment of balance, speech, vision, and reaction time. **Illegal to drive in most regions.**' },
+        { max: 0.15, label: 'Major Impairment', color: 'bg-danger', text: 'Significant loss of muscle control and judgment. Vomiting may occur.' },
+        { max: 0.25, label: 'Severe Impairment', color: 'bg-dark', text: 'Stupor, loss of understanding, possible blackout. Seek immediate attention.' },
+        { max: 1.00, label: 'High Risk / Emergency', color: 'bg-dark', text: 'Severe risk of coma and death. **Medical Emergency.**' },
+    ];
+
+    function getCategory(bac) {
+        for (const cat of BAC_CATEGORIES) {
+            if (bac <= cat.max) {
+                return cat;
+            }
+        }
+        return BAC_CATEGORIES[BAC_CATEGORIES.length - 1]; // Fallback for very high BAC
+    }
+
+    document.getElementById('bac-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        const weight_lb = parseFloat(document.getElementById('weight_lb').value);
+        const standard_drinks = parseFloat(document.getElementById('standard_drinks').value);
+        const time_h = parseFloat(document.getElementById('time_h').value);
+
+        // 2. Set Constants
+        const r = (gender === 'male') ? WIDMARK_MALE : WIDMARK_FEMALE;
+        
+        // 3. Calculate Total Alcohol Consumed (A)
+        const alcohol_consumed_oz = standard_drinks * ALCOHOL_OZ_PER_DRINK;
+
+        // 4. Calculate Theoretical BAC before metabolism (BAC_peak)
+        const BAC_peak = (alcohol_consumed_oz * CONSTANT_FACTOR) / (weight_lb * r);
+
+        // 5. Calculate BAC adjusted for metabolism
+        const metabolized_alcohol = ELIMINATION_RATE * time_h;
+        let BAC_final = BAC_peak - metabolized_alcohol;
+
+        // Ensure BAC is not negative
+        BAC_final = Math.max(0, BAC_final); 
+        
+        const BAC_rounded = BAC_final.toFixed(3);
+        const category = getCategory(BAC_final);
+
+        // 6. Update Result Display
+        const res = document.getElementById('bac-result');
+        res.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-warning', 'alert-info');
+        res.classList.add(`alert-${category.color.split('-')[1]}`); // Use Bootstrap colors
+        
+        res.innerHTML = `
+**Estimated BAC:** <span class="bac-output">${BAC_rounded}%</span>
+**Classification:** ${category.label}
+---
+**Expected Effects:** ${category.text}
+**Time to Zero BAC:** ${(BAC_final / ELIMINATION_RATE).toFixed(1)} hours (approx.) from now.
+`;
+
+    });
+</script>
+
+{% endblock %}

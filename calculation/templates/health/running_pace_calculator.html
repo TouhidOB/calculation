@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Running Pace Calculator{% endblock %}
+
+{% block meta_description %}Calculate your average running pace in minutes per mile and minutes per kilometer based on your total distance and time.{% endblock %}
+
+{% block meta_keywords %}running pace, pace calculator, minutes per mile, minutes per km, running speed, endurance training{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .time-input-group > .col {
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+
+    .pace-output {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff; /* Primary blue color */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">⏱️ Running Pace Calculator</h1>
+    <p class="small-muted">Calculate your average **Pace** (time per unit distance) based on the distance you ran and the total time taken.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="pace-form">
+            <h5 class="section-title">Step 1: Distance and Time</h5>
+
+            <!-- Distance Input -->
+            <label class="form-label d-block mt-3">Distance</label>
+            <div class="input-group my-2">
+                <input type="number" class="form-control" id="distance" placeholder="Distance" min="0.01" step="0.01" required>
+                <select class="form-select" id="distance_unit" style="max-width: 100px;" required>
+                    <option value="miles" selected>Miles</option>
+                    <option value="km">Kilometers</option>
+                </select>
+            </div>
+
+            <!-- Time Input (Hours, Minutes, Seconds) -->
+            <label class="form-label d-block mt-3">Time Taken</label>
+            <div class="row g-2 time-input-group">
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="time_h" placeholder="0" min="0" max="99" step="1" value="0" required>
+                        <span class="input-group-text">H</span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="time_m" placeholder="0" min="0" max="59" step="1" value="0" required>
+                        <span class="input-group-text">M</span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="time_s" placeholder="0" min="0" max="59" step="1" value="0" required>
+                        <span class="input-group-text">S</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate Average Pace</button>
+        </form>
+
+        <div class="alert alert-info mt-4 d-none result-alert" id="pace-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Average Pace Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="pace-table">
+            <thead>
+                <tr>
+                    <th>Unit</th>
+                    <th>Average Pace</th>
+                </tr>
+            </thead>
+            <tbody id="pace-body"></tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MILES_TO_KM = 1.60934;
+
+    function formatTime(totalSeconds) {
+        if (totalSeconds < 0 || isNaN(totalSeconds)) return "N/A";
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = Math.round(totalSeconds % 60);
+        return `${minutes}:${seconds.toFixed(0).padStart(2, '0')}`;
+    }
+
+    document.getElementById('pace-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const distance = parseFloat(document.getElementById('distance').value);
+        const unit = document.getElementById('distance_unit').value;
+        const timeH = parseInt(document.getElementById('time_h').value) || 0;
+        const timeM = parseInt(document.getElementById('time_m').value) || 0;
+        const timeS = parseInt(document.getElementById('time_s').value) || 0;
+
+        // Simple validation
+        if (distance <= 0) {
+            displayError("Distance must be greater than zero.");
+            return;
+        }
+        const totalSeconds = (timeH * 3600) + (timeM * 60) + timeS;
+        if (totalSeconds <= 0) {
+            displayError("Total time must be greater than zero.");
+            return;
+        }
+
+
+        // 2. Unit Conversions
+        let distanceMi;
+        let distanceKm;
+
+        if (unit === 'miles') {
+            distanceMi = distance;
+            distanceKm = distance * MILES_TO_KM;
+        } else { // km
+            distanceKm = distance;
+            distanceMi = distance / MILES_TO_KM;
+        }
+
+        // 3. Calculate Paces (in seconds per unit)
+        const paceSecPerMile = totalSeconds / distanceMi;
+        const paceSecPerKm = totalSeconds / distanceKm;
+
+        // 4. Format Paces
+        const paceMiFormatted = formatTime(paceSecPerMile);
+        const paceKmFormatted = formatTime(paceSecPerKm);
+
+        // 5. Update Result Display
+        const res = document.getElementById('pace-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-info');
+        res.innerHTML = `
+**Run Summary:** ${distance.toFixed(2)} ${unit} in ${timeH}h ${timeM}m ${timeS}s (Total time: ${formatTime(totalSeconds)} mins)
+
+---
+
+**Average Pace per Mile:** <span class="pace-output">${paceMiFormatted}</span>
+**Average Pace per Kilometer:** <span class="pace-output">${paceKmFormatted}</span>
+`;
+        
+        // 6. Update Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('pace-table').classList.remove('d-none');
+        const tableBody = document.getElementById('pace-body');
+        tableBody.innerHTML = `
+        <tr><td>Pace per Mile</td><td>**${paceMiFormatted}**</td></tr>
+        <tr><td>Pace per Kilometer</td><td>**${paceKmFormatted}**</td></tr>
+        `;
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('pace-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('pace-table').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}
