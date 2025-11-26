@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}Boolean Algebra Calculator{% endblock %}
+
+{% block meta_description %}Generate truth tables, canonical Sum-of-Products (Minterms) and Product-of-Sums (Maxterms) for a logical expression with variables and operators.{% endblock %}
+
+{% block meta_keywords %}boolean algebra, canonical form, minterm, maxterm, sum of products, product of sums, logic, digital circuits, calculator{% endendblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block (Blue Theme) */
+    .solver-wrapper {
+        background: #f8fbff; /* Very light blue/white background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 900px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #dbeafe; /* Light Blue */
+        border: 2px solid #3b82f6; /* Blue accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e3a8a; /* Dark Blue */
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.2rem;
+        border: 2px solid #93c5fd; 
+        border-radius: 8px;
+        text-align: left;
+        font-weight: 700;
+        color: #1d4ed8;
+        font-family: monospace;
+    }
+
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .result-card {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #f7f9fd; /* Lighter Blue */
+        border-left: 5px solid #2563eb; /* Deep Blue accent */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+        max-height: 400px;
+        margin-bottom: 20px;
+    }
+
+    .truth-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    .truth-table th, .truth-table td {
+        padding: 8px;
+        border: 1px solid #bfdbfe;
+        text-align: center;
+    }
+
+    .truth-table th {
+        background-color: #eff6ff; /* Header background */
+        color: #1e3a8a;
+        font-weight: 700;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .truth-table tbody tr:nth-child(even) {
+        background-color: #f4f8ff;
+    }
+
+    /* Column specific styles */
+    .col-var {
+        font-weight: 600;
+        color: #3b82f6;
+    }
+
+    .col-minterm {
+        font-weight: 800;
+        background-color: #bfdbfe !important;
+        color: #1e3a8a;
+    }
+
+    .canonical-form {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #2563eb;
+        margin-bottom: 15px;
+        text-align: center;
+        padding: 5px;
+        border-radius: 5px;
+        background-color: #eff6ff;
+    }
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Boolean Algebra Calculator</h1>
+    <p class="text-gray-600 mb-6 text-center">
+        Enter a logical expression to generate its Truth Table, Canonical Sum-of-Products (Minterms), and Product-of-Sums (Maxterms).
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <div class="input-section">
+            <form id="boolean-form" class="space-y-4">
+                <div class="input-box">
+                    <label for="expression-input">Logical Expression:</label>
+                    <input type="text" id="expression-input" 
+                           value="(A AND B) OR NOT C" 
+                           required
+                           placeholder="e.g., (A AND B) OR NOT C"
+                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                </div>
+
+                <div class="text-sm text-gray-700 text-center">
+                    <span class="font-bold">Supported Operators:</span> NOT (!), AND (*), OR (+), ( ).
+                </div>
+                
+                <button type="submit"
+                        class="w-full bg-blue-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01]">
+                    Analyze Boolean Function
+                </button>
+            </form>
+        </div>
+
+        <div id="result-container" class="result-section">
+            <div id="solution-output" class="result-card hidden"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        
+        if (isError) {
+            outputDiv.classList.add('result-error');
+            outputDiv.classList.remove('result-card');
+        } else {
+            outputDiv.classList.add('result-card');
+            outputDiv.classList.remove('result-error');
+        }
+        outputDiv.innerHTML = contentHtml;
+    }
+
+    /**
+     * Safely evaluates a logical expression string.
+     * @param {string} expression - Cleaned logical expression string.
+     * @param {string[]} variables - Array of variable names (e.g., ['A', 'B']).
+     * @param {boolean[]} values - Array of boolean values corresponding to variables.
+     * @returns {boolean | string} - Result of evaluation or 'ERROR'.
+     */
+    function safeEvaluateLogic(expression, variables, values) {
+        // 1. Map logical operators to JS operators
+        let jsExpression = expression.toUpperCase();
+        
+        // Use standard symbols for clarity in logic:
+        jsExpression = jsExpression.replace(/AND|\*/g, '&&');
+        jsExpression = jsExpression.replace(/OR|\+/g, '||');
+        jsExpression = jsExpression.replace(/NOT|!/g, '!');
+        
+        // 2. Create the function scope for evaluation
+        const argNames = variables.join(',');
+
+        try {
+            // Use Function constructor for isolated, safe evaluation
+            const evaluator = new Function(argNames, `
+                return (${jsExpression});
+            `);
+            
+            // Pass the boolean values corresponding to the variables
+            return evaluator(...values);
+        } catch (error) {
+            console.error("Evaluation Error:", error.message);
+            return 'ERROR';
+        }
+    }
+    
+    /**
+     * Extracts unique uppercase variables (A-Z) from the expression, sorted alphabetically.
+     * @param {string} expression - User input string.
+     * @returns {string[]} - Sorted array of unique variables.
+     */
+    function extractVariables(expression) {
+        const matches = expression.match(/[A-Z]/g) || [];
+        const uniqueVars = new Set(matches);
+        return Array.from(uniqueVars).sort();
+    }
+
+    /**
+     * Generates all 2^n combinations of boolean values.
+     * @param {number} n - Number of variables.
+     * @returns {boolean[][]} - Array of arrays, where inner arrays are combinations.
+     */
+    function generateCombinations(n) {
+        const combinations = [];
+        const numRows = 1 << n; // 2^n
+        
+        for (let i = 0; i < numRows; i++) {
+            const row = [];
+            for (let j = 0; j < n; j++) {
+                // Determine the value for the j-th variable (from left to right)
+                // Use bitwise shift to check the j-th bit from the left
+                const isTrue = ((i >> (n - 1 - j)) & 1) === 1;
+                row.push(isTrue);
+            }
+            combinations.push(row);
+        }
+        return combinations;
+    }
+
+
+    /**
+     * Handles form submission and triggers the boolean analysis.
+     */
+    function handleBooleanAnalysis(e) {
+        e.preventDefault();
+
+        const expressionInput = document.getElementById('expression-input');
+        const userExpression = expressionInput.value.trim();
+        
+        const variables = extractVariables(userExpression);
+        const numVariables = variables.length;
+
+        if (numVariables === 0) {
+            const htmlContent = `<p class="font-bold text-center">Invalid Expression</p><p class="text-center">Please use at least one uppercase variable (A-Z) and supported operators.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
+        if (numVariables > 6) {
+            const htmlContent = `<p class="font-bold text-center">Too Many Variables</p><p class="text-center">The expression has ${numVariables} variables, resulting in ${1 << numVariables} rows. Please simplify your expression (max 6 variables supported) for clarity.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
+        const combinations = generateCombinations(numVariables);
+        let tableRowsHtml = '';
+        let hasError = false;
+        
+        const minterms = []; // For F=1
+        const maxterms = []; // For F=0
+        
+        // Build Table Header
+        let tableHeaderHtml = '<tr><th class="col-minterm">Min/Max Index</th>';
+        variables.forEach(v => {
+            tableHeaderHtml += `<th class="col-var">${v}</th>`;
+        });
+        tableHeaderHtml += `<th class="col-minterm">${userExpression} (F)</th></tr>`;
+
+
+        // Build Table Body and Calculate Canonical Forms
+        combinations.forEach((values, index) => {
+            const result = safeEvaluateLogic(userExpression, variables, values);
+            
+            let resultDisplay;
+            let rowClass = '';
+
+            if (result === 'ERROR') {
+                resultDisplay = 'ERROR';
+                rowClass = 'bg-red-200';
+                hasError = true;
+            } else {
+                if (result) {
+                    resultDisplay = '1';
+                    minterms.push(index);
+                } else {
+                    resultDisplay = '0';
+                    maxterms.push(index);
+                }
+            }
+
+            let rowHtml = `<tr class="${rowClass}">`;
+            
+            // Add Index
+            rowHtml += `<td class="font-bold">${index}</td>`;
+
+            // Add variable values (0/1)
+            values.forEach(v => {
+                rowHtml += `<td class="col-var">${v ? '1' : '0'}</td>`;
+            });
+            
+            // Add final expression result
+            rowHtml += `<td class="col-minterm">${resultDisplay}</td>`;
+            rowHtml += '</tr>';
+            
+            tableRowsHtml += rowHtml;
+        });
+
+        if (hasError) {
+             const htmlContent = `<p class="font-bold text-center">Evaluation Error</p><p class="text-center">The expression appears to have a syntax error or unsupported structure. Please check parentheses and operators (NOT, AND, OR).</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+        
+        const canonicalSOP = `$$\\mathbf{F = \\Sigma (${minterms.join(', ')})}$$`;
+        const canonicalPOS = `$$\\mathbf{F = \\Pi (${maxterms.join(', ')})}$$`;
+
+        // Display the final table
+        const outputHtml = `
+            <h3 class="text-xl font-bold text-center text-gray-700 mb-4">Canonical Forms</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-center font-semibold text-gray-600 mb-1">Sum-of-Products (Minterms $m_i$ where $F=1$):</p>
+                    <div class="canonical-form bg-blue-100">${canonicalSOP}</div>
+                </div>
+                <div>
+                    <p class="text-center font-semibold text-gray-600 mb-1">Product-of-Sums (Maxterms $M_i$ where $F=0$):</p>
+                    <div class="canonical-form bg-blue-100">${canonicalPOS}</div>
+                </div>
+            </div>
+            
+            <h3 class="text-xl font-bold text-center text-gray-700 mb-4 mt-8">Truth Table ($2^{${numVariables}}$ rows)</h3>
+            <div class="table-container">
+                <table class="truth-table">
+                    <thead>
+                        ${tableHeaderHtml}
+                    </thead>
+                    <tbody>
+                        ${tableRowsHtml}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        displayResult(false, outputHtml);
+    }
+
+    // Attach handler to the form
+    document.getElementById('boolean-form').addEventListener('submit', handleBooleanAnalysis);
+
+    // Initial calculation for default value
+    window.onload = function() {
+        // Manually trigger the calculation for the default value on load
+        document.getElementById('boolean-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

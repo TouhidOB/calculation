@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Slope and Y-Intercept Calculator{% endblock %}
+
+{% block meta_description %}Calculate the slope (m) and y-intercept (b) given two points, and generate the line equation ($y = mx + b$).{% endblock %}
+
+{% block meta_keywords %}slope, y-intercept, line equation, m, b, two points, linear equation, algebra, calculator{% endendblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block (Green/Emerald Theme) */
+    .solver-wrapper {
+        background: #f6fff9; /* Light, clean background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #d1fae5; /* Light Emerald */
+        border: 2px solid #10b981; /* Emerald accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #065f46; /* Dark Emerald */
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.3rem;
+        border: 2px solid #34d399; 
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: #047857;
+    }
+    
+    .input-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .result-card {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #e0fbf9; /* Lighter Emerald */
+        border-left: 5px solid #059669; /* Deep Emerald accent */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    .output-label {
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-align: center;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+
+    .output-value {
+        font-size: 3rem;
+        font-weight: 900;
+        text-align: center;
+        color: #059669; /* Deep Emerald */
+        word-break: break-all;
+    }
+
+    .equation-display {
+        font-size: 2.2rem;
+        font-weight: 900;
+        text-align: center;
+        color: #047857;
+        word-break: break-all;
+        margin-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    .breakdown {
+        margin-top: 15px;
+        font-size: 1rem;
+        color: #475569;
+        line-height: 1.5;
+        border-top: 1px dashed #a7f3d0;
+        padding-top: 10px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Slope & Y-Intercept Calculator</h1>
+    <p class="text-gray-600 mb-6 text-center">
+        Enter two coordinate points $\mathbf{(x_1, y_1)}$ and $\mathbf{(x_2, y_2)}$ to find the equation of the line $\mathbf{y = mx + b}$.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <div class="input-section">
+            <form id="line-form" class="space-y-4">
+                
+                <h3 class="text-lg font-bold text-center text-gray-800">Point 1 ($\mathbf{x_1, y_1}$)</h3>
+                <div class="input-group">
+                    <div class="input-box">
+                        <label for="x1-input">x-coordinate ($\mathbf{x_1}$):</label>
+                        <input type="number" id="x1-input" value="1" required step="any"
+                               placeholder="x1"
+                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    </div>
+                    <div class="input-box">
+                        <label for="y1-input">y-coordinate ($\mathbf{y_1}$):</label>
+                        <input type="number" id="y1-input" value="5" required step="any"
+                               placeholder="y1"
+                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-bold text-center text-gray-800 pt-4 border-t border-gray-300">Point 2 ($\mathbf{x_2, y_2}$)</h3>
+                <div class="input-group">
+                    <div class="input-box">
+                        <label for="x2-input">x-coordinate ($\mathbf{x_2}$):</label>
+                        <input type="number" id="x2-input" value="3" required step="any"
+                               placeholder="x2"
+                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    </div>
+                    <div class="input-box">
+                        <label for="y2-input">y-coordinate ($\mathbf{y_2}$):</label>
+                        <input type="number" id="y2-input" value="11" required step="any"
+                               placeholder="y2"
+                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-emerald-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-emerald-700 transition duration-150 transform hover:scale-[1.01]">
+                    Find Equation of Line
+                </button>
+            </form>
+        </div>
+
+        <div id="result-container" class="result-section">
+            <div id="solution-output" class="result-card hidden"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const TOLERANCE = 1e-9;
+
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        
+        if (isError) {
+            outputDiv.classList.add('result-error');
+            outputDiv.classList.remove('result-card');
+        } else {
+            outputDiv.classList.add('result-card');
+            outputDiv.classList.remove('result-error');
+        }
+        outputDiv.innerHTML = contentHtml;
+    }
+
+    /**
+     * Formats a number for display, keeping precision and handling sign.
+     * @param {number} value - The number to format.
+     * @returns {string} - Formatted string.
+     */
+    function formatValue(value) {
+        if (Math.abs(value) < TOLERANCE) {
+            return '0';
+        }
+        return value.toFixed(4).replace(/\.?0+$/, '');
+    }
+
+    /**
+     * Constructs the final y = mx + b equation string.
+     */
+    function constructEquation(m, b) {
+        const m_str = formatValue(m);
+        const b_str = formatValue(b);
+
+        let equation = 'y = ';
+        let isZeroM = Math.abs(m) < TOLERANCE;
+        let isZeroB = Math.abs(b) < TOLERANCE;
+        
+        if (isZeroM) {
+            // y = b (e.g., y = 5) or y = 0
+            equation += b_str;
+        } else {
+            // Include mx part
+            if (m_str === '1') {
+                equation += 'x';
+            } else if (m_str === '-1') {
+                equation += '-x';
+            } else {
+                equation += `${m_str}x`;
+            }
+
+            // Include b part
+            if (!isZeroB) {
+                if (b > 0) {
+                    equation += ` + ${b_str}`;
+                } else {
+                    // b is negative, already has a minus sign
+                    equation += ` ${b_str}`; 
+                }
+            }
+        }
+        return equation;
+    }
+
+    /**
+     * Handles form submission and triggers the calculation.
+     */
+    function handleLineCalculation(e) {
+        e.preventDefault();
+
+        // 1. Gather and parse inputs
+        const x1 = parseFloat(document.getElementById('x1-input').value);
+        const y1 = parseFloat(document.getElementById('y1-input').value);
+        const x2 = parseFloat(document.getElementById('x2-input').value);
+        const y2 = parseFloat(document.getElementById('y2-input').value);
+
+        if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for all coordinates.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+        
+        // 2. Calculate Slope (m)
+        const deltaX = x2 - x1;
+        const deltaY = y2 - y1;
+        
+        let m, m_str, b, b_str, finalEquation;
+        
+        if (Math.abs(deltaX) < TOLERANCE) {
+            // Vertical line: slope is undefined, equation is x = constant
+            m_str = 'Undefined';
+            b_str = 'None';
+            finalEquation = `x = ${formatValue(x1)}`;
+
+            let htmlContent = `
+                <p class="output-label">Resulting Equation of the Line:</p>
+                <div class="equation-display text-red-600">
+                    $$\\mathbf{${finalEquation}}$$
+                </div>
+                <div class="breakdown">
+                    <strong class="text-red-700">Line Type: Vertical Line</strong> <br>
+                    Slope ($\mathbf{m}$): Undefined (division by zero) <br>
+                    Y-Intercept ($\mathbf{b}$): None (unless x=0) <br>
+                    The line passes through $\mathbf{x=${formatValue(x1)}}$ for all y-values.
+                </div>
+            `;
+            displayResult(false, htmlContent);
+            return;
+        }
+
+        // Calculate slope: m = (y2 - y1) / (x2 - x1)
+        m = deltaY / deltaX;
+        m_str = formatValue(m);
+
+        // 3. Calculate Y-Intercept (b) using point-slope form: b = y1 - m*x1
+        b = y1 - (m * x1);
+        b_str = formatValue(b);
+
+        // 4. Construct the final equation string
+        finalEquation = constructEquation(m, b);
+
+        // 5. Display results
+        let htmlContent = `
+            <p class="output-label">Equation of the Line ($\mathbf{y = mx + b}$):</p>
+            <div class="equation-display">
+                $$\\mathbf{${finalEquation}}$$
+            </div>
+            <div class="breakdown">
+                <strong class="text-emerald-700">Slope Calculation:</strong> $$\mathbf{m = \\frac{${formatValue(y2)} - ${formatValue(y1)}}{${formatValue(x2)} - ${formatValue(x1)}} = ${m_str}}$$ <br>
+                Slope ($\mathbf{m}$): $\mathbf{${m_str}}$ <br>
+                Y-Intercept ($\mathbf{b}$): $\mathbf{${b_str}}$
+            </div>
+        `;
+        
+        displayResult(false, htmlContent);
+    }
+
+    // Attach handler to the form
+    document.getElementById('line-form').addEventListener('submit', handleLineCalculation);
+
+    // Initial calculation for default value ((1, 5) and (3, 11) -> y = 3x + 2)
+    window.onload = function() {
+        // Manually trigger the calculation for the default value on load
+        document.getElementById('line-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

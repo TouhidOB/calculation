@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Radical Simplifier Calculator{% endblock %}
+
+{% block meta_description %}Simplify radicals (square roots) by finding the largest perfect square factor of the radicand ($N$) and returning the result in the form $A\sqrt{B}$.{% endblock %}
+
+{% block meta_keywords %}radical, square root, simplify, radicand, perfect square, algebra, math calculator{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block (Orange/Red Theme) */
+    .solver-wrapper {
+        background: #fffdfd; /* Light, clean background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 550px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #fef2f2; /* Light red/pink */
+        border: 2px solid #ef4444; /* Red accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #7f1d1d; /* Dark Red */
+        display: block;
+        margin-bottom: 5px;
+        text-align: center;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 15px 12px;
+        font-size: 1.5rem;
+        border: 3px solid #f87171; 
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: #b91c1c;
+    }
+    
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .result-card {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #fef2f2; /* Lighter Red/Pink */
+        border-left: 5px solid #dc2626; /* Deep Red accent */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    .output-label {
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-align: center;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+
+    .output-value {
+        font-size: 3rem;
+        font-weight: 900;
+        text-align: center;
+        color: #dc2626; /* Deep Red */
+        word-break: break-all;
+    }
+
+    .explanation {
+        margin-top: 15px;
+        font-size: 0.95rem;
+        color: #57534e;
+        line-height: 1.5;
+        border-top: 1px dashed #fecaca;
+        padding-top: 10px;
+        text-align: center;
+    }
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Radical Simplifier ($\mathbf{\sqrt{N}}$)</h1>
+    <p class="text-gray-600 mb-6 text-center">
+        Enter the number under the radical (radicand $N$) to find the simplest form $\mathbf{A\sqrt{B}}$.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <div class="input-section">
+            <form id="radical-form">
+                <div class="input-box">
+                    <label for="radicand-n">Enter Radicand ($\mathbf{N}$, must be a positive integer):</label>
+                    <input type="number" id="radicand-n" value="72" required step="1" min="1"
+                           placeholder="e.g., 72 or 150"
+                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                </div>
+                
+                <button type="submit"
+                        class="w-full bg-red-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-red-700 transition duration-150 transform hover:scale-[1.01]">
+                    Simplify Radical
+                </button>
+            </form>
+        </div>
+
+        <div id="result-container" class="result-section">
+            <div id="solution-output" class="result-card hidden"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        
+        if (isError) {
+            outputDiv.classList.add('result-error');
+            outputDiv.classList.remove('result-card');
+        } else {
+            outputDiv.classList.add('result-card');
+            outputDiv.classList.remove('result-error');
+        }
+        outputDiv.innerHTML = contentHtml;
+    }
+
+    /**
+     * Finds the largest perfect square factor of N.
+     * @param {number} N - The radicand (positive integer).
+     * @returns {{A: number, B: number, P: number}} - A is outside, B is inside, P is the perfect square factor.
+     */
+    function simplifyRadicalValue(N) {
+        if (N <= 0) return { A: 0, B: N, P: 0 }; 
+
+        let largestPerfectSquare = 1;
+        
+        // Only need to check divisors up to the square root of N
+        const limit = Math.floor(Math.sqrt(N));
+
+        for (let i = limit; i >= 2; i--) {
+            const square = i * i;
+            if (N % square === 0) {
+                largestPerfectSquare = square;
+                break;
+            }
+        }
+
+        const A = Math.sqrt(largestPerfectSquare); // The number outside the radical
+        const B = N / largestPerfectSquare;       // The number remaining inside the radical
+        
+        return { A: A, B: B, P: largestPerfectSquare };
+    }
+
+    /**
+     * Handles form submission and triggers the radical simplification.
+     */
+    function handleRadicalSimplification(e) {
+        e.preventDefault();
+
+        const inputElement = document.getElementById('radicand-n');
+        const nStr = inputElement.value.trim();
+        const N = parseInt(nStr, 10);
+        
+        if (isNaN(N) || N <= 0 || !Number.isInteger(N)) {
+            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive whole number (integer) greater than zero.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
+        const { A, B, P } = simplifyRadicalValue(N);
+        
+        let resultDisplay;
+        let explanationText;
+        
+        if (B === 1) {
+            // Perfect square case (e.g., sqrt(49) = 7)
+            resultDisplay = A.toString();
+            explanationText = `The radicand $\\mathbf{${N}}$ is a perfect square ($\mathbf{${P}}$). The simplified form is an integer.`;
+        } else if (A === 1) {
+            // Already simplest form (e.g., sqrt(10))
+            resultDisplay = `\\sqrt{${B}}`;
+            explanationText = `The radicand $\\mathbf{${N}}$ contains no perfect square factors greater than 1, so it is already in its simplest form.`;
+        } else {
+            // Standard simplified form (e.g., sqrt(72) = 6*sqrt(2))
+            resultDisplay = `${A}\\sqrt{${B}}`;
+            explanationText = `The largest perfect square factor of $\\mathbf{${N}}$ is $\\mathbf{${P}}$. We simplify $\\sqrt{${N}} = \\sqrt{${P} \\cdot ${B}} = ${A}\\sqrt{${B}}$.`;
+        }
+
+        // Result Display
+        let htmlContent = `
+            <p class="output-label">Simplified Form of $\\mathbf{\\sqrt{${N}}}$:</p>
+            <div class="output-value">
+                $$\\mathbf{${resultDisplay}}$$
+            </div>
+            <div class="explanation">
+                ${explanationText}
+            </div>
+        `;
+        
+        displayResult(false, htmlContent);
+    }
+
+    // Attach handler to the form
+    document.getElementById('radical-form').addEventListener('submit', handleRadicalSimplification);
+
+    // Initial calculation for default value (72)
+    window.onload = function() {
+        // Manually trigger the calculation for the default value on load
+        document.getElementById('radical-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

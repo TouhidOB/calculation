@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Modulo Calculator{% endblock %}
+
+{% block meta_description %}Calculate the result of the modulus operation ($A \pmod N$) for any integers A (dividend) and N (divisor).{% endblock %}
+
+{% block meta_keywords %}modulo, remainder, modular arithmetic, A mod N, calculator, number theory{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block (Cyan/Teal Theme) */
+    .solver-wrapper {
+        background: #f0fff4; /* Very light mint background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 550px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #ccfbf1; /* Light cyan */
+        border: 2px solid #2dd4bf; /* Teal accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #134e4a; /* Dark Teal */
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.3rem;
+        border: 2px solid #5eead4; 
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: #0f766e;
+    }
+    
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .result-card {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #e0f2f1; /* Lighter Cyan */
+        border-left: 5px solid #0d9488; /* Deep Teal accent */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    .output-label {
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-align: center;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+
+    .output-value {
+        font-size: 3rem;
+        font-weight: 900;
+        text-align: center;
+        color: #0f766e; /* Deep Teal */
+        word-break: break-all;
+    }
+
+    .explanation {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: #475569;
+        line-height: 1.5;
+        border-top: 1px dashed #99f6e4;
+        padding-top: 10px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Modulo Calculator ($\mathbf{A \pmod N}$)</h1>
+    <p class="text-gray-600 mb-6 text-center">
+        Calculate the remainder $\mathbf{R}$ when the dividend $\mathbf{A}$ is divided by the divisor $\mathbf{N}$.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <div class="input-section">
+            <form id="modulo-form" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-box">
+                        <label for="dividend-a">Dividend ($\mathbf{A}$):</label>
+                        <input type="number" id="dividend-a" value="-10" required step="1"
+                               placeholder="e.g., -10"
+                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    </div>
+                    
+                    <div class="input-box">
+                        <label for="divisor-n">Divisor ($\mathbf{N}$):</label>
+                        <input type="number" id="divisor-n" value="3" required step="1"
+                               placeholder="e.g., 3"
+                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-cyan-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-cyan-700 transition duration-150 transform hover:scale-[1.01]">
+                    Calculate Modulo
+                </button>
+            </form>
+        </div>
+
+        <div id="result-container" class="result-section">
+            <div id="solution-output" class="result-card hidden"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        
+        if (isError) {
+            outputDiv.classList.add('result-error');
+            outputDiv.classList.remove('result-card');
+        } else {
+            outputDiv.classList.add('result-card');
+            outputDiv.classList.remove('result-error');
+        }
+        outputDiv.innerHTML = contentHtml;
+    }
+
+    /**
+     * Implements the correct mathematical modulo operation, ensuring the result
+     * has the same sign as the divisor (N), or is zero.
+     * @param {number} a - Dividend.
+     * @param {number} n - Divisor.
+     * @returns {number} - The modulo result R.
+     */
+    function mathMod(a, n) {
+        // Javascript's % is a remainder operator.
+        // The mathematical mod function (result R has same sign as N) is:
+        const remainder = a % n;
+        
+        if (n >= 0) {
+            // For positive divisor N, result must be non-negative: (a % n + n) % n
+            return (remainder + n) % n;
+        } else {
+            // For negative divisor N, result must be non-positive:
+            // If the remainder is positive, subtract the absolute value of N.
+            if (remainder >= 0) {
+                return remainder + n; // Since N is negative, this subtracts |N|
+            }
+            return remainder;
+        }
+    }
+
+
+    /**
+     * Handles form submission and triggers the modulo calculation.
+     */
+    function handleModuloCalculation(e) {
+        e.preventDefault();
+
+        const inputA = document.getElementById('dividend-a').value.trim();
+        const inputN = document.getElementById('divisor-n').value.trim();
+        
+        const A = parseInt(inputA, 10);
+        const N = parseInt(inputN, 10);
+
+        if (isNaN(A) || isNaN(N) || !Number.isInteger(A) || !Number.isInteger(N)) {
+            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter two valid integers for Dividend (A) and Divisor (N).</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+        
+        if (N === 0) {
+            const htmlContent = `<p class="font-bold text-center">Division by Zero</p><p class="text-center">The divisor (N) cannot be zero. This operation is undefined.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
+        const R = mathMod(A, N);
+        
+        // Find the quotient Q: A = Q * N + R => Q = (A - R) / N
+        const Q = (A - R) / N;
+
+        let explanationText;
+        if (A >= 0 && N > 0) {
+             explanationText = `This means $\\mathbf{${A}}$ can be written as $\\mathbf{${Q}} \\times \\mathbf{${N}} + \\mathbf{${R}}$.`;
+        } else if (N > 0) {
+             explanationText = `Using the standard mathematical definition, $-10 = -4 \\times 3 + 2$, so the remainder is 2.`;
+        } else {
+             explanationText = `The result $\\mathbf{${R}}$ has the same sign as the divisor $\\mathbf{${N}}$.`;
+        }
+
+        // Result Display
+        let htmlContent = `
+            <p class="output-label">Result ($\mathbf{R}$):</p>
+            <div class="output-value">
+                $$\\mathbf{${A} \\pmod {${N}} = ${R}}$$
+            </div>
+            <div class="explanation">
+                Quotient ($\mathbf{Q}$): $\\mathbf{${Q}}$ <br>
+                Identity: $\\mathbf{A = QN + R}$ <br>
+                ${explanationText}
+            </div>
+        `;
+        
+        displayResult(false, htmlContent);
+    }
+
+    // Attach handler to the form
+    document.getElementById('modulo-form').addEventListener('submit', handleModuloCalculation);
+
+    // Initial calculation for default value (-10 mod 3 = 2)
+    window.onload = function() {
+        // Manually trigger the calculation for the default value on load
+        document.getElementById('modulo-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

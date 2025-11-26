@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}Scientific Notation Converter{% endblock %}
+
+{% block meta_description %}Convert numbers between Standard Form (e.g., 0.00123) and Scientific Notation (e.g., $1.23 \times 10^{-3}$).{% endblock %}
+
+{% block meta_keywords %}scientific notation, standard form, decimal, power of ten, exponent, engineering notation, math calculator{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block (Orange/Amber Theme) */
+    .solver-wrapper {
+        background: #fffdf0; /* Very light yellow background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 850px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .converter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+    }
+
+    .converter-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #fef9c3; /* Light yellow */
+        border: 2px solid #f97316; /* Orange accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .input-group-half {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .input-box label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #c2410c; /* Dark orange */
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 10px;
+        font-size: 1.1rem;
+        border: 2px solid #fb923c; /* Medium orange border */
+        border-radius: 6px;
+        text-align: center;
+        font-weight: 600;
+        color: #9a3412;
+    }
+    
+    .result-card {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #fff7ed; /* Lightest orange */
+        border-left: 5px solid #f97316; /* Orange accent */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    .output-label {
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-align: center;
+        color: #1f2937;
+    }
+
+    .output-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        text-align: center;
+        color: #ea580c; /* Deep orange */
+        word-break: break-all;
+        margin-top: 5px;
+    }
+    .result-subtext {
+        font-size: 0.9rem;
+        color: #64748b;
+        text-align: center;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Scientific Notation Converter</h1>
+    <p class="text-gray-600 mb-6 text-center">
+        Convert numbers between standard decimal form and scientific notation ($A \times 10^{N}$).
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <div class="converter-grid">
+
+            <!-- --- 1. Standard to Scientific --- -->
+            <div class="converter-section">
+                <h3 class="text-xl font-bold text-center text-orange-700 mb-4">Standard Form $\rightarrow$ Scientific Notation</h3>
+                <form id="standard-to-scientific-form" class="space-y-4">
+                    <p class="text-center text-sm text-amber-700 mb-2">Input: Decimal Number (e.g., 123000 or 0.000123)</p>
+                    <div class="input-box">
+                        <label for="standard-input">Decimal Number:</label>
+                        <input type="text" id="standard-input" value="0.000000789" required 
+                               placeholder="e.g., 1230000000 or 0.000001"
+                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    </div>
+                    
+                    <button type="submit"
+                            class="w-full bg-amber-600 text-white font-bold py-2 mt-4 rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 transform hover:scale-[1.01]">
+                        Convert to Scientific Notation
+                    </button>
+                </form>
+
+                <div id="scientific-output" class="result-card hidden"></div>
+            </div>
+
+            <!-- --- 2. Scientific to Standard --- -->
+            <div class="converter-section">
+                <h3 class="text-xl font-bold text-center text-orange-700 mb-4">Scientific Notation $\rightarrow$ Standard Form</h3>
+                <form id="scientific-to-standard-form" class="space-y-4">
+                    <p class="text-center text-sm text-amber-700 mb-2">Input: $A \times 10^{N}$</p>
+                    <div class="input-group-half">
+                        <div class="input-box">
+                            <label for="mantissa-input">Mantissa ($\mathbf{A}$):</label>
+                            <input type="number" id="mantissa-input" value="7.89" required step="any"
+                                   placeholder="Base (A)"
+                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        </div>
+                        <div class="input-box">
+                            <label for="exponent-input">Exponent ($\mathbf{N}$):</label>
+                            <input type="number" id="exponent-input" value="-7" required step="1"
+                                   placeholder="Exponent (N)"
+                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        </div>
+                    </div>
+                    
+                    <button type="submit"
+                            class="w-full bg-orange-600 text-white font-bold py-2 mt-4 rounded-lg shadow-xl hover:bg-orange-700 transition duration-150 transform hover:scale-[1.01]">
+                        Convert to Standard Form
+                    </button>
+                </form>
+
+                <div id="standard-output" class="result-card hidden"></div>
+            </div>
+
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(containerId, isError, contentHtml) {
+        const outputDiv = document.getElementById(containerId);
+        outputDiv.classList.remove('hidden', 'result-error');
+        
+        if (isError) {
+            outputDiv.classList.add('result-error');
+            outputDiv.classList.remove('result-card');
+        } else {
+            outputDiv.classList.add('result-card');
+            outputDiv.classList.remove('result-error');
+        }
+        outputDiv.innerHTML = contentHtml;
+    }
+
+    // -------------------------------------------------------------------
+    // --- 1. Standard (Decimal) to Scientific Logic ---
+    // -------------------------------------------------------------------
+    document.getElementById('standard-to-scientific-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const inputStr = document.getElementById('standard-input').value.trim();
+        document.getElementById('scientific-output').classList.add('hidden');
+
+        let num;
+        try {
+            // Use BigInt for parsing to handle numbers outside standard JS float range, 
+            // but for conversion logic, we rely on the string manipulation below.
+            num = String(Number(inputStr));
+        } catch (e) {
+            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a valid numeric value.</p>`;
+            displayResult('scientific-output', true, htmlContent);
+            return;
+        }
+
+        // Clean up input string
+        let processedStr = inputStr.replace(/,/g, '').trim();
+        if (processedStr === '' || isNaN(processedStr)) {
+            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a valid numeric value.</p>`;
+            displayResult('scientific-output', true, htmlContent);
+            return;
+        }
+
+        if (processedStr === '0' || processedStr === '-0' || processedStr === '+0') {
+             const htmlContent = `
+                <p class="output-label">Scientific Notation:</p>
+                <div class="output-value">
+                    $$\\mathbf{0}$$
+                </div>
+            `;
+            displayResult('scientific-output', false, htmlContent);
+            return;
+        }
+        
+        const isNegative = processedStr.startsWith('-');
+        if (isNegative) {
+            processedStr = processedStr.substring(1);
+        }
+
+        // Remove trailing zeros after decimal point
+        processedStr = processedStr.replace(/(\.\d*?[1-9])0+$/, '$1');
+        
+        const decimalIndex = processedStr.indexOf('.');
+        let mantissaDigits = processedStr.replace('.', '');
+        
+        // Find the index of the first non-zero digit
+        let firstDigitIndex = mantissaDigits.search(/[1-9]/);
+
+        if (firstDigitIndex === -1) {
+            // Should be caught by the zero check, but safety fallback
+             const htmlContent = `<p class="font-bold text-center">Invalid Number</p><p class="text-center">Could not parse non-zero digits.</p>`;
+            displayResult('scientific-output', true, htmlContent);
+            return;
+        }
+
+        let exponent;
+        let mantissa;
+
+        if (decimalIndex === -1) {
+            // Large number (e.g., 123000)
+            // Initial decimal is after the last digit. Move it left to the first non-zero digit.
+            exponent = mantissaDigits.length - 1;
+        } else {
+            // Small or mixed number (e.g., 0.000123 or 123.45)
+            if (decimalIndex < firstDigitIndex + 1) { 
+                // Small number (e.g., 0.000123)
+                // Decimal index is 1 (after the leading 0). First non-zero is index 3 ('1').
+                // We move the decimal right by (firstDigitIndex + 1) - decimalIndex
+                exponent = decimalIndex - (firstDigitIndex + 1);
+            } else {
+                // Large/Mixed number (e.g., 123.45)
+                // Decimal index is 3. First non-zero is index 0 ('1').
+                // We move the decimal left by decimalIndex - (firstDigitIndex + 1)
+                exponent = decimalIndex - (firstDigitIndex + 1);
+            }
+            
+            // Recalculate exponent based on string manipulation for accuracy
+            if (decimalIndex !== -1) {
+                // Number of moves from the original decimal position to the new one (after the first non-zero digit)
+                if (decimalIndex <= firstDigitIndex) {
+                    // Small number (0.00...)
+                    exponent = (firstDigitIndex + 1) - decimalIndex;
+                    exponent = -exponent; // Move to the right means negative exponent
+                } else {
+                    // Large number (123...)
+                    exponent = decimalIndex - (firstDigitIndex + 1);
+                }
+            } else {
+                // No decimal (123000)
+                exponent = processedStr.length - 1;
+            }
+        }
+        
+        // Final Mantissa calculation
+        let mantissaStart = mantissaDigits.search(/[1-9]/);
+        let cleanedMantissa = mantissaDigits.substring(mantissaStart);
+        
+        if (cleanedMantissa.length === 1) {
+            mantissa = cleanedMantissa;
+        } else {
+            mantissa = cleanedMantissa.charAt(0) + '.' + cleanedMantissa.substring(1);
+        }
+        
+        // Clean up mantissa: remove trailing zeros after decimal
+        mantissa = mantissa.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.$/, '');
+
+        // Add negative sign if necessary
+        const mantissaSign = isNegative ? '-' : '';
+
+        // Result Display
+        let htmlContent = `
+            <p class="output-label">Scientific Notation ($\mathbf{A} \times 10^{\\mathbf{N}}$):</p>
+            <div class="output-value">
+                $$\\mathbf{${mantissaSign}${mantissa} \\times 10^{${exponent}}}$$
+            </div>
+            <p class="result-subtext">
+                Mantissa $\\mathbf{A} = ${mantissaSign}${mantissa}$
+            </p>
+            <p class="result-subtext">
+                Exponent $\\mathbf{N} = ${exponent}$
+            </p>
+        `;
+        
+        displayResult('scientific-output', false, htmlContent);
+    });
+
+    // -------------------------------------------------------------------
+    // --- 2. Scientific to Standard (Decimal) Logic ---
+    // -------------------------------------------------------------------
+    document.getElementById('scientific-to-standard-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const mantissaStr = document.getElementById('mantissa-input').value.trim();
+        const exponentStr = document.getElementById('exponent-input').value.trim();
+
+        document.getElementById('standard-output').classList.add('hidden');
+
+        const mantissa = parseFloat(mantissaStr);
+        const exponent = parseInt(exponentStr);
+
+        if (isNaN(mantissa) || isNaN(exponent)) {
+            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numbers for the Mantissa (A) and Exponent (N).</p>`;
+            displayResult('standard-output', true, htmlContent);
+            return;
+        }
+
+        // Use the built-in JavaScript scientific notation feature for direct conversion
+        // This leverages JavaScript's floating-point handling, but is concise.
+        let standardNumber;
+        try {
+            standardNumber = (mantissa * Math.pow(10, exponent));
+        } catch (error) {
+            const htmlContent = `<p class="font-bold text-center">Calculation Error</p><p class="text-center">The resulting number is too large or too small for standard display.</p>`;
+            displayResult('standard-output', true, htmlContent);
+            return;
+        }
+        
+        // Use toLocaleString to get a non-scientific display, handling large/small numbers
+        let standardStr;
+        if (Math.abs(standardNumber) > 1e16 || (Math.abs(standardNumber) < 1e-16 && standardNumber !== 0)) {
+            // If the number is still too large/small for typical standard representation, 
+            // fall back to a fixed-point notation for high precision.
+            // toFixed(20) is often a good compromise for display precision.
+            standardStr = standardNumber.toFixed(Math.abs(exponent) + 5); 
+            // Cleanup trailing zeros and decimal point if needed
+            standardStr = standardStr.replace(/0+$/, '').replace(/\.$/, '');
+        } else {
+            // Use standard JS conversion for numbers within reasonable range
+            standardStr = standardNumber.toLocaleString('en-US', { useGrouping: false, maximumSignificantDigits: 20 });
+        }
+        
+        // Result Display
+        let htmlContent = `
+            <p class="output-label">Standard Decimal Form:</p>
+            <div class="output-value">
+                $$\\mathbf{${standardStr}}$$
+            </div>
+            <p class="result-subtext">
+                Value: ${standardStr}
+            </p>
+        `;
+        
+        displayResult('standard-output', false, htmlContent);
+    });
+</script>
+{% endblock %}

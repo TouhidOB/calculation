@@ -104,3 +104,48 @@ def unit_vector_calculator(request):
 
 def coordinate_converter(request):
     return render(request, 'basic_calculator/coordinate_converter.html')
+
+def base_converter(request):
+    return render(request, 'basic_calculator/base_converter.html')
+
+def scientific_notation_converter(request):
+    return render(request, 'basic_calculator/scientific_notation_converter.html')
+
+def significant_figures_counter(request):
+    return render(request, 'basic_calculator/significant_figures_counter.html')
+
+def log_antilog_calculator(request):
+    return render(request, 'basic_calculator/log_antilog_calculator.html')
+
+def factorial_calculator(request):
+    return render(request, 'basic_calculator/factorial_calculator.html')
+
+def series_sum_calculator(request):
+    return render(request, 'basic_calculator/series_sum_calculator.html')
+
+def pythagorean_calculator(request):
+    return render(request, 'basic_calculator/pythagorean_calculator.html')
+
+def area_volume_calculator(request):
+    return render(request, 'basic_calculator/area_volume_calculator.html')
+
+def trig_identity_verifier(request):
+    return render(request, 'basic_calculator/trig_identity_verifier.html')
+
+def absolute_value_calculator(request):
+    return render(request, 'basic_calculator/absolute_value_calculator.html')
+
+def modulo_calculator(request):
+    return render(request, 'basic_calculator/modulo_calculator.html')
+
+def radical_simplifier(request):
+    return render(request, 'basic_calculator/radical_simplifier.html')
+
+def line_equation_calculator(request):
+    return render(request, 'basic_calculator/line_equation_calculator.html')
+
+def truth_table_generator(request):
+    return render(request, 'basic_calculator/truth_table_generator.html')
+
+def boolean_algebra_calculator(request):
+    return render(request, 'basic_calculator/boolean_algebra_calculator.html')

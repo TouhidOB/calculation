@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Binary/Decimal/Hex/Octal Converter{% endblock %}
+
+{% block meta_description %}Convert numbers between Binary (Base 2), Decimal (Base 10), Hexadecimal (Base 16), and Octal (Base 8) formats.{% endblock %}
+
+{% block meta_keywords %}base converter, binary, decimal, hexadecimal, octal, radix, computer science, number conversion{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #f0fdfa; /* Light mint/teal background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #d1fae5; /* Pale green */
+        border: 2px solid #10b981; /* Emerald accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .input-field {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.2rem;
+        border: 2px solid #34d399; /* Medium green border */
+        border-radius: 6px;
+        text-align: center;
+        font-weight: 700;
+        color: #065f46;
+        margin-top: 5px;
+        font-family: monospace; /* For better number visibility */
+    }
+
+    /* Styles for the base selection buttons */
+    .base-selector button {
+        flex-grow: 1;
+        padding: 10px 5px;
+        font-weight: 600;
+        border-radius: 6px;
+        transition: all 0.15s;
+        border: 2px solid transparent;
+    }
+    .base-selector button:not(.active):hover {
+        background-color: #d1fae5;
+    }
+    .base-selector button.active {
+        background-color: #059669; /* Darker selected green */
+        color: white;
+        border-color: #064e3b;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .output-grid {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .result-card {
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+        border-left: 5px solid; 
+    }
+
+    /* Specific colors for result cards */
+    .result-bin { border-left-color: #f59e0b; } /* Amber */
+    .result-dec { border-left-color: #10b981; } /* Emerald */
+    .result-hex { border-left-color: #3b82f6; } /* Blue */
+    .result-oct { border-left-color: #ef4444; } /* Red */
+
+    .output-label {
+        font-size: 1rem;
+        font-weight: 600;
+        text-align: center;
+        color: #1f2937;
+    }
+
+    .output-value {
+        font-size: 1.3rem;
+        font-weight: 800;
+        text-align: center;
+        margin-top: 5px;
+        word-break: break-all;
+        font-family: monospace;
+    }
+
+    .result-error {
+        grid-column: span 2;
+        border-left: 5px solid #ef4444; 
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Multi-Base Converter</h1>
+    <p class="text-gray-600 mb-6 text-center">
+        Convert numbers instantly between Base 2, 8, 10, and 16.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <div class="input-section">
+            <h3 class="text-xl font-bold text-center text-teal-700 mb-4">Input Number & Base</h3>
+            
+            <label for="number-input" class="block font-semibold mb-2 text-center text-gray-700">Enter Number:</label>
+            <input type="text" id="number-input" value="101011" required 
+                   placeholder="e.g., A5, 101011, 23, 45"
+                   class="input-field shadow-inner focus:shadow-xl transition-shadow uppercase"
+                   oninput="convertBase()">
+            
+            <p class="block font-semibold mt-4 mb-2 text-center text-gray-700">Select Input Base (Radix):</p>
+            <div id="base-selector" class="base-selector flex justify-center space-x-2">
+                <button type="button" data-radix="2" class="bg-gray-200 text-gray-700 active" onclick="selectBase(this)">Binary (2)</button>
+                <button type="button" data-radix="8" class="bg-gray-200 text-gray-700" onclick="selectBase(this)">Octal (8)</button>
+                <button type="button" data-radix="10" class="bg-gray-200 text-gray-700" onclick="selectBase(this)">Decimal (10)</button>
+                <button type="button" data-radix="16" class="bg-gray-200 text-gray-700" onclick="selectBase(this)">Hex (16)</button>
+            </div>
+            
+        </div>
+
+        <div id="solution-output" class="output-grid">
+            <!-- Results will be displayed here -->
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentRadix = 2; // Default to Binary
+
+    /**
+     * Sets the active base button and updates the global radix.
+     * @param {HTMLElement} button - The clicked button element.
+     */
+    function selectBase(button) {
+        // Remove 'active' class from all buttons
+        document.querySelectorAll('.base-selector button').forEach(btn => {
+            btn.classList.remove('active');
+            btn.classList.add('bg-gray-200', 'text-gray-700');
+            btn.classList.remove('bg-emerald-600', 'text-white');
+        });
+
+        // Add 'active' class to the clicked button
+        button.classList.add('active');
+        button.classList.remove('bg-gray-200', 'text-gray-700');
+        button.classList.add('bg-emerald-600', 'text-white');
+        
+        currentRadix = parseInt(button.dataset.radix);
+        convertBase();
+    }
+
+    /**
+     * Creates an HTML card for a single converted base result.
+     * @param {string} title - The title/base name.
+     * @param {string} value - The converted number string.
+     * @param {string} cssClass - Custom class for styling.
+     * @returns {string} HTML string for the result card.
+     */
+    function createResultCard(title, value, cssClass) {
+        return `
+            <div class="result-card ${cssClass}">
+                <p class="output-label">${title}</p>
+                <div class="output-value text-xl">${value}</div>
+            </div>
+        `;
+    }
+
+    /**
+     * Performs the conversion from the input base to all other bases.
+     */
+    function convertBase() {
+        const inputElement = document.getElementById('number-input');
+        const outputDiv = document.getElementById('solution-output');
+        const inputStr = inputElement.value.trim().toUpperCase(); // Hex uses uppercase
+
+        outputDiv.innerHTML = ''; // Clear previous results
+
+        if (inputStr === '') {
+            return;
+        }
+
+        // --- 1. Convert Input String to Decimal (Base 10) ---
+        let decimalValue;
+        try {
+            // Use BigInt for large numbers (up to JavaScript's safe integer limit, though parsing large strings is complex, BigInt helps keep the intermediate result exact if the input is within string limits).
+            // We'll stick to standard JS number for simplicity and common use cases up to 53 bits.
+            decimalValue = parseInt(inputStr, currentRadix);
+        } catch (e) {
+            decimalValue = NaN;
+        }
+
+        // --- Input Validation: Check for invalid characters based on the selected radix ---
+        if (isNaN(decimalValue)) {
+            const htmlContent = `<p class="font-bold">Invalid Input for Base ${currentRadix}</p><p>Please ensure your number contains only valid digits/characters for the selected base.</p>`;
+            outputDiv.innerHTML = `<div class="result-error">${htmlContent}</div>`;
+            return;
+        }
+
+        // --- 2. Convert Decimal to all other bases ---
+        
+        // Define all target bases and their names/classes
+        const conversions = [
+            { radix: 2, name: 'Binary (Base 2)', class: 'result-bin' },
+            { radix: 8, name: 'Octal (Base 8)', class: 'result-oct' },
+            { radix: 10, name: 'Decimal (Base 10)', class: 'result-dec' },
+            { radix: 16, name: 'Hexadecimal (Base 16)', class: 'result-hex' },
+        ];
+
+        let htmlContent = '';
+        
+        conversions.forEach(conversion => {
+            if (conversion.radix !== currentRadix) {
+                let convertedValue = decimalValue.toString(conversion.radix);
+                
+                // Hex is traditionally uppercase
+                if (conversion.radix === 16) {
+                    convertedValue = convertedValue.toUpperCase();
+                }
+
+                htmlContent += createResultCard(conversion.name, convertedValue, conversion.class);
+            } else {
+                // If the target is the source, just display the cleaned input (e.g., hex is uppercase)
+                let displayValue = inputStr;
+                if (conversion.radix === 16) {
+                    displayValue = inputStr.toUpperCase();
+                }
+                htmlContent += createResultCard(conversion.name, displayValue, conversion.class + ' border-dashed border-2');
+            }
+        });
+
+        outputDiv.innerHTML = htmlContent;
+    }
+
+    // Initialize the calculator on load
+    window.onload = function() {
+        // Set the initial active button style
+        selectBase(document.querySelector('.base-selector button[data-radix="2"]'));
+        // Run initial conversion with default value
+        convertBase();
+    };
+
+    // Make sure the input changes immediately trigger the conversion
+    document.getElementById('number-input').addEventListener('input', convertBase);
+</script>
+{% endblock %}
