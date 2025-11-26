@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Linear Regression Calculator ($\hat{y} = mx + b$){% endblock %}
+
+{% block meta_description %}Calculate the slope (m) and y-intercept (b) for the line of best fit for paired X and Y data sets using the least squares method. Formula: $\hat{y} = mx + b$.{% endblock %}
+
+{% block meta_keywords %}linear regression, least squares, line of best fit, slope, y-intercept, statistics calculator, data modeling{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #f8fafc; /* Very light blue background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #f0f9ff; /* Lightest blue */
+        border: 1px solid #bae6fd;
+    }
+
+    .input-box label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0c4a6e; /* Dark cyan */
+        margin-bottom: 5px;
+        display: block;
+        text-align: center;
+    }
+
+    .data-input-field {
+        width: 100%;
+        min-height: 150px;
+        padding: 15px;
+        font-size: 1.1rem;
+        border: 2px solid #38bdf8; /* Medium blue border */
+        border-radius: 8px;
+        font-family: monospace;
+        font-weight: 500;
+        color: #075985;
+        resize: vertical;
+    }
+    
+    .result-box {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 5px solid;
+    }
+
+    /* Custom result styles */
+    .result-success {
+        border-left-color: #0ea5e9; /* Sky Blue */
+        background-color: #f0f9ff;
+        color: #075985;
+    }
+    .result-error {
+        border-left-color: #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .final-equation-box {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #e0f2fe; /* Very light sky blue */
+        border: 2px solid #0ea5e9;
+    }
+
+    .output-label {
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 5px;
+        color: #0c4a6e;
+    }
+
+    .output-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        text-align: center;
+        color: #0ea5e9;
+        word-break: break-all;
+    }
+    .equation-value {
+        font-size: 2rem;
+        font-weight: 800;
+        text-align: center;
+        color: #0284c7; /* Lighter blue */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Linear Regression Calculator</h1>
+    <p class="text-gray-600 mb-6 text-center">Find the line of best fit ($\hat{y} = mx + b$) using the Least Squares Method for your paired data.</p>
+
+    <div class="solver-wrapper">
+        <form id="regression-form" class="space-y-6">
+            
+            <div class="input-grid shadow-lg">
+                <div class="input-box">
+                    <label for="x-data-input">X Data (Independent Variable) [e.g., 1, 2, 3, 4, 5]:</label>
+                    <textarea id="x-data-input" required
+                              placeholder="e.g., 1, 2, 3, 4, 5"
+                              class="data-input-field shadow-inner focus:shadow-xl transition-shadow">1, 2, 3, 4, 5</textarea>
+                </div>
+                <div class="input-box">
+                    <label for="y-data-input">Y Data (Dependent Variable) [e.g., 2.1, 4.3, 5.8, 8.2, 9.9]:</label>
+                    <textarea id="y-data-input" required
+                              placeholder="e.g., 2.1, 4.3, 5.8, 8.2, 9.9"
+                              class="data-input-field shadow-inner focus:shadow-xl transition-shadow">2.1, 4.3, 5.8, 8.2, 9.9</textarea>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 text-center">Ensure the number of values in the X and Y lists are exactly the same.</p>
+
+            <button type="submit"
+                    class="w-full bg-sky-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-sky-700 transition duration-150 transform hover:scale-[1.01]">
+                Calculate Regression Line
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Regression Results</h2>
+            <div id="solution-output" class="result-box hidden">
+                <!-- Result will be displayed here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Parses and validates data from a raw string input.
+     * @param {string} input - Raw string data.
+     * @returns {number[]} Array of numbers.
+     */
+    function parseData(input) {
+        return input
+            .split(/[\s,]+/) // Split by comma or space
+            .filter(s => s.length > 0) // Remove empty strings
+            .map(s => parseFloat(s))
+            .filter(n => !isNaN(n)); // Keep only valid numbers
+    }
+
+    document.getElementById('regression-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const xDataRaw = document.getElementById('x-data-input').value.trim();
+        const yDataRaw = document.getElementById('y-data-input').value.trim();
+        
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add('hidden');
+        outputDiv.className = 'result-box'; 
+        outputDiv.innerHTML = '';
+
+        let htmlContent = '';
+        let resultClass = '';
+
+        const X = parseData(xDataRaw);
+        const Y = parseData(yDataRaw);
+        const N = X.length;
+
+        // --- Input Validation ---
+        if (N < 2) {
+            htmlContent = `<p class="font-bold text-center">Insufficient Data</p><p class="text-center">You must provide at least two data points for X and Y.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+        
+        if (X.length !== Y.length) {
+            htmlContent = `<p class="font-bold text-center">Data Mismatch</p><p class="text-center">The number of X values (${X.length}) must match the number of Y values (${Y.length}).</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        // --- Core Calculations ---
+        
+        let sumX = 0;
+        let sumY = 0;
+        let sumX2 = 0; // Sum of X squared
+        let sumXY = 0; // Sum of X times Y
+
+        for (let i = 0; i < N; i++) {
+            const xi = X[i];
+            const yi = Y[i];
+            
+            sumX += xi;
+            sumY += yi;
+            sumX2 += xi * xi;
+            sumXY += xi * yi;
+        }
+
+        const meanX = sumX / N;
+        const meanY = sumY / N;
+        
+        // Denominator for slope (m): n * sumX2 - (sumX)^2
+        const slopeDenominator = (N * sumX2) - (sumX * sumX);
+
+        if (slopeDenominator === 0) {
+            htmlContent = `<p class="font-bold text-center">Vertical Line Error</p><p class="text-center">The X data points are identical (or collinear vertically), resulting in a division by zero. Linear regression cannot be calculated.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        // 1. Calculate Slope (m)
+        // Numerator for slope (m): n * sumXY - sumX * sumY
+        const slopeNumerator = (N * sumXY) - (sumX * sumY);
+        const m = slopeNumerator / slopeDenominator;
+
+        // 2. Calculate Y-Intercept (b)
+        // b = meanY - m * meanX
+        const b = meanY - (m * meanX);
+        
+        // Format results
+        const m_f = m.toFixed(4);
+        const b_f = b.toFixed(4);
+        const meanX_f = meanX.toFixed(2);
+        const meanY_f = meanY.toFixed(2);
+
+        // 3. Construct Final Equation String
+        const sign = b >= 0 ? '+' : '-';
+        const absoluteB = Math.abs(b_f);
+        
+        // Format the equation using the actual calculated values
+        const finalEquation = `$$\\mathbf{\\hat{y} = ${m_f}x ${sign} ${absoluteB}}$$`;
+
+        // --- Result Display ---
+        
+        htmlContent += `<div class="grid grid-cols-2 gap-4 mb-6 text-center">
+            <div>
+                <span class="output-label">Mean X ($\bar{x}$):</span>
+                <span class="output-value text-xl">$$\\mathbf{${meanX_f}}$$</span>
+            </div>
+            <div>
+                <span class="output-label">Mean Y ($\bar{y}$):</span>
+                <span class="output-value text-xl">$$\\mathbf{${meanY_f}}$$</span>
+            </div>
+        </div>`;
+        
+        htmlContent += `<div class="grid grid-cols-2 gap-4 mb-6 text-center">
+            <div>
+                <span class="output-label">Slope ($m$):</span>
+                <span class="output-value text-2xl text-sky-600">$$\\mathbf{${m_f}}$$</span>
+            </div>
+            <div>
+                <span class="output-label">Y-Intercept ($b$):</span>
+                <span class="output-value text-2xl text-sky-600">$$\\mathbf{${b_f}}$$</span>
+            </div>
+        </div>`;
+
+        htmlContent += `<div class="final-equation-box">
+            <p class="output-label text-xl">Line of Best Fit Equation</p>
+            <div class="equation-value">
+                ${finalEquation}
+            </div>
+        </div>`;
+
+        resultClass = 'result-success';
+        
+        displayResult(resultClass, htmlContent);
+    });
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

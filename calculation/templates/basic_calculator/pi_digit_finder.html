@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Pi ($\pi$) Digit Finder{% endblock %}
+
+{% block meta_description %}Find the specific digit of Pi ($\pi$) at any given position after the decimal point (up to 1000 digits).{% endblock %}
+
+{% block meta_keywords %}pi calculator, pi digit finder, math constant, digits of pi, position calculator{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #fcfcfc; /* Light gray background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-group {
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #e0f7fa; /* Very light cyan */
+        border: 1px solid #80deea;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .input-group label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #00838f; /* Dark cyan */
+        margin-bottom: 10px;
+        display: block;
+        text-align: center;
+    }
+
+    .input-field {
+        width: 100%;
+        max-width: 300px;
+        padding: 12px;
+        font-size: 1.6rem;
+        border: 2px solid #26c6da; /* Medium cyan border */
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: #006064;
+    }
+    
+    .result-box {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 5px solid;
+    }
+
+    /* Custom result styles */
+    .result-success {
+        border-left-color: #00bcd4; /* Cyan */
+        background-color: #e0f7fa;
+        color: #006064;
+    }
+    .result-error {
+        border-left-color: #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .output-label {
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        color: #1f2937;
+    }
+    .output-value {
+        font-size: 4rem;
+        font-weight: 800;
+        text-align: center;
+        color: #00bcd4;
+        margin-top: 10px;
+        word-break: break-all;
+    }
+    .pi-display-wrapper {
+        font-family: monospace;
+        font-size: 0.9rem;
+        padding: 10px;
+        background-color: #f0fdfa;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        overflow-x: auto;
+        white-space: nowrap;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Pi ($\pi$) Digit Finder</h1>
+    <p class="text-gray-600 mb-6 text-center">Enter the position after the decimal point (1st digit, 2nd digit, etc.) to find the corresponding digit of $\pi$.</p>
+
+    <div class="solver-wrapper">
+        <form id="pi-finder-form" class="space-y-6">
+            
+            <div class="input-group shadow-lg">
+                <label for="position-input">Find the Digit at Position ($N$):</label>
+                <input type="number" id="position-input" value="10" required step="1" min="1" max="1000"
+                       placeholder="e.g., 10"
+                       class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                <p class="text-xs text-gray-500 mt-2">Available for digits 1 through 1000.</p>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-cyan-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-cyan-700 transition duration-150 transform hover:scale-[1.01]">
+                Find Digit
+            </button>
+        </form>
+
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Result</h2>
+            <div id="solution-output" class="result-box hidden">
+                </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Pi constant (1000 digits after the decimal point) ---
+    // Source: various online resources for Pi
+    const PI_DIGITS = "14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914564856692346034861045432664821339360726024914127372458700660631558817488152092096282925409171536436789259036001133053054882046652138414695194151160943305727036575959195309218611738193261179310511854807446237996274956735188575272489122793818301194912983367336244065664308602139494639522473719070217986094370277053921717629317675238467481846766940513200056812714526356082778577134275778960917363717872146844090122495343014654958537105079227968925892354201995611212902196086403441815981362977477130996051870721134999999837297804995105973173281609631859502445945534690830264252230825334468503526193118817101000313783875288675313141071410766102148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978049951059731732816096318595024459455346908302642522308253344685035261931188171010003137838752886753131410714107661021480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491298336733624406566430860213949463952247371907021798609437027705392171762931767523846748184676694051320005681271452635608277857713427577896091736371787214684409012249534301465495853710507922796892589235420199561121290219608640344181598136297747713099605187072113499999983729780499510597317328160963185950244552346748398433050962853768";
+    const MAX_DIGITS = PI_DIGITS.length;
+    const PI_FULL = "3." + PI_DIGITS;
+
+    document.getElementById('pi-finder-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const position = parseInt(document.getElementById('position-input').value.trim());
+        
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add('hidden');
+        outputDiv.className = 'result-box'; 
+        outputDiv.innerHTML = '';
+
+        let htmlContent = '';
+        let resultClass = '';
+
+        // --- Input Validation ---
+        if (isNaN(position) || position < 1 || !Number.isInteger(position)) {
+            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive integer for the position (1st, 2nd, etc.).</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        if (position > MAX_DIGITS) {
+            htmlContent = `<p class="font-bold text-center">Position Out of Range</p><p class="text-center">This calculator currently only holds the first $\\mathbf{${MAX_DIGITS}}$ digits of $\pi$ after the decimal point. Please enter a position between 1 and ${MAX_DIGITS}.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+        
+        // --- Calculation ---
+        // The nth digit after the decimal is at index (n - 1) in the PI_DIGITS string.
+        const digit = PI_DIGITS[position - 1];
+        
+        // --- Result Display ---
+        
+        htmlContent += `<p class="output-label">The digit at position $\\mathbf{${position}}$ is:</p>`;
+        
+        // The Found Digit
+        htmlContent += `<div class="output-value">$$\\mathbf{${digit}}$$</div>`;
+
+        // Context Display: Show the digit highlighted in the full number
+        const startPos = position - 50; // Show 50 digits before
+        const endPos = position + 50; // Show 50 digits after
+
+        const fullDisplay = PI_DIGITS;
+        
+        const segmentBefore = fullDisplay.substring(Math.max(0, startPos - 1), position - 1);
+        const highlightedDigit = fullDisplay.substring(position - 1, position);
+        const segmentAfter = fullDisplay.substring(position, Math.min(MAX_DIGITS, endPos - 1));
+
+        htmlContent += `<p class="output-label mt-8 text-lg">Context (Around position ${position}):</p>`;
+        htmlContent += `<div class="pi-display-wrapper">
+            ...${segmentBefore} <span style="color: red; font-weight: bold; font-size: 1.1em; background-color: #ffcdd2;">${highlightedDigit}</span> ${segmentAfter}...
+        </div>`;
+        
+        htmlContent += `<p class="text-sm text-center text-gray-600 mt-4">
+                            The full number starts: $3\\mathbf{.}${PI_DIGITS.substring(0, 50)}...
+                        </p>`;
+
+        resultClass = 'result-success';
+        
+        displayResult(resultClass, htmlContent);
+    });
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

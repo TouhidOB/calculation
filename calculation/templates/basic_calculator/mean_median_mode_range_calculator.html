@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Mean, Median, Mode, Range Calculator{% endblock %}
+
+{% block meta_description %}Calculate the four main descriptive statistics (Mean, Median, Mode, Range) for a given data set.{% endblock %}
+
+{% block meta_keywords %}mean, median, mode, range, statistics calculator, descriptive statistics, central tendency{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #fffafa; /* Lightest pink/white background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 650px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-group {
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #fef2f2; /* Pale red/pink */
+        border: 1px solid #fecaca;
+    }
+
+    .input-group label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #be123c; /* Dark rose */
+        margin-bottom: 10px;
+        display: block;
+        text-align: center;
+    }
+
+    #data-input {
+        width: 100%;
+        min-height: 120px;
+        padding: 15px;
+        font-size: 1.1rem;
+        border: 2px solid #f87171; /* Medium red border */
+        border-radius: 8px;
+        font-family: monospace;
+        font-weight: 500;
+        color: #881337;
+        resize: vertical;
+    }
+    
+    .result-box {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 5px solid;
+    }
+
+    /* Custom result styles */
+    .result-success {
+        border-left-color: #f43f5e; /* Rose */
+        background-color: #fff7f8;
+        color: #881337;
+    }
+    .result-error {
+        border-left-color: #f59e0b; /* Amber */
+        background-color: #fffbeb;
+        color: #b45309;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 20px;
+        margin-top: 15px;
+    }
+
+    .stat-card {
+        padding: 15px 10px;
+        border-radius: 8px;
+        background-color: #fce7f6; /* Lightest rose */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border: 1px solid #fbcfe8;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #9d174d; /* Dark rose */
+        text-align: center;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        text-align: center;
+        color: #db2777; /* Hot Pink */
+        word-break: break-all;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Descriptive Statistics Calculator</h1>
+    <p class="text-gray-600 mb-6 text-center">Calculate Mean, Median, Mode, and Range for your data set.</p>
+
+    <div class="solver-wrapper">
+        <form id="stats-form" class="space-y-6">
+            
+            <div class="input-group shadow-lg">
+                <label for="data-input">Data Set (Enter numbers separated by commas or spaces):</label>
+                <textarea id="data-input" required
+                          placeholder="e.g., 2, 4, 4, 4, 5, 5, 7, 9"
+                          class="shadow-inner focus:shadow-xl transition-shadow">2, 4, 4, 4, 5, 5, 7, 9</textarea>
+                <p class="text-xs text-gray-500 mt-2 text-center">Calculations use up to 2 decimal places.</p>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-rose-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-rose-700 transition duration-150 transform hover:scale-[1.01]">
+                Calculate Statistics
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Results</h2>
+            <div id="solution-output" class="result-box hidden">
+                <!-- Result will be displayed here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Calculates the mean of a data set.
+     * @param {number[]} data - The data set.
+     * @returns {number} The mean.
+     */
+    function calculateMean(data) {
+        const sum = data.reduce((acc, val) => acc + val, 0);
+        return sum / data.length;
+    }
+
+    /**
+     * Calculates the median of a data set.
+     * @param {number[]} sortedData - The data set, must be sorted.
+     * @returns {number} The median.
+     */
+    function calculateMedian(sortedData) {
+        const N = sortedData.length;
+        if (N % 2 === 1) {
+            // Odd number of elements: return the middle element
+            return sortedData[Math.floor(N / 2)];
+        } else {
+            // Even number of elements: return the average of the two middle elements
+            const middle1 = sortedData[N / 2 - 1];
+            const middle2 = sortedData[N / 2];
+            return (middle1 + middle2) / 2;
+        }
+    }
+
+    /**
+     * Calculates the mode(s) of a data set.
+     * @param {number[]} data - The data set.
+     * @returns {string} The mode(s) as a string.
+     */
+    function calculateMode(data) {
+        const counts = {};
+        let maxCount = 0;
+
+        // 1. Count frequencies
+        data.forEach(n => {
+            const key = n.toString(); // Use string key to handle floating point numbers as distinct values
+            counts[key] = (counts[key] || 0) + 1;
+            if (counts[key] > maxCount) {
+                maxCount = counts[key];
+            }
+        });
+
+        if (maxCount <= 1) {
+            return "N/A (No repetition)";
+        }
+
+        // 2. Find all numbers with maxCount (Multimodal)
+        const modes = [];
+        for (const key in counts) {
+            if (counts[key] === maxCount) {
+                modes.push(key);
+            }
+        }
+        
+        // Return modes as a comma-separated string
+        return modes.join(', ');
+    }
+
+    /**
+     * Calculates the range of a data set.
+     * @param {number[]} sortedData - The data set, must be sorted.
+     * @returns {number} The range.
+     */
+    function calculateRange(sortedData) {
+        if (sortedData.length === 0) return 0;
+        const min = sortedData[0];
+        const max = sortedData[sortedData.length - 1];
+        return max - min;
+    }
+
+    document.getElementById('stats-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const dataInput = document.getElementById('data-input').value.trim();
+        const outputDiv = document.getElementById('solution-output');
+        
+        outputDiv.classList.add('hidden');
+        outputDiv.className = 'result-box'; 
+        outputDiv.innerHTML = '';
+
+        let htmlContent = '';
+        let resultClass = '';
+
+        // 1. Parse Input
+        const numbers = dataInput
+            .split(/[\s,]+/)
+            .filter(s => s.length > 0)
+            .map(s => parseFloat(s))
+            .filter(n => !isNaN(n));
+
+        // --- Input Validation ---
+        if (numbers.length === 0) {
+            htmlContent = `<p class="font-bold text-center">Invalid Data Set</p><p class="text-center">Please enter at least one valid number.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        // 2. Sort Data (needed for Median and Range)
+        const sortedNumbers = [...numbers].sort((a, b) => a - b);
+        
+        // 3. Calculate Statistics
+        const mean = calculateMean(numbers);
+        const median = calculateMedian(sortedNumbers);
+        const mode = calculateMode(numbers);
+        const range = calculateRange(sortedNumbers);
+
+        // Format results
+        const meanF = mean.toFixed(2);
+        const medianF = median.toFixed(2);
+        const rangeF = range.toFixed(2);
+        
+        // --- Result Display ---
+        
+        htmlContent += `<p class="text-lg text-center font-medium mb-4">
+                            Data Set ($N=${numbers.length}$): [${sortedNumbers.join(', ')}]
+                        </p>`;
+
+        htmlContent += `<div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Mean (Average)</div>
+                <div class="stat-value text-rose-600">$$\\mathbf{${meanF}}$$</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Median (Middle)</div>
+                <div class="stat-value text-rose-600">$$\\mathbf{${medianF}}$$</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Mode (Most Frequent)</div>
+                <div class="stat-value text-rose-600" style="font-size: 1.2rem; margin-top: 10px;">
+                    $$\\mathbf{${mode}}$$
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Range (Max - Min)</div>
+                <div class="stat-value text-rose-600">$$\\mathbf{${rangeF}}$$</div>
+            </div>
+        </div>`;
+        
+        resultClass = 'result-success';
+        
+        displayResult(resultClass, htmlContent);
+    });
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

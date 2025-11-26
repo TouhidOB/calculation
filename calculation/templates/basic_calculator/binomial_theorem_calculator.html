@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Binomial Theorem Calculator $(x+y)^n${% endblock %}
+
+{% block meta_description %}Generate the full binomial expansion of $(x+y)^n$ by entering the exponent $n$, using the Binomial Theorem formula.{% endblock %}
+
+{% block meta_keywords %}binomial theorem, polynomial expansion, nCr, combinations, binomial coefficient, algebra calculator{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #fdf2f8; /* Lightest pink/rose background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-group {
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #fce7f6; /* Pale rose */
+        border: 1px solid #fbcfe8;
+    }
+
+    .input-group label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #be185d; /* Darker rose */
+        margin-bottom: 5px;
+        display: block;
+        text-align: center;
+    }
+
+    .input-field {
+        width: 100%;
+        max-width: 250px;
+        margin: 0 auto;
+        padding: 12px;
+        font-size: 1.4rem;
+        border: 2px solid #f472b6; /* Pink border */
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: #9d174d;
+        display: block;
+    }
+    
+    .result-box {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 5px solid;
+    }
+
+    /* Custom result styles */
+    .result-success {
+        border-left-color: #db2777; /* Hot Pink */
+        background-color: #fff7f8;
+        color: #9d174d;
+    }
+    .result-error {
+        border-left-color: #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .output-label {
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        color: #1f2937;
+    }
+    .output-formula {
+        font-size: 1.2rem;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 500;
+        color: #4b5563;
+    }
+    .output-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        text-align: center;
+        color: #db2777; /* Hot Pink */
+        overflow-x: auto;
+        padding: 10px 0;
+        white-space: nowrap;
+        border: 1px dashed #fbcfe8;
+        border-radius: 6px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Binomial Theorem Calculator</h1>
+    <p class="text-gray-600 mb-6 text-center">Enter the positive integer exponent $n$ to generate the full expansion of $(x + y)^n$.</p>
+
+    <div class="solver-wrapper">
+        <form id="binomial-form" class="space-y-6">
+            
+            <div class="input-group shadow-lg text-center">
+                <label for="n-input">Exponent ($n$):</label>
+                <div class="text-2xl font-bold text-gray-800 mb-4">
+                    $$(x+y)^{\mathbf{n}}$$
+                </div>
+                <input type="number" id="n-input" value="4" required step="1" min="0" max="10"
+                       placeholder="Enter n (e.g., 4)"
+                       class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                <p class="text-xs text-gray-500 mt-2">Max safe limit for $n$ is 10 due to display size constraints.</p>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-pink-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-pink-700 transition duration-150 transform hover:scale-[1.01]">
+                Expand $(x+y)^n$
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Expansion</h2>
+            <div id="solution-output" class="result-box hidden">
+                <!-- Result will be displayed here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Calculates the combination (nCr) using the optimized formula:
+     * nCr = (n * (n-1) * ... * (n-r+1)) / r!
+     * @param {number} n - Total items.
+     * @param {number} r - Items to choose.
+     * @returns {number} The combination result.
+     */
+    function calculateCombination(n, r) {
+        if (r === 0 || r === n) return 1;
+        if (r < 0 || r > n) return 0;
+        
+        // Optimization: C(n, r) = C(n, n - r)
+        if (r > n / 2) {
+            r = n - r;
+        }
+
+        let result = 1;
+        // Calculation: result = (n / 1) * ((n-1) / 2) * ... * ((n-r+1) / r)
+        for (let i = 1; i <= r; i++) {
+            result = (result * (n - i + 1)) / i;
+        }
+        return Math.round(result);
+    }
+    
+    /**
+     * Formats the power expression for a variable.
+     * @param {string} variable - The variable name ('x' or 'y').
+     * @param {number} power - The exponent.
+     * @returns {string} The formatted LaTeX power string.
+     */
+    function formatPower(variable, power) {
+        if (power === 0) return '';
+        if (power === 1) return variable;
+        return `${variable}^{\\mathbf{${power}}}`;
+    }
+
+    document.getElementById('binomial-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const n = parseInt(document.getElementById('n-input').value.trim());
+        
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add('hidden');
+        outputDiv.className = 'result-box'; 
+        outputDiv.innerHTML = '';
+
+        let htmlContent = '';
+        let resultClass = '';
+
+        // --- Input Validation ---
+        if (isNaN(n) || n < 0 || !Number.isInteger(n)) {
+            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a non-negative integer for the exponent $n$.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        if (n > 15) {
+            htmlContent = `<p class="font-bold text-center">Exponent Too Large</p><p class="text-center">Generating expansions for $n > 15$ can result in very long, unreadable output. Please choose a smaller integer.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        // --- Calculation (Generating the Expansion) ---
+        const terms = [];
+
+        for (let k = 0; k <= n; k++) {
+            const coefficient = calculateCombination(n, k);
+            const xPower = n - k;
+            const yPower = k;
+            
+            // Format coefficient: only show if not 1 (or -1, but nCr is always positive)
+            const coeffString = (coefficient === 1 && (xPower > 0 || yPower > 0)) ? '' : coefficient.toLocaleString();
+            
+            // Format power terms
+            const xTerm = formatPower('x', xPower);
+            const yTerm = formatPower('y', yPower);
+
+            // Construct the full term: $\text{nCr} \cdot x^{n-k} \cdot y^k$
+            let term = `${coeffString}${xTerm}${yTerm}`;
+            
+            // Ensure single term expansions are simple (e.g., n=0, n=1)
+            if (n === 0) {
+                term = '1';
+                break; 
+            }
+            if (n === 1) {
+                term = (k === 0) ? 'x' : 'y';
+            }
+            
+            terms.push(term);
+        }
+
+        // Final result string, joining with '+'
+        const expansion = terms.join(' + ');
+        
+        // --- Result Display ---
+        
+        htmlContent += `<p class="output-label">Expansion of $$(x+y)^{\\mathbf{${n}}}$$</p>`;
+        htmlContent += `<p class="output-formula">
+                           $$ (x+y)^{n} = \\sum_{k=0}^{n} \\text{C}(n, k) x^{n-k} y^k $$
+                        </p>`;
+
+        htmlContent += `<div class="output-value text-xl md:text-2xl">
+                           $$\\mathbf{${expansion}}$$
+                        </div>`;
+        
+        htmlContent += `<p class="text-sm text-center text-gray-600 mt-4">
+                            The expansion contains ${n + 1} terms.
+                        </p>`;
+
+        resultClass = 'result-success';
+        
+        displayResult(resultClass, htmlContent);
+    });
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

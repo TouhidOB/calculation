@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Decimal to Fraction Converter{% endblock %}
+
+{% block meta_description %}Convert a decimal number into its most simplified fractional representation (a/b).{% endblock %}
+
+{% block meta_keywords %}decimal to fraction, fraction conversion, rational numbers, math calculator, simplified fraction{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #fcfaff; /* Very light purple/white background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 550px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #f5f3ff; /* Lightest purple */
+        border: 1px solid #ddd6fe;
+    }
+
+    .input-group label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #5b21b6; /* Dark violet */
+        margin-bottom: 5px;
+        display: block;
+        text-align: center;
+    }
+
+    #decimal-input {
+        width: 100%;
+        max-width: 350px;
+        padding: 12px;
+        font-size: 1.4rem;
+        border: 2px solid #a78bfa; /* Medium violet border */
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: #4c1d95;
+    }
+    
+    .result-box {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 5px solid;
+    }
+
+    /* Custom result styles */
+    .result-success {
+        border-left-color: #7c3aed; /* Violet */
+        background-color: #f3f4ff;
+        color: #5b21b6;
+    }
+    .result-error {
+        border-left-color: #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .fraction-display {
+        font-size: 3rem;
+        font-weight: 800;
+        text-align: center;
+        margin: 20px 0;
+        color: #7c3aed;
+    }
+    .detail-text {
+        font-size: 1.1rem;
+        text-align: center;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Decimal to Fraction Converter</h1>
+    <p class="text-gray-600 mb-6 text-center">Convert a decimal $D$ into a simplified fraction $\frac{N}{D}$.</p>
+
+    <div class="solver-wrapper">
+        <form id="converter-form" class="space-y-6">
+            
+            <div class="input-group shadow-lg">
+                <label for="decimal-input">Enter the Decimal Value ($D$):</label>
+                <input type="text" id="decimal-input" value="0.75" required
+                       placeholder="e.g., 0.125 or 1.5"
+                       class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                <p class="text-xs text-gray-500 mt-2">Note: This calculator assumes the decimal terminates at the point entered.</p>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-violet-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-violet-700 transition duration-150 transform hover:scale-[1.01]">
+                Convert & Simplify
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Simplified Fraction</h2>
+            <div id="solution-output" class="result-box hidden">
+                <!-- Result will be displayed here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Calculates the Greatest Common Factor (GCF) of two non-negative integers
+     * using the Euclidean Algorithm.
+     * @param {number} a - First integer.
+     * @param {number} b - Second integer.
+     * @returns {number} The GCF of a and b.
+     */
+    function gcd(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        
+        // Euclidean Algorithm
+        while (b) {
+            const temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+
+    document.getElementById('converter-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const inputStr = document.getElementById('decimal-input').value.trim();
+        const outputDiv = document.getElementById('solution-output');
+        
+        outputDiv.classList.add('hidden');
+        outputDiv.className = 'result-box'; 
+        outputDiv.innerHTML = '';
+
+        let htmlContent = '';
+        let resultClass = '';
+        
+        // --- Input Validation ---
+        if (inputStr === '' || isNaN(parseFloat(inputStr))) {
+            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a valid number (e.g., 0.5, -1.25, 4).</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        // --- Conversion Logic ---
+        const number = parseFloat(inputStr);
+        const sign = (number < 0) ? -1 : 1;
+        const absInput = Math.abs(inputStr);
+
+        // Find the fractional part string to count decimal places accurately
+        const parts = absInput.split('.');
+        const decimalPart = parts.length > 1 ? parts[1].replace(/^0+/, '') : ""; // Remove leading zeros in fractional part
+        
+        const k = decimalPart.length; // Number of digits after the decimal point
+        
+        if (k === 0) {
+            // Case 1: Input is an integer (e.g., "5" or "5.0")
+            const initialN = Math.abs(number);
+            const initialD = 1;
+            
+            htmlContent += `<p class="detail-text">Input is an integer: ${inputStr}</p>`;
+            
+            const simplifiedFraction = (sign === -1 ? "-" : "") + `$$\\mathbf{${initialN}}$$`;
+            htmlContent += `<div class="fraction-display">${simplifiedFraction}</div>`;
+            htmlContent += `<p class="detail-text">This simplifies to the integer itself.</p>`;
+            
+            resultClass = 'result-success';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        // Case 2: Input has a decimal part (e.g., "1.25")
+        
+        // Construct the numerator and denominator using string parts to avoid floating point math errors
+        const numeratorStr = (parts[0] || "0") + decimalPart;
+        const initialN = parseInt(numeratorStr, 10);
+        const initialD = Math.pow(10, k);
+
+        // Calculate GCF for simplification
+        const commonDivisor = gcd(initialN, initialD);
+        
+        // Calculate the simplified fraction
+        const n_simplified = initialN / commonDivisor;
+        const d_simplified = initialD / commonDivisor;
+        
+        // --- Result Display ---
+
+        htmlContent += `<p class="detail-text">Unsimplified Fraction (Denominator $\\mathbf{10^{${k}}}$): $\\frac{${initialN}}{${initialD}}$</p>`;
+        htmlContent += `<p class="detail-text">Greatest Common Factor (GCF): $\\mathbf{${commonDivisor}}$</p>`;
+        
+        // Display the simplified fraction
+        htmlContent += `<div class="fraction-display">`;
+        if (d_simplified === 1) {
+             // Display as a whole number
+             htmlContent += `$$\\mathbf{${sign * n_simplified}}$$`;
+        } else {
+             // Display as a simplified fraction
+             htmlContent += `$$\\mathbf{${sign === -1 ? "-" : ""}\\frac{${n_simplified}}{${d_simplified}}}$$`;
+        }
+        htmlContent += `</div>`;
+        
+        resultClass = 'result-success';
+        
+        displayResult(resultClass, htmlContent);
+    });
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

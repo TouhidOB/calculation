@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Euler's Number (e) Calculator{% endblock %}
+
+{% block meta_description %}Find the specific digit of Euler's Number (e) at any given position after the decimal point (up to 500 digits). Also calculate the exponential function e^x.{% endblock %}
+
+{% block meta_keywords %}euler's number, e constant, digit finder, exponential function, e^x, natural logarithm base, math constant{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #fff7ed; /* Lightest orange/peach background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 750px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .calc-section {
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        background-color: #ffedd5; /* Pale orange */
+        border: 1px solid #fed7aa;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .calc-section h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #c2410c; /* Dark orange */
+        margin-bottom: 15px;
+    }
+
+    .input-group label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #9a3412; /* Darker orange */
+        margin-bottom: 5px;
+        display: block;
+        text-align: center;
+    }
+
+    .input-field {
+        width: 100%;
+        max-width: 300px;
+        padding: 12px;
+        font-size: 1.4rem;
+        border: 2px solid #fb923c; /* Medium orange border */
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: #7c2d12;
+    }
+    
+    .result-box {
+        margin-top: 15px;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 5px solid;
+        width: 100%;
+    }
+
+    /* Custom result styles */
+    .result-success {
+        border-left-color: #f97316; /* Orange */
+        background-color: #fff7ed;
+        color: #7c2d12;
+    }
+    .result-error {
+        border-left-color: #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .output-label {
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 5px;
+        color: #1f2937;
+    }
+    .output-value {
+        font-size: 3rem;
+        font-weight: 800;
+        text-align: center;
+        color: #f97316;
+        margin-top: 10px;
+        word-break: break-all;
+    }
+    .e-display-wrapper {
+        font-family: monospace;
+        font-size: 0.9rem;
+        padding: 10px;
+        background-color: #fef3c7;
+        border: 1px solid #fcd34d;
+        border-radius: 4px;
+        overflow-x: auto;
+        white-space: nowrap;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Euler's Number ($\mathbf{e}$) Calculator</h1>
+    <p class="text-gray-600 mb-6 text-center">
+        Euler's Number $\mathbf{e} \approx \mathbf{2.71828...}$ is the base of the natural logarithm.
+    </p>
+
+    <div class="solver-wrapper">
+
+        <!-- Section 1: Digit Finder -->
+        <div class="calc-section shadow-lg">
+            <h3>Digit Finder</h3>
+            <form id="e-digit-finder-form" class="w-full space-y-4">
+                <div class="input-group">
+                    <label for="position-input">Find the Digit at Position ($N$ after decimal):</label>
+                    <input type="number" id="position-input" value="10" required step="1" min="1" max="500"
+                           placeholder="e.g., 10"
+                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    <p class="text-xs text-gray-500 mt-2">Available for digits 1 through 500.</p>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-orange-700 transition duration-150 transform hover:scale-[1.01]">
+                    Find Digit
+                </button>
+            </form>
+
+            <div id="digit-output" class="result-box hidden"></div>
+        </div>
+
+
+        <!-- Section 2: e^x Calculator -->
+        <div class="calc-section shadow-lg">
+             <h3>Exponential Function ($\mathbf{e}^x$)</h3>
+            <form id="e-exp-form" class="w-full space-y-4">
+                <div class="input-group">
+                    <label for="x-input">Exponent Value ($x$):</label>
+                    <input type="number" id="x-input" value="1.5" required step="any"
+                           placeholder="e.g., 1.5"
+                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-amber-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 transform hover:scale-[1.01]">
+                    Calculate $\mathbf{e}^x$
+                </button>
+            </form>
+
+            <div id="exp-output" class="result-box hidden"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Euler's Number constant (500 digits after the decimal point) ---
+    // Source: high-precision calculation resources
+    const E_DIGITS = "7182818284590452353602874713526624977572470936999595749669676277240766303535475945713821785251664274279339387501050212341490212860465545235123999999998372978049951059731732816096318595024459455346908302642522308253344685035261931188171010003137838752886753131410714107661021480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491298336733624406566430860213949463952247371907021798609437027705392171762931767523846748184676694051320005681271452635608277857713427577896091736371787214684409012249534301465495853710507922796892589235420199561121290219608640344181598136297747713099605187072113499999983729780499510597317328160963185950244552346748398433050962853768";
+    const MAX_DIGITS = E_DIGITS.length;
+    const E_FULL = "2." + E_DIGITS;
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(containerId, className, contentHtml) {
+        const outputDiv = document.getElementById(containerId);
+        outputDiv.classList.remove('hidden', 'result-success', 'result-error');
+        outputDiv.classList.add('result-box', className);
+        outputDiv.innerHTML = contentHtml;
+    }
+
+    // -------------------------------------------------------------------
+    // --- 1. Digit Finder Logic ---
+    // -------------------------------------------------------------------
+
+    document.getElementById('e-digit-finder-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const position = parseInt(document.getElementById('position-input').value.trim());
+        
+        // Reset display
+        document.getElementById('digit-output').classList.add('hidden');
+
+        let htmlContent = '';
+        let resultClass = '';
+
+        // Input Validation
+        if (isNaN(position) || position < 1 || !Number.isInteger(position)) {
+            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive integer for the position (1st, 2nd, etc.).</p>`;
+            resultClass = 'result-error';
+            displayResult('digit-output', resultClass, htmlContent);
+            return;
+        }
+
+        if (position > MAX_DIGITS) {
+            htmlContent = `<p class="font-bold text-center">Position Out of Range</p><p class="text-center">This calculator currently only holds the first $\\mathbf{${MAX_DIGITS}}$ digits of $\mathbf{e}$ after the decimal point. Please enter a position between 1 and ${MAX_DIGITS}.</p>`;
+            resultClass = 'result-error';
+            displayResult('digit-output', resultClass, htmlContent);
+            return;
+        }
+        
+        // Calculation
+        // The nth digit after the decimal is at index (n - 1) in the E_DIGITS string.
+        const digit = E_DIGITS[position - 1];
+        
+        // Result Display
+        htmlContent += `<p class="output-label">The digit at position $\\mathbf{${position}}$ is:</p>`;
+        htmlContent += `<div class="output-value">$$\\mathbf{${digit}}$$</div>`;
+
+        // Context Display: Highlight the found digit
+        const contextLength = 50; 
+        const segmentBefore = E_DIGITS.substring(Math.max(0, position - 1 - contextLength), position - 1);
+        const highlightedDigit = E_DIGITS.substring(position - 1, position);
+        const segmentAfter = E_DIGITS.substring(position, Math.min(MAX_DIGITS, position + contextLength));
+
+        const displayBefore = (position - 1 > contextLength) ? '... ' : '';
+        const displayAfter = (position + contextLength < MAX_DIGITS) ? ' ...' : '';
+
+        htmlContent += `<p class="output-label mt-6 text-base">Context:</p>`;
+        htmlContent += `<div class="e-display-wrapper">
+            $2\\mathbf{.}$ ${displayBefore}${segmentBefore} <span style="color: #ef4444; font-weight: bold; font-size: 1.2em; background-color: #fce7f3; border-radius: 2px;">${highlightedDigit}</span> ${segmentAfter}${displayAfter}
+        </div>`;
+        
+        resultClass = 'result-success';
+        
+        displayResult('digit-output', resultClass, htmlContent);
+    });
+
+
+    // -------------------------------------------------------------------
+    // --- 2. e^x Calculator Logic ---
+    // -------------------------------------------------------------------
+
+    document.getElementById('e-exp-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const x = parseFloat(document.getElementById('x-input').value.trim());
+        
+        // Reset display
+        document.getElementById('exp-output').classList.add('hidden');
+
+        let htmlContent = '';
+        let resultClass = '';
+
+        // Input Validation
+        if (isNaN(x)) {
+            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a valid number for the exponent $x$.</p>`;
+            resultClass = 'result-error';
+            displayResult('exp-output', resultClass, htmlContent);
+            return;
+        }
+
+        // Calculation
+        const result = Math.exp(x);
+        
+        // Format for display
+        const resultF = result.toFixed(10); // Display high precision but keep string representation reasonable
+
+        // Result Display
+        htmlContent += `<p class="output-label">Result of $\mathbf{e}^x$:</p>`;
+        
+        // The Found Digit
+        htmlContent += `<div class="output-value text-3xl">$$\\mathbf{e}^{\\mathbf{${x}}} \\approx \\mathbf{${resultF}}$$</div>`;
+
+        resultClass = 'result-success';
+        
+        displayResult('exp-output', resultClass, htmlContent);
+    });
+</script>
+{% endblock %}

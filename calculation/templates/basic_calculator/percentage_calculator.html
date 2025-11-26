@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Percentage Calculator{% endblock %}
+
+{% block meta_description %}Quickly calculate the percentage of any number (What is X% of Y?).{% endblock %}
+
+{% block meta_keywords %}percentage calculator, percent of a number, discount calculator, math utility, finance{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #fdf2f8; /* Light pink/rose background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 550px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #fce7f6; /* Lighter pink */
+        border: 1px solid #fbcfe8;
+    }
+
+    .input-box label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #9d174d; /* Dark rose */
+        margin-bottom: 5px;
+        display: block;
+        text-align: center;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.4rem;
+        border: 2px solid #ec4899; /* Medium rose border */
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: #831843;
+    }
+    
+    .result-box {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 5px solid;
+    }
+
+    /* Custom result styles */
+    .result-success {
+        border-left-color: #db2777; /* Hot Pink */
+        background-color: #fdf4ff;
+        color: #9d174d;
+    }
+    .result-error {
+        border-left-color: #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .output-text {
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-align: center;
+        margin-top: 5px;
+    }
+    .output-value {
+        font-size: 3rem;
+        font-weight: 800;
+        text-align: center;
+        color: #db2777;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Percentage Calculator</h1>
+    <p class="text-gray-600 mb-6 text-center">Calculates "What is $X\%$ of $Y$?".</p>
+
+    <div class="solver-wrapper">
+        <form id="percentage-form" class="space-y-6">
+            
+            <div class="input-grid shadow-lg">
+                <div class="input-box">
+                    <label for="percent-input">Percentage ($X\%$):</label>
+                    <input type="number" id="percent-input" value="15" required step="any"
+                           placeholder="e.g., 15"
+                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                </div>
+                <div class="input-box">
+                    <label for="number-input">Base Number ($Y$):</label>
+                    <input type="number" id="number-input" value="200" required step="any"
+                           placeholder="e.g., 200"
+                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-pink-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-pink-700 transition duration-150 transform hover:scale-[1.01]">
+                Calculate Result
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Calculation Result</h2>
+            <div id="solution-output" class="result-box hidden">
+                <!-- Result will be displayed here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('percentage-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const X_input = document.getElementById('percent-input').value.trim();
+        const Y_input = document.getElementById('number-input').value.trim();
+        
+        const X = parseFloat(X_input); // Percentage value
+        const Y = parseFloat(Y_input); // Base number
+        
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add('hidden');
+        outputDiv.className = 'result-box'; 
+        outputDiv.innerHTML = '';
+
+        let htmlContent = '';
+        let resultClass = '';
+
+        // --- Input Validation ---
+        if (X_input === '' || Y_input === '' || isNaN(X) || isNaN(Y)) {
+            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for both the percentage and the number.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+        
+        // --- Calculation ---
+        // Result = (X / 100) * Y
+        const result = (X / 100) * Y;
+        
+        // Format the result to a maximum of 4 decimal places, trimming trailing zeros
+        const formattedResult = parseFloat(result.toFixed(4));
+        
+        // --- Result Display ---
+        htmlContent += `<p class="output-text">What is $\\mathbf{${X}\\%}$ of $\\mathbf{${Y}}$?</p>`;
+        htmlContent += `<p class="output-text mt-1">The answer is:</p>`;
+        htmlContent += `<div class="output-value">$$\\mathbf{${formattedResult}}$$</div>`;
+
+        htmlContent += `<p class="output-text text-gray-600 mt-4">Calculated using the formula: $\\frac{${X}}{100} \\cdot ${Y}$</p>`;
+        
+        resultClass = 'result-success';
+        
+        displayResult(resultClass, htmlContent);
+    });
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

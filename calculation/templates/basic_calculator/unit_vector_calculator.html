@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Unit Vector Calculator (3D){% endblock %}
+
+{% block meta_description %}Calculate the magnitude and the normalized unit vector $\hat{\mathbf{u}}$ for any 3D vector $\mathbf{V}$.{% endblock %}
+
+{% block meta_keywords %}unit vector, magnitude, normalization, 3d vector, vector calculus, physics calculator, vector length{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #f0fdfa; /* Lightest teal background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-vector-container {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #e0f2f1; /* Light teal */
+        border: 2px solid #2dd4bf;
+    }
+
+    .vector-components {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .input-box label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #047878;
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 10px;
+        font-size: 1.1rem;
+        border: 2px solid #2dd4bf; /* Medium teal border */
+        border-radius: 6px;
+        text-align: center;
+        font-weight: 600;
+        color: #0f766e;
+    }
+    
+    .result-section {
+        margin-top: 25px;
+        display: grid;
+        grid-template-columns: 1fr; /* Single column layout for two results */
+        gap: 20px;
+    }
+
+    .result-card {
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        background-color: #ffffff;
+        border-left: 5px solid #06b6d4; /* Cyan accent for distinction */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+        grid-column: span 1;
+    }
+    
+    .output-label {
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 5px;
+        color: #1f2937;
+    }
+
+    .output-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        text-align: center;
+        color: #06b6d4;
+        word-break: break-all;
+        margin-top: 10px;
+    }
+    .vector-notation {
+        font-family: monospace;
+        font-size: 1rem;
+        font-weight: 500;
+        text-align: center;
+        color: #64748b;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Unit Vector Calculator</h1>
+    <p class="text-gray-600 mb-6 text-center">
+        Enter the components of a 3D vector $\mathbf{V}=(V_x, V_y, V_z)$ to find its normalized unit vector $\hat{\mathbf{u}}$.
+    </p>
+
+    <div class="solver-wrapper">
+        <form id="vector-calculator-form" class="space-y-6">
+            
+            <div class="input-vector-container shadow-lg">
+                <h3 class="text-xl font-bold text-center text-teal-700 mb-2">Input Vector $\mathbf{V}$</h3>
+                <p class="vector-notation text-center">$$\mathbf{V} = (V_x, V_y, V_z)$$</p>
+                <div class="vector-components">
+                    <div class="input-box">
+                        <label for="vx-input">$V_x$:</label>
+                        <input type="number" id="vx-input" value="1" required step="any"
+                               placeholder="X component"
+                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    </div>
+                    <div class="input-box">
+                        <label for="vy-input">$V_y$:</label>
+                        <input type="number" id="vy-input" value="2" required step="any"
+                               placeholder="Y component"
+                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    </div>
+                    <div class="input-box">
+                        <label for="vz-input">$V_z$:</label>
+                        <input type="number" id="vz-input" value="2" required step="any"
+                               placeholder="Z component"
+                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit"
+                    class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-emerald-700 transition duration-150 transform hover:scale-[1.01]">
+                Calculate Unit Vector
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Calculated Results</h2>
+            <div id="solution-output" class="result-section">
+                <!-- Results will be displayed here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Formats a vector (x, y, z) into a string.
+     * @param {number} x - X component.
+     * @param {number} y - Y component.
+     * @param {number} z - Z component.
+     * @returns {string} The formatted LaTeX string.
+     */
+    function formatVector(x, y, z) {
+        // Round to 4 decimal places for clean output
+        const x_f = parseFloat(x.toFixed(4));
+        const y_f = parseFloat(y.toFixed(4));
+        const z_f = parseFloat(z.toFixed(4));
+
+        return `\\mathbf{(${x_f}, ${y_f}, ${z_f})}`;
+    }
+    
+    /**
+     * Generates an HTML card for a single result.
+     */
+    function createResultCard(title, resultValue, isVector = false) {
+        let formattedValue;
+        
+        if (isVector) {
+            // For Unit Vector result
+            formattedValue = formatVector(resultValue[0], resultValue[1], resultValue[2]);
+        } else {
+            // Scalar result (Magnitude), format to 4 decimal places
+            formattedValue = parseFloat(resultValue.toFixed(4));
+        }
+
+        let html = `
+            <div class="result-card">
+                <p class="output-label">${title}</p>
+                <div class="output-value">
+                    $$${formattedValue}$$
+                </div>
+            </div>
+        `;
+        return html;
+    }
+
+    document.getElementById('vector-calculator-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Get inputs for Vector V
+        const Vx = parseFloat(document.getElementById('vx-input').value.trim());
+        const Vy = parseFloat(document.getElementById('vy-input').value.trim());
+        const Vz = parseFloat(document.getElementById('vz-input').value.trim());
+        
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.innerHTML = ''; 
+        outputDiv.className = 'result-section'; // Reset class for grid layout
+
+        // --- Input Validation ---
+        if ([Vx, Vy, Vz].some(isNaN)) {
+            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for all three vector components ($V_x, V_y, V_z$).</p>`;
+            outputDiv.innerHTML = htmlContent;
+            outputDiv.className = 'result-error'; 
+            return;
+        }
+
+        // --- Core Calculations ---
+        
+        // 1. Magnitude $|\mathbf{V}| = \sqrt{V_x^2 + V_y^2 + V_z^2}$
+        const magnitudeV = Math.sqrt((Vx * Vx) + (Vy * Vy) + (Vz * Vz));
+
+        // Check for zero vector (division by zero)
+        if (magnitudeV === 0) {
+             const htmlContent = `<p class="font-bold text-center">Zero Vector</p><p class="text-center">The magnitude is zero. A unit vector cannot be defined for the zero vector $\\mathbf{V} = (0, 0, 0)$.</p>`;
+            outputDiv.innerHTML = htmlContent;
+            outputDiv.className = 'result-error'; 
+            return;
+        }
+        
+        // 2. Unit Vector $\hat{\mathbf{u}} = \mathbf{V} / |\mathbf{V}|$
+        const unitVx = Vx / magnitudeV;
+        const unitVy = Vy / magnitudeV;
+        const unitVz = Vz / magnitudeV;
+        
+        const unitVector = [unitVx, unitVy, unitVz];
+        
+        // --- Result Display ---
+        let htmlContent = '';
+        
+        // 1. Magnitude Card
+        htmlContent += createResultCard('Magnitude $|\mathbf{V}|$', magnitudeV);
+        
+        // 2. Unit Vector Card
+        htmlContent += createResultCard('Unit Vector $\\hat{\\mathbf{u}}$', unitVector, true);
+
+        outputDiv.innerHTML = htmlContent;
+    });
+</script>
+{% endblock %}

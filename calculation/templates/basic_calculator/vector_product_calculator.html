@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Vector Cross/Dot Product Calculator (3D){% endblock %}
+
+{% block meta_description %}Calculate the Dot Product, Cross Product, and Magnitude for two 3D vectors, $\mathbf{A}$ and $\mathbf{B}$.{% endblock %}
+
+{% block meta_keywords %}vector dot product, vector cross product, magnitude, 3d vector, scalar product, vector algebra, torque, physics calculator{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Styling for the central calculation block */
+    .solver-wrapper {
+        background: #f8fafc; /* Lightest blue-gray background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 900px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-vector-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #e0f2fe; /* Light sky blue */
+        border: 1px solid #93c5fd;
+    }
+
+    .vector-input-container {
+        border: 2px solid #3b82f6;
+        padding: 15px;
+        border-radius: 10px;
+        background-color: #eff6ff;
+    }
+
+    .vector-components {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .input-box label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #1e3a8a;
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 8px;
+        font-size: 1.1rem;
+        border: 2px solid #60a5fa; /* Medium blue border */
+        border-radius: 6px;
+        text-align: center;
+        font-weight: 600;
+        color: #1e40af;
+    }
+    
+    .result-section {
+        margin-top: 25px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .result-card {
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #f0f9ff;
+        border-top: 4px solid #3b82f6;
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+        grid-column: span 3; /* Span across all columns */
+    }
+    
+    .output-label {
+        font-size: 1rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 5px;
+        color: #1f2937;
+    }
+
+    .output-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        text-align: center;
+        color: #1d4ed8;
+        word-break: break-all;
+    }
+    .vector-notation {
+        font-family: monospace;
+        font-size: 1rem;
+        font-weight: 500;
+        text-align: center;
+        color: #64748b;
+        margin-bottom: 10px;
+    }
+    /* Responsive adjustment for small screens */
+    @media (max-width: 640px) {
+        .input-vector-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 md:p-8">
+    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">3D Vector Product Calculator</h1>
+    <p class="text-gray-600 mb-6 text-center">
+        Enter the components of two 3D vectors, $\mathbf{A}$ and $\mathbf{B}$, to calculate their Dot Product, Cross Product, and Magnitudes.
+    </p>
+
+    <div class="solver-wrapper">
+        <form id="vector-calculator-form" class="space-y-6">
+            
+            <div class="input-vector-grid shadow-lg">
+                <!-- Vector A Inputs -->
+                <div class="vector-input-container">
+                    <h3 class="text-xl font-bold text-center text-blue-700 mb-2">Vector $\mathbf{A}$</h3>
+                    <p class="vector-notation text-center">$$\mathbf{A} = (A_x, A_y, A_z)$$</p>
+                    <div class="vector-components">
+                        <div class="input-box">
+                            <label for="ax-input">$A_x$:</label>
+                            <input type="number" id="ax-input" value="1" required step="any"
+                                   placeholder="X component"
+                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        </div>
+                        <div class="input-box">
+                            <label for="ay-input">$A_y$:</label>
+                            <input type="number" id="ay-input" value="2" required step="any"
+                                   placeholder="Y component"
+                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        </div>
+                        <div class="input-box">
+                            <label for="az-input">$A_z$:</label>
+                            <input type="number" id="az-input" value="3" required step="any"
+                                   placeholder="Z component"
+                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vector B Inputs -->
+                <div class="vector-input-container">
+                    <h3 class="text-xl font-bold text-center text-blue-700 mb-2">Vector $\mathbf{B}$</h3>
+                    <p class="vector-notation text-center">$$\mathbf{B} = (B_x, B_y, B_z)$$</p>
+                    <div class="vector-components">
+                        <div class="input-box">
+                            <label for="bx-input">$B_x$:</label>
+                            <input type="number" id="bx-input" value="4" required step="any"
+                                   placeholder="X component"
+                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        </div>
+                        <div class="input-box">
+                            <label for="by-input">$B_y$:</label>
+                            <input type="number" id="by-input" value="5" required step="any"
+                                   placeholder="Y component"
+                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        </div>
+                        <div class="input-box">
+                            <label for="bz-input">$B_z$:</label>
+                            <input type="number" id="bz-input" value="6" required step="any"
+                                   placeholder="Z component"
+                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit"
+                    class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.01]">
+                Calculate Products & Magnitudes
+            </button>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result-container" class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Calculated Results</h2>
+            <div id="solution-output" class="result-section">
+                <!-- Results will be displayed here -->
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Formats a vector (x, y, z) into a string.
+     * @param {number} x - X component.
+     * @param {number} y - Y component.
+     * @param {number} z - Z component.
+     * @returns {string} The formatted LaTeX string.
+     */
+    function formatVector(x, y, z) {
+        // Round to 4 decimal places for clean output
+        const x_f = parseFloat(x.toFixed(4));
+        const y_f = parseFloat(y.toFixed(4));
+        const z_f = parseFloat(z.toFixed(4));
+
+        return `\\mathbf{(${x_f}, ${y_f}, ${z_f})}`;
+    }
+    
+    /**
+     * Generates an HTML card for a single result.
+     */
+    function createResultCard(title, resultValue, isVector = false) {
+        let formattedValue;
+        if (isVector) {
+            formattedValue = formatVector(resultValue[0], resultValue[1], resultValue[2]);
+        } else {
+            // Scalar result, format to 4 decimal places
+            formattedValue = parseFloat(resultValue.toFixed(4));
+        }
+
+        let html = `
+            <div class="result-card">
+                <p class="output-label">${title}</p>
+                <div class="output-value">
+                    $$\\mathbf{${formattedValue}}$$
+                </div>
+            </div>
+        `;
+        return html;
+    }
+
+    document.getElementById('vector-calculator-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Get inputs for Vector A
+        const Ax = parseFloat(document.getElementById('ax-input').value.trim());
+        const Ay = parseFloat(document.getElementById('ay-input').value.trim());
+        const Az = parseFloat(document.getElementById('az-input').value.trim());
+        
+        // Get inputs for Vector B
+        const Bx = parseFloat(document.getElementById('bx-input').value.trim());
+        const By = parseFloat(document.getElementById('by-input').value.trim());
+        const Bz = parseFloat(document.getElementById('bz-input').value.trim());
+        
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.innerHTML = ''; 
+        outputDiv.className = 'result-section'; // Reset class for grid layout
+
+        // --- Input Validation ---
+        if ([Ax, Ay, Az, Bx, By, Bz].some(isNaN)) {
+            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for all six vector components.</p>`;
+            outputDiv.innerHTML = htmlContent;
+            outputDiv.className = 'result-error'; 
+            return;
+        }
+
+        // --- Core Calculations ---
+        
+        // 1. Dot Product (Scalar)
+        const dotProduct = (Ax * Bx) + (Ay * By) + (Az * Bz);
+
+        // 2. Cross Product (Vector) $\mathbf{A} \times \mathbf{B}$
+        // X component: $A_y B_z - A_z B_y$
+        const crossX = (Ay * Bz) - (Az * By);
+        // Y component: $A_z B_x - A_x B_z$
+        const crossY = (Az * Bx) - (Ax * Bz);
+        // Z component: $A_x B_y - A_y B_x$
+        const crossZ = (Ax * By) - (Ay * Bx);
+        const crossProduct = [crossX, crossY, crossZ];
+
+        // 3. Magnitude of A (Scalar)
+        const magnitudeA = Math.sqrt((Ax * Ax) + (Ay * Ay) + (Az * Az));
+        
+        // 4. Magnitude of B (Scalar)
+        const magnitudeB = Math.sqrt((Bx * Bx) + (By * By) + (Bz * Bz));
+        
+        // --- Result Display ---
+        let htmlContent = '';
+        
+        // 1. Dot Product Card
+        htmlContent += createResultCard('Dot Product ($\\mathbf{A} \\cdot \\mathbf{B}$)', dotProduct);
+        
+        // 2. Cross Product Card
+        htmlContent += createResultCard('Cross Product ($\\mathbf{A} \\times \\mathbf{B}$)', crossProduct, true);
+
+        // 3. Magnitude A Card
+        htmlContent += createResultCard('Magnitude $|\mathbf{A}|$', magnitudeA);
+
+        // 4. Magnitude B Card
+        htmlContent += createResultCard('Magnitude $|\mathbf{B}|$', magnitudeB);
+
+
+        outputDiv.innerHTML = htmlContent;
+    });
+</script>
+{% endblock %}
