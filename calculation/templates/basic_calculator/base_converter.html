@@ -7,11 +7,28 @@
 {% block meta_keywords %}base converter, binary, decimal, hexadecimal, octal, radix, computer science, number conversion{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors using CSS Variables */
+    :root {
+        --teal-light: #f0fdfa; /* Solver Wrapper Background */
+        --green-pale: #d1fae5; /* Input Section Background */
+        --green-accent: #10b981; /* Emerald Accent */
+        --green-dark: #065f46; /* Input Text Color */
+        --green-active: #059669; /* Darker selected green */
+        --green-border: #064e3b; /* Active border */
+
+        /* Result Card Accent Colors */
+        --color-bin: #f59e0b; /* Amber */
+        --color-dec: #10b981; /* Emerald */
+        --color-hex: #3b82f6; /* Blue */
+        --color-oct: #ef4444; /* Red */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f0fdfa; /* Light mint/teal background */
+        background: var(--teal-light);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,24 +37,24 @@
         font-family: 'Inter', sans-serif;
     }
     
+    /* ⌨️ Input Section Styling */
     .input-section {
         padding: 25px;
         border-radius: 10px;
-        background-color: #d1fae5; /* Pale green */
-        border: 2px solid #10b981; /* Emerald accent */
+        background-color: var(--green-pale);
+        border: 2px solid var(--green-accent);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     .input-field {
-        width: 100%;
+        /* Custom input style */
         padding: 12px;
         font-size: 1.2rem;
-        border: 2px solid #34d399; /* Medium green border */
+        border: 2px solid #34d399;
         border-radius: 6px;
         text-align: center;
         font-weight: 700;
-        color: #065f46;
-        margin-top: 5px;
+        color: var(--green-dark);
         font-family: monospace; /* For better number visibility */
     }
 
@@ -49,17 +66,20 @@
         border-radius: 6px;
         transition: all 0.15s;
         border: 2px solid transparent;
+        color: #495057; /* Bootstrap default text color */
+        background-color: #e9ecef; /* Light gray background */
     }
     .base-selector button:not(.active):hover {
-        background-color: #d1fae5;
+        background-color: var(--green-pale);
     }
     .base-selector button.active {
-        background-color: #059669; /* Darker selected green */
+        background-color: var(--green-active);
         color: white;
-        border-color: #064e3b;
+        border-color: var(--green-border);
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
+    /* Result Grid Styling (Bootstrap 5 Grid) */
     .output-grid {
         margin-top: 30px;
         display: grid;
@@ -67,6 +87,7 @@
         gap: 20px;
     }
 
+    /* 📊 Result Card Styling */
     .result-card {
         padding: 15px;
         border-radius: 8px;
@@ -76,10 +97,11 @@
     }
 
     /* Specific colors for result cards */
-    .result-bin { border-left-color: #f59e0b; } /* Amber */
-    .result-dec { border-left-color: #10b981; } /* Emerald */
-    .result-hex { border-left-color: #3b82f6; } /* Blue */
-    .result-oct { border-left-color: #ef4444; } /* Red */
+    .result-bin { border-left-color: var(--color-bin); }
+    .result-dec { border-left-color: var(--color-dec); }
+    .result-hex { border-left-color: var(--color-hex); }
+    .result-oct { border-left-color: var(--color-oct); }
+    .border-dashed { border-style: dashed !important; border-width: 3px !important; }
 
     .output-label {
         font-size: 1rem;
@@ -95,13 +117,14 @@
         margin-top: 5px;
         word-break: break-all;
         font-family: monospace;
+        color: #212529; /* Dark text for contrast */
     }
 
     .result-error {
         grid-column: span 2;
-        border-left: 5px solid #ef4444; 
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Bootstrap danger */
+        background-color: #f8d7da;
+        color: #842029;
         padding: 15px;
         border-radius: 8px;
         text-align: center;
@@ -111,42 +134,43 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Multi-Base Converter</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Multi-Base Converter</h1>
+    <p class="text-secondary mb-5 text-center">
         Convert numbers instantly between Base 2, 8, 10, and 16.
     </p>
 
     <div class="solver-wrapper">
         
         <div class="input-section">
-            <h3 class="text-xl font-bold text-center text-teal-700 mb-4">Input Number & Base</h3>
+            <h3 class="fs-4 fw-bold text-center text-success mb-4" style="color: var(--green-dark);">Input Number & Base</h3>
             
-            <label for="number-input" class="block font-semibold mb-2 text-center text-gray-700">Enter Number:</label>
+            <label for="number-input" class="d-block fw-semibold mb-2 text-center text-dark">Enter Number:</label>
             <input type="text" id="number-input" value="101011" required 
                    placeholder="e.g., A5, 101011, 23, 45"
-                   class="input-field shadow-inner focus:shadow-xl transition-shadow uppercase"
+                   class="form-control input-field shadow-sm text-uppercase"
                    oninput="convertBase()">
             
-            <p class="block font-semibold mt-4 mb-2 text-center text-gray-700">Select Input Base (Radix):</p>
-            <div id="base-selector" class="base-selector flex justify-center space-x-2">
-                <button type="button" data-radix="2" class="bg-gray-200 text-gray-700 active" onclick="selectBase(this)">Binary (2)</button>
-                <button type="button" data-radix="8" class="bg-gray-200 text-gray-700" onclick="selectBase(this)">Octal (8)</button>
-                <button type="button" data-radix="10" class="bg-gray-200 text-gray-700" onclick="selectBase(this)">Decimal (10)</button>
-                <button type="button" data-radix="16" class="bg-gray-200 text-gray-700" onclick="selectBase(this)">Hex (16)</button>
+            <p class="d-block fw-semibold mt-4 mb-2 text-center text-dark">Select Input Base (Radix):</p>
+            <div id="base-selector" class="base-selector d-flex justify-content-center gap-2">
+                <button type="button" data-radix="2" class="btn active" onclick="selectBase(this)">Binary (2)</button>
+                <button type="button" data-radix="8" class="btn" onclick="selectBase(this)">Octal (8)</button>
+                <button type="button" data-radix="10" class="btn" onclick="selectBase(this)">Decimal (10)</button>
+                <button type="button" data-radix="16" class="btn" onclick="selectBase(this)">Hex (16)</button>
             </div>
             
         </div>
 
         <div id="solution-output" class="output-grid">
-            <!-- Results will be displayed here -->
-        </div>
+            </div>
         
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     let currentRadix = 2; // Default to Binary
 
@@ -158,14 +182,10 @@
         // Remove 'active' class from all buttons
         document.querySelectorAll('.base-selector button').forEach(btn => {
             btn.classList.remove('active');
-            btn.classList.add('bg-gray-200', 'text-gray-700');
-            btn.classList.remove('bg-emerald-600', 'text-white');
         });
 
         // Add 'active' class to the clicked button
         button.classList.add('active');
-        button.classList.remove('bg-gray-200', 'text-gray-700');
-        button.classList.add('bg-emerald-600', 'text-white');
         
         currentRadix = parseInt(button.dataset.radix);
         convertBase();
@@ -182,7 +202,7 @@
         return `
             <div class="result-card ${cssClass}">
                 <p class="output-label">${title}</p>
-                <div class="output-value text-xl">${value}</div>
+                <div class="output-value">${value}</div>
             </div>
         `;
     }
@@ -203,17 +223,39 @@
 
         // --- 1. Convert Input String to Decimal (Base 10) ---
         let decimalValue;
+        
+        // --- Input Validation Check (Crucial for base conversion) ---
+        // Create a regex pattern based on the current radix
+        let validPattern;
+        switch (currentRadix) {
+            case 2: validPattern = /^[01]+$/; break;
+            case 8: validPattern = /^[0-7]+$/; break;
+            case 10: validPattern = /^\d+$/; break;
+            case 16: validPattern = /^[0-9A-F]+$/; break;
+            default: validPattern = /./; // Fallback, should not happen
+        }
+
+        // Check if the input string contains only valid characters for the radix
+        if (!validPattern.test(inputStr) && inputStr.length > 0) {
+            const htmlContent = `<p class="fw-bold">Invalid Input for Base ${currentRadix}</p><p>Please ensure your number contains only valid digits/characters for the selected base.</p>`;
+            outputDiv.innerHTML = `<div class="result-error">${htmlContent}</div>`;
+            return;
+        }
+
+        // Attempt the conversion now that the string is validated
         try {
-            // Use BigInt for large numbers (up to JavaScript's safe integer limit, though parsing large strings is complex, BigInt helps keep the intermediate result exact if the input is within string limits).
-            // We'll stick to standard JS number for simplicity and common use cases up to 53 bits.
+            // Check if the number is too large for standard JS numbers (2^53 - 1)
+            // If it's too long for a 53-bit integer, use BigInt. However, toString(radix) for BigInts is still limited.
+            // Sticking to standard parseInt for common use cases.
             decimalValue = parseInt(inputStr, currentRadix);
         } catch (e) {
             decimalValue = NaN;
         }
 
-        // --- Input Validation: Check for invalid characters based on the selected radix ---
+
+        // Final check on decimalValue correctness
         if (isNaN(decimalValue)) {
-            const htmlContent = `<p class="font-bold">Invalid Input for Base ${currentRadix}</p><p>Please ensure your number contains only valid digits/characters for the selected base.</p>`;
+            const htmlContent = `<p class="fw-bold">Input Error</p><p>The number is too large or contains an unhandled error.</p>`;
             outputDiv.innerHTML = `<div class="result-error">${htmlContent}</div>`;
             return;
         }
@@ -231,23 +273,22 @@
         let htmlContent = '';
         
         conversions.forEach(conversion => {
-            if (conversion.radix !== currentRadix) {
-                let convertedValue = decimalValue.toString(conversion.radix);
-                
-                // Hex is traditionally uppercase
-                if (conversion.radix === 16) {
-                    convertedValue = convertedValue.toUpperCase();
-                }
+            let convertedValue = decimalValue.toString(conversion.radix);
+            let cardClass = conversion.class;
 
-                htmlContent += createResultCard(conversion.name, convertedValue, conversion.class);
-            } else {
-                // If the target is the source, just display the cleaned input (e.g., hex is uppercase)
-                let displayValue = inputStr;
-                if (conversion.radix === 16) {
-                    displayValue = inputStr.toUpperCase();
-                }
-                htmlContent += createResultCard(conversion.name, displayValue, conversion.class + ' border-dashed border-2');
+            // Hex is traditionally uppercase
+            if (conversion.radix === 16) {
+                convertedValue = convertedValue.toUpperCase();
             }
+            
+            // Mark the source base with a dashed border for clarity
+            if (conversion.radix === currentRadix) {
+                cardClass += ' border-dashed';
+                // Use the original input string (which may contain a mix of cases before the conversion)
+                convertedValue = inputStr; 
+            }
+
+            htmlContent += createResultCard(conversion.name, convertedValue, cardClass);
         });
 
         outputDiv.innerHTML = htmlContent;
@@ -257,11 +298,7 @@
     window.onload = function() {
         // Set the initial active button style
         selectBase(document.querySelector('.base-selector button[data-radix="2"]'));
-        // Run initial conversion with default value
-        convertBase();
+        // selectBase calls convertBase()
     };
-
-    // Make sure the input changes immediately trigger the conversion
-    document.getElementById('number-input').addEventListener('input', convertBase);
 </script>
 {% endblock %}

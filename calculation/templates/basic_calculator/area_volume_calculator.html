@@ -7,9 +7,22 @@
 {% block meta_keywords %}area, volume, circle, square, cylinder, sphere, cube, rectangle, geometry, math calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block (Orange/Indigo Theme) */
+    /* 🎨 Define Custom Theme Colors using CSS Variables */
+    :root {
+        --orange-dark: #9a3412; /* Darker Orange/Brown */
+        --orange-light: #fef9e6; /* Light Yellow/Orange (Input Background) */
+        --orange-accent: #f97316; /* Orange Accent (Input Border) */
+        --indigo-dark: #4f46e5; /* Deep Indigo (Result Text, Button) */
+        --indigo-lightest: #eef2ff; /* Lightest Indigo (Result Card Background) */
+        --indigo-accent: #a5b4fc; /* Light Indigo (Formula Divider) */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
         background: #fcfcfc;
         padding: 30px;
@@ -20,49 +33,50 @@
         font-family: 'Inter', sans-serif;
     }
     
+    /* ⌨️ Input Section Styling */
     .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #fef9e6; /* Light Yellow/Orange */
-        border: 2px solid #f97316; /* Orange Accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        background-color: var(--orange-light);
+        border: 2px solid var(--orange-accent);
     }
     
     .input-box label {
         font-size: 0.95rem;
         font-weight: 500;
-        color: #7c2d12; /* Darker Orange/Brown */
-        display: block;
+        color: var(--orange-dark); 
         margin-bottom: 3px;
     }
 
     .input-field {
-        width: 100%;
+        /* Custom input style */
         padding: 10px;
         font-size: 1.1rem;
         border: 2px solid #fb923c; /* Medium Orange border */
         border-radius: 6px;
         text-align: center;
         font-weight: 600;
-        color: #9a3412;
+        color: var(--orange-dark);
+        /* Override Bootstrap focus for a cleaner look */
+        transition: box-shadow 0.15s ease-in-out;
     }
     
-    .result-section {
-        margin-top: 30px;
+    .input-field:focus {
+        border-color: var(--orange-accent) !important;
+        box-shadow: 0 0 0 0.25rem rgba(249, 115, 22, 0.25) !important;
     }
 
+    /* 📊 Result Display Styling */
     .result-card {
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        background-color: #eef2ff; /* Lightest Indigo */
-        border-left: 5px solid #4f46e5; /* Indigo accent */
+        background-color: var(--indigo-lightest);
+        border-left: 5px solid var(--indigo-dark); /* Indigo accent */
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
         padding: 20px;
         border-radius: 8px;
     }
@@ -70,16 +84,13 @@
     .output-label {
         font-size: 1.2rem;
         font-weight: 700;
-        text-align: center;
         color: #1f2937;
-        margin-bottom: 10px;
     }
 
     .output-value {
         font-size: 2.5rem;
         font-weight: 800;
-        text-align: center;
-        color: #4f46e5; /* Deep Indigo */
+        color: var(--indigo-dark); /* Deep Indigo */
         word-break: break-all;
     }
 
@@ -88,70 +99,75 @@
         font-size: 0.9rem;
         color: #475569;
         line-height: 1.5;
-        border-top: 1px dashed #a5b4fc;
+        border-top: 1px dashed var(--indigo-accent);
         padding-top: 10px;
-        text-align: center;
     }
 
+    /* Bootstrap Grid for Dynamic Inputs */
     .input-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 15px;
     }
+
+    /* Override Bootstrap select for a cleaner look */
+    .input-field.form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        padding-right: 2.5rem;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Area & Volume Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Area & Volume Calculator</h1>
+    <p class="text-secondary mb-5 text-center">
         Select a 2D or 3D shape and enter its dimensions to calculate the Area or Volume.
     </p>
 
     <div class="solver-wrapper">
         
-        <form id="shape-form" class="space-y-6">
-            <div class="input-section">
-                <div class="input-box mb-6">
-                    <label for="shape-selector" class="text-center w-full block">Select Shape:</label>
+        <form id="shape-form" class="d-grid gap-4">
+            <div class="input-section p-4 rounded-3">
+                <div class="input-box mb-4">
+                    <label for="shape-selector" class="d-block text-center mb-2">Select Shape:</label>
                     <select id="shape-selector" 
-                            class="input-field shadow-inner focus:shadow-xl transition-shadow bg-white text-lg" 
+                            class="form-select input-field shadow-sm text-center" 
                             onchange="updateInputs()">
                         <optgroup label="2D Area Calculations">
-                            <option value="circle">Circle Area ($\pi r^2$)</option>
-                            <option value="square">Square Area ($s^2$)</option>
-                            <option value="rectangle">Rectangle Area ($l \cdot w$)</option>
-                            <option value="triangle">Triangle Area ($\frac{1}{2} b h$)</option>
+                            <option value="circle">Circle Area (pi * r^2)</option>
+                            <option value="square">Square Area (s^2)</option>
+                            <option value="rectangle">Rectangle Area (l \cdot w)</option>
+                            <option value="triangle">Triangle Area (frac{1}{2} * b * h)</option>
                         </optgroup>
                         <optgroup label="3D Volume Calculations">
-                            <option value="sphere">Sphere Volume ($\frac{4}{3} \pi r^3$)</option>
-                            <option value="cube">Cube Volume ($s^3$)</option>
-                            <option value="cylinder">Cylinder Volume ($\pi r^2 h$)</option>
-                            <option value="prism">Rectangular Prism Volume ($l \cdot w \cdot h$)</option>
+                            <option value="sphere">Sphere Volume (frac{4}{3} * pi * r^3)</option>
+                            <option value="cube">Cube Volume (s^3)</option>
+                            <option value="cylinder">Cylinder Volume (pi * r^2 * h)</option>
+                            <option value="prism">Rectangular Prism Volume (l \cdot w \cdot h)</option>
                         </optgroup>
                     </select>
                 </div>
 
                 <div id="dynamic-inputs" class="input-grid">
-                    <!-- Dynamic inputs will be inserted here -->
-                </div>
+                    </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 shadow-lg text-white"
+                    style="background-color: var(--indigo-dark); border-color: var(--indigo-dark);">
                 Calculate
             </button>
         </form>
 
-        <div id="result-container" class="result-section">
+        <div id="result-container" class="mt-4">
             <div id="solution-output" class="result-card">
-                <!-- Initial result for Circle -->
-                <p class="output-label">Area (Circle) is:</p>
-                <div class="output-value">
-                    $$\mathbf{314.16}$$
+                <p class="output-label text-center">Area (Circle) is:</p>
+                <div class="output-value text-center">
+                    mathbf{314.16}
                 </div>
-                <div class="formula-applied">
-                    Applied Formula: $$A = \pi r^2$$
+                <div class="formula-applied text-center">
+                    Applied Formula: A = pi * r^2
                 </div>
             </div>
         </div>
@@ -165,6 +181,7 @@
     const PI = Math.PI;
 
     // Defines all shapes, their required inputs, and their calculation logic
+    // (This object is kept exactly the same as it is the functional core)
     const SHAPES = {
         // --- 2D Shapes (Area) ---
         'square': {
@@ -239,7 +256,6 @@
 
         let html = '';
         shape.inputs.forEach(inputDef => {
-            // Use the example value for the initial state of the input
             const initialValue = shape.example[inputDef.key];
 
             html += `
@@ -247,7 +263,7 @@
                     <label for="input-${inputDef.key}">${inputDef.label}:</label>
                     <input type="number" id="input-${inputDef.key}" value="${initialValue}" step="any" min="0" required
                            placeholder="${inputDef.label}"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field shadow-sm">
                 </div>
             `;
         });
@@ -262,7 +278,7 @@
      */
     function displayResult(isError, outputLabel, outputValue, formula) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        outputDiv.classList.remove('d-none', 'result-error', 'result-card');
         
         if (isError) {
             outputDiv.classList.add('result-error');
@@ -271,15 +287,21 @@
         } else {
             outputDiv.classList.add('result-card');
             outputDiv.classList.remove('result-error');
+            
+            // Note: Retaining LaTeX syntax for formulas and result for proper MathJax rendering
             outputDiv.innerHTML = `
-                <p class="output-label">${outputLabel} is:</p>
-                <div class="output-value">
+                <p class="output-label text-center">${outputLabel} is:</p>
+                <div class="output-value text-center">
                     $$\\mathbf{${outputValue}}$$
                 </div>
-                <div class="formula-applied">
+                <div class="formula-applied text-center">
                     Applied Formula: $$${formula}$$
                 </div>
             `;
+            // Trigger MathJax re-render after content update
+            if (window.MathJax) {
+                window.MathJax.typesetPromise([outputDiv]);
+            }
         }
     }
 
@@ -296,29 +318,28 @@
         const shape = SHAPES[shapeKey];
         
         if (!shape) {
-            displayResult(true, '', 'Shape not found.', '');
+            displayResult(true, '', '<p class="fw-bold text-center">Shape Error</p><p class="text-center">The selected shape is not defined in the calculator logic.</p>', '');
             return;
         }
 
         // 1. Gather inputs
         const values = [];
         let valid = true;
-        let inputNames = [];
 
         shape.inputs.forEach(inputDef => {
             const inputElement = document.getElementById(`input-${inputDef.key}`);
             const val = parseFloat(inputElement.value.trim());
 
+            // Check if input is a non-negative number
             if (isNaN(val) || val < 0) {
                 valid = false;
             }
             values.push(val);
-            inputNames.push(inputDef.label);
         });
 
         // 2. Validate inputs
         if (!valid) {
-            displayResult(true, '', '<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter positive numerical values for all dimensions.</p>', '');
+            displayResult(true, '', '<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter positive numerical values for all dimensions.</p>', '');
             return;
         }
 
@@ -328,7 +349,7 @@
             result = shape.calc(...values);
         } catch (error) {
             console.error("Calculation error:", error);
-            displayResult(true, '', `<p class="font-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`, '');
+            displayResult(true, '', `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`, '');
             return;
         }
 
@@ -353,8 +374,7 @@
 
     // Initial setup and calculation on load
     window.onload = function() {
-        updateInputs(); // Sets up Circle inputs and initial values
-        // Note: updateInputs already triggers calculateShape, so no need for an extra submit call here.
+        updateInputs(); 
     };
 </script>
 {% endblock %}

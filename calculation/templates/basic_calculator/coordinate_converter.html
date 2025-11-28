@@ -2,16 +2,27 @@
 
 {% block title %}Polar/Rectangular Coordinates Converter{% endblock %}
 
-{% block meta_description %}Convert coordinates between Rectangular $(x, y)$ and Polar $(r, \theta)$ forms.{% endblock %}
+{% block meta_description %}Convert coordinates between Rectangular (x, y) and Polar (r, $\theta$) forms.{% endblock %}
 
 {% block meta_keywords %}polar coordinates, rectangular coordinates, cartesian, r theta, x y, coordinate conversion, math calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Pink/Violet Theme) */
+    :root {
+        --pink-lightest: #fdf2f8; /* Solver Wrapper Background */
+        --pink-pale: #fce7f3; /* Light Pink Section Background */
+        --pink-border: #db2777; /* Deep Pink accent */
+        --pink-input-border: #ec4899; /* Medium pink border */
+        --pink-dark: #831843; /* Darker pink text */
+        --violet-hot: #9333ea; /* Violet result accent */
+        --violet-button: #7c3aed; /* Violet 600 */
+        --pink-button: #ec4899; /* Pink 600 */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #fdf2f8; /* Very light pink background */
+        background: var(--pink-lightest); 
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -29,22 +40,16 @@
     .converter-section {
         padding: 25px;
         border-radius: 10px;
-        background-color: #fce7f3; /* Light pink */
-        border: 2px solid #db2777; /* Deep Pink accent */
+        background-color: var(--pink-pale); 
+        border: 2px solid var(--pink-border); 
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    }
-    
-    .input-group-half {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-top: 15px;
+        height: 100%; /* Ensure uniform height */
     }
     
     .input-box label {
         font-size: 0.9rem;
         font-weight: 500;
-        color: #831843; /* Darker pink */
+        color: var(--pink-dark); 
         display: block;
         margin-bottom: 3px;
     }
@@ -53,25 +58,32 @@
         width: 100%;
         padding: 10px;
         font-size: 1.1rem;
-        border: 2px solid #ec4899; /* Medium pink border */
+        border: 2px solid var(--pink-input-border); 
         border-radius: 6px;
         text-align: center;
         font-weight: 600;
         color: #9d174d;
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    .input-field:focus {
+        border-color: var(--violet-hot) !important;
+        box-shadow: 0 0 0 0.25rem rgba(147, 51, 234, 0.25) !important;
     }
     
+    /* 📊 Result Card Styles */
     .result-card {
         margin-top: 20px;
         padding: 15px;
         border-radius: 8px;
-        background-color: #fff1f2; /* Lightest red/pink */
-        border-left: 5px solid #d946ef; /* Violet accent */
+        background-color: #fff1f2; 
+        border-left: 5px solid var(--violet-hot); 
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
         padding: 20px;
         border-radius: 8px;
     }
@@ -87,9 +99,10 @@
         font-size: 1.6rem;
         font-weight: 800;
         text-align: center;
-        color: #9333ea; /* Violet */
+        color: var(--violet-hot); 
         word-break: break-all;
         margin-top: 5px;
+        padding: 5px 0;
     }
     .result-subtext {
         font-size: 0.9rem;
@@ -101,72 +114,81 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Coordinate System Converter</h1>
-    <p class="text-gray-600 mb-6 text-center">
-        Convert points between Rectangular $(\mathbf{x}, \mathbf{y})$ and Polar $(\mathbf{r}, \mathbf{\theta})$ coordinates.
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Coordinate System Converter</h1>
+    <p class="text-secondary mb-4 text-center">
+        Convert points between **Rectangular (x, y)** and **Polar (r, $\theta$)** coordinates.
     </p>
-
+    
+    
     <div class="solver-wrapper">
         
         <div class="converter-grid">
 
-            <!-- --- 1. Rectangular to Polar --- -->
             <div class="converter-section">
-                <h3 class="text-xl font-bold text-center text-purple-700 mb-4">Rectangular $\rightarrow$ Polar $(\mathbf{r}, \mathbf{\theta})$</h3>
-                <form id="rect-to-polar-form" class="space-y-4">
-                    <p class="text-center text-sm text-pink-700 mb-2">Input: $(\mathbf{x}, \mathbf{y})$</p>
-                    <div class="input-group-half">
-                        <div class="input-box">
-                            <label for="x-input">X-Coordinate:</label>
-                            <input type="number" id="x-input" value="3" required step="any"
-                                   placeholder="x"
-                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                <h3 class="fs-4 fw-bold text-center mb-4" style="color: var(--violet-hot);">Rectangular → Polar (r, $\theta$)</h3>
+                <form id="rect-to-polar-form" class="d-grid gap-3">
+                    <p class="text-center text-sm mb-2" style="color: var(--pink-dark);">Input: **(x, y)**</p>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="input-box">
+                                <label for="x-input">X-Coordinate (**x**):</label>
+                                <input type="number" id="x-input" value="3" required step="any"
+                                       placeholder="x"
+                                       class="form-control input-field shadow-sm">
+                            </div>
                         </div>
-                        <div class="input-box">
-                            <label for="y-input">Y-Coordinate:</label>
-                            <input type="number" id="y-input" value="4" required step="any"
-                                   placeholder="y"
-                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        <div class="col-6">
+                            <div class="input-box">
+                                <label for="y-input">Y-Coordinate (**y**):</label>
+                                <input type="number" id="y-input" value="4" required step="any"
+                                       placeholder="y"
+                                       class="form-control input-field shadow-sm">
+                            </div>
                         </div>
                     </div>
                     
                     <button type="submit"
-                            class="w-full bg-pink-600 text-white font-bold py-2 mt-4 rounded-lg shadow-xl hover:bg-pink-700 transition duration-150 transform hover:scale-[1.01]">
+                            class="btn w-100 fw-bold py-2 mt-3 text-white"
+                            style="background-color: var(--pink-button); border-color: var(--pink-button);">
                         Calculate Polar
                     </button>
                 </form>
 
-                <div id="polar-output" class="result-card hidden"></div>
+                <div id="polar-output" class="result-card d-none"></div>
             </div>
 
-            <!-- --- 2. Polar to Rectangular --- -->
             <div class="converter-section">
-                <h3 class="text-xl font-bold text-center text-purple-700 mb-4">Polar $\rightarrow$ Rectangular $(\mathbf{x}, \mathbf{y})$</h3>
-                <form id="polar-to-rect-form" class="space-y-4">
-                    <p class="text-center text-sm text-pink-700 mb-2">Input: $(\mathbf{r}, \mathbf{\theta}$ in Degrees)</p>
-                    <div class="input-group-half">
-                        <div class="input-box">
-                            <label for="r-input">Radius ($\mathbf{r}$):</label>
-                            <input type="number" id="r-input" value="5" required step="any"
-                                   placeholder="r"
-                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                <h3 class="fs-4 fw-bold text-center mb-4" style="color: var(--violet-hot);">Polar → Rectangular (x, y)</h3>
+                <form id="polar-to-rect-form" class="d-grid gap-3">
+                    <p class="text-center text-sm mb-2" style="color: var(--pink-dark);">Input: **(r, $\theta$ in Degrees)**</p>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="input-box">
+                                <label for="r-input">Radius (**r**):</label>
+                                <input type="number" id="r-input" value="5" required step="any"
+                                       placeholder="r"
+                                       class="form-control input-field shadow-sm">
+                            </div>
                         </div>
-                        <div class="input-box">
-                            <label for="theta-deg-input">Angle ($\mathbf{\theta}$ in $\deg$):</label>
-                            <input type="number" id="theta-deg-input" value="53.13" required step="any"
-                                   placeholder="Angle (deg)"
-                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        <div class="col-6">
+                            <div class="input-box">
+                                <label for="theta-deg-input">Angle ($\theta$ in **deg**):</label>
+                                <input type="number" id="theta-deg-input" value="53.13" required step="any"
+                                       placeholder="Angle (deg)"
+                                       class="form-control input-field shadow-sm">
+                            </div>
                         </div>
                     </div>
                     
                     <button type="submit"
-                            class="w-full bg-violet-600 text-white font-bold py-2 mt-4 rounded-lg shadow-xl hover:bg-violet-700 transition duration-150 transform hover:scale-[1.01]">
+                            class="btn w-100 fw-bold py-2 mt-3 text-white"
+                            style="background-color: var(--violet-button); border-color: var(--violet-button);">
                         Calculate Rectangular
                     </button>
                 </form>
 
-                <div id="rect-output" class="result-card hidden"></div>
+                <div id="rect-output" class="result-card d-none"></div>
             </div>
 
         </div>
@@ -176,21 +198,29 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     const PI = Math.PI;
 
     /**
-     * Updates the results display with appropriate styling and content.
+     * Updates the results display with appropriate styling and content, and triggers MathJax.
      */
     function displayResult(containerId, className, contentHtml) {
         const outputDiv = document.getElementById(containerId);
-        outputDiv.classList.remove('hidden', 'result-error');
+        outputDiv.classList.remove('d-none', 'result-error');
+        outputDiv.classList.remove('result-card'); // Ensure only one result style is active
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
+        
+        // Trigger MathJax re-render for the final output
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([outputDiv]);
+        }
     }
 
     /**
-     * Validates inputs for conversion.
+     * Validates inputs for conversion. (Logic Unchanged)
      */
     function validateInputs(values) {
         return values.every(val => !isNaN(val));
@@ -206,22 +236,19 @@
         const x = parseFloat(document.getElementById('x-input').value.trim());
         const y = parseFloat(document.getElementById('y-input').value.trim());
         
-        document.getElementById('polar-output').classList.add('hidden');
+        document.getElementById('polar-output').classList.add('d-none');
 
         if (!validateInputs([x, y])) {
-            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numbers for X and Y coordinates.</p>`;
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numbers for X and Y coordinates.</p>`;
             displayResult('polar-output', 'result-error', htmlContent);
             return;
         }
 
-        // Calculation
-        const r = Math.hypot(x, y); // r = sqrt(x^2 + y^2)
-        let thetaRad = Math.atan2(y, x); // theta in radians, handles quadrants
-        
-        // Convert to degrees
+        // Calculation (Logic Unchanged)
+        const r = Math.hypot(x, y); 
+        let thetaRad = Math.atan2(y, x); 
         let thetaDeg = thetaRad * (180 / PI);
         
-        // Ensure angle is between 0 and 360 degrees (optional, but cleaner)
         if (thetaDeg < 0) {
             thetaDeg += 360;
         }
@@ -231,17 +258,17 @@
         const thetaDeg_f = thetaDeg.toFixed(4);
         const thetaRad_f = thetaRad.toFixed(4);
 
-        // Result Display
+        // Result Display (Cleaned up text, MathJax retained for final line)
         let htmlContent = `
-            <p class="output-label">Polar Coordinates $(\mathbf{r}, \\mathbf{\\theta})$:</p>
+            <p class="output-label">Polar Coordinates (r, $\\theta$):</p>
             <div class="output-value">
                 $$\\mathbf{(${r_f}, ${thetaDeg_f}^{\\circ})}$$
             </div>
             <p class="result-subtext">
-                Radius $\\mathbf{r} = ${r_f}$
+                Radius **r** = ${r_f}
             </p>
             <p class="result-subtext">
-                Angle $\\mathbf{\\theta} \\approx ${thetaDeg_f}^{\\circ}$ (or ${thetaRad_f} \text{ rad})
+                Angle $\\theta \\approx ${thetaDeg_f}^{\\circ}$ (or ${thetaRad_f} \text{ rad})
             </p>
         `;
         
@@ -258,41 +285,44 @@
         const r = parseFloat(document.getElementById('r-input').value.trim());
         const thetaDeg = parseFloat(document.getElementById('theta-deg-input').value.trim());
         
-        document.getElementById('rect-output').classList.add('hidden');
+        document.getElementById('rect-output').classList.add('d-none');
 
         if (!validateInputs([r, thetaDeg])) {
-            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numbers for Radius (r) and Angle (degrees).</p>`;
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numbers for Radius (r) and Angle (degrees).</p>`;
             displayResult('rect-output', 'result-error', htmlContent);
             return;
         }
 
-        // Calculation
-        const thetaRad = thetaDeg * (PI / 180); // Convert degrees to radians
-        
-        // x = r * cos(theta)
+        // Calculation (Logic Unchanged)
+        const thetaRad = thetaDeg * (PI / 180);
         const x = r * Math.cos(thetaRad); 
-        // y = r * sin(theta)
         const y = r * Math.sin(thetaRad); 
         
         // Rounding for display
         const x_f = x.toFixed(4);
         const y_f = y.toFixed(4);
 
-        // Result Display
+        // Result Display (Cleaned up text, MathJax retained for final line)
         let htmlContent = `
-            <p class="output-label">Rectangular Coordinates $(\mathbf{x}, \mathbf{y})$:</p>
+            <p class="output-label">Rectangular Coordinates (x, y):</p>
             <div class="output-value">
                 $$\\mathbf{(${x_f}, ${y_f})}$$
             </div>
             <p class="result-subtext">
-                X-Coordinate $\\mathbf{x} = ${x_f}$
+                X-Coordinate **x** = ${x_f}
             </p>
             <p class="result-subtext">
-                Y-Coordinate $\\mathbf{y} = ${y_f}$
+                Y-Coordinate **y** = ${y_f}
             </p>
         `;
         
         displayResult('rect-output', 'result-card', htmlContent);
     });
+    
+    // Initial calculation for default values
+    window.onload = function() {
+        document.getElementById('rect-to-polar-form').dispatchEvent(new Event('submit'));
+        document.getElementById('polar-to-rect-form').dispatchEvent(new Event('submit'));
+    };
 </script>
 {% endblock %}

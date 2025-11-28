@@ -7,11 +7,24 @@
 {% block meta_keywords %}binomial theorem, polynomial expansion, nCr, combinations, binomial coefficient, algebra calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors using CSS Variables */
+    :root {
+        --rose-lightest: #fdf2f8; 
+        --rose-pale: #fce7f6; 
+        --rose-border: #fbcfe8; 
+        --rose-darker: #be185d; 
+        --pink-hot: #db2777; 
+        --pink-button: #ec4899; 
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #fdf2f8; /* Lightest pink/rose background */
+        background: var(--rose-lightest); 
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -23,14 +36,14 @@
     .input-group {
         padding: 20px;
         border-radius: 8px;
-        background-color: #fce7f6; /* Pale rose */
-        border: 1px solid #fbcfe8;
+        background-color: var(--rose-pale); 
+        border: 1px solid var(--rose-border);
     }
 
     .input-group label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #be185d; /* Darker rose */
+        color: var(--rose-darker); 
         margin-bottom: 5px;
         display: block;
         text-align: center;
@@ -42,14 +55,20 @@
         margin: 0 auto;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #f472b6; /* Pink border */
+        border: 2px solid #f472b6;
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
         color: #9d174d;
         display: block;
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    .input-field:focus {
+        border-color: var(--pink-hot) !important;
+        box-shadow: 0 0 0 0.25rem rgba(219, 39, 119, 0.25) !important;
     }
     
+    /* 📊 Result Display Styles */
     .result-box {
         margin-top: 25px;
         padding: 20px;
@@ -57,77 +76,113 @@
         border-left: 5px solid;
     }
 
-    /* Custom result styles */
     .result-success {
-        border-left-color: #db2777; /* Hot Pink */
+        border-left-color: var(--pink-hot); 
         background-color: #fff7f8;
         color: #9d174d;
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: #dc3545; 
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .output-label {
         font-size: 1.5rem;
         font-weight: 700;
-        text-align: center;
-        margin-top: 5px;
-        margin-bottom: 15px;
         color: #1f2937;
     }
     .output-formula {
         font-size: 1.2rem;
-        text-align: center;
-        margin-bottom: 20px;
         font-weight: 500;
         color: #4b5563;
     }
     .output-value {
         font-size: 1.8rem;
         font-weight: 700;
-        text-align: center;
-        color: #db2777; /* Hot Pink */
-        overflow-x: auto;
+        color: var(--pink-hot); 
+        overflow-x: auto; 
         padding: 10px 0;
         white-space: nowrap;
-        border: 1px dashed #fbcfe8;
+        border: 1px dashed var(--rose-border);
         border-radius: 6px;
+    }
+
+    /* 🧱 Term Breakdown Styling */
+    .term-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px dotted #ccc;
+    }
+    .term-row:last-child {
+        border-bottom: none;
+    }
+    .term-col-left {
+        font-weight: 600;
+        color: #555;
+        min-width: 100px;
+        padding-right: 10px;
+        text-align: right;
+    }
+    .term-col-right {
+        flex-grow: 1;
+        font-family: monospace;
+        font-size: 1.1rem;
+        color: var(--pink-hot);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Binomial Theorem Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">Enter the positive integer exponent $n$ to generate the full expansion of $(x + y)^n$.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Binomial Theorem Calculator</h1>
+    <p class="text-secondary mb-5 text-center">
+        Generate the full expansion of the binomial $(x + y)^n$.
+    </p>
 
     <div class="solver-wrapper">
-        <form id="binomial-form" class="space-y-6">
+        <form id="binomial-form" class="d-grid gap-4">
             
             <div class="input-group shadow-lg text-center">
-                <label for="n-input">Exponent ($n$):</label>
-                <div class="text-2xl font-bold text-gray-800 mb-4">
+                <label for="n-input">
+                    <span class="fs-5">Enter the **Positive Integer Exponent $n$**:</span>
+                </label>
+                <div class="fs-3 fw-bold text-dark mb-4 mt-2">
                     $$(x+y)^{\mathbf{n}}$$
                 </div>
-                <input type="number" id="n-input" value="4" required step="1" min="0" max="10"
+                <input type="number" id="n-input" value="4" required step="1" min="0" max="15"
                        placeholder="Enter n (e.g., 4)"
-                       class="input-field shadow-inner focus:shadow-xl transition-shadow">
-                <p class="text-xs text-gray-500 mt-2">Max safe limit for $n$ is 10 due to display size constraints.</p>
+                       class="form-control input-field shadow-sm">
+                <p class="form-text text-muted mt-2">Max limit is 15. $n$ must be a whole number.</p>
             </div>
 
             <button type="submit"
-                    class="w-full bg-pink-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-pink-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 shadow-xl text-white"
+                    style="background-color: var(--pink-button); border-color: var(--pink-button);">
                 Expand $(x+y)^n$
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Expansion</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
+        <div id="result-container" class="mt-5">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Full Expansion</h2>
+            <div id="solution-output" class="result-box d-none">
+                </div>
+
+            <div id="breakdown-section" class="mt-4 d-none">
+                <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#termBreakdown" aria-expanded="false" aria-controls="termBreakdown">
+                    Show/Hide Step-by-Step Term Breakdown
+                </button>
+                <div class="collapse mt-3" id="termBreakdown">
+                    <div class="card card-body bg-light">
+                        <h4 class="fs-5 fw-bold text-dark text-center mb-3">Term Components ($\text{C}(n, k) x^{n-k} y^k$)</h4>
+                        <div id="breakdown-content">
+                            </div>
+                        <p class="text-center mt-3 mb-0">
+                            <small class="text-muted">Formula Applied: $$(x+y)^{n} = \sum_{k=0}^{n} \text{C}(n, k) x^{n-k} y^k$$</small>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -136,25 +191,21 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
-     * Calculates the combination (nCr) using the optimized formula:
-     * nCr = (n * (n-1) * ... * (n-r+1)) / r!
-     * @param {number} n - Total items.
-     * @param {number} r - Items to choose.
-     * @returns {number} The combination result.
+     * Calculates the combination (nCr) using the optimized formula. (Logic unchanged)
      */
     function calculateCombination(n, r) {
         if (r === 0 || r === n) return 1;
         if (r < 0 || r > n) return 0;
         
-        // Optimization: C(n, r) = C(n, n - r)
         if (r > n / 2) {
             r = n - r;
         }
 
         let result = 1;
-        // Calculation: result = (n / 1) * ((n-1) / 2) * ... * ((n-r+1) / r)
         for (let i = 1; i <= r; i++) {
             result = (result * (n - i + 1)) / i;
         }
@@ -162,10 +213,7 @@
     }
     
     /**
-     * Formats the power expression for a variable.
-     * @param {string} variable - The variable name ('x' or 'y').
-     * @param {number} power - The exponent.
-     * @returns {string} The formatted LaTeX power string.
+     * Formats the power expression for a variable. (Logic unchanged)
      */
     function formatPower(variable, power) {
         if (power === 0) return '';
@@ -173,35 +221,61 @@
         return `${variable}^{\\mathbf{${power}}}`;
     }
 
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml, breakdownHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        const breakdownSection = document.getElementById('breakdown-section');
+        const breakdownContent = document.getElementById('breakdown-content');
+
+        // Reset classes and show main result
+        outputDiv.className = 'result-box';
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('d-none');
+        
+        // Populate and show breakdown section
+        breakdownContent.innerHTML = breakdownHtml;
+        breakdownSection.classList.remove('d-none');
+
+        // Trigger MathJax re-render for both sections
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([outputDiv, breakdownSection]);
+        }
+    }
+
+
     document.getElementById('binomial-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const n = parseInt(document.getElementById('n-input').value.trim());
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
+        outputDiv.classList.add('d-none');
+        document.getElementById('breakdown-section').classList.add('d-none');
         outputDiv.className = 'result-box'; 
-        outputDiv.innerHTML = '';
 
         let htmlContent = '';
+        let breakdownHtml = '';
         let resultClass = '';
 
         // --- Input Validation ---
         if (isNaN(n) || n < 0 || !Number.isInteger(n)) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a non-negative integer for the exponent $n$.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a non-negative integer for the exponent $n$.</p>`;
             resultClass = 'result-error';
-            displayResult(resultClass, htmlContent);
+            displayResult(resultClass, htmlContent, '');
             return;
         }
 
         if (n > 15) {
-            htmlContent = `<p class="font-bold text-center">Exponent Too Large</p><p class="text-center">Generating expansions for $n > 15$ can result in very long, unreadable output. Please choose a smaller integer.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Exponent Too Large</p><p class="text-center">Generating expansions for $n > 15$ can result in very long output. Please choose $n \le 15$ for best readability.</p>`;
             resultClass = 'result-error';
-            displayResult(resultClass, htmlContent);
+            displayResult(resultClass, htmlContent, '');
             return;
         }
 
-        // --- Calculation (Generating the Expansion) ---
+        // --- Calculation (Generating the Expansion and Breakdown) ---
         const terms = [];
 
         for (let k = 0; k <= n; k++) {
@@ -209,59 +283,62 @@
             const xPower = n - k;
             const yPower = k;
             
-            // Format coefficient: only show if not 1 (or -1, but nCr is always positive)
-            const coeffString = (coefficient === 1 && (xPower > 0 || yPower > 0)) ? '' : coefficient.toLocaleString();
+            // Format coefficient: only show if not 1 and not the first term (unless n=0)
+            const isFirstTerm = (k === 0);
+            const coeffDisplay = (coefficient === 1 && (xPower > 0 || yPower > 0)) ? '' : coefficient.toLocaleString();
             
             // Format power terms
             const xTerm = formatPower('x', xPower);
             const yTerm = formatPower('y', yPower);
 
             // Construct the full term: $\text{nCr} \cdot x^{n-k} \cdot y^k$
-            let term = `${coeffString}${xTerm}${yTerm}`;
+            let term = `${coeffDisplay}${xTerm}${yTerm}`;
             
-            // Ensure single term expansions are simple (e.g., n=0, n=1)
+            // Handle n=0 case
             if (n === 0) {
                 term = '1';
                 break; 
             }
+            // Handle n=1 case (where 1x + 1y should be x + y)
             if (n === 1) {
                 term = (k === 0) ? 'x' : 'y';
             }
             
             terms.push(term);
-        }
 
-        // Final result string, joining with '+'
+            // --- Breakdown Content Generation ---
+            breakdownHtml += `
+                <div class="term-row">
+                    <div class="term-col-left">Term ${k + 1} ($k=${k}$):</div>
+                    <div class="term-col-right">
+                        $$\\mathbf{\\text{C}(${n}, ${k})} \\cdot ${xTerm || '1'} \\cdot ${yTerm || '1'} = ${term}$$
+                    </div>
+                </div>
+            `;
+        }
+        
         const expansion = terms.join(' + ');
         
         // --- Result Display ---
         
-        htmlContent += `<p class="output-label">Expansion of $$(x+y)^{\\mathbf{${n}}}$$</p>`;
-        htmlContent += `<p class="output-formula">
-                           $$ (x+y)^{n} = \\sum_{k=0}^{n} \\text{C}(n, k) x^{n-k} y^k $$
-                        </p>`;
+        htmlContent += `<p class="output-label text-center">Final Expansion of $$(x+y)^{\mathbf{${n}}}$$</p>`;
 
-        htmlContent += `<div class="output-value text-xl md:text-2xl">
+        htmlContent += `<div class="output-value text-center">
                            $$\\mathbf{${expansion}}$$
                         </div>`;
         
-        htmlContent += `<p class="text-sm text-center text-gray-600 mt-4">
-                            The expansion contains ${n + 1} terms.
+        htmlContent += `<p class="text-sm text-center text-secondary mt-4 mb-0">
+                            This expansion has ${n + 1} terms.
                         </p>`;
 
         resultClass = 'result-success';
         
-        displayResult(resultClass, htmlContent);
+        displayResult(resultClass, htmlContent, breakdownHtml);
     });
 
-    /**
-     * Updates the results display with appropriate styling and content.
-     */
-    function displayResult(className, contentHtml) {
-        const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add(className);
-        outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
-    }
+    // Initial setup to render the math for the default value on load
+    window.onload = function() {
+        document.getElementById('binomial-form').dispatchEvent(new Event('submit'));
+    };
 </script>
 {% endblock %}

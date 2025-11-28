@@ -7,11 +7,25 @@
 {% block meta_keywords %}combination calculator, nCr, binomial coefficient, selections, choose, probability math{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors using CSS Variables */
+    :root {
+        --mint-lightest: #f0fdf4; /* Solver Wrapper Background */
+        --mint-light: #ecfdf5; /* Input Grid Background */
+        --mint-border: #a7f3d0; /* Light border */
+        --emerald-dark: #047857; /* Dark Emerald Label Color */
+        --emerald-medium: #34d399; /* Medium Emerald Border */
+        --emerald-hot: #059669; /* Hot Emerald (Result/Accent) */
+        --emerald-button: #059669; /* Button Color (Emerald-600) */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f0fdf4; /* Lightest emerald/mint background */
+        background: var(--mint-lightest); 
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -26,14 +40,14 @@
         gap: 20px;
         padding: 20px;
         border-radius: 8px;
-        background-color: #ecfdf5; /* Light mint green */
-        border: 1px solid #a7f3d0;
+        background-color: var(--mint-light); 
+        border: 1px solid var(--mint-border);
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #047857; /* Dark emerald */
+        color: var(--emerald-dark); 
         margin-bottom: 5px;
         display: block;
         text-align: center;
@@ -43,13 +57,19 @@
         width: 100%;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #34d399; /* Medium emerald border */
+        border: 2px solid var(--emerald-medium); 
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
         color: #065f46;
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    .input-field:focus {
+        border-color: var(--emerald-hot) !important;
+        box-shadow: 0 0 0 0.25rem rgba(5, 150, 105, 0.25) !important;
     }
     
+    /* 📊 Result Display Styles */
     .result-box {
         margin-top: 25px;
         padding: 20px;
@@ -57,76 +77,81 @@
         border-left: 5px solid;
     }
 
-    /* Custom result styles */
     .result-success {
-        border-left-color: #059669; /* Emerald Green */
+        border-left-color: var(--emerald-hot); 
         background-color: #f0fdfa;
         color: #064e3b;
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .output-label {
         font-size: 1.5rem;
         font-weight: 700;
-        text-align: center;
+        color: #1f2937;
         margin-top: 5px;
         margin-bottom: 10px;
-        color: #1f2937;
     }
     .output-value {
         font-size: 3rem;
         font-weight: 800;
-        text-align: center;
-        color: #059669;
+        color: var(--emerald-hot);
         margin-top: 10px;
         word-break: break-all;
+        /* Ensure MathJax rendering for large number */
+        line-height: 1.2; 
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Combination Calculator ($\text{nCr}$)</h1>
-    <p class="text-gray-600 mb-6 text-center">Calculates the number of ways to choose $r$ items from $n$ items, where order does not matter. 
-    $$
-        \text{nCr} = \frac{n!}{r! (n-r)!}
-    $$
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Combination Calculator ($\text{nCr}$)</h1>
+    <p class="text-secondary mb-4 text-center">
+        Calculates the number of ways to select $r$ items from $n$ items, where **order does not matter**.
     </p>
 
+    <div class="text-center mb-3 p-3 rounded shadow-sm" style="background-color: var(--mint-light);">
+        <h2 class="fs-4 fw-semibold text-dark">The Combination Formula: </h2>
+        <p class="text-dark my-3">
+            $$\mathbf{\text{C}(n, r) = \binom{n}{r} = \frac{n!}{r! (n-r)!}}$$
+        </p>
+    </div>
+
     <div class="solver-wrapper">
-        <form id="combination-form" class="space-y-6">
+        <form id="combination-form" class="d-grid gap-4">
             
             <div class="input-grid shadow-lg">
                 <div class="input-box">
-                    <label for="n-input">Total Items ($n$):</label>
+                    <label for="n-input">Total Items ($\mathbf{n}$):</label>
                     <input type="number" id="n-input" value="10" required step="1" min="0"
                            placeholder="e.g., 10 (Total members)"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field shadow-sm">
+                    <p class="text-center text-muted small mt-2 mb-0">The size of the overall set.</p>
                 </div>
                 <div class="input-box">
-                    <label for="r-input">Items to Choose ($r$):</label>
+                    <label for="r-input">Items to Choose ($\mathbf{r}$):</label>
                     <input type="number" id="r-input" value="3" required step="1" min="0"
                            placeholder="e.g., 3 (Committee members)"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field shadow-sm">
+                    <p class="text-center text-muted small mt-2 mb-0">The size of the subset to select.</p>
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-emerald-700 transition duration-150 transform hover:scale-[1.01]">
-                Calculate $\text{nCr}$
+                    class="btn w-100 fw-bold py-3 shadow-xl text-white"
+                    style="background-color: var(--emerald-button); border-color: var(--emerald-button);">
+                Calculate $\text{C}(n, r)$
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Result</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-5">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Calculation Result</h2>
+            <div id="solution-output" class="result-box d-none">
+                </div>
         </div>
         
     </div>
@@ -134,17 +159,15 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
-     * Calculates the combination (nCr) using the optimized formula:
-     * nCr = (n * (n-1) * ... * (n-r+1)) / r!
-     * This avoids large factorial calculations and uses the property nCr = nC(n-r).
-     * @param {number} n - Total items.
-     * @param {number} r - Items to choose.
-     * @returns {number} The combination result.
+     * Calculates the combination (nCr) using the optimized formula. (Logic unchanged)
      */
     function calculateCombination(n, r) {
         if (r === 0 || r === n) return 1;
+        if (r < 0 || r > n) return 0;
         
         // Optimization: C(n, r) = C(n, n - r)
         if (r > n / 2) {
@@ -152,14 +175,30 @@
         }
 
         let result = 1;
-        // Calculation: result = (n / 1) * ((n-1) / 2) * ... * ((n-r+1) / r)
         for (let i = 1; i <= r; i++) {
-            // Must perform multiplication first to keep intermediate results as integers as much as possible
-            // The division will always result in an integer due to properties of nCr
+            // Using the iterative calculation: C(n, r) = C(n, r-1) * (n-r+1)/r
             result = (result * (n - i + 1)) / i;
         }
-        // Round to nearest integer to fix potential floating point inaccuracies from division
+        // Round to nearest integer to fix potential floating point inaccuracies
         return Math.round(result);
+    }
+
+    /**
+     * Updates the results display with appropriate styling and content.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        // Reset classes and show/hide
+        outputDiv.classList.remove('d-none', 'result-error', 'result-success');
+        
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('d-none');
+        
+        // Trigger MathJax re-render after content update
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([outputDiv]);
+        }
     }
 
     document.getElementById('combination-form').addEventListener('submit', function(e) {
@@ -169,7 +208,7 @@
         const r = parseInt(document.getElementById('r-input').value.trim());
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
+        outputDiv.classList.add('d-none');
         outputDiv.className = 'result-box'; 
         outputDiv.innerHTML = '';
 
@@ -177,15 +216,22 @@
         let resultClass = '';
 
         // --- Input Validation ---
-        if (isNaN(n) || isNaN(r) || n < 0 || r < 0) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter non-negative integers for both $n$ and $r$.</p>`;
+        if (isNaN(n) || isNaN(r) || n < 0 || r < 0 || !Number.isInteger(n) || !Number.isInteger(r)) {
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter non-negative **whole numbers** for both $n$ and $r$.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
         }
 
         if (r > n) {
-            htmlContent = `<p class="font-bold text-center">Invalid Parameters</p><p class="text-center">The number of items to choose ($r=${r}$) cannot be greater than the total number of items ($n=${n}$).</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Parameters</p><p class="text-center">The number of items to choose ($\mathbf{r=${r}}$) cannot be greater than the total number of items ($\mathbf{n=${n}}$).</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        if (n > 170) {
+            htmlContent = `<p class="fw-bold text-center">Input Too Large</p><p class="text-center">Values of $n$ greater than about 170 can cause JavaScript to exceed its limit for floating point numbers. Please use a smaller value for $n$.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -193,17 +239,27 @@
         
         // --- Calculation ---
         const result = calculateCombination(n, r);
-        
+
+        if (result === Infinity) {
+             htmlContent = `<p class="fw-bold text-center">Result Too Large</p><p class="text-center">The result exceeds the maximum number that can be accurately represented in JavaScript.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
         // --- Result Display ---
         
-        htmlContent += `<p class="output-label">Result of Combination:</p>`;
-        htmlContent += `<p class="text-lg text-center font-mono text-gray-700">
+        htmlContent += `<p class="output-label text-center">The Number of Combinations is:</p>`;
+        
+        // Detailed Formula Display
+        htmlContent += `<p class="text-lg text-center font-monospace text-secondary">
                            $$\\text{C}(${n}, ${r}) = \\frac{${n}!}{\\mathbf{${r}!} (\\mathbf{${n}-${r}})!}$$
                         </p>`;
 
-        htmlContent += `<div class="output-value">$$\\mathbf{${result.toLocaleString()}}$$</div>`;
+        // Final Value Display
+        htmlContent += `<div class="output-value text-center">$$\\mathbf{${result.toLocaleString()}}$$</div>`;
         
-        htmlContent += `<p class="text-sm text-center text-gray-600 mt-4">
+        htmlContent += `<p class="text-sm text-center text-secondary mt-4 mb-0">
                             There are $\\mathbf{${result.toLocaleString()}}$ unique ways to select ${r} items from a set of ${n}.
                         </p>`;
 
@@ -212,14 +268,9 @@
         displayResult(resultClass, htmlContent);
     });
 
-    /**
-     * Updates the results display with appropriate styling and content.
-     */
-    function displayResult(className, contentHtml) {
-        const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add(className);
-        outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
-    }
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('combination-form').dispatchEvent(new Event('submit'));
+    };
 </script>
 {% endblock %}

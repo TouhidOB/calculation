@@ -2,16 +2,28 @@
 
 {% block title %}Boolean Algebra Calculator{% endblock %}
 
-{% block meta_description %}Generate truth tables, canonical Sum-of-Products (Minterms) and Product-of-Sums (Maxterms) for a logical expression with variables and operators.{% endblock %}
+{% block meta_description %}Generate truth tables, canonical Sum-of-Products (Minterms) and Product-of-Sums (Maxterms) for a logical expression with up to 9 variables.{% endblock %}
 
-{% block meta_keywords %}boolean algebra, canonical form, minterm, maxterm, sum of products, product of sums, logic, digital circuits, calculator{% endendblock %}
+{% block meta_keywords %}boolean algebra, canonical form, minterm, maxterm, sum of products, product of sums, logic, digital circuits, calculator, 512 rows{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-    /* Styling for the central calculation block (Blue Theme) */
+    /* 🎨 Define Custom Theme Colors using CSS Variables */
+    :root {
+        --blue-lightest: #f8fbff; /* Solver Wrapper Background */
+        --blue-pale: #dbeafe; /* Light Blue Input Section */
+        --blue-accent: #3b82f6; /* Blue accent */
+        --blue-dark: #1e3a8a; /* Dark Blue Text */
+        --blue-deep: #2563eb; /* Deep Blue Accent / Result Line */
+        --blue-vlight: #eff6ff; /* Table Header/Canonical Background */
+        --blue-minterm-bg: #bfdbfe; /* Minterm Column Background */
+        --blue-table-border: #bfdbfe;
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
+        background: var(--blue-lightest);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,24 +32,23 @@
         font-family: 'Inter', sans-serif;
     }
     
+    /* ⌨️ Input Section Styling */
     .input-section {
         padding: 25px;
         border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
+        background-color: var(--blue-pale); 
+        border: 2px solid var(--blue-accent); 
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     .input-box label {
         font-size: 1rem;
         font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
+        color: var(--blue-dark); 
         margin-bottom: 5px;
     }
 
     .input-field {
-        width: 100%;
         padding: 12px;
         font-size: 1.2rem;
         border: 2px solid #93c5fd; 
@@ -46,8 +57,14 @@
         font-weight: 700;
         color: #1d4ed8;
         font-family: monospace;
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    .input-field:focus {
+        border-color: var(--blue-accent) !important;
+        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
     }
 
+    /* 📊 Result Display Styles */
     .result-section {
         margin-top: 30px;
     }
@@ -56,14 +73,14 @@
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f7f9fd; /* Lighter Blue */
-        border-left: 5px solid #2563eb; /* Deep Blue accent */
+        background-color: #f7f9fd; 
+        border-left: 5px solid var(--blue-deep); 
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
         padding: 20px;
         border-radius: 8px;
     }
@@ -72,27 +89,33 @@
         overflow-x: auto;
         max-height: 400px;
         margin-bottom: 20px;
+        border: 1px solid var(--blue-table-border);
+        border-radius: 5px;
     }
 
     .truth-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 0.9rem;
+        /* Ensure table is not too wide for small devices */
+        min-width: 500px; 
     }
 
     .truth-table th, .truth-table td {
         padding: 8px;
-        border: 1px solid #bfdbfe;
+        border: 1px solid var(--blue-table-border);
         text-align: center;
+        vertical-align: middle;
     }
 
-    .truth-table th {
-        background-color: #eff6ff; /* Header background */
-        color: #1e3a8a;
+    .truth-table thead th {
+        background-color: var(--blue-vlight); 
+        color: var(--blue-dark);
         font-weight: 700;
         position: sticky;
         top: 0;
         z-index: 10;
+        border-bottom: 2px solid var(--blue-accent);
     }
     
     .truth-table tbody tr:nth-child(even) {
@@ -102,62 +125,87 @@
     /* Column specific styles */
     .col-var {
         font-weight: 600;
-        color: #3b82f6;
+        color: var(--blue-accent);
     }
 
     .col-minterm {
         font-weight: 800;
-        background-color: #bfdbfe !important;
-        color: #1e3a8a;
+        background-color: var(--blue-minterm-bg) !important;
+        color: var(--blue-dark);
     }
 
     .canonical-form {
         font-size: 1.5rem;
         font-weight: 900;
-        color: #2563eb;
+        color: var(--blue-deep);
         margin-bottom: 15px;
         text-align: center;
         padding: 5px;
         border-radius: 5px;
-        background-color: #eff6ff;
+        background-color: var(--blue-vlight);
+        overflow-x: auto;
     }
-    
+
+    /* Operator List Readability */
+    .operator-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 5px;
+        text-align: left;
+    }
+    .operator-list li {
+        margin-bottom: 3px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Boolean Algebra Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">
-        Enter a logical expression to generate its Truth Table, Canonical Sum-of-Products (Minterms), and Product-of-Sums (Maxterms).
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Boolean Algebra Calculator (High Capacity)</h1>
+    <p class="text-secondary mb-5 text-center">
+        Enter a logical expression (using variables A-I) to derive its Truth Table (up to 512 rows), Sum-of-Products ($\Sigma$), and Product-of-Sums ($\Pi$).
     </p>
 
     <div class="solver-wrapper">
         
         <div class="input-section">
-            <form id="boolean-form" class="space-y-4">
+            <form id="boolean-form" class="d-grid gap-4">
                 <div class="input-box">
-                    <label for="expression-input">Logical Expression:</label>
+                    <label for="expression-input" class="d-block">Logical Expression (Max 9 Variables, A-I):</label>
                     <input type="text" id="expression-input" 
                            value="(A AND B) OR NOT C" 
                            required
                            placeholder="e.g., (A AND B) OR NOT C"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field shadow-sm">
                 </div>
 
-                <div class="text-sm text-gray-700 text-center">
-                    <span class="font-bold">Supported Operators:</span> NOT (!), AND (*), OR (+), ( ).
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="fw-bold mb-1 text-center" style="color: var(--blue-dark);">Supported Operators:</p>
+                        <ul class="operator-list mx-auto" style="max-width: 250px;">
+                            <li><code class="fw-bold">NOT</code> or <code class="fw-bold">!</code> (Negation)</li>
+                            <li><code class="fw-bold">AND</code> or <code class="fw-bold">*</code> (Conjunction)</li>
+                            <li><code class="fw-bold">OR</code> or <code class="fw-bold">+</code> (Disjunction)</li>
+                            <li><code class="fw-bold">( )</code> (Grouping/Precedence)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center justify-content-center">
+                         <p class="text-danger text-center mb-0 fw-bold">
+                            Warning: Results with >6 variables may cause rendering delays due to the large table size.
+                        </p>
+                    </div>
                 </div>
                 
                 <button type="submit"
-                        class="w-full bg-blue-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01]">
+                        class="btn w-100 fw-bold py-3 mt-3 shadow-xl text-white"
+                        style="background-color: var(--blue-accent); border-color: var(--blue-accent);">
                     Analyze Boolean Function
                 </button>
             </form>
         </div>
 
         <div id="result-container" class="result-section">
-            <div id="solution-output" class="result-card hidden"></div>
+            <div id="solution-output" class="result-card d-none"></div>
         </div>
         
     </div>
@@ -165,13 +213,19 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
+    // --- Configuration for High Capacity ---
+    const MAX_VARIABLES = 9; // A, B, C, D, E, F, G, H, I -> 2^9 = 512 rows
+    // ---------------------------------------
+
     /**
      * Updates the UI with the calculation result or error.
      */
     function displayResult(isError, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        outputDiv.classList.remove('d-none', 'result-error', 'result-card');
         
         if (isError) {
             outputDiv.classList.add('result-error');
@@ -179,68 +233,58 @@
         } else {
             outputDiv.classList.add('result-card');
             outputDiv.classList.remove('result-error');
+            if (window.MathJax) {
+                window.MathJax.typesetPromise([outputDiv]);
+            }
         }
         outputDiv.innerHTML = contentHtml;
     }
 
     /**
-     * Safely evaluates a logical expression string.
-     * @param {string} expression - Cleaned logical expression string.
-     * @param {string[]} variables - Array of variable names (e.g., ['A', 'B']).
-     * @param {boolean[]} values - Array of boolean values corresponding to variables.
-     * @returns {boolean | string} - Result of evaluation or 'ERROR'.
+     * Safely evaluates a logical expression string. (Logic unchanged)
      */
     function safeEvaluateLogic(expression, variables, values) {
-        // 1. Map logical operators to JS operators
         let jsExpression = expression.toUpperCase();
         
-        // Use standard symbols for clarity in logic:
         jsExpression = jsExpression.replace(/AND|\*/g, '&&');
         jsExpression = jsExpression.replace(/OR|\+/g, '||');
         jsExpression = jsExpression.replace(/NOT|!/g, '!');
         
-        // 2. Create the function scope for evaluation
         const argNames = variables.join(',');
 
         try {
-            // Use Function constructor for isolated, safe evaluation
             const evaluator = new Function(argNames, `
                 return (${jsExpression});
             `);
             
-            // Pass the boolean values corresponding to the variables
             return evaluator(...values);
         } catch (error) {
-            console.error("Evaluation Error:", error.message);
             return 'ERROR';
         }
     }
     
     /**
-     * Extracts unique uppercase variables (A-Z) from the expression, sorted alphabetically.
-     * @param {string} expression - User input string.
-     * @returns {string[]} - Sorted array of unique variables.
+     * Extracts unique uppercase variables (A-Z) from the expression, sorted alphabetically. 
+     * Now strictly limited to the first MAX_VARIABLES letters (A-I).
      */
     function extractVariables(expression) {
-        const matches = expression.match(/[A-Z]/g) || [];
-        const uniqueVars = new Set(matches);
-        return Array.from(uniqueVars).sort();
+        const allMatches = expression.match(/[A-Z]/g) || [];
+        const uniqueVars = Array.from(new Set(allMatches)).sort();
+        
+        // Use only the first MAX_VARIABLES variables (A, B, C, ...)
+        return uniqueVars.slice(0, MAX_VARIABLES);
     }
 
     /**
-     * Generates all 2^n combinations of boolean values.
-     * @param {number} n - Number of variables.
-     * @returns {boolean[][]} - Array of arrays, where inner arrays are combinations.
+     * Generates all 2^n combinations of boolean values. (Logic unchanged)
      */
     function generateCombinations(n) {
         const combinations = [];
-        const numRows = 1 << n; // 2^n
+        const numRows = 1 << n; 
         
         for (let i = 0; i < numRows; i++) {
             const row = [];
             for (let j = 0; j < n; j++) {
-                // Determine the value for the j-th variable (from left to right)
-                // Use bitwise shift to check the j-th bit from the left
                 const isTrue = ((i >> (n - 1 - j)) & 1) === 1;
                 row.push(isTrue);
             }
@@ -263,26 +307,28 @@
         const numVariables = variables.length;
 
         if (numVariables === 0) {
-            const htmlContent = `<p class="font-bold text-center">Invalid Expression</p><p class="text-center">Please use at least one uppercase variable (A-Z) and supported operators.</p>`;
+            const htmlContent = `<p class="fw-bold text-center">Invalid Expression</p><p class="text-center">Please use at least one uppercase variable (A-${String.fromCharCode(64 + MAX_VARIABLES)}) and supported operators.</p>`;
             displayResult(true, htmlContent);
             return;
         }
 
-        if (numVariables > 6) {
-            const htmlContent = `<p class="font-bold text-center">Too Many Variables</p><p class="text-center">The expression has ${numVariables} variables, resulting in ${1 << numVariables} rows. Please simplify your expression (max 6 variables supported) for clarity.</p>`;
+        if (numVariables > MAX_VARIABLES) {
+            // This case should be mostly prevented by extractVariables, but kept for explicit error
+            const htmlContent = `<p class="fw-bold text-center">Too Many Variables</p><p class="text-center">The expression has too many variables. This calculator supports a maximum of ${MAX_VARIABLES} variables (A-${String.fromCharCode(64 + MAX_VARIABLES)}).</p>`;
             displayResult(true, htmlContent);
             return;
         }
 
         const combinations = generateCombinations(numVariables);
+        const numRows = combinations.length;
         let tableRowsHtml = '';
         let hasError = false;
         
-        const minterms = []; // For F=1
-        const maxterms = []; // For F=0
+        const minterms = []; 
+        const maxterms = []; 
         
         // Build Table Header
-        let tableHeaderHtml = '<tr><th class="col-minterm">Min/Max Index</th>';
+        let tableHeaderHtml = '<tr><th class="col-minterm">Index ($m_i / M_i$)</th>';
         variables.forEach(v => {
             tableHeaderHtml += `<th class="col-var">${v}</th>`;
         });
@@ -290,6 +336,9 @@
 
 
         // Build Table Body and Calculate Canonical Forms
+        // NOTE: For 512 rows, using an array and .join('') is much faster than direct string concatenation inside the loop.
+        const rowsArray = [];
+
         combinations.forEach((values, index) => {
             const result = safeEvaluateLogic(userExpression, variables, values);
             
@@ -298,7 +347,7 @@
 
             if (result === 'ERROR') {
                 resultDisplay = 'ERROR';
-                rowClass = 'bg-red-200';
+                rowClass = 'table-danger'; 
                 hasError = true;
             } else {
                 if (result) {
@@ -313,7 +362,7 @@
             let rowHtml = `<tr class="${rowClass}">`;
             
             // Add Index
-            rowHtml += `<td class="font-bold">${index}</td>`;
+            rowHtml += `<td class="fw-bold">${index}</td>`;
 
             // Add variable values (0/1)
             values.forEach(v => {
@@ -324,35 +373,46 @@
             rowHtml += `<td class="col-minterm">${resultDisplay}</td>`;
             rowHtml += '</tr>';
             
-            tableRowsHtml += rowHtml;
+            rowsArray.push(rowHtml);
         });
+        
+        tableRowsHtml = rowsArray.join('');
+
 
         if (hasError) {
-             const htmlContent = `<p class="font-bold text-center">Evaluation Error</p><p class="text-center">The expression appears to have a syntax error or unsupported structure. Please check parentheses and operators (NOT, AND, OR).</p>`;
+             const htmlContent = `<p class="fw-bold text-center">Evaluation Error</p><p class="text-center">The expression appears to have a syntax error or unsupported structure. Please check parentheses and operators (NOT, AND, OR).</p>`;
             displayResult(true, htmlContent);
             return;
         }
         
-        const canonicalSOP = `$$\\mathbf{F = \\Sigma (${minterms.join(', ')})}$$`;
-        const canonicalPOS = `$$\\mathbf{F = \\Pi (${maxterms.join(', ')})}$$`;
+        // Display Canonical Forms using MathJax
+        const canonicalSOP = `$$\\mathbf{F(V_1, ..., V_n) = \\Sigma (${minterms.join(', ')})}$$`;
+        const canonicalPOS = `$$\\mathbf{F(V_1, ..., V_n) = \\Pi (${maxterms.join(', ')})}$$`;
 
-        // Display the final table
+        // Display the final output
         const outputHtml = `
-            <h3 class="text-xl font-bold text-center text-gray-700 mb-4">Canonical Forms</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <p class="text-center font-semibold text-gray-600 mb-1">Sum-of-Products (Minterms $m_i$ where $F=1$):</p>
-                    <div class="canonical-form bg-blue-100">${canonicalSOP}</div>
+            <h3 class="fs-4 fw-bold text-center text-secondary mb-4">Canonical Forms</h3>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <p class="text-center fw-semibold text-dark mb-1">Sum-of-Products (SOP / Minterms where $F=1$):</p>
+                    <div class="canonical-form">${canonicalSOP}</div>
+                    <p class="text-center text-muted small mt-2">
+                        Includes minterms $m_i$ for which the function output is 1.
+                    </p>
                 </div>
-                <div>
-                    <p class="text-center font-semibold text-gray-600 mb-1">Product-of-Sums (Maxterms $M_i$ where $F=0$):</p>
-                    <div class="canonical-form bg-blue-100">${canonicalPOS}</div>
+                <div class="col-md-6">
+                    <p class="text-center fw-semibold text-dark mb-1">Product-of-Sums (POS / Maxterms where $F=0$):</p>
+                    <div class="canonical-form">${canonicalPOS}</div>
+                    <p class="text-center text-muted small mt-2">
+                        Includes maxterms $M_i$ for which the function output is 0.
+                    </p>
                 </div>
             </div>
             
-            <h3 class="text-xl font-bold text-center text-gray-700 mb-4 mt-8">Truth Table ($2^{${numVariables}}$ rows)</h3>
+            <h3 class="fs-4 fw-bold text-center text-secondary mb-4 mt-5">Truth Table ($2^{${numVariables}} = ${numRows}$ rows)</h3>
+            ${numVariables > 6 ? '<p class="text-danger text-center fw-bold">Displaying a large table. Be patient with browser rendering.</p>' : ''}
             <div class="table-container">
-                <table class="truth-table">
+                <table class="truth-table table-hover">
                     <thead>
                         ${tableHeaderHtml}
                     </thead>

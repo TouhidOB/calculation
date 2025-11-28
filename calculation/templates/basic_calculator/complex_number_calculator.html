@@ -1,17 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Complex Number Calculator ($a + bi$){% endblock %}
+{% block title %}Complex Number Calculator (a + bi){% endblock %}
 
-{% block meta_description %}Perform addition, subtraction, multiplication, and division on two complex numbers ($Z_1$ and $Z_2$) in the standard $a+bi$ form.{% endblock %}
+{% block meta_description %}Perform addition, subtraction, multiplication, and division on two complex numbers (Z1 and Z2) in the standard a+bi form.{% endblock %}
 
-{% block meta_keywords %}complex number, a+bi, imaginary number, arithmetic, calculator, impedance, phasor{% endblock %}
+{% block meta_keywords %}complex number, a+bi, imaginary number, arithmetic, calculator, impedance, phasor, complex arithmetic, mathjax{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors using CSS Variables (Blue/Sky Theme) */
+    :root {
+        --sky-lightest: #f0f9ff; /* Solver Wrapper Background */
+        --sky-pale: #e0f2fe; /* Light Sky Blue Input Background */
+        --sky-border: #93c5fd; /* Light Blue Border */
+        --sky-medium: #38bdf8; /* Medium Blue Input Accent */
+        --sky-dark: #075985; /* Dark Blue Text */
+        --sky-hot: #0ea5e9; /* Hot Sky Blue Result Accent */
+        --sky-label: #0c4a6e;
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f0f9ff; /* Lightest blue background */
+        background: var(--sky-lightest);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,27 +34,17 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .input-complex-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
+    .input-complex-container {
         padding: 20px;
         border-radius: 8px;
-        background-color: #e0f2fe; /* Light sky blue */
-        border: 1px solid #93c5fd;
-    }
-
-    .complex-input-group {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 10px;
+        background-color: var(--sky-pale); 
+        border: 1px solid var(--sky-border);
     }
     
-    .complex-input-box label {
+    .complex-input-group label {
         font-size: 0.9rem;
         font-weight: 500;
-        color: #0c4a6e;
+        color: var(--sky-label);
         display: block;
         margin-bottom: 3px;
     }
@@ -49,35 +53,36 @@
         width: 100%;
         padding: 10px;
         font-size: 1.1rem;
-        border: 2px solid #38bdf8; /* Medium blue border */
+        border: 2px solid var(--sky-medium); 
         border-radius: 6px;
         text-align: center;
         font-weight: 600;
-        color: #075985;
+        color: var(--sky-dark);
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    .input-field:focus {
+        border-color: var(--sky-hot) !important;
+        box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25) !important;
     }
     
-    .result-section {
-        margin-top: 25px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-    }
-
+    /* 📊 Result Card Styles */
     .result-card {
         padding: 15px;
         border-radius: 12px;
         border: 1px solid #bae6fd;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         background-color: #f0f9ff;
+        height: 100%; 
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; 
+        background-color: #f8d7da;
+        color: #842029;
         padding: 20px;
         border-radius: 8px;
-        grid-column: span 2; /* Span across both columns on smaller screens */
+        grid-column: 1 / -1;
+        width: 100%;
     }
     
     .output-label {
@@ -85,20 +90,22 @@
         font-weight: 700;
         text-align: center;
         margin-bottom: 10px;
-        color: #0c4a6e;
+        color: var(--sky-label);
     }
 
     .output-value {
+        /* This is the div that will contain the MathJax output */
         font-size: 1.8rem;
         font-weight: 800;
         text-align: center;
-        color: #0ea5e9;
+        color: var(--sky-hot);
         word-break: break-all;
+        padding: 10px 0;
     }
     .complex-notation {
-        font-family: monospace;
+        font-family: 'Courier New', Courier, monospace; /* Use monospace for clarity */
         font-size: 1.1rem;
-        font-weight: 500;
+        font-weight: 600;
         text-align: center;
         color: #64748b;
         margin-bottom: 10px;
@@ -107,66 +114,74 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Complex Number Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">Perform basic arithmetic on two complex numbers $Z_1$ and $Z_2$, where $Z = a + bi$.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Complex Number Calculator</h1>
+    <p class="text-secondary mb-4 text-center">Perform basic arithmetic on two complex numbers **Z₁** and **Z₂** in the standard **a + bi** form.</p>
+
+    <div class="text-center mb-5 p-3 rounded shadow-sm" style="background-color: var(--sky-pale);">
+        <h2 class="fs-5 fw-semibold text-dark">Input Format:</h2>
+        <p class="fs-4 fw-bold text-dark my-3">
+            Z = a + bi
+        </p>
+        <p class="text-muted small mb-0">Where 'a' is the **Real** part and 'b' is the **Imaginary** coefficient.</p>
+    </div>
 
     <div class="solver-wrapper">
-        <form id="complex-calculator-form" class="space-y-6">
+        <form id="complex-calculator-form" class="d-grid gap-4">
             
-            <div class="input-complex-grid shadow-lg">
-                <div>
-                    <h3 class="text-xl font-bold text-center text-sky-700 mb-2">Complex Number 1 ($Z_1$)</h3>
-                    <p class="complex-notation text-center">$Z_1 = a_1 + b_1i$</p>
-                    <div class="complex-input-group">
-                        <div class="complex-input-box">
-                            <label for="a1-input">Real Part ($a_1$):</label>
-                            <input type="number" id="a1-input" value="3" required step="any"
-                                   placeholder="Real (a1)"
-                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
-                        </div>
-                        <div class="complex-input-box">
-                            <label for="b1-input">Imaginary Part ($b_1$):</label>
-                            <input type="number" id="b1-input" value="4" required step="any"
-                                   placeholder="Imaginary (b1)"
-                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+            <div class="input-complex-container shadow-lg">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h3 class="fs-4 fw-bold text-center mb-2" style="color: var(--sky-dark);">Complex Number 1 (**Z₁**)</h3>
+                        <p class="complex-notation text-center">Z₁ = a₁ + b₁i</p>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label for="a1-input">Real Part (**a₁**):</label>
+                                <input type="number" id="a1-input" value="3" required step="any"
+                                       placeholder="Real (a1)"
+                                       class="form-control input-field shadow-sm">
+                            </div>
+                            <div class="col-6">
+                                <label for="b1-input">Imaginary Part (**b₁**):</label>
+                                <input type="number" id="b1-input" value="4" required step="any"
+                                       placeholder="Imaginary (b1)"
+                                       class="form-control input-field shadow-sm">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div>
-                    <h3 class="text-xl font-bold text-center text-sky-700 mb-2">Complex Number 2 ($Z_2$)</h3>
-                    <p class="complex-notation text-center">$Z_2 = a_2 + b_2i$</p>
-                    <div class="complex-input-group">
-                        <div class="complex-input-box">
-                            <label for="a2-input">Real Part ($a_2$):</label>
-                            <input type="number" id="a2-input" value="1" required step="any"
-                                   placeholder="Real (a2)"
-                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
-                        </div>
-                        <div class="complex-input-box">
-                            <label for="b2-input">Imaginary Part ($b_2$):</label>
-                            <input type="number" id="b2-input" value="-2" required step="any"
-                                   placeholder="Imaginary (b2)"
-                                   class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    <div class="col-md-6">
+                        <h3 class="fs-4 fw-bold text-center mb-2" style="color: var(--sky-dark);">Complex Number 2 (**Z₂**)</h3>
+                        <p class="complex-notation text-center">Z₂ = a₂ + b₂i</p>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label for="a2-input">Real Part (**a₂**):</label>
+                                <input type="number" id="a2-input" value="1" required step="any"
+                                       placeholder="Real (a2)"
+                                       class="form-control input-field shadow-sm">
+                            </div>
+                            <div class="col-6">
+                                <label for="b2-input">Imaginary Part (**b₂**):</label>
+                                <input type="number" id="b2-input" value="-2" required step="any"
+                                       placeholder="Imaginary (b2)"
+                                       class="form-control input-field shadow-sm">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <p class="text-sm text-gray-500 text-center">Input examples: $Z_1 = 3 + 4i$, $Z_2 = 1 - 2i$.</p>
-
+            
             <button type="submit"
-                    class="w-full bg-sky-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-sky-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 mt-3 shadow-xl text-white"
+                    style="background-color: #0ea5e9; border-color: #0ea5e9;">
                 Calculate All Operations
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Calculated Results</h2>
-            <div id="solution-output" class="result-section">
-                <!-- Results will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-5">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Calculated Results</h2>
+            <div id="solution-output" class="row g-4">
+                </div>
         </div>
         
     </div>
@@ -174,12 +189,15 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
-     * Formats a complex number (a + bi) into a string.
+     * Formats a complex number (a + bi) into a LaTeX string for MathJax.
+     * This internal function is kept because the output needs high-quality math rendering.
      * @param {number} a - Real part.
      * @param {number} b - Imaginary part.
-     * @returns {string} The formatted LaTeX string.
+     * @returns {string} The formatted LaTeX string enclosed in $$ for display.
      */
     function formatComplex(a, b) {
         // Round to 4 decimal places for clean output
@@ -187,35 +205,74 @@
         const b_f = parseFloat(b.toFixed(4));
 
         if (b_f === 0) {
-            return `\\mathbf{${a_f}}`; // Purely real
+            return `$$\\mathbf{${a_f}}$$`; 
         } else if (a_f === 0) {
-            if (b_f === 1) return `\\mathbf{i}`;
-            if (b_f === -1) return `\\mathbf{-i}`;
-            return `\\mathbf{${b_f}i}`; // Purely imaginary
+            if (b_f === 1) return `$$\\mathbf{i}$$`;
+            if (b_f === -1) return `$$\\mathbf{-i}$$`;
+            return `$$\\mathbf{${b_f}i}$$`; 
         } else {
             const sign = b_f >= 0 ? '+' : '-';
             const b_abs = Math.abs(b_f);
-            const b_term = b_abs === 1 ? 'i' : `${b_abs}i`;
-            return `\\mathbf{${a_f} ${sign} ${b_term}}`; // General case
+            let b_term;
+            if (b_abs === 1) {
+                b_term = 'i';
+            } else if (b_abs === 0) {
+                b_term = ''; 
+            } else {
+                b_term = `${b_abs}i`;
+            }
+            
+            if (b_term === '') {
+                return `$$\\mathbf{${a_f}}$$`;
+            }
+            
+            return `$$\\mathbf{${a_f} ${sign} ${b_term}}$$`;
         }
     }
     
     /**
-     * Generates an HTML card for a single result.
+     * Generates an HTML card for a single result, using Bootstrap column structure.
+     * Uses Unicode Z₁, Z₂ for operation labels.
      */
     function createResultCard(title, resultComplex, operationSymbol) {
         const [a, b] = resultComplex;
+        // The result is formatted as LaTeX, including the $$ delimiters
         const formattedResult = formatComplex(a, b);
+        
+        // Use standard text for the operation label for better readability
+        const operationLabel = `Z₁ ${operationSymbol} Z₂`;
 
         let html = `
-            <div class="result-card">
-                <p class="output-label">${title} ($Z_1 ${operationSymbol} Z_2$)</p>
-                <div class="output-value">
-                    $$${formattedResult}$$
+            <div class="col-sm-6 col-md-3">
+                <div class="result-card">
+                    <p class="output-label text-center">${title} (${operationLabel})</p>
+                    <div class="output-value text-center">
+                        ${formattedResult}
+                    </div>
                 </div>
             </div>
         `;
         return html;
+    }
+
+    /**
+     * Handles result display, including errors and triggering MathJax.
+     */
+    function displayResults(htmlContent, isError) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.innerHTML = htmlContent;
+
+        if (isError) {
+             outputDiv.className = 'result-error';
+        } else {
+            outputDiv.className = 'row g-4';
+            
+            // Trigger MathJax re-render for all new content
+            if (window.MathJax) {
+                // We use typesetPromise to ensure the new content is processed
+                window.MathJax.typesetPromise([outputDiv]);
+            }
+        }
     }
 
     document.getElementById('complex-calculator-form').addEventListener('submit', function(e) {
@@ -227,44 +284,30 @@
         const b2 = parseFloat(document.getElementById('b2-input').value.trim());
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.innerHTML = ''; // Clear previous results
-
-        let htmlContent = '';
-        let resultClass = '';
+        outputDiv.innerHTML = ''; 
 
         // --- Input Validation ---
         if (isNaN(a1) || isNaN(b1) || isNaN(a2) || isNaN(b2)) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for all four parts ($a_1, b_1, a_2, b_2$).</p>`;
-            resultClass = 'result-error';
-            outputDiv.innerHTML = htmlContent;
-            outputDiv.className = 'result-error'; 
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values (integers or decimals) for all four parts (a₁, b₁, a₂, b₂).</p>`;
+            displayResults(htmlContent, true);
             return;
         }
 
-        outputDiv.className = 'result-section'; // Set back to the grid layout
-
-        // --- Core Calculations ---
+        // --- Core Calculations (Logic Unchanged) ---
         
-        // 1. Addition (Z1 + Z2) = (a1 + a2) + (b1 + b2)i
         const addA = a1 + a2;
         const addB = b1 + b2;
-
-        // 2. Subtraction (Z1 - Z2) = (a1 - a2) + (b1 - b2)i
         const subA = a1 - a2;
         const subB = b1 - b2;
-
-        // 3. Multiplication (Z1 * Z2) = (a1*a2 - b1*b2) + (a1*b2 + b1*a2)i
         const multA = (a1 * a2) - (b1 * b2);
         const multB = (a1 * b2) + (b1 * a2);
 
-        // 4. Division (Z1 / Z2) = [(a1*a2 + b1*b2) / (a2^2 + b2^2)] + [(b1*a2 - a1*b2) / (a2^2 + b2^2)]i
         const denominator = (a2 * a2) + (b2 * b2);
 
         if (denominator === 0) {
-            htmlContent = `<p class="font-bold text-center">Division by Zero</p><p class="text-center">Cannot divide, as Complex Number 2 ($Z_2$) is zero ($0 + 0i$).</p>`;
-            resultClass = 'result-error';
-            outputDiv.innerHTML = htmlContent;
-            outputDiv.className = 'result-error'; 
+            // Used Unicode for Z₂
+            const htmlContent = `<p class="fw-bold text-center">Division by Zero Error</p><p class="text-center">Cannot divide, as Complex Number 2 (**Z₂**) is zero (0 + 0i).</p>`;
+            displayResults(htmlContent, true);
             return;
         }
 
@@ -272,20 +315,20 @@
         const divB = ((b1 * a2) - (a1 * b2)) / denominator;
         
         // --- Result Display ---
+        let htmlContent = '';
         
-        // 1. Addition
+        // Symbol used in createResultCard:
         htmlContent += createResultCard('Addition', [addA, addB], '+');
-        
-        // 2. Subtraction
         htmlContent += createResultCard('Subtraction', [subA, subB], '-');
+        htmlContent += createResultCard('Multiplication', [multA, multB], '×'); // Used Unicode multiplication symbol
+        htmlContent += createResultCard('Division', [divA, divB], '÷'); // Used Unicode division symbol
 
-        // 3. Multiplication
-        htmlContent += createResultCard('Multiplication', [multA, multB], '\\cdot');
-
-        // 4. Division
-        htmlContent += createResultCard('Division', [divA, divB], '/');
-
-        outputDiv.innerHTML = htmlContent;
+        displayResults(htmlContent, false);
     });
+
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('complex-calculator-form').dispatchEvent(new Event('submit'));
+    };
 </script>
 {% endblock %}

@@ -7,11 +7,20 @@
 {% block meta_keywords %}absolute value, magnitude, modulus, math, number line, distance, calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
+
 <style>
-    /* Styling for the central calculation block (Purple Theme) */
+    /* 🎨 Define Custom Theme Colors using CSS Variables */
+    :root {
+        --purple-dark: #6d28d9; /* Deep violet (for text, main button) */
+        --purple-light: #f5f3ff; /* Lighter purple (for result card background) */
+        --purple-accent: #8b5cf6; /* Violet accent (for borders) */
+        --purple-background: #ede9fe; /* Light purple (for input section background) */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #fdfaff; /* Very light lavender background */
+        background: #fdfaff; 
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,50 +29,48 @@
         font-family: 'Inter', sans-serif;
     }
     
+    /* ⌨️ Input Section Styling */
     .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #ede9fe; /* Light purple */
-        border: 2px solid #8b5cf6; /* Violet accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        background-color: var(--purple-background);
+        border: 2px solid var(--purple-accent);
     }
     
     .input-box label {
-        font-size: 1rem;
         font-weight: 600;
         color: #4c1d95; /* Deep purple */
-        display: block;
         margin-bottom: 5px;
         text-align: center;
     }
 
     .input-field {
-        width: 100%;
+        /* Custom input style */
         padding: 15px 12px;
         font-size: 1.5rem;
-        border: 3px solid #a78bfa; 
-        border-radius: 8px;
+        border: 3px solid var(--purple-accent); 
         text-align: center;
         font-weight: 700;
-        color: #6d28d9;
-    }
-    
-    .result-section {
-        margin-top: 30px;
+        color: var(--purple-dark);
     }
 
+    /* Override Bootstrap focus for cleaner look */
+    .input-field:focus {
+        border-color: var(--purple-dark) !important;
+        box-shadow: 0 0 0 0.25rem rgba(109, 40, 217, 0.25) !important;
+    }
+
+    /* 📊 Result Display Styling */
     .result-card {
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f5f3ff; /* Lighter purple */
-        border-left: 5px solid #8b5cf6; /* Violet accent */
+        background-color: var(--purple-light);
+        border-left: 5px solid var(--purple-accent);
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
         padding: 20px;
         border-radius: 8px;
     }
@@ -71,16 +78,13 @@
     .output-label {
         font-size: 1.2rem;
         font-weight: 700;
-        text-align: center;
         color: #1f2937;
-        margin-bottom: 10px;
     }
 
     .output-value {
         font-size: 3rem;
         font-weight: 900;
-        text-align: center;
-        color: #6d28d9; /* Deep violet */
+        color: var(--purple-dark);
         word-break: break-all;
     }
 
@@ -89,41 +93,41 @@
         font-size: 0.9rem;
         color: #57534e;
         line-height: 1.5;
-        border-top: 1px dashed #c4b5fd;
+        border-top: 1px dashed var(--purple-accent);
         padding-top: 10px;
-        text-align: center;
     }
     
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Absolute Value Calculator ($\mathbf{|x|}$)</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Absolute Value Calculator ($\mathbf{|x|}$)</h1>
+    <p class="text-secondary mb-5 text-center">
         Enter a number or expression to find its positive magnitude (distance from zero).
     </p>
 
     <div class="solver-wrapper">
         
-        <div class="input-section">
+        <div class="input-section p-4 rounded-3">
             <form id="absolute-value-form">
-                <div class="input-box">
-                    <label for="x-input">Enter Number or Expression ($\mathbf{x}$):</label>
+                <div class="input-box mb-3">
+                    <label for="x-input" class="d-block">Enter Number or Expression ($\mathbf{x}$):</label>
                     <input type="text" id="x-input" value="-15.5" required
-                           placeholder="e.g., -10, 5 + 3*2, or Math.PI"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           placeholder="e.g., -10, 5 + 3*2"
+                           class="form-control input-field shadow-sm">
                 </div>
                 
                 <button type="submit"
-                        class="w-full bg-violet-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-violet-700 transition duration-150 transform hover:scale-[1.01]">
+                        class="btn w-100 fw-bold py-3 mt-3 shadow-lg text-white"
+                        style="background-color: var(--purple-dark); border-color: var(--purple-dark);">
                     Calculate Absolute Value
                 </button>
             </form>
         </div>
 
         <div id="result-container" class="result-section">
-            <div id="solution-output" class="result-card hidden"></div>
+            <div id="solution-output" class="d-none"></div>
         </div>
         
     </div>
@@ -131,36 +135,32 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
      * Updates the UI with the calculation result or error.
+     * Uses custom CSS classes (result-card, result-error) and d-none/d-block.
      */
     function displayResult(isError, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        outputDiv.classList.remove('d-none', 'result-error', 'result-card');
         
         if (isError) {
             outputDiv.classList.add('result-error');
-            outputDiv.classList.remove('result-card');
         } else {
             outputDiv.classList.add('result-card');
-            outputDiv.classList.remove('result-error');
         }
         outputDiv.innerHTML = contentHtml;
     }
 
     /**
-     * Safely evaluates a user-provided expression string.
-     * @param {string} expression - User input string (e.g., "5 + 3 * 2").
-     * @returns {number | null} - Result of evaluation or NaN on error.
+     * Safely evaluates a user-provided expression string. (No changes needed)
      */
     function safeEval(expression) {
-        // Replace common constant PI for evaluation
         const cleanedExpression = expression.toUpperCase().replace(/PI/g, 'Math.PI');
 
         try {
-            // Use Function constructor for isolated, safe evaluation (safer than eval())
-            // Pass Math into the function scope to allow use of Math. functions (e.g., Math.sqrt, Math.cos)
             const evaluator = new Function('Math', `
                 with (Math) {
                     return (${cleanedExpression});
@@ -168,7 +168,6 @@
             `);
             const result = evaluator(Math);
 
-            // Check if result is a valid number
             if (typeof result !== 'number' || isNaN(result) || !isFinite(result)) {
                 return NaN;
             }
@@ -182,6 +181,11 @@
 
 
     /**
+     * Handles form submission and triggers the calculation. (No changes needed)
+     */
+   // ... (rest of the script remains the same)
+
+    /**
      * Handles form submission and triggers the calculation.
      */
     function handleAbsoluteValueCalculation(e) {
@@ -193,7 +197,7 @@
         const calculatedValue = safeEval(xExpression);
 
         if (isNaN(calculatedValue)) {
-            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a valid number or mathematical expression.</p>`;
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a valid number or mathematical expression.</p>`;
             displayResult(true, htmlContent);
             return;
         }
@@ -211,21 +215,23 @@
             explanationText = `The absolute value converts the negative value to its positive equivalent.`;
         }
 
-        // Result Display
+        // --- CLEANED RESULT DISPLAY HERE ---
         let htmlContent = `
-            <p class="output-label">Result for $\\mathbf{|${xExpression}|}$:</p>
-            <div class="output-value">
-                $$\\mathbf{|${inputDisplay}| = ${resultDisplay}}$$
+            <p class="output-label text-center">Result for |${xExpression}|:</p>
+            <div class="output-value text-center">
+                <strong>|${inputDisplay}| = ${resultDisplay}</strong>
             </div>
-            <div class="explanation">
-                Initial Value: $\\mathbf{${inputDisplay}}$<br>
+            <div class="explanation text-center">
+                Initial Value: <strong>${inputDisplay}</strong><br>
                 ${explanationText}
             </div>
         `;
+        // --- END CLEANED RESULT DISPLAY ---
         
         displayResult(false, htmlContent);
     }
 
+    // ... (rest of the script remains the same)
     // Attach handler to the form
     document.getElementById('absolute-value-form').addEventListener('submit', handleAbsoluteValueCalculation);
 

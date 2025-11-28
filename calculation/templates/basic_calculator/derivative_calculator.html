@@ -2,16 +2,31 @@
 
 {% block title %}Function Derivative Calculator{% endblock %}
 
-{% block meta_description %}Calculate the first derivative of simple functions and polynomials with respect to x using calculus rules.{% endblock %}
+{% block meta_description %}Calculate the first derivative of simple functions and polynomials with respect to x using calculus rules. This calculator handles basic power, exponential, logarithmic, and trigonometric functions.{% endblock %}
 
-{% block meta_keywords %}derivative calculator, calculus, differentiation, power rule, chain rule, math solver{% endblock %}
+{% block meta_keywords %}derivative calculator, calculus, differentiation, power rule, chain rule, math solver, f prime of x{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Blue/Sky Theme) */
+    :root {
+        --sky-lightest: #f8faff; /* Solver Wrapper Background */
+        --sky-pale: #e0f2fe; /* Light blue Input Background */
+        --sky-label: #0c4a6e; /* Dark blue label text */
+        --sky-input-border: #90cdf4; /* Medium blue border */
+        --sky-result-bg: #f0f8ff; /* Very light blue result box */
+        --sky-result-border: #007bff; /* Blue border accent */
+        --sky-result-text: #004085; /* Dark blue result text */
+        --sky-button: #2563eb; /* Blue 600 */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f8faff;
+        background: var(--sky-lightest);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,18 +35,18 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .input-group {
+    .input-group-custom {
         display: flex;
         align-items: center;
-        background-color: #e0f2fe; /* Light blue background for input area */
+        background-color: var(--sky-pale); 
         padding: 15px;
         border-radius: 8px;
     }
 
-    .input-group label {
+    .input-group-custom label {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #0c4a6e;
+        color: var(--sky-label);
         margin-right: 15px;
     }
 
@@ -39,27 +54,32 @@
         flex-grow: 1;
         padding: 10px;
         font-size: 1.2rem;
-        border: 2px solid #90cdf4;
+        border: 2px solid var(--sky-input-border);
         border-radius: 6px;
         font-family: 'Consolas', monospace;
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    #function-input:focus {
+        border-color: var(--sky-result-border) !important;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25) !important;
     }
     
+    /* 📊 Result Display Styles */
     .result-box {
         margin-top: 25px;
         padding: 20px;
         border-radius: 10px;
-        border-left: 5px solid #007bff;
-        background-color: #f0f8ff; /* Very light blue */
-        color: #004085;
+        border-left: 5px solid var(--sky-result-border);
+        background-color: var(--sky-result-bg); 
+        color: var(--sky-result-text);
     }
     
     .result-error {
-        border-left: 5px solid #ef4444;
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
     }
 
-    /* Styling for the LaTeX output */
     .latex-output {
         font-size: 1.8rem;
         text-align: center;
@@ -70,32 +90,32 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Calculus: Derivative Solver</h1>
-    <p class="text-gray-600 mb-6 text-center">Find the derivative $\frac{d}{dx} [f(x)]$. Handles polynomials, $e^x$, $\ln(x)$, $\sin(x)$, $\cos(x)$.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Calculus: Derivative Solver</h1>
+    <p class="text-secondary mb-4 text-center">Find the derivative $\mathbf{f'(x)}$ or $\frac{d}{dx} [\mathbf{f(x)}]$. Handles polynomials, $\mathbf{e^x}$, $\mathbf{\ln(x)}$, $\mathbf{\sin(x)}$, $\mathbf{\cos(x)}$.</p>
 
     <div class="solver-wrapper">
-        <form id="derivative-form" class="space-y-6">
+        <form id="derivative-form" class="d-grid gap-4">
             
-            <div class="input-group">
-                <label for="function-input">$$f(x) =$$</label>
+            <div class="input-group-custom shadow-md">
+                <label for="function-input">f(x) =</label>
                 <input type="text" id="function-input" value="3*x^2 + sin(x) + 5" required
                        placeholder="e.g., 2*x^3 - 4*x + 1"
-                       class="shadow-md focus:shadow-lg transition-shadow">
+                       class="form-control shadow-sm">
             </div>
 
             <button type="submit"
-                    class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 text-white shadow-md"
+                    style="background-color: var(--sky-button); border-color: var(--sky-button);">
                 Calculate Derivative
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Result: $$f'(x)$$</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here in LaTeX format -->
+        <div id="result-container" class="mt-5">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Result: f'(x)</h2>
+            <div id="solution-output" class="result-box d-none">
                 <div class="latex-output" id="latex-result"></div>
+                <p class="text-center small text-muted mt-2 mb-0">The result is rendered using high-quality mathematical formatting (MathJax).</p>
             </div>
         </div>
         
@@ -104,24 +124,19 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
      * Attempts to find the derivative of a basic function string.
-     * This implementation uses simplified string pattern matching and is NOT a full symbolic differentiation engine.
-     * It primarily handles terms separated by '+' or '-'.
-     * Supported functions: x^n, c, c*x, sin(x), cos(x), ln(x), e^x.
+     * NOTE: This is a simplified differentiation engine and has limitations.
      * @param {string} funcStr - The input function string.
      * @returns {string} The derivative string in LaTeX format.
      */
     function calculateDerivative(funcStr) {
         // Clean and normalize the string for easier parsing
         let cleanedStr = funcStr.toLowerCase().replace(/\s+/g, '');
-        
-        // Use a placeholder for '+' and '-' within function calls (like sin(x+2)) before splitting terms
-        // This is a major limitation; this calculator only handles simple sums/differences of simple functions.
-        
-        // Replace subtraction with '+-' for easier splitting
-        cleanedStr = cleanedStr.replace(/-/g, '+-');
+        cleanedStr = cleanedStr.replace(/-/g, '+-'); // Replace subtraction with '+-' for easier splitting
         
         // Split into terms (handling leading signs)
         const terms = cleanedStr.split('+').filter(term => term.length > 0);
@@ -136,71 +151,83 @@
 
             // --- Case 1: Constant (e.g., 5, -2) ---
             if (!currentTerm.includes('x') && !currentTerm.includes('sin') && !currentTerm.includes('cos') && !currentTerm.includes('ln') && !currentTerm.includes('e')) {
-                // Derivative of a constant is 0, skip this term unless it's the only one.
-                continue;
+                continue; // Derivative is 0
             }
             
             // --- Case 2: e^x ---
             if (currentTerm === 'e^x' || currentTerm === 'ex') {
                 derivedTerm = 'e^x';
-            } else if (currentTerm === 'e') {
-                // Derivative of constant e is 0
-                continue;
-            }
+                // Check for coefficient, e.g., 2*e^x
+                const coeffMatch = term.match(/(\d+|\d+\.\d+)\*?e[x\^]/);
+                if (coeffMatch) {
+                    coeff = parseFloat(coeffMatch[1]);
+                }
+            } 
 
             // --- Case 3: ln(x) ---
-            else if (currentTerm === 'ln(x)') {
+            else if (currentTerm.includes('ln(x)')) {
                 derivedTerm = '\\frac{1}{x}';
+                // Check for coefficient
+                 const coeffMatch = term.match(/(\d+|\d+\.\d+)\*?ln\(x\)/);
+                 if (coeffMatch) {
+                    coeff = parseFloat(coeffMatch[1]);
+                 }
             }
 
             // --- Case 4: Basic Trigonometry ---
-            else if (currentTerm === 'sin(x)') {
+            else if (currentTerm.includes('sin(x)')) {
                 derivedTerm = '\\cos(x)';
+                 const coeffMatch = term.match(/(\d+|\d+\.\d+)\*?sin\(x\)/);
+                 if (coeffMatch) {
+                    coeff = parseFloat(coeffMatch[1]);
+                 }
             }
-            else if (currentTerm === 'cos(x)') {
+            else if (currentTerm.includes('cos(x)')) {
                 derivedTerm = '-\\sin(x)';
+                 const coeffMatch = term.match(/(\d+|\d+\.\d+)\*?cos\(x\)/);
+                 if (coeffMatch) {
+                    coeff = parseFloat(coeffMatch[1]);
+                 }
             }
 
             // --- Case 5: Power Rule (c*x^n) ---
             else {
-                // Parse coefficient and exponent
+                // Simplified Power Rule parsing
                 const parts = currentTerm.split('*');
-                let xTerm = parts.find(p => p.includes('x'));
+                let xTerm = parts.find(p => p.includes('x')) || 'x'; // Default to 'x' if coeff is present but x is not explicit
                 let cTerm = parts.find(p => !p.includes('x'));
 
-                // Handle case where coefficient is omitted (x^n or x)
-                if (!cTerm) {
-                    if (xTerm !== 'x') { // If it's x^n
-                        cTerm = '1';
-                    }
-                }
-                
-                // If there's a coefficient term, parse it
+                // Determine the base coefficient
                 if (cTerm) {
                     coeff = parseFloat(cTerm);
-                    if (isNaN(coeff)) {
-                        // This handles cases like '*x' being split incorrectly or bad input
-                        coeff = 1;
-                    }
+                } else if (currentTerm.startsWith('x') || currentTerm.startsWith('-x')) {
+                    coeff = 1; // e.g., x^2 or -x^2
                 }
-                
-                // Handle case where x^n is omitted, but c is present (already handled by Case 1)
-                
-                let exponent = 1; // Default for x (x^1)
-                let newCoeff, newExp;
 
-                if (xTerm) {
-                    if (xTerm.includes('^')) {
-                        exponent = parseFloat(xTerm.split('^')[1]);
-                    } 
-                    // If no ^ is found, exponent remains 1 (x^1)
-                    
+                let exponent = 1; // Default for x (x^1)
+                
+                if (xTerm.includes('^')) {
+                    exponent = parseFloat(xTerm.split('^')[1]);
+                } else if (xTerm === 'x' && cTerm) {
+                    // This handles c*x (e.g., 5*x). derivative is just c.
+                    derivedTerm = Math.abs(coeff).toFixed(4).replace(/\.?0+$/, "");
+                    exponent = 1; // Reset exponent for calculation logic
+                    xTerm = ''; // Mark as handled
+                } else if (xTerm === 'x') {
+                    // Handles just 'x'. derivative is 1.
+                    derivedTerm = '1';
+                    exponent = 1; // Reset exponent
+                    xTerm = ''; // Mark as handled
+                }
+
+                // Apply Power Rule only if it's a true x^n term (not already derived to a constant)
+                if (xTerm && exponent !== 0) {
                     // Apply Power Rule: d/dx(c*x^n) = c*n*x^(n-1)
-                    newCoeff = coeff * exponent;
-                    newExp = exponent - 1;
+                    let newCoeff = coeff * exponent;
+                    let newExp = exponent - 1;
 
                     // Format the derived term
-                    let coeffStr = Math.abs(newCoeff).toFixed(4).replace(/\.?0+$/, ""); // Clean float zeros
+                    let coeffStr = Math.abs(newCoeff).toFixed(4).replace(/\.?0+$/, ""); 
                     
                     if (newExp === 0) {
                         derivedTerm = coeffStr; // Result is just the constant
@@ -209,15 +236,17 @@
                     } else {
                         derivedTerm = `${coeffStr}x^{${newExp}}`;
                     }
-                } else {
-                    // This handles c*x (e.g., 5*x). derivative is just c.
-                    derivedTerm = Math.abs(coeff).toFixed(4).replace(/\.?0+$/, "");
+                } else if (!xTerm && !derivedTerm) {
+                    // This is a constant term that was initially skipped
+                    continue;
                 }
             }
-
-            // Apply sign and clean up
+            
+            // Reapply sign and clean up
+            let finalCoeff = sign * coeff;
+            
             if (derivedTerm !== '0') {
-                if (sign * coeff < 0) {
+                if (finalCoeff < 0) {
                     derivedTerm = '-' + derivedTerm;
                 } else if (derivativeTerms.length > 0) {
                     derivedTerm = '+' + derivedTerm;
@@ -229,7 +258,7 @@
         let result = derivativeTerms.join('');
 
         if (!result) {
-            return '0'; // Derivative of a constant is 0
+            return '0';
         }
         
         // Final cleanup: remove leading '+' if present
@@ -248,7 +277,7 @@
         const outputDiv = document.getElementById('solution-output');
         const resultDiv = document.getElementById('latex-result');
 
-        outputDiv.classList.add('hidden');
+        outputDiv.classList.add('d-none');
         outputDiv.classList.remove('result-error');
         resultDiv.innerHTML = '';
 
@@ -259,28 +288,39 @@
             
             const derivedFuncStr = calculateDerivative(funcStr);
             
-            const latexOutput = `$$f'(x) = ${derivedFuncStr}$$`;
+            // Use LaTeX for final output presentation
+            const latexOutput = `$$\\frac{d}{dx} [${funcStr}] = ${derivedFuncStr}$$`; 
             
             resultDiv.innerHTML = latexOutput;
-            displayResult('', '');
+            displayResult(''); // Display success
 
         } catch (error) {
-            displayResult('result-error', `<p class="font-bold">Error:</p><p>Could not parse or differentiate the function. Please ensure simple syntax (e.g., 3*x^2 + sin(x)).</p>`);
+            // Display error content
+            displayResult('result-error', `<p class="fw-bold">Error:</p><p>Could not parse or differentiate the function. Please ensure simple syntax (e.g., 3*x^2 + sin(x)).</p>`);
         }
     });
 
     /**
-     * Updates the results display with appropriate styling and content.
+     * Updates the results display with appropriate styling and content, and triggers MathJax.
      */
-    function displayResult(className, contentHtml) {
+    function displayResult(className) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.className = 'result-box'; 
+        outputDiv.classList.remove('d-none', 'result-error');
+        outputDiv.classList.add('result-box'); // Base class
         if (className) {
             outputDiv.classList.add(className);
-            outputDiv.innerHTML = contentHtml; // Error content goes here
-            document.getElementById('latex-result').innerHTML = ''; // Clear LaTeX area on error
         }
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
+        
+        // Trigger MathJax re-render
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([outputDiv]);
+        }
     }
+    
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('derivative-form').dispatchEvent(new Event('submit'));
+    };
 </script>
 {% endblock %}

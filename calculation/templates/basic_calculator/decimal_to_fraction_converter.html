@@ -4,14 +4,28 @@
 
 {% block meta_description %}Convert a decimal number into its most simplified fractional representation (a/b).{% endblock %}
 
-{% block meta_keywords %}decimal to fraction, fraction conversion, rational numbers, math calculator, simplified fraction{% endblock %}
+{% block meta_keywords %}decimal to fraction, fraction conversion, rational numbers, math calculator, simplified fraction, GCF{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Violet/Purple Theme) */
+    :root {
+        --violet-lightest: #fcfaff; /* Solver Wrapper Background */
+        --violet-pale: #f5f3ff; /* Lightest purple Input Background */
+        --violet-border: #ddd6fe; /* Light border */
+        --violet-medium: #a78bfa; /* Medium violet Input Border */
+        --violet-dark: #5b21b6; /* Dark violet Label Color */
+        --violet-hot: #7c3aed; /* Hot Violet Result Accent/Button */
+        --violet-text: #4c1d95;
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #fcfaff; /* Very light purple/white background */
+        background: var(--violet-lightest); 
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,20 +34,17 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .input-group {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+    .input-group-custom {
         padding: 20px;
         border-radius: 8px;
-        background-color: #f5f3ff; /* Lightest purple */
-        border: 1px solid #ddd6fe;
+        background-color: var(--violet-pale); 
+        border: 1px solid var(--violet-border);
     }
 
-    .input-group label {
+    .input-group-custom label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #5b21b6; /* Dark violet */
+        color: var(--violet-dark); 
         margin-bottom: 5px;
         display: block;
         text-align: center;
@@ -44,13 +55,19 @@
         max-width: 350px;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #a78bfa; /* Medium violet border */
+        border: 2px solid var(--violet-medium); 
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
-        color: #4c1d95;
+        color: var(--violet-text);
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    #decimal-input:focus {
+        border-color: var(--violet-hot) !important;
+        box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.25) !important;
     }
     
+    /* 📊 Result Display Styles */
     .result-box {
         margin-top: 25px;
         padding: 20px;
@@ -58,16 +75,15 @@
         border-left: 5px solid;
     }
 
-    /* Custom result styles */
     .result-success {
-        border-left-color: #7c3aed; /* Violet */
+        border-left-color: var(--violet-hot); 
         background-color: #f3f4ff;
-        color: #5b21b6;
+        color: var(--violet-dark);
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .fraction-display {
@@ -75,44 +91,45 @@
         font-weight: 800;
         text-align: center;
         margin: 20px 0;
-        color: #7c3aed;
+        color: var(--violet-hot);
+        line-height: 1.2; /* Better look for MathJax fractions */
     }
     .detail-text {
         font-size: 1.1rem;
         text-align: center;
         margin-top: 5px;
+        color: #6c757d; /* Muted gray for detail */
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Decimal to Fraction Converter</h1>
-    <p class="text-gray-600 mb-6 text-center">Convert a decimal $D$ into a simplified fraction $\frac{N}{D}$.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Decimal to Fraction Converter</h1>
+    <p class="text-secondary mb-4 text-center">Convert a decimal **D** into a simplified fraction **N/D**.</p>
 
     <div class="solver-wrapper">
-        <form id="converter-form" class="space-y-6">
+        <form id="converter-form" class="d-grid gap-4">
             
-            <div class="input-group shadow-lg">
-                <label for="decimal-input">Enter the Decimal Value ($D$):</label>
+            <div class="input-group-custom shadow-lg d-flex flex-column align-items-center">
+                <label for="decimal-input">Enter the Decimal Value (**D**):</label>
                 <input type="text" id="decimal-input" value="0.75" required
                        placeholder="e.g., 0.125 or 1.5"
-                       class="input-field shadow-inner focus:shadow-xl transition-shadow">
-                <p class="text-xs text-gray-500 mt-2">Note: This calculator assumes the decimal terminates at the point entered.</p>
+                       class="form-control input-field shadow-sm">
+                <p class="text-muted small mt-2 mb-0">Note: This calculator assumes the decimal terminates (stops) at the point entered.</p>
             </div>
 
             <button type="submit"
-                    class="w-full bg-violet-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-violet-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 text-white shadow-xl"
+                    style="background-color: var(--violet-hot); border-color: var(--violet-hot);">
                 Convert & Simplify
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Simplified Fraction</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-5">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Simplified Fraction Result</h2>
+            <div id="solution-output" class="result-box d-none">
+                </div>
         </div>
         
     </div>
@@ -120,13 +137,12 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
      * Calculates the Greatest Common Factor (GCF) of two non-negative integers
-     * using the Euclidean Algorithm.
-     * @param {number} a - First integer.
-     * @param {number} b - Second integer.
-     * @returns {number} The GCF of a and b.
+     * using the Euclidean Algorithm. (Logic Unchanged)
      */
     function gcd(a, b) {
         a = Math.abs(a);
@@ -141,13 +157,29 @@
         return a;
     }
 
+    /**
+     * Updates the results display with appropriate styling and content, and triggers MathJax.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.remove('d-none', 'result-error', 'result-success');
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+        outputDiv.classList.remove('d-none');
+
+        // Trigger MathJax re-render for the final output
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([outputDiv]);
+        }
+    }
+
     document.getElementById('converter-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const inputStr = document.getElementById('decimal-input').value.trim();
         const outputDiv = document.getElementById('solution-output');
         
-        outputDiv.classList.add('hidden');
+        outputDiv.classList.add('d-none');
         outputDiv.className = 'result-box'; 
         outputDiv.innerHTML = '';
 
@@ -156,7 +188,7 @@
         
         // --- Input Validation ---
         if (inputStr === '' || isNaN(parseFloat(inputStr))) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a valid number (e.g., 0.5, -1.25, 4).</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a valid number (e.g., 0.5, -1.25, 4).</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -165,24 +197,33 @@
         // --- Conversion Logic ---
         const number = parseFloat(inputStr);
         const sign = (number < 0) ? -1 : 1;
-        const absInput = Math.abs(inputStr);
+        
+        // Use string representation for accurate decimal counting
+        // Handle scientific notation if it exists (e.g., 1.2e-5) by converting to fixed
+        let absInput;
+        if (inputStr.toLowerCase().includes('e')) {
+            absInput = Math.abs(number).toFixed(20).replace(/\.?0+$/, "");
+        } else {
+            absInput = Math.abs(inputStr);
+        }
 
         // Find the fractional part string to count decimal places accurately
-        const parts = absInput.split('.');
-        const decimalPart = parts.length > 1 ? parts[1].replace(/^0+/, '') : ""; // Remove leading zeros in fractional part
+        const parts = absInput.toString().split('.');
+        // Use an empty string if there's no decimal point
+        const decimalPart = parts.length > 1 ? parts[1].replace(/^0+/, '') : ""; 
         
-        const k = decimalPart.length; // Number of digits after the decimal point
+        const k = decimalPart.length; 
         
         if (k === 0) {
             // Case 1: Input is an integer (e.g., "5" or "5.0")
             const initialN = Math.abs(number);
-            const initialD = 1;
             
-            htmlContent += `<p class="detail-text">Input is an integer: ${inputStr}</p>`;
+            htmlContent += `<p class="detail-text">Input is a whole number: ${inputStr}</p>`;
             
-            const simplifiedFraction = (sign === -1 ? "-" : "") + `$$\\mathbf{${initialN}}$$`;
-            htmlContent += `<div class="fraction-display">${simplifiedFraction}</div>`;
-            htmlContent += `<p class="detail-text">This simplifies to the integer itself.</p>`;
+            // Display simplified whole number using MathJax
+            const simplifiedResult = (sign === -1 ? "-" : "") + `$$\\mathbf{${initialN}}$$`;
+            htmlContent += `<div class="fraction-display">${simplifiedResult}</div>`;
+            htmlContent += `<p class="detail-text">The fraction simplifies to the whole number itself.</p>`;
             
             resultClass = 'result-success';
             displayResult(resultClass, htmlContent);
@@ -191,7 +232,7 @@
 
         // Case 2: Input has a decimal part (e.g., "1.25")
         
-        // Construct the numerator and denominator using string parts to avoid floating point math errors
+        // Construct the numerator and denominator using string parts
         const numeratorStr = (parts[0] || "0") + decimalPart;
         const initialN = parseInt(numeratorStr, 10);
         const initialD = Math.pow(10, k);
@@ -205,10 +246,11 @@
         
         // --- Result Display ---
 
-        htmlContent += `<p class="detail-text">Unsimplified Fraction (Denominator $\\mathbf{10^{${k}}}$): $\\frac{${initialN}}{${initialD}}$</p>`;
-        htmlContent += `<p class="detail-text">Greatest Common Factor (GCF): $\\mathbf{${commonDivisor}}$</p>`;
+        // Simplified text: removed $ and used **
+        htmlContent += `<p class="detail-text">Unsimplified Fraction (Denominator **10^${k}**): ${initialN}/${initialD}</p>`;
+        htmlContent += `<p class="detail-text">Greatest Common Factor (GCF): **${commonDivisor}**</p>`;
         
-        // Display the simplified fraction
+        // Display the simplified fraction using MathJax for high-quality rendering
         htmlContent += `<div class="fraction-display">`;
         if (d_simplified === 1) {
              // Display as a whole number
@@ -224,14 +266,9 @@
         displayResult(resultClass, htmlContent);
     });
 
-    /**
-     * Updates the results display with appropriate styling and content.
-     */
-    function displayResult(className, contentHtml) {
-        const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add(className);
-        outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
-    }
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('converter-form').dispatchEvent(new Event('submit'));
+    };
 </script>
 {% endblock %}
