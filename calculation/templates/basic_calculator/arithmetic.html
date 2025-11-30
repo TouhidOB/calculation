@@ -27,12 +27,13 @@
         margin-bottom: 15px;
         font-family: 'Consolas', monospace; /* Monospaced font for numbers */
         box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        outline: none;
     }
 
     #history-display {
         font-size: 0.8rem;
         color: #666;
-        min-height: 18px; /* Maintain height to prevent layout shift */
+        min-height: 18px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -103,18 +104,23 @@
 {% block content %}
 <div class="container my-4">
     <h1 class="mb-3">➕ Advanced Basic Arithmetic Calculator</h1>
-    <p class="small-muted">Perform standard arithmetic operations with a responsive, easy-to-use digital interface.</p>
-
+    <!-- <p class="small-muted">Perform standard arithmetic operations with a responsive, easy-to-use digital interface.</p>
+    
+    <div class="mb-3">
+        <label for="global-search-bar" class="form-label">Global Search Bar (Test Input Here)</label>
+        <input type="text" id="global-search-bar" class="form-control" placeholder="Type your search query...">
+    </div>
+    <hr> -->
     <div class="calc-wrapper mt-4">
-        <div class="display-screen">
+        <div class="display-screen" tabindex="0">
             <div id="history-display"></div>
             <div id="current-input">0</div>
         </div>
 
         <div class="calc-keys">
-            <button class="calc-btn clear-btn" data-type="clear">C</button>
-            <button class="calc-btn special-btn" data-type="sign">+/-</button>
-            <button class="calc-btn special-btn" data-type="backspace">⌫</button>
+            <button class="calc-btn clear-btn" data-value="C" data-type="clear">C</button>
+            <button class="calc-btn special-btn" data-value="s" data-type="sign">+/-</button>
+            <button class="calc-btn special-btn" data-value="back" data-type="backspace">⌫</button>
             <button class="calc-btn operator-btn" data-value="/">÷</button>
 
             <button class="calc-btn number-btn" data-value="7">7</button>
@@ -134,7 +140,7 @@
 
             <button class="calc-btn number-btn zero-btn" data-value="0">0</button>
             <button class="calc-btn decimal-btn" data-value=".">.</button>
-            <button class="calc-btn equal-btn" data-type="equals">=</button>
+            <button class="calc-btn equal-btn" data-value="=" data-type="equals">=</button>
         </div>
     </div>
 </div>
@@ -153,9 +159,9 @@
     const historyDisplay = document.getElementById('history-display');
     const keys = document.querySelector('.calc-keys');
 
-    // Function to update the display
+    // ... (All original calculator functions: updateDisplay, inputDigit, inputDecimal, toggleSign, clearCalculator, backspace, calculate, handleEquals, handleOperator, operatorSymbol remain the same) ...
+
     function updateDisplay() {
-        // Limit display size and handle scientific notation for large numbers
         if (currentInput.length > 12) {
             currentDisplay.textContent = parseFloat(currentInput).toExponential(5);
         } else {
@@ -164,7 +170,6 @@
         historyDisplay.textContent = history;
     }
 
-    // Function to handle number input
     function inputDigit(digit) {
         if (waitingForSecondOperand === true) {
             currentInput = digit;
@@ -175,7 +180,6 @@
         updateDisplay();
     }
 
-    // Function to handle the decimal point
     function inputDecimal() {
         if (waitingForSecondOperand === true) {
             currentInput = '0.';
@@ -186,13 +190,11 @@
         updateDisplay();
     }
     
-    // Function to toggle the sign (+/-)
     function toggleSign() {
         currentInput = (parseFloat(currentInput) * -1).toString();
         updateDisplay();
     }
 
-    // Function to handle clear operation
     function clearCalculator() {
         currentInput = '0';
         history = '';
@@ -202,8 +204,11 @@
         updateDisplay();
     }
     
-    // Function to handle backspace
     function backspace() {
+        if (currentInput === 'Error') {
+            clearCalculator();
+            return;
+        }
         if (currentInput.length > 1) {
             currentInput = currentInput.slice(0, -1);
         } else {
@@ -212,7 +217,6 @@
         updateDisplay();
     }
 
-    // Function to perform the calculation
     function calculate(first, second, op) {
         first = parseFloat(first);
         second = parseFloat(second);
@@ -221,20 +225,40 @@
         if (op === '*') return first * second;
         if (op === '/') {
             if (second === 0) {
-                alert("Error: Division by zero!");
                 return 'Error';
             }
             return first / second;
         }
-        return second; // Should not happen
+        return second;
     }
 
-    // Function to handle operator selection
+    function handleEquals() {
+        if (firstOperand === null || operator === null) {
+            return;
+        }
+        
+        const secondOperand = parseFloat(currentInput);
+        const result = calculate(firstOperand, secondOperand, operator);
+        
+        if (result === 'Error') {
+            clearCalculator();
+            currentInput = 'Error';
+            updateDisplay();
+            return;
+        }
+
+        history = `${firstOperand} ${operatorSymbol(operator)} ${secondOperand} =`;
+        currentInput = String(result);
+        firstOperand = null;
+        operator = null;
+        waitingForSecondOperand = false;
+        updateDisplay();
+    }
+
     function handleOperator(nextOperator) {
         const inputValue = parseFloat(currentInput);
 
         if (operator && waitingForSecondOperand) {
-            // Allows chaining operations without hitting equals first
             operator = nextOperator;
             history = `${firstOperand} ${operatorSymbol(nextOperator)}`;
             updateDisplay();
@@ -263,14 +287,73 @@
         updateDisplay();
     }
 
-    // Utility to convert internal operator to display symbol
     function operatorSymbol(op) {
         if (op === '/') return '÷';
         if (op === '*') return '×';
         return op;
     }
+    
+    // --- FIX: Updated Keyboard Input Handler ---
+    function handleKeyboardInput(event) {
+        const key = event.key;
+        const target = event.target;
+        
+        // Check if the user is typing inside an input or textarea element
+        const isTypingInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+        
+        // If the user is typing in a focusable text field, do not run the calculator logic.
+        // The browser will handle the input normally.
+        if (isTypingInInput) {
+            return; 
+        }
 
-    // Event listener for all calculator buttons
+        // Only prevent default for keys that the calculator handles.
+        let shouldPreventDefault = false;
+
+        // 1. Numbers
+        if (/[0-9]/.test(key)) {
+            inputDigit(key);
+            shouldPreventDefault = true;
+        }
+        
+        // 2. Operators
+        else if (key === '+' || key === '-' || key === '*' || key === '/') {
+            handleOperator(key);
+            shouldPreventDefault = true;
+        }
+        
+        // 3. Equals and Enter (Equals)
+        else if (key === '=' || key === 'Enter') {
+            handleEquals();
+            shouldPreventDefault = true;
+        }
+        
+        // 4. Decimal
+        else if (key === '.') {
+            inputDecimal();
+            shouldPreventDefault = true;
+        }
+        
+        // 5. Backspace/Delete (Clear last digit)
+        else if (key === 'Backspace' || key === 'Delete') {
+            backspace();
+            shouldPreventDefault = true;
+        }
+        
+        // 6. Escape (Clear all)
+        else if (key === 'Escape') {
+            clearCalculator();
+            shouldPreventDefault = true;
+        }
+
+        if (shouldPreventDefault) {
+             // Stop the browser from processing the key (e.g., scrolling on Spacebar, triggering button clicks on Enter)
+            event.preventDefault();
+        }
+    }
+    // --- End Updated Keyboard Input Handler ---
+
+    // Event listener for all calculator buttons (Existing code)
     keys.addEventListener('click', (event) => {
         const { target } = event;
         const buttonValue = target.dataset.value;
@@ -296,28 +379,7 @@
         }
 
         if (buttonType === 'equals') {
-            if (firstOperand === null || operator === null) {
-                // If only one number is entered, just show it on the display
-                return;
-            }
-            
-            const secondOperand = parseFloat(currentInput);
-            const result = calculate(firstOperand, secondOperand, operator);
-            
-            if (result === 'Error') {
-                clearCalculator();
-                currentInput = 'Error';
-                updateDisplay();
-                return;
-            }
-
-            // Update history to show the full equation and result
-            history = `${firstOperand} ${operatorSymbol(operator)} ${secondOperand} =`;
-            currentInput = String(result);
-            firstOperand = null; // Clear state for a new calculation
-            operator = null;
-            waitingForSecondOperand = false;
-            updateDisplay();
+            handleEquals();
             return;
         }
 
@@ -336,6 +398,9 @@
             return;
         }
     });
+
+    // Attach keyboard listener to the document
+    document.addEventListener('keydown', handleKeyboardInput);
 
     // Initialize display on load
     updateDisplay();

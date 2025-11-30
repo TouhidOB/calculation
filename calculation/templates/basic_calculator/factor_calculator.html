@@ -7,11 +7,24 @@
 {% block meta_keywords %}factor calculator, divisors, integer factorization, number theory, math calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Earthy Brown/Amber Theme) */
+    :root {
+        --earth-lightest: #fdfdfc; /* Solver Wrapper Background */
+        --earth-input-bg: #fcfcf9;
+        --earth-label: #4a382c; /* Dark brown/coffee color */
+        --earth-medium: #92400e; /* Orange-brown border */
+        --earth-hot: #78350f; /* Brown accent/text */
+        --amber-600: #d97706; /* Button color */
+        --amber-pale: #fef3c7; /* Light yellow/cream result background */
+        --amber-factor: #fde68a; /* Factor badge background */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #fdfdfc; /* Off-white, slightly earthy tone */
+        background: var(--earth-lightest); 
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,19 +33,19 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .input-group {
+    .input-group-custom {
         display: flex;
         flex-direction: column;
         align-items: center;
         padding: 15px;
         border-radius: 8px;
-        background-color: #fcfcf9;
+        background-color: var(--earth-input-bg);
     }
 
-    .input-group label {
+    .input-group-custom label {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #4a382c; /* Dark brown/coffee color */
+        color: var(--earth-label); 
         margin-bottom: 10px;
     }
 
@@ -41,13 +54,19 @@
         max-width: 300px;
         padding: 12px;
         font-size: 1.5rem;
-        border: 2px solid #92400e; /* Orange-brown border */
+        border: 2px solid var(--earth-medium); 
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
-        color: #78350f;
+        color: var(--earth-hot);
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    #number-input:focus {
+        border-color: var(--earth-hot) !important;
+        box-shadow: 0 0 0 0.25rem rgba(120, 53, 15, 0.25) !important;
     }
     
+    /* 📊 Result Display Styles */
     .result-box {
         margin-top: 25px;
         padding: 20px;
@@ -55,16 +74,15 @@
         border-left: 5px solid;
     }
 
-    /* Custom result styles */
     .result-success {
-        border-left-color: #78350f; /* Brown */
-        background-color: #fef3c7; /* Light yellow/cream */
-        color: #78350f;
+        border-left-color: var(--earth-hot); 
+        background-color: var(--amber-pale); 
+        color: var(--earth-hot);
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .factor-list {
@@ -78,11 +96,11 @@
         border-radius: 6px;
     }
     
+    /* Bootstrap Badge custom style */
     .factor-item {
-        background-color: #fde68a;
-        color: #78350f;
+        background-color: var(--amber-factor);
+        color: var(--earth-hot);
         padding: 4px 10px;
-        border-radius: 9999px; /* Pill shape */
         font-weight: 600;
         font-size: 1.1rem;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -91,32 +109,31 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Factor Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">Find all positive factors (divisors) of a given integer $N$.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Factor Calculator</h1>
+    <p class="text-secondary mb-4 text-center">Find all positive factors (divisors) of a given integer **N**.</p>
 
     <div class="solver-wrapper">
-        <form id="factor-form" class="space-y-6">
+        <form id="factor-form" class="d-grid gap-4">
             
-            <div class="input-group shadow-lg">
-                <label for="number-input">Enter a Positive Integer ($N$):</label>
+            <div class="input-group-custom shadow-lg">
+                <label for="number-input">Enter a Positive Integer (**N**):</label>
                 <input type="number" id="number-input" value="30" required min="1" step="1"
                        placeholder="e.g., 12, 100"
-                       class="shadow-inner focus:shadow-xl transition-shadow">
+                       class="form-control shadow-sm">
             </div>
 
             <button type="submit"
-                    class="w-full bg-amber-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 text-white shadow-xl"
+                    style="background-color: var(--amber-600); border-color: var(--amber-600);">
                 Find Factors
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Factors of $N$</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-5">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Factors of N</h2>
+            <div id="solution-output" class="result-box d-none">
+                </div>
         </div>
         
     </div>
@@ -124,10 +141,12 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
      * Finds all positive factors (divisors) of a given positive integer N.
-     * Uses the square root optimization for efficiency.
+     * Uses the square root optimization for efficiency. (Logic Unchanged)
      * @param {number} n - The positive integer.
      * @returns {number[]} Array of factors, sorted ascending.
      */
@@ -140,10 +159,8 @@
         
         for (let i = 1; i <= limit; i++) {
             if (n % i === 0) {
-                // i is a factor
                 factors.push(i);
                 
-                // n/i is the corresponding factor
                 const complement = n / i;
                 if (i !== complement) {
                     factors.push(complement);
@@ -151,7 +168,6 @@
             }
         }
 
-        // Sort the factors numerically
         factors.sort((a, b) => a - b);
         return factors;
     }
@@ -164,7 +180,7 @@
         const n = parseInt(input, 10);
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
+        outputDiv.classList.add('d-none');
         outputDiv.className = 'result-box'; 
         outputDiv.innerHTML = '';
 
@@ -173,7 +189,7 @@
 
         // --- Input Validation ---
         if (input === '' || isNaN(n) || n < 1 || !Number.isInteger(n)) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive whole number (integer $\ge 1$).</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive whole number (integer $\ge 1$).</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -182,13 +198,19 @@
         // --- Factor Calculation ---
         const factors = findFactors(n);
         
+        // Calculate factor sum (removed LaTeX)
+        const factorSum = factors.reduce((sum, f) => sum + f, 0);
+
         // --- Result Display ---
-        htmlContent += `<p class="text-lg font-bold text-center">The ${factors.length} positive factors of ${n} are:</p>`;
+        htmlContent += `<p class="fs-5 fw-bold text-center">The ${factors.length} positive factors of ${n} are:</p>`;
         
-        const factorItems = factors.map(f => `<span class="factor-item">${f}</span>`).join('');
+        // Use Bootstrap badge classes for pill shape and styling
+        const factorItems = factors.map(f => `<span class="factor-item badge rounded-pill">${f}</span>`).join('');
         
         htmlContent += `<div class="factor-list">${factorItems}</div>`;
-        htmlContent += `<p class="text-sm text-center mt-3">Factor Sum: $\\mathbf{${factors.reduce((sum, f) => sum + f, 0)}}$</p>`;
+        
+        // Removed LaTeX from Factor Sum display
+        htmlContent += `<p class="text-sm text-center mt-3">Factor Sum: <strong>${factorSum}</strong></p>`;
 
         resultClass = 'result-success';
         
@@ -200,9 +222,15 @@
      */
     function displayResult(className, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.remove('d-none', 'result-error', 'result-success');
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
     }
+
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('factor-form').dispatchEvent(new Event('submit'));
+    };
 </script>
 {% endblock %}

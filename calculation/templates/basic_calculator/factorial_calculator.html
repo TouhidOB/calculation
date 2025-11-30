@@ -4,14 +4,28 @@
 
 {% block meta_description %}Calculate the factorial of any non-negative integer (n!), using BigInt for high accuracy with large numbers.{% endblock %}
 
-{% block meta_keywords %}factorial, n!, mathematics, combinatorics, large numbers, bigInt, calculator{% endblock %}
+{% block meta_keywords %}factorial, n!, mathematics, combinatorics, large numbers, bigInt, calculator, permutations{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block (Teal/Cyan Theme) */
+    /* 🎨 Define Custom Theme Colors (Teal/Cyan Theme) */
+    :root {
+        --teal-lightest: #f0fdfa; /* Solver Wrapper Background */
+        --cyan-pale: #ccfbf1; /* Light cyan/teal input background */
+        --teal-accent: #14b8a6; /* Teal border accent */
+        --teal-dark: #064e3b; /* Dark teal label text */
+        --cyan-medium: #2dd4bf; 
+        --cyan-hot: #06b6d4; /* Cyan accent/output color */
+        --teal-button: #0d9488; /* Teal 600 */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f0fdfa; /* Light mint/teal background */
+        background: var(--teal-lightest); 
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -23,31 +37,37 @@
     .input-section {
         padding: 25px;
         border-radius: 10px;
-        background-color: #ccfbf1; /* Light cyan/teal */
-        border: 2px solid #14b8a6; /* Teal accent */
+        background-color: var(--cyan-pale); 
+        border: 2px solid var(--teal-accent); 
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     .input-box label {
         font-size: 1rem;
         font-weight: 500;
-        color: #064e3b; /* Dark teal */
+        color: var(--teal-dark); 
         display: block;
         margin-bottom: 5px;
         text-align: center;
     }
 
-    .input-field {
+    #n-input {
         width: 100%;
         padding: 12px;
         font-size: 1.2rem;
-        border: 2px solid #2dd4bf; 
+        border: 2px solid var(--cyan-medium); 
         border-radius: 6px;
         text-align: center;
         font-weight: 600;
-        color: #0d9488;
+        color: var(--teal-button);
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    #n-input:focus {
+        border-color: var(--cyan-hot) !important;
+        box-shadow: 0 0 0 0.25rem rgba(6, 182, 212, 0.25) !important;
     }
     
+    /* 📊 Result Display Styles */
     .result-section {
         margin-top: 30px;
     }
@@ -56,14 +76,14 @@
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        background-color: #f0fdfa; /* Very light teal */
-        border-left: 5px solid #06b6d4; /* Cyan accent */
+        background-color: var(--teal-lightest); 
+        border-left: 5px solid var(--cyan-hot); 
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
         padding: 20px;
         border-radius: 8px;
     }
@@ -80,7 +100,7 @@
         font-size: 1.8rem;
         font-weight: 800;
         text-align: center;
-        color: #06b6d4; /* Cyan */
+        color: var(--cyan-hot); 
         word-break: break-all;
     }
 
@@ -93,37 +113,37 @@
         padding-top: 10px;
         text-align: center;
     }
-    
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Factorial Calculator ($n!$)</h1>
-    <p class="text-gray-600 mb-6 text-center">
-        Calculate the product of all positive integers less than or equal to $n$.
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Factorial Calculator ($\mathbf{n!}$)</h1>
+    <p class="text-secondary mb-4 text-center">
+        Calculate the product of all positive integers less than or equal to **n**.
     </p>
 
     <div class="solver-wrapper">
         
         <div class="input-section">
-            <form id="factorial-form">
+            <form id="factorial-form" class="d-grid gap-3">
                 <div class="input-box">
-                    <label for="n-input">Enter Integer ($\mathbf{n} \ge 0$):</label>
+                    <label for="n-input">Enter Integer (**n** $\ge$ 0):</label>
                     <input type="number" id="n-input" value="7" required step="1" min="0"
                            placeholder="e.g., 7 or 15"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control shadow-sm">
                 </div>
                 
                 <button type="submit"
-                        class="w-full bg-teal-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-teal-700 transition duration-150 transform hover:scale-[1.01]">
-                    Calculate Factorial ($\mathbf{n}!$)
+                        class="btn w-100 fw-bold py-3 text-white shadow-xl"
+                        style="background-color: var(--teal-button); border-color: var(--teal-button);">
+                    Calculate Factorial ($\mathbf{n!}$)
                 </button>
             </form>
         </div>
 
         <div id="result-container" class="result-section">
-            <div id="solution-output" class="result-card hidden"></div>
+            <div id="solution-output" class="result-card d-none"></div>
         </div>
         
     </div>
@@ -131,15 +151,16 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
-     * Calculates the factorial of a non-negative integer using BigInt.
+     * Calculates the factorial of a non-negative integer using BigInt. (Logic Unchanged)
      * @param {number} n - The input integer.
      * @returns {BigInt} The factorial result.
      */
     function calculateFactorialValue(n) {
         if (n < 0) {
-            // This shouldn't happen if min="0" is respected, but good practice
             return BigInt(-1); 
         }
         if (n === 0) {
@@ -158,7 +179,7 @@
      */
     function displayResult(isError, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        outputDiv.classList.remove('d-none', 'result-error', 'result-card');
         
         if (isError) {
             outputDiv.classList.add('result-error');
@@ -168,6 +189,11 @@
             outputDiv.classList.remove('result-error');
         }
         outputDiv.innerHTML = contentHtml;
+        
+        // Trigger MathJax re-render for the output
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([outputDiv]);
+        }
     }
 
     /**
@@ -181,7 +207,7 @@
         const n = parseInt(nStr);
         
         if (isNaN(n) || n < 0 || n !== parseFloat(nStr)) {
-            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a non-negative whole number (integer).</p>`;
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a non-negative whole number (integer).</p>`;
             displayResult(true, htmlContent);
             return;
         }
@@ -192,27 +218,27 @@
         // Use BigInt's toLocaleString for standard formatting (e.g., commas)
         const formattedResult = resultBigInt.toLocaleString('en-US');
         
-        let calculationNote = `Calculated result using **BigInt** for high precision.`;
+        let calculationNote = `The calculation was performed using **BigInt** to ensure full integer accuracy.`;
 
-        // If the number is extremely large (e.g., > 100 digits), simplify the display
+        // If the number is extremely large (more than 30 digits), display in scientific notation
         if (resultDisplay.length > 30) {
-            // Find the exponent for scientific notation (e.g., 100! is ~9.33 x 10^157)
+            // Find the exponent
             const exponent = resultDisplay.length - 1;
-            const mantissa = resultDisplay.substring(0, 10); // Show first 10 digits
+            // Show first 10 digits followed by decimal point and a few more
+            const mantissa = resultDisplay.substring(0, 1) + '.' + resultDisplay.substring(1, 10); 
             
-            // Format the extremely large result in scientific notation for display
+            // Format the extremely large result in scientific notation for display using LaTeX
             resultDisplay = `${mantissa} \\times 10^{${exponent}}`;
-            calculationNote = `The full result (which has **${resultDisplay.length} digits**) is too long to display in full. Displayed in scientific notation for readability.`;
+            calculationNote = `The full result (which has **${resultDisplay.length} digits**) is too long to display. It is shown in scientific notation for readability.`;
         } else {
             // Use the comma-formatted result for smaller numbers
             resultDisplay = formattedResult;
-            calculationNote = `The calculation was performed using **BigInt** to ensure full integer accuracy.`;
         }
 
 
-        // Result Display
+        // Result Display: Used MathJax only for the final output equation
         let htmlContent = `
-            <p class="output-label">Result for $\\mathbf{${n}!}$:</p>
+            <p class="output-label">Result for !${n}:</p>
             <div class="output-value">
                 $$\\mathbf{${resultDisplay}}$$
             </div>
@@ -229,7 +255,6 @@
 
     // Initial calculation for default value
     window.onload = function() {
-        // Since we are using an event listener on the form submit, we can manually trigger the calculation
         document.getElementById('factorial-form').dispatchEvent(new Event('submit'));
     };
 </script>

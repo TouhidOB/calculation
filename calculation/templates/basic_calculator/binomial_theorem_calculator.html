@@ -7,7 +7,7 @@
 {% block meta_keywords %}binomial theorem, polynomial expansion, nCr, combinations, binomial coefficient, algebra calculator{% endblock %}
 
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjHh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
@@ -151,7 +151,7 @@
                 <div class="fs-3 fw-bold text-dark mb-4 mt-2">
                     $$(x+y)^{\mathbf{n}}$$
                 </div>
-                <input type="number" id="n-input" value="4" required step="1" min="0" max="15"
+                <input type="number" id="n-input" required step="1" min="0" max="15"
                        placeholder="Enter n (e.g., 4)"
                        class="form-control input-field shadow-sm">
                 <p class="form-text text-muted mt-2">Max limit is 15. $n$ must be a whole number.</p>
@@ -195,7 +195,7 @@
 
 <script>
     /**
-     * Calculates the combination (nCr) using the optimized formula. (Logic unchanged)
+     * Calculates the combination (nCr) using the optimized formula. 
      */
     function calculateCombination(n, r) {
         if (r === 0 || r === n) return 1;
@@ -213,7 +213,7 @@
     }
     
     /**
-     * Formats the power expression for a variable. (Logic unchanged)
+     * Formats the power expression for a variable.
      */
     function formatPower(variable, power) {
         if (power === 0) return '';
@@ -249,9 +249,12 @@
     document.getElementById('binomial-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const n = parseInt(document.getElementById('n-input').value.trim());
+        const nInput = document.getElementById('n-input').value.trim();
+        const n = parseInt(nInput);
         
         const outputDiv = document.getElementById('solution-output');
+        
+        // Hide previous results instantly on form submit
         outputDiv.classList.add('d-none');
         document.getElementById('breakdown-section').classList.add('d-none');
         outputDiv.className = 'result-box'; 
@@ -261,8 +264,8 @@
         let resultClass = '';
 
         // --- Input Validation ---
-        if (isNaN(n) || n < 0 || !Number.isInteger(n)) {
-            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a non-negative integer for the exponent $n$.</p>`;
+        if (nInput === '' || isNaN(n) || n < 0 || !Number.isInteger(n)) {
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a non-negative whole number for the exponent $n$.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent, '');
             return;
@@ -284,7 +287,6 @@
             const yPower = k;
             
             // Format coefficient: only show if not 1 and not the first term (unless n=0)
-            const isFirstTerm = (k === 0);
             const coeffDisplay = (coefficient === 1 && (xPower > 0 || yPower > 0)) ? '' : coefficient.toLocaleString();
             
             // Format power terms
@@ -301,9 +303,19 @@
             }
             // Handle n=1 case (where 1x + 1y should be x + y)
             if (n === 1) {
+                // If k=0, term is 'x'. If k=1, term is 'y'.
                 term = (k === 0) ? 'x' : 'y';
             }
-            
+            // Fix: If coefficient is 1, and only one term is present (e.g., k=0 for n=2 -> 1x^2), ensure '1' is omitted.
+            if (coeffDisplay === '' && term === '') {
+                 // This should only happen for C(n,k) = 1 and both powers are 0, which is only n=0, k=0, handled above.
+                 // Otherwise, ensure term starts with a coefficient or a variable.
+                 if (n !== 0) {
+                    term = xTerm || yTerm;
+                 }
+            }
+
+
             terms.push(term);
 
             // --- Breakdown Content Generation ---
@@ -311,7 +323,7 @@
                 <div class="term-row">
                     <div class="term-col-left">Term ${k + 1} ($k=${k}$):</div>
                     <div class="term-col-right">
-                        $$\\mathbf{\\text{C}(${n}, ${k})} \\cdot ${xTerm || '1'} \\cdot ${yTerm || '1'} = ${term}$$
+                        $$\\mathbf{\\text{C}(${n}, ${k})} \\cdot ${formatPower('x', xPower) || '1'} \\cdot ${formatPower('y', yPower) || '1'} = ${term}$$
                     </div>
                 </div>
             `;
@@ -336,9 +348,6 @@
         displayResult(resultClass, htmlContent, breakdownHtml);
     });
 
-    // Initial setup to render the math for the default value on load
-    window.onload = function() {
-        document.getElementById('binomial-form').dispatchEvent(new Event('submit'));
-    };
+    // FIX: Removed window.onload function, so the page loads clean and empty.
 </script>
 {% endblock %}

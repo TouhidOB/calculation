@@ -2,12 +2,14 @@
 {% block title %}Annual Budget Planner{% endblock %}
 {% block meta_description %}Plan your full-year budget including income and expenses{% endblock %}
 {% block meta_keywords %}annual budget, yearly planner, finance{% endblock %}
+
 {% block extra_head %}
 <style>
 .calc-wrapper{background:white;padding:25px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.05);}
 .section-title{font-weight:bold;margin-top:20px;}canvas{margin-top:20px;}
 </style>
 {% endblock %}
+
 {% block content %}
 <div class="container">
 <h1 class="mb-3">Annual Budget Planner</h1>
@@ -22,6 +24,10 @@
 <canvas id="annual-chart" class="d-none"></canvas>
 </div>
 </div>
+
+
+
+
 {% endblock %}
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

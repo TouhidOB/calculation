@@ -7,7 +7,6 @@
 {% block meta_keywords %}base converter, binary, decimal, hexadecimal, octal, radix, computer science, number conversion{% endblock %}
 
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
 <style>
     /* 🎨 Define Custom Theme Colors using CSS Variables */
@@ -146,7 +145,7 @@
             <h3 class="fs-4 fw-bold text-center text-success mb-4" style="color: var(--green-dark);">Input Number & Base</h3>
             
             <label for="number-input" class="d-block fw-semibold mb-2 text-center text-dark">Enter Number:</label>
-            <input type="text" id="number-input" value="101011" required 
+            <input type="text" id="number-input" required 
                    placeholder="e.g., A5, 101011, 23, 45"
                    class="form-control input-field shadow-sm text-uppercase"
                    oninput="convertBase()">
@@ -161,7 +160,7 @@
             
         </div>
 
-        <div id="solution-output" class="output-grid">
+        <div id="solution-output" class="output-grid d-none">
             </div>
         
     </div>
@@ -188,6 +187,8 @@
         button.classList.add('active');
         
         currentRadix = parseInt(button.dataset.radix);
+        
+        // Always call convertBase() when the base changes to update results based on the current input value
         convertBase();
     }
 
@@ -216,15 +217,16 @@
         const inputStr = inputElement.value.trim().toUpperCase(); // Hex uses uppercase
 
         outputDiv.innerHTML = ''; // Clear previous results
+        outputDiv.classList.add('d-none'); // Hide the grid if input is empty or invalid
 
         if (inputStr === '') {
+            // If input is empty, just keep the output hidden and exit
             return;
         }
 
-        // --- 1. Convert Input String to Decimal (Base 10) ---
+        // --- 1. Convert Input String to Decimal (Base 10) and Validate ---
         let decimalValue;
         
-        // --- Input Validation Check (Crucial for base conversion) ---
         // Create a regex pattern based on the current radix
         let validPattern;
         switch (currentRadix) {
@@ -232,37 +234,32 @@
             case 8: validPattern = /^[0-7]+$/; break;
             case 10: validPattern = /^\d+$/; break;
             case 16: validPattern = /^[0-9A-F]+$/; break;
-            default: validPattern = /./; // Fallback, should not happen
+            default: validPattern = /./; 
         }
 
-        // Check if the input string contains only valid characters for the radix
-        if (!validPattern.test(inputStr) && inputStr.length > 0) {
+        // Check for valid characters
+        if (!validPattern.test(inputStr)) {
             const htmlContent = `<p class="fw-bold">Invalid Input for Base ${currentRadix}</p><p>Please ensure your number contains only valid digits/characters for the selected base.</p>`;
             outputDiv.innerHTML = `<div class="result-error">${htmlContent}</div>`;
+            outputDiv.classList.remove('d-none'); // Show error
             return;
         }
 
-        // Attempt the conversion now that the string is validated
+        // Attempt the conversion
         try {
-            // Check if the number is too large for standard JS numbers (2^53 - 1)
-            // If it's too long for a 53-bit integer, use BigInt. However, toString(radix) for BigInts is still limited.
-            // Sticking to standard parseInt for common use cases.
-            decimalValue = parseInt(inputStr, currentRadix);
+            // Using BigInt for larger number support (if input is within BigInt string length limits)
+            decimalValue = BigInt(parseInt(inputStr, currentRadix));
         } catch (e) {
-            decimalValue = NaN;
-        }
-
-
-        // Final check on decimalValue correctness
-        if (isNaN(decimalValue)) {
+            // Fallback for errors like non-integer values or numbers too large for BigInt constructor
             const htmlContent = `<p class="fw-bold">Input Error</p><p>The number is too large or contains an unhandled error.</p>`;
             outputDiv.innerHTML = `<div class="result-error">${htmlContent}</div>`;
+            outputDiv.classList.remove('d-none'); // Show error
             return;
         }
 
-        // --- 2. Convert Decimal to all other bases ---
+
+        // --- 2. Convert Decimal (BigInt) to all other bases ---
         
-        // Define all target bases and their names/classes
         const conversions = [
             { radix: 2, name: 'Binary (Base 2)', class: 'result-bin' },
             { radix: 8, name: 'Octal (Base 8)', class: 'result-oct' },
@@ -273,18 +270,24 @@
         let htmlContent = '';
         
         conversions.forEach(conversion => {
-            let convertedValue = decimalValue.toString(conversion.radix);
+            let convertedValue;
             let cardClass = conversion.class;
 
+            try {
+                // Use the BigInt's built-in toString method
+                convertedValue = decimalValue.toString(conversion.radix);
+            } catch (e) {
+                convertedValue = "ERROR";
+            }
+            
             // Hex is traditionally uppercase
             if (conversion.radix === 16) {
                 convertedValue = convertedValue.toUpperCase();
             }
             
-            // Mark the source base with a dashed border for clarity
+            // Mark the source base with a dashed border and use the original, validated input string
             if (conversion.radix === currentRadix) {
                 cardClass += ' border-dashed';
-                // Use the original input string (which may contain a mix of cases before the conversion)
                 convertedValue = inputStr; 
             }
 
@@ -292,13 +295,19 @@
         });
 
         outputDiv.innerHTML = htmlContent;
+        outputDiv.classList.remove('d-none'); // Show results
     }
 
     // Initialize the calculator on load
     window.onload = function() {
-        // Set the initial active button style
+        // Set the initial active button style for Binary (Base 2)
+        // This ensures the correct button is highlighted when the page loads
         selectBase(document.querySelector('.base-selector button[data-radix="2"]'));
-        // selectBase calls convertBase()
+        
+        // FIX: Removed the automatic call to convertBase() by itself here.
+        // The convertBase() is now only called when:
+        // 1. A key is pressed in the input field (oninput="convertBase()").
+        // 2. A base selector button is clicked (selectBase calls convertBase()).
     };
 </script>
 {% endblock %}
