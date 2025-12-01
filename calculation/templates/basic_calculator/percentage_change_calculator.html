@@ -2,16 +2,27 @@
 
 {% block title %}Percentage Change Calculator{% endblock %}
 
-{% block meta_description %}Calculate the percentage change (increase or decrease) between an initial value and a final value. Formula: ((V_final - V_initial) / V_initial) * 100{% endblock %}
+{% block meta_description %}Calculate the percentage change (increase or decrease) between an initial value and a final value. Formula: $\frac{V_{final} - V_{initial}}{V_{initial}} \cdot 100$.{% endblock %}
 
 {% block meta_keywords %}percentage change, percentage increase, percentage decrease, growth rate, financial math{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Indigo/Blue Theme for Bootstrap) */
+    :root {
+        --indigo-main: #6610f2; /* Custom Indigo (Bootstrap secondary shade) */
+        --indigo-dark: #4f46e5; /* Dark Indigo for labels */
+        --lavender-pale: #fbfaff; /* Solver Wrapper Background */
+        --lavender-light: #f5f3ff; /* Input Section Background */
+        --indigo-accent: #a5b4fc; /* Medium Indigo border */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #fbfaff; /* Very light lavender/blue background */
+        background: var(--lavender-pale);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,63 +31,66 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .input-grid {
+    .input-grid-custom {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
         padding: 20px;
         border-radius: 8px;
-        background-color: #f5f3ff; /* Lightest purple */
+        background-color: var(--lavender-light);
         border: 1px solid #c7d2fe;
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #4f46e5; /* Indigo */
+        color: var(--indigo-dark);
         margin-bottom: 5px;
         display: block;
         text-align: center;
     }
 
     .input-field {
-        width: 100%;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #a5b4fc; /* Medium indigo border */
+        border: 2px solid var(--indigo-accent);
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
         color: #3730a3;
     }
+    .input-field:focus {
+        border-color: var(--indigo-main);
+        box-shadow: 0 0 0 0.25rem rgba(102, 16, 242, 0.25);
+    }
     
-    .result-box {
+    .result-box-custom {
         margin-top: 25px;
         padding: 20px;
         border-radius: 12px;
         border-left: 5px solid;
     }
 
-    /* Custom result styles */
+    /* Custom result styles using Bootstrap colors */
     .result-increase {
-        border-left-color: #10b981; /* Green */
-        background-color: #ecfdf5;
-        color: #065f46;
+        border-left-color: var(--bs-success); 
+        background-color: #d1e7dd; /* Light success */
+        color: var(--bs-success-text);
     }
     .result-decrease {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: var(--bs-danger); 
+        background-color: #f8d7da; /* Light danger */
+        color: var(--bs-danger-text);
     }
     .result-no-change {
-        border-left-color: #6366f1; /* Indigo */
-        background-color: #eef2ff;
-        color: #4338ca;
+        border-left-color: var(--bs-info); 
+        background-color: #cff4fc; /* Light info */
+        color: var(--bs-info-text);
     }
     .result-error {
-        border-left-color: #f59e0b; /* Amber */
-        background-color: #fffbeb;
-        color: #b45309;
+        border-left-color: var(--bs-warning); 
+        background-color: #fff3cd; /* Light warning */
+        color: var(--bs-warning-text);
     }
 
     .output-text {
@@ -95,40 +109,41 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Percentage Change Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">Calculate the change between an initial and final value: $\\frac{V_{final} - V_{initial}}{V_{initial}} \cdot 100$</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Percentage Change Calculator</h1>
+    <p class="text-secondary mb-4 text-center">
+        Calculate the change between an **Initial Value** and a **Final Value** using: $\mathbf{\frac{V_{final} - V_{initial}}{V_{initial}} \cdot 100}$
+    </p>
 
-    <div class="solver-wrapper">
-        <form id="percentage-change-form" class="space-y-6">
+    <div class="solver-wrapper shadow-lg">
+        <form id="percentage-change-form" class="d-grid gap-4">
             
-            <div class="input-grid shadow-lg">
+            <div class="input-grid-custom shadow-sm">
                 <div class="input-box">
-                    <label for="initial-value-input">Initial Value ($V_{initial}$):</label>
-                    <input type="number" id="initial-value-input" value="100" required step="any"
+                    <label for="initial-value-input">Initial Value ($\mathbf{V_{initial}}$):</label>
+                    <input type="number" id="initial-value-input" required step="any"
                            placeholder="e.g., 100 (Start)"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
                 <div class="input-box">
-                    <label for="final-value-input">Final Value ($V_{final}$):</label>
-                    <input type="number" id="final-value-input" value="125" required step="any"
+                    <label for="final-value-input">Final Value ($\mathbf{V_{final}}$):</label>
+                    <input type="number" id="final-value-input" required step="any"
                            placeholder="e.g., 125 (End)"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 mt-3 shadow-xl text-white"
+                    style="background-color: var(--indigo-main); border-color: var(--indigo-main);">
                 Calculate Change
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Result</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Result</h2>
+            <div id="solution-output" class="result-box-custom d-none">
+                </div>
         </div>
         
     </div>
@@ -136,6 +151,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
     document.getElementById('percentage-change-form').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -147,8 +163,8 @@
         const V_final = parseFloat(V_final_input);
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
-        outputDiv.className = 'result-box'; 
+        outputDiv.classList.add('d-none');
+        outputDiv.classList.remove('result-increase', 'result-decrease', 'result-no-change', 'result-error');
         outputDiv.innerHTML = '';
 
         let htmlContent = '';
@@ -156,14 +172,14 @@
 
         // --- Input Validation ---
         if (V_initial_input === '' || V_final_input === '' || isNaN(V_initial) || isNaN(V_final)) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for both initial and final values.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for both initial and final values.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
         }
 
         if (V_initial === 0) {
-            htmlContent = `<p class="font-bold text-center">Division by Zero Error</p><p class="text-center">The initial value ($V_{initial}$) cannot be zero when calculating percentage change.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Division by Zero Error</p><p class="text-center">The initial value ($\mathbf{V_{initial}}$) cannot be zero when calculating percentage change.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -174,30 +190,30 @@
         const percentageChange = (change / V_initial) * 100;
         
         // Format the result to two decimal places
-        const formattedPercentage = Math.abs(percentageChange).toFixed(2);
+        const formattedAbsolutePercentage = Math.abs(percentageChange).toFixed(2);
         
         // --- Result Display ---
         
         if (percentageChange > 0) {
             // Increase
-            htmlContent += `<p class="output-text text-green-700">Percentage Increase</p>`;
-            htmlContent += `<div class="output-value text-green-700">$$\\mathbf{+${formattedPercentage}\\%}$$</div>`;
+            htmlContent += `<p class="output-text text-success">Percentage Increase</p>`;
+            htmlContent += `<div class="output-value text-success">$$\\mathbf{+${formattedAbsolutePercentage}\\%}$$</div>`;
             resultClass = 'result-increase';
-            htmlContent += `<p class="output-text text-sm mt-4">The value increased by ${formattedPercentage}\\%.</p>`;
+            htmlContent += `<p class="output-text small mt-4">The value increased from $\\mathbf{${V_initial}}$ to $\\mathbf{${V_final}}$ by **${formattedAbsolutePercentage}\\%**.</p>`;
 
         } else if (percentageChange < 0) {
             // Decrease
-            htmlContent += `<p class="output-text text-red-700">Percentage Decrease</p>`;
-            htmlContent += `<div class="output-value text-red-700">$$\\mathbf{-${formattedPercentage}\\%}$$</div>`;
+            htmlContent += `<p class="output-text text-danger">Percentage Decrease</p>`;
+            htmlContent += `<div class="output-value text-danger">$$\\mathbf{-${formattedAbsolutePercentage}\\%}$$</div>`;
             resultClass = 'result-decrease';
-            htmlContent += `<p class="output-text text-sm mt-4">The value decreased by ${formattedPercentage}\\%.</p>`;
+            htmlContent += `<p class="output-text small mt-4">The value decreased from $\\mathbf{${V_initial}}$ to $\\mathbf{${V_final}}$ by **${formattedAbsolutePercentage}\\%**.</p>`;
 
         } else {
             // No Change
-            htmlContent += `<p class="output-text text-indigo-700">No Change</p>`;
-            htmlContent += `<div class="output-value text-indigo-700">$$\\mathbf{0.00\\%}$$</div>`;
+            htmlContent += `<p class="output-text text-info">No Change</p>`;
+            htmlContent += `<div class="output-value text-info">$$\\mathbf{0.00\\%}$$</div>`;
             resultClass = 'result-no-change';
-            htmlContent += `<p class="output-text text-sm mt-4">The initial and final values are the same.</p>`;
+            htmlContent += `<p class="output-text small mt-4">The initial and final values are the same: $\\mathbf{${V_initial}} = \\mathbf{${V_final}}$.</p>`;
         }
         
         displayResult(resultClass, htmlContent);
@@ -210,7 +226,12 @@
         const outputDiv = document.getElementById('solution-output');
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
+
+        // Trigger MathJax re-render
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
+        }
     }
 </script>
 {% endblock %}

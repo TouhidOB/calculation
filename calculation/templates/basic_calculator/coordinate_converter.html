@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Polar/Rectangular Coordinates Converter{% endblock %}
+{% block title %}Polar, Rectangular Coordinates Converter{% endblock %}
 
 {% block meta_description %}Convert coordinates between Rectangular (x, y) and Polar (r, $\theta$) forms.{% endblock %}
 
@@ -133,7 +133,7 @@
                         <div class="col-6">
                             <div class="input-box">
                                 <label for="x-input">X-Coordinate (**x**):</label>
-                                <input type="number" id="x-input" value="3" required step="any"
+                                <input type="number" id="x-input" required step="any"
                                        placeholder="x"
                                        class="form-control input-field shadow-sm">
                             </div>
@@ -141,7 +141,7 @@
                         <div class="col-6">
                             <div class="input-box">
                                 <label for="y-input">Y-Coordinate (**y**):</label>
-                                <input type="number" id="y-input" value="4" required step="any"
+                                <input type="number" id="y-input" required step="any"
                                        placeholder="y"
                                        class="form-control input-field shadow-sm">
                             </div>
@@ -166,7 +166,7 @@
                         <div class="col-6">
                             <div class="input-box">
                                 <label for="r-input">Radius (**r**):</label>
-                                <input type="number" id="r-input" value="5" required step="any"
+                                <input type="number" id="r-input" required step="any"
                                        placeholder="r"
                                        class="form-control input-field shadow-sm">
                             </div>
@@ -174,7 +174,7 @@
                         <div class="col-6">
                             <div class="input-box">
                                 <label for="theta-deg-input">Angle ($\theta$ in **deg**):</label>
-                                <input type="number" id="theta-deg-input" value="53.13" required step="any"
+                                <input type="number" id="theta-deg-input" required step="any"
                                        placeholder="Angle (deg)"
                                        class="form-control input-field shadow-sm">
                             </div>
@@ -319,10 +319,7 @@
         displayResult('rect-output', 'result-card', htmlContent);
     });
     
-    // Initial calculation for default values
-    window.onload = function() {
-        document.getElementById('rect-to-polar-form').dispatchEvent(new Event('submit'));
-        document.getElementById('polar-to-rect-form').dispatchEvent(new Event('submit'));
-    };
+    // The previous window.onload block for initial calculation has been removed.
+    // The outputs will now remain hidden until the user clicks a "Calculate" button.
 </script>
 {% endblock %}

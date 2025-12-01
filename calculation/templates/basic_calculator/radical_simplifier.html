@@ -7,31 +7,31 @@
 {% block meta_keywords %}radical, square root, simplify, radicand, perfect square, algebra, math calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <style>
-    /* Styling for the central calculation block (Orange/Red Theme) */
+    /* Custom styling to ensure the calculator card looks nice and centered (Red Theme) */
     .solver-wrapper {
-        background: #fffdfd; /* Light, clean background */
+        background: #ffffff;
         padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         max-width: 550px;
         margin: 0 auto;
-        font-family: 'Inter', sans-serif;
     }
     
     .input-section {
         padding: 25px;
-        border-radius: 10px;
-        background-color: #fef2f2; /* Light red/pink */
-        border: 2px solid #ef4444; /* Red accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border-radius: 0.5rem;
+        /* Using a light red/danger background */
+        background-color: #f8d7da; /* Light danger alert color */
+        border: 2px solid #dc3545; /* Bootstrap Red accent */
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
     }
     
     .input-box label {
         font-size: 1rem;
         font-weight: 600;
-        color: #7f1d1d; /* Dark Red */
+        color: #842029; /* Dark Red text */
         display: block;
         margin-bottom: 5px;
         text-align: center;
@@ -41,11 +41,11 @@
         width: 100%;
         padding: 15px 12px;
         font-size: 1.5rem;
-        border: 3px solid #f87171; 
-        border-radius: 8px;
+        border: 3px solid #f5c2c7; /* Lighter red border */
+        border-radius: 0.5rem;
         text-align: center;
         font-weight: 700;
-        color: #b91c1c;
+        color: #dc3545; /* Deep Red text */
     }
     
     .result-section {
@@ -54,16 +54,16 @@
 
     .result-card {
         padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #fef2f2; /* Lighter Red/Pink */
-        border-left: 5px solid #dc2626; /* Deep Red accent */
+        border-radius: 0.5rem;
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+        background-color: #f8d7da; /* Light Red/Pink */
+        border-left: 5px solid #dc3545; /* Deep Red accent (Danger) */
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Red */
+        background-color: #f8d7da;
+        color: #842029;
         padding: 20px;
         border-radius: 8px;
     }
@@ -72,7 +72,7 @@
         font-size: 1.2rem;
         font-weight: 700;
         text-align: center;
-        color: #1f2937;
+        color: #212529;
         margin-bottom: 10px;
     }
 
@@ -80,27 +80,26 @@
         font-size: 3rem;
         font-weight: 900;
         text-align: center;
-        color: #dc2626; /* Deep Red */
+        color: #dc3545; /* Deep Red */
         word-break: break-all;
     }
 
     .explanation {
         margin-top: 15px;
         font-size: 0.95rem;
-        color: #57534e;
+        color: #6c757d; /* Secondary gray */
         line-height: 1.5;
-        border-top: 1px dashed #fecaca;
+        border-top: 1px dashed #f5c2c7;
         padding-top: 10px;
         text-align: center;
     }
-    
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Radical Simplifier ($\mathbf{\sqrt{N}}$)</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bold mb-2 text-dark">Radical Simplifier ($\mathbf{\sqrt{N}}$) ➗</h1>
+    <p class="text-secondary mb-5 text-center">
         Enter the number under the radical (radicand $N$) to find the simplest form $\mathbf{A\sqrt{B}}$.
     </p>
 
@@ -108,22 +107,23 @@
         
         <div class="input-section">
             <form id="radical-form">
-                <div class="input-box">
+                <div class="input-box mb-4">
                     <label for="radicand-n">Enter Radicand ($\mathbf{N}$, must be a positive integer):</label>
-                    <input type="number" id="radicand-n" value="72" required step="1" min="1"
+                    <input type="number" id="radicand-n" value="" required step="1" min="1"
                            placeholder="e.g., 72 or 150"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="input-field form-control shadow-sm">
                 </div>
                 
                 <button type="submit"
-                        class="w-full bg-red-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-red-700 transition duration-150 transform hover:scale-[1.01]">
+                        class="btn btn-danger w-100 fw-bold py-3 shadow-sm hover-shadow">
                     Simplify Radical
                 </button>
             </form>
         </div>
 
         <div id="result-container" class="result-section">
-            <div id="solution-output" class="result-card hidden"></div>
+            <div id="solution-output" class="result-card d-none">
+                </div>
         </div>
         
     </div>
@@ -131,29 +131,37 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <script>
     /**
-     * Updates the UI with the calculation result or error.
+     * Updates the UI with the calculation result or error, and triggers MathJax.
      */
     function displayResult(isError, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        
+        // Reset and apply new classes
+        outputDiv.classList.remove('d-none', 'result-error', 'result-card');
         
         if (isError) {
-            outputDiv.classList.add('result-error');
+            outputDiv.classList.add('result-error', 'alert', 'alert-danger'); // Use alert for error state
             outputDiv.classList.remove('result-card');
         } else {
             outputDiv.classList.add('result-card');
-            outputDiv.classList.remove('result-error');
+            outputDiv.classList.remove('result-error', 'alert', 'alert-danger');
         }
         outputDiv.innerHTML = contentHtml;
+        
+        // Trigger MathJax typesetting for the new content
+        if (typeof MathJax !== 'undefined') {
+             MathJax.typesetPromise([outputDiv]);
+        }
     }
 
-    /**
-     * Finds the largest perfect square factor of N.
-     * @param {number} N - The radicand (positive integer).
-     * @returns {{A: number, B: number, P: number}} - A is outside, B is inside, P is the perfect square factor.
-     */
+
     function simplifyRadicalValue(N) {
         if (N <= 0) return { A: 0, B: N, P: 0 }; 
 
@@ -184,9 +192,17 @@
 
         const inputElement = document.getElementById('radicand-n');
         const nStr = inputElement.value.trim();
+        
+        // Use standard input validation first
+        if (!inputElement.checkValidity()) {
+            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a number.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
         const N = parseInt(nStr, 10);
         
-        if (isNaN(N) || N <= 0 || !Number.isInteger(N)) {
+        if (!Number.isInteger(N) || N <= 0) {
             const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive whole number (integer) greater than zero.</p>`;
             displayResult(true, htmlContent);
             return;
@@ -200,7 +216,7 @@
         if (B === 1) {
             // Perfect square case (e.g., sqrt(49) = 7)
             resultDisplay = A.toString();
-            explanationText = `The radicand $\\mathbf{${N}}$ is a perfect square ($\mathbf{${P}}$). The simplified form is an integer.`;
+            explanationText = `The radicand $\\mathbf{${N}}$ is a perfect square ($\\mathbf{${P}}$). The simplified form is an integer.`;
         } else if (A === 1) {
             // Already simplest form (e.g., sqrt(10))
             resultDisplay = `\\sqrt{${B}}`;
@@ -208,7 +224,7 @@
         } else {
             // Standard simplified form (e.g., sqrt(72) = 6*sqrt(2))
             resultDisplay = `${A}\\sqrt{${B}}`;
-            explanationText = `The largest perfect square factor of $\\mathbf{${N}}$ is $\\mathbf{${P}}$. We simplify $\\sqrt{${N}} = \\sqrt{${P} \\cdot ${B}} = ${A}\\sqrt{${B}}$.`;
+            explanationText = `The largest perfect square factor of $\\mathbf{${N}}$ is $\\mathbf{${P}}$. We simplify: $\\sqrt{${N}} = \\sqrt{${P} \\cdot ${B}} = ${A}\\sqrt{${B}}$.`;
         }
 
         // Result Display
@@ -228,10 +244,10 @@
     // Attach handler to the form
     document.getElementById('radical-form').addEventListener('submit', handleRadicalSimplification);
 
-    // Initial calculation for default value (72)
+    // Initial setup on load: Ensure a clean start by hiding the output.
     window.onload = function() {
-        // Manually trigger the calculation for the default value on load
-        document.getElementById('radical-form').dispatchEvent(new Event('submit'));
+        // Hiding the output on load ensures a clean, empty start for the visitor.
+        document.getElementById('solution-output').classList.add('d-none');
     };
 </script>
 {% endblock %}

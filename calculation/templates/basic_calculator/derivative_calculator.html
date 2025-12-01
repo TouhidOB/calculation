@@ -98,8 +98,8 @@
         <form id="derivative-form" class="d-grid gap-4">
             
             <div class="input-group-custom shadow-md">
-                <label for="function-input">f(x) =</label>
-                <input type="text" id="function-input" value="3*x^2 + sin(x) + 5" required
+                <label for="function-input">f(x):</label>
+                <input type="text" id="function-input" required
                        placeholder="e.g., 2*x^3 - 4*x + 1"
                        class="form-control shadow-sm">
             </div>
@@ -318,9 +318,6 @@
         }
     }
     
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('derivative-form').dispatchEvent(new Event('submit'));
-    };
+    // REMOVED: window.onload function to prevent automatic calculation on page load.
 </script>
 {% endblock %}

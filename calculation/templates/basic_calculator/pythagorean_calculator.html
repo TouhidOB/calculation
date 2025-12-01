@@ -7,113 +7,67 @@
 {% block meta_keywords %}Pythagorean theorem, right triangle, hypotenuse, leg, a^2 + b^2 = c^2, geometry, math calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <style>
-    /* Styling for the central calculation block (Brown/Red Theme) */
+    /* Custom styling to match the original calculator's visual weight and central focus */
     .solver-wrapper {
-        background: #fdfcf9; /* Off-white/cream background */
+        background: #fff; /* White background for the card */
         padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         max-width: 650px;
         margin: 0 auto;
-        font-family: 'Inter', sans-serif;
     }
     
     .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #fef3c7; /* Light amber */
-        border: 2px solid #b45309; /* Dark brown/orange accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #78350f; /* Dark brown */
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .input-field {
-        width: 100%;
-        padding: 10px;
-        font-size: 1.1rem;
-        border: 2px solid #d97706; /* Orange border */
-        border-radius: 6px;
-        text-align: center;
-        font-weight: 600;
-        color: #78350f;
-    }
-    
-    .result-section {
-        margin-top: 30px;
-    }
-
-    .result-card {
         padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        background-color: #fffbeb; /* Very light amber */
-        border-left: 5px solid #ef4444; /* Red accent */
-    }
-
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
+        border-radius: 0.5rem;
+        /* Using a light primary color background */
+        background-color: #e9ecef; /* Light gray from Bootstrap utility colors (subtle) */
+        border: 1px solid #dee2e6;
     }
     
-    .output-label {
-        font-size: 1.2rem;
-        font-weight: 700;
-        text-align: center;
-        color: #1f2937;
-        margin-bottom: 10px;
-    }
-
     .output-value {
         font-size: 2.5rem;
         font-weight: 800;
         text-align: center;
-        color: #dc2626; /* Deep red */
+        color: #dc3545; /* Bootstrap's 'danger' red */
         word-break: break-all;
     }
 
     .formula-applied {
         margin-top: 15px;
         font-size: 0.9rem;
-        color: #57534e;
+        color: #6c757d; /* Bootstrap's 'secondary' gray */
         line-height: 1.5;
-        border-top: 1px dashed #fcd34d;
+        border-top: 1px dashed #adb5bd;
         padding-top: 10px;
         text-align: center;
     }
-    
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Pythagorean Theorem Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">
-        Use the formula $\mathbf{a^2 + b^2 = c^2}$ to find the length of the unknown side in a right triangle.
+<div class="container my-5">
+    <h1 class="text-center fw-bold mb-2 text-dark">Pythagorean Theorem Calculator 📐</h1>
+    <p class="text-secondary mb-5 text-center">
+        Use the formula $\mathbf{a^2 + b^2 = c^2}$ to find the length of the unknown side in a right triangle. 
+
+[Image of a right-angled triangle with sides labeled a, b, and c]
+
     </p>
 
     <div class="solver-wrapper">
         
         <div class="input-section">
-            <h3 class="text-xl font-bold text-center text-amber-800 mb-4">Input Known Sides</h3>
+            <h3 class="text-center text-primary fw-bold mb-4">Input Known Sides</h3>
             
-            <form id="pythagorean-form" class="space-y-4">
+            <form id="pythagorean-form" class="space-y-3">
                 
-                <div class="input-box">
-                    <label for="calculate-mode">Select Unknown Side:</label>
+                <div class="mb-3">
+                    <label for="calculate-mode" class="form-label fw-bold">Select Unknown Side:</label>
                     <select id="calculate-mode" 
-                            class="input-field shadow-inner focus:shadow-xl transition-shadow bg-white" 
+                            class="form-select" 
                             onchange="updateInputLabels()">
                         <option value="c">Hypotenuse ($\mathbf{c}$) - Given $\mathbf{a}$ and $\mathbf{b}$</option>
                         <option value="a">Leg ($\mathbf{a}$) - Given $\mathbf{c}$ and $\mathbf{b}$</option>
@@ -121,36 +75,42 @@
                     </select>
                 </div>
 
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="input-box">
-                        <label id="label-a" for="input-a">Leg $\mathbf{a}$:</label>
-                        <input type="number" id="input-a" value="3" step="any" required
-                               placeholder="Side a"
-                               class="input-field">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label id="label-a" for="input-a" class="form-label fw-semibold">Leg $\mathbf{a}$:</label>
+                            <input type="number" id="input-a" value="" step="any" required
+                                   placeholder="Side a"
+                                   class="form-control text-center">
+                        </div>
                     </div>
-                    <div class="input-box">
-                        <label id="label-b" for="input-b">Leg $\mathbf{b}$:</label>
-                        <input type="number" id="input-b" value="4" step="any" required
-                               placeholder="Side b"
-                               class="input-field">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label id="label-b" for="input-b" class="form-label fw-semibold">Leg $\mathbf{b}$:</label>
+                            <input type="number" id="input-b" value="" step="any" required
+                                   placeholder="Side b"
+                                   class="form-control text-center">
+                        </div>
                     </div>
-                    <div class="input-box">
-                        <label id="label-c" for="input-c">Hypotenuse $\mathbf{c}$:</label>
-                        <input type="number" id="input-c" value="" step="any" disabled
-                               placeholder="Calculated c"
-                               class="input-field bg-gray-200">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label id="label-c" for="input-c" class="form-label fw-semibold">Hypotenuse $\mathbf{c}$:</label>
+                            <input type="number" id="input-c" value="" step="any" disabled
+                                   placeholder="Calculated c"
+                                   class="form-control text-center bg-light">
+                        </div>
                     </div>
                 </div>
 
                 <button type="submit"
-                        class="w-full bg-red-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-red-700 transition duration-150 transform hover:scale-[1.01]">
+                        class="btn btn-danger w-100 fw-bold py-3 mt-4 shadow-sm">
                     Calculate Unknown Side
                 </button>
             </form>
         </div>
 
-        <div id="result-container" class="result-section">
-            <div id="solution-output" class="result-card hidden"></div>
+        <div id="result-container" class="mt-4">
+            <div id="solution-output" class="card d-none"></div>
         </div>
         
     </div>
@@ -158,6 +118,11 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <script>
     /**
      * Updates the UI to enable/disable inputs and change labels based on the selected mode.
@@ -175,25 +140,30 @@
             'c': document.getElementById('label-c')
         };
 
-        // Reset all inputs to be enabled and non-disabled
+        // 1. Reset all inputs to be enabled and non-disabled/non-required
         inputs.forEach(input => {
             input.disabled = false;
-            input.classList.remove('bg-gray-200');
+            input.classList.remove('bg-light'); // Remove disabled background
             input.required = true;
-            input.value = ''; // Clear values when switching mode
+            input.value = ''; // Clear values
+            input.placeholder = `Side ${input.id.slice(-1)}`; // Reset placeholder
         });
         
-        // Disable the input corresponding to the mode (the unknown side)
+        // 2. Disable the input corresponding to the mode (the unknown side)
         const unknownInput = document.getElementById(`input-${mode}`);
         unknownInput.disabled = true;
         unknownInput.required = false;
-        unknownInput.value = 'Calculated...';
-        unknownInput.classList.add('bg-gray-200');
+        unknownInput.value = ''; // Ensure it's empty
+        unknownInput.placeholder = 'Calculated...';
+        unknownInput.classList.add('bg-light');
 
-        // Update labels to visually indicate the known/unknown role
+        // 3. Update labels
         labels['a'].textContent = mode === 'a' ? 'Unknown Leg a' : 'Leg a';
         labels['b'].textContent = mode === 'b' ? 'Unknown Leg b' : 'Leg b';
         labels['c'].textContent = mode === 'c' ? 'Unknown Hypotenuse c' : 'Hypotenuse c';
+
+        // 4. Hide the results container when switching mode
+        document.getElementById('solution-output').classList.add('d-none');
     }
 
     /**
@@ -201,16 +171,22 @@
      */
     function displayResult(isError, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        
+        // Reset classes
+        outputDiv.classList.remove('d-none', 'alert', 'alert-danger', 'card', 'p-3');
         
         if (isError) {
-            outputDiv.classList.add('result-error');
-            outputDiv.classList.remove('result-card');
+            outputDiv.classList.add('alert', 'alert-danger'); // Bootstrap error styling
+            outputDiv.innerHTML = `<p class="fw-bold mb-1">Calculation Error</p>${contentHtml}`;
         } else {
-            outputDiv.classList.add('result-card');
-            outputDiv.classList.remove('result-error');
+            outputDiv.classList.add('card', 'p-3'); // Bootstrap card styling
+            outputDiv.innerHTML = contentHtml;
         }
-        outputDiv.innerHTML = contentHtml;
+
+        // Trigger MathJax typesetting for the new content
+        if (typeof MathJax !== 'undefined') {
+             MathJax.typesetPromise([outputDiv]);
+        }
     }
 
     /**
@@ -226,15 +202,23 @@
 
         // Determine known values based on the mode
         let result, known1, known2, formula, calculationSide, calculationText;
+        let errorMessage = '';
+
+        // Helper to check if a value is a valid positive number
+        const isPositiveNumber = (val) => {
+            const num = parseFloat(val);
+            return !isNaN(num) && num > 0;
+        };
 
         try {
             if (mode === 'c') {
                 // Calculate Hypotenuse c: c = sqrt(a^2 + b^2)
+                if (!isPositiveNumber(inputA) || !isPositiveNumber(inputB)) {
+                    errorMessage = "Please enter two positive numbers for Leg a and Leg b.";
+                }
+                
                 known1 = parseFloat(inputA);
                 known2 = parseFloat(inputB);
-
-                if (known1 <= 0 || known2 <= 0) throw new Error("Sides must be positive.");
-
                 result = Math.sqrt(known1 * known1 + known2 * known2);
                 formula = `c = \\sqrt{a^2 + b^2}`;
                 calculationSide = 'c';
@@ -242,12 +226,17 @@
 
             } else if (mode === 'a') {
                 // Calculate Leg a: a = sqrt(c^2 - b^2)
+                if (!isPositiveNumber(inputC) || !isPositiveNumber(inputB)) {
+                    errorMessage = "Please enter two positive numbers for Hypotenuse c and Leg b.";
+                }
+                
                 known1 = parseFloat(inputC); // Hypotenuse c
                 known2 = parseFloat(inputB); // Leg b
 
-                if (known1 <= 0 || known2 <= 0) throw new Error("Sides must be positive.");
-                if (known2 >= known1) throw new Error("Leg (b) cannot be greater than or equal to Hypotenuse (c).");
-
+                if (known2 >= known1) {
+                    errorMessage = "Leg (b) cannot be greater than or equal to Hypotenuse (c).";
+                }
+                
                 result = Math.sqrt(known1 * known1 - known2 * known2);
                 formula = `a = \\sqrt{c^2 - b^2}`;
                 calculationSide = 'a';
@@ -255,27 +244,34 @@
 
             } else if (mode === 'b') {
                 // Calculate Leg b: b = sqrt(c^2 - a^2)
+                if (!isPositiveNumber(inputC) || !isPositiveNumber(inputA)) {
+                    errorMessage = "Please enter two positive numbers for Hypotenuse c and Leg a.";
+                }
+                
                 known1 = parseFloat(inputC); // Hypotenuse c
                 known2 = parseFloat(inputA); // Leg a
 
-                if (known1 <= 0 || known2 <= 0) throw new Error("Sides must be positive.");
-                if (known2 >= known1) throw new Error("Leg (a) cannot be greater than or equal to Hypotenuse (c).");
+                if (known2 >= known1) {
+                    errorMessage = "Leg (a) cannot be greater than or equal to Hypotenuse (c).";
+                }
 
                 result = Math.sqrt(known1 * known1 - known2 * known2);
                 formula = `b = \\sqrt{c^2 - a^2}`;
                 calculationSide = 'b';
                 calculationText = `b = \\sqrt{${known1}^2 - ${known2}^2}`;
-            } else {
-                throw new Error("Invalid calculation mode selected.");
             }
 
-            // Output Formatting
+            if (errorMessage) {
+                throw new Error(errorMessage);
+            }
+            
+            // Output Formatting: toFixed(6) for precision, then remove trailing zeros
             const result_f = result.toFixed(6).replace(/\.?0+$/, '');
             
             // Result Display
             let htmlContent = `
-                <p class="output-label">Length of Side $\\mathbf{${calculationSide}}$:</p>
-                <div class="output-value">
+                <p class="output-label text-center fw-bold">Length of Side $\\mathbf{${calculationSide}}$:</p>
+                <div class="output-value mb-3">
                     $$\\mathbf{${result_f}}$$
                 </div>
                 <div class="formula-applied">
@@ -288,7 +284,7 @@
             displayResult(false, htmlContent);
 
         } catch (error) {
-            const htmlContent = `<p class="font-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
+            const htmlContent = `<p class="text-center mb-0">${error.message}</p>`;
             displayResult(true, htmlContent);
         }
     }
@@ -296,10 +292,9 @@
     // Attach handler to the form
     document.getElementById('pythagorean-form').addEventListener('submit', handlePythagoreanCalculation);
 
-    // Initial setup on load
+    // Initial setup on load: Ensure a fresh start by calling updateInputLabels, but do NOT run an initial calculation.
     window.onload = function() {
-        updateInputLabels(); // Set initial disabled state and labels
-        document.getElementById('pythagorean-form').dispatchEvent(new Event('submit')); // Calculate initial values
+        updateInputLabels();
     };
 </script>
 {% endblock %}

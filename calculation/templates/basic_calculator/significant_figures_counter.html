@@ -7,31 +7,30 @@
 {% block meta_keywords %}significant figures, sig figs, precision, measurement, rules for counting, math calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <style>
-    /* Styling for the central calculation block (Blue/Gray Theme) */
+    /* Styling for the central calculation block (Bootstrap Primary/Blue Theme) */
     .solver-wrapper {
-        background: #f8fafc; /* Lightest blue-gray background */
+        background: #f8f9fa; /* Light background */
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         max-width: 650px;
         margin: 0 auto;
-        font-family: 'Inter', sans-serif;
     }
     
     .input-section {
         padding: 25px;
         border-radius: 10px;
-        background-color: #e0f2fe; /* Light sky blue */
-        border: 2px solid #38bdf8; /* Sky Blue accent */
+        background-color: #eaf4ff; /* Very light blue */
+        border: 2px solid #0d6efd; /* Primary Blue accent */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     .input-box label {
         font-size: 1rem;
         font-weight: 500;
-        color: #0c4a6e; /* Dark blue */
+        color: #0d4484; /* Dark blue */
         display: block;
         margin-bottom: 5px;
         text-align: center;
@@ -41,11 +40,11 @@
         width: 100%;
         padding: 12px;
         font-size: 1.2rem;
-        border: 2px solid #7dd3fc; 
+        border: 2px solid #0d6efd; 
         border-radius: 6px;
         text-align: center;
         font-weight: 600;
-        color: #0f172a;
+        color: #212529;
         font-family: monospace;
     }
     
@@ -57,14 +56,14 @@
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        background-color: #f0f9ff; /* Very light blue */
-        border-left: 5px solid #0ea5e9; /* Deep blue accent */
+        background-color: #e9f0f8; /* Light blue-gray */
+        border-left: 5px solid #0d6efd; /* Deep blue accent */
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Danger (Red) */
+        background-color: #f8d7da;
+        color: #721c24;
         padding: 20px;
         border-radius: 8px;
     }
@@ -73,7 +72,7 @@
         font-size: 1.2rem;
         font-weight: 700;
         text-align: center;
-        color: #1f2937;
+        color: #212529;
         margin-bottom: 10px;
     }
 
@@ -81,16 +80,16 @@
         font-size: 2.5rem;
         font-weight: 800;
         text-align: center;
-        color: #0ea5e9; /* Sky blue */
+        color: #0d6efd; /* Primary blue */
         word-break: break-all;
     }
 
     .explanation {
         margin-top: 15px;
         font-size: 0.95rem;
-        color: #475569;
+        color: #495057;
         line-height: 1.5;
-        border-top: 1px dashed #bae6fd;
+        border-top: 1px dashed #a0c3ec;
         padding-top: 10px;
     }
     
@@ -98,37 +97,30 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Significant Figures Counter</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark">Significant Figures Counter</h1>
+    <p class="text-secondary mb-4 text-center">
         Enter a number to calculate its significant figures (SF) and understand the rules applied.
     </p>
 
     <div class="solver-wrapper">
         
         <div class="input-section">
-            <h3 class="text-xl font-bold text-center text-blue-700 mb-4">Input Number</h3>
+            <h3 class="h5 text-center text-primary fw-bold mb-4">Input Number</h3>
             
             <div class="input-box">
                 <label for="number-input">Enter Number (e.g., $0.0120$, $5400$, or $3.0 \times 10^{5}$):</label>
-                <input type="text" id="number-input" value="0.001230" required 
+                <input type="text" id="number-input" required 
                        placeholder="Enter number here..."
-                       class="input-field shadow-inner focus:shadow-xl transition-shadow"
+                       class="input-field shadow-sm form-control"
                        oninput="countSigFigs()">
             </div>
             
         </div>
 
         <div id="result-container" class="result-section">
-            <div id="solution-output" class="result-card">
-                <!-- Initial result display -->
-                <p class="output-label">Significant Figures (SF):</p>
-                <div class="output-value">
-                    $$\mathbf{4}$$
-                </div>
-                <div class="explanation">
-                    <p>Since a decimal point is present, all digits from the first non-zero digit ('1') to the very last digit, including trailing zeros (Rule 4), are significant.</p>
-                </div>
+            <div id="solution-output" class="p-4 border text-center text-muted rounded">
+                Start typing a number above to see the Significant Figures count and explanation.
             </div>
         </div>
         
@@ -137,12 +129,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
-    /**
-     * Calculates the number of significant figures in a string representation of a number.
-     * @param {string} inputStr - The user's input string.
-     * @returns {{count: (string|number), explanation: string}} The SF count and explanation.
-     */
     function calculateSigFigs(inputStr) {
         let s = inputStr.replace(/,/g, '').trim(); // Remove commas for consistency
 
@@ -170,7 +158,7 @@
 
         const hasDecimal = s.includes('.');
         let rawDigits = s.replace('.', '');
-
+        
         // Find the index of the first non-zero digit
         let firstNonZero = -1;
         for (let i = 0; i < rawDigits.length; i++) {
@@ -181,13 +169,16 @@
         }
 
         // The significant sequence starts here (Rule 2: Leading zeros are NOT significant)
+        // If the number is 0.001230, rawDigits="0001230", firstNonZero=3. significantDigits="1230".
         let significantDigits = rawDigits.substring(firstNonZero); 
         let sfCount = significantDigits.length;
-        let explanation = `The first significant digit is **${significantDigits[0]}**. `;
+        let explanation = '';
 
         if (hasDecimal) {
             // Rule 4 (Trailing Zeros with Decimal): All digits from the first non-zero to the end are significant.
-            explanation += `Since a **decimal point** is present, all digits from the first non-zero digit to the very last digit, including captive and trailing zeros, are significant (Rules 1, 3, & 4).`;
+            // Rule 2 (Leading Zeros before first non-zero) are NOT significant.
+            // Rule 3 (Captive Zeros) are significant.
+            explanation = `The first significant digit is **${significantDigits[0]}**. Since a **decimal point** is present, all digits from the first non-zero digit ('${significantDigits[0]}') to the very last digit, including captive zeros and trailing zeros, are significant.`;
             return { count: sfCount, explanation: explanation };
 
         } else {
@@ -207,23 +198,31 @@
             
             if (definiteSF < sfCount) {
                 // This is the ambiguous case (e.g., 100, 5400)
-                explanation += `Trailing zeros in a whole number like this (**without a decimal point**) are considered **ambiguous**. The number of significant figures could be **${definiteSF}** (counting only digits up to the last non-zero) or **${sfCount}** (if the trailing zeros were actually measured). The most conservative count is **${definiteSF}**.`;
+                explanation = `The number of significant figures is **at least ${definiteSF}** (non-zero and captive zeros). Trailing zeros (**${'0'.repeat(sfCount - definiteSF)}**) in a whole number like this (**without a decimal point**) are considered **ambiguous**. They may or may not be significant.`;
                 return { count: `${definiteSF} to ${sfCount} (Ambiguous)`, explanation: explanation };
             } else {
                 // Case like 123
-                explanation += `All non-zero digits and captive zeros are significant (Rules 1 & 3). There are no decimal-dependent trailing zeros to consider.`;
+                explanation = `The first significant digit is **${significantDigits[0]}**. All non-zero digits (Rule 1) and captive zeros (Rule 3) are significant. There are no trailing zeros to consider.`;
                 return { count: sfCount, explanation: explanation };
             }
         }
     }
 
     /**
-     * Updates the UI with the calculation result or error.
+     * Updates the UI with the calculation result or a placeholder/error.
      */
     function countSigFigs() {
         const inputElement = document.getElementById('number-input');
         const outputDiv = document.getElementById('solution-output');
         const inputStr = inputElement.value;
+
+        if (inputStr.trim().length === 0) {
+            outputDiv.innerHTML = `<div class="p-4 border text-center text-muted rounded">
+                Start typing a number above to see the Significant Figures count and explanation.
+            </div>`;
+            return;
+        }
+        
         let result;
 
         try {
@@ -231,16 +230,14 @@
         } catch (e) {
             const htmlContent = `<p class="font-bold text-center">Processing Error</p><p class="text-center">Could not parse the input. Please check for extraneous characters.</p>`;
             outputDiv.innerHTML = `<div class="result-error">${htmlContent}</div>`;
-            outputDiv.classList.remove('result-card');
-            outputDiv.classList.add('result-error');
             return;
         }
 
-        const isError = (result.count === 0 && inputStr.replace(/[\.0]/g, '').length === 0);
+        const isZeroOrInvalid = (result.count === 0);
         
         // Update the output card
-        if (!isError) {
-            outputDiv.classList.remove('result-error');
+        if (!isZeroOrInvalid) {
+            outputDiv.classList.remove('result-error', 'p-4', 'border', 'text-center', 'text-muted', 'rounded');
             outputDiv.classList.add('result-card');
             outputDiv.innerHTML = `
                 <p class="output-label">Significant Figures (SF):</p>
@@ -252,13 +249,12 @@
                 </div>
             `;
         } else {
-            outputDiv.innerHTML = `<div class="result-error"><p class="font-bold text-center">Zero/Invalid Input</p><p class="text-center">${result.explanation}</p></div>`;
+            const htmlContent = `<p class="font-bold text-center">Zero/Invalid Input</p><p class="text-center">${result.explanation}</p>`;
+            outputDiv.innerHTML = `<div class="result-error">${htmlContent}</div>`;
             outputDiv.classList.remove('result-card');
-            outputDiv.classList.add('result-error');
         }
     }
 
-    // Run on load
-    window.onload = countSigFigs;
+    // FIXED: Removed window.onload auto-calculation. Now, the input's oninput handler does the work.
 </script>
 {% endblock %}

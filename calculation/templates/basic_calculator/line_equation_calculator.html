@@ -4,14 +4,26 @@
 
 {% block meta_description %}Calculate the slope (m) and y-intercept (b) given two points, and generate the line equation ($y = mx + b$).{% endblock %}
 
-{% block meta_keywords %}slope, y-intercept, line equation, m, b, two points, linear equation, algebra, calculator{% endendblock %}
+{% block meta_keywords %}slope, y-intercept, line equation, m, b, two points, linear equation, algebra, calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block (Green/Emerald Theme) */
+    /* 🎨 Define Custom Theme Colors (Green/Emerald Theme for Bootstrap) */
+    :root {
+        --emerald-light: #f6fff9; /* Solver Wrapper Background */
+        --emerald-pale: #d1fae5; /* Input section background */
+        --emerald-medium: #10b981; /* Emerald accent border */
+        --emerald-dark: #065f46; /* Dark Emerald text */
+        --emerald-deep: #059669; /* Deep Emerald accent */
+        --emerald-text: #047857; /* Input/Equation text color */
+        --result-bg: #e0fbf9; /* Result card background */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f6fff9; /* Light, clean background */
+        background: var(--emerald-light);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -23,17 +35,18 @@
     .input-section {
         padding: 25px;
         border-radius: 10px;
-        background-color: #d1fae5; /* Light Emerald */
-        border: 2px solid #10b981; /* Emerald accent */
+        background-color: var(--emerald-pale);
+        border: 2px solid var(--emerald-medium);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     .input-box label {
         font-size: 1rem;
         font-weight: 600;
-        color: #065f46; /* Dark Emerald */
+        color: var(--emerald-dark);
         display: block;
         margin-bottom: 5px;
+        text-align: center;
     }
 
     .input-field {
@@ -44,48 +57,34 @@
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
-        color: #047857;
+        color: var(--emerald-text);
+    }
+    .input-field:focus {
+        border-color: var(--emerald-deep);
+        box-shadow: 0 0 0 0.25rem rgba(5, 150, 105, 0.25);
     }
     
-    .input-group {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-    }
-
-    .result-section {
-        margin-top: 30px;
-    }
-
-    .result-card {
+    .result-card-custom {
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #e0fbf9; /* Lighter Emerald */
-        border-left: 5px solid #059669; /* Deep Emerald accent */
+        background-color: var(--result-bg);
+        border-left: 5px solid var(--emerald-deep);
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+    .result-error-custom {
+        border-left: 5px solid var(--bs-danger); /* Red */
+        background-color: #f8d7da;
+        color: #842029;
         padding: 20px;
         border-radius: 8px;
     }
     
-    .output-label {
-        font-size: 1.2rem;
-        font-weight: 700;
-        text-align: center;
-        color: #1f2937;
-        margin-bottom: 10px;
-    }
-
     .output-value {
         font-size: 3rem;
         font-weight: 900;
         text-align: center;
-        color: #059669; /* Deep Emerald */
+        color: var(--emerald-deep);
         word-break: break-all;
     }
 
@@ -93,7 +92,7 @@
         font-size: 2.2rem;
         font-weight: 900;
         text-align: center;
-        color: #047857;
+        color: var(--emerald-text);
         word-break: break-all;
         margin-top: 5px;
         padding-bottom: 5px;
@@ -112,58 +111,67 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Slope & Y-Intercept Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Slope & Y-Intercept Calculator</h1>
+    <p class="text-secondary mb-4 text-center">
         Enter two coordinate points $\mathbf{(x_1, y_1)}$ and $\mathbf{(x_2, y_2)}$ to find the equation of the line $\mathbf{y = mx + b}$.
     </p>
 
     <div class="solver-wrapper">
         
         <div class="input-section">
-            <form id="line-form" class="space-y-4">
+            <form id="line-form" class="d-grid gap-3">
                 
-                <h3 class="text-lg font-bold text-center text-gray-800">Point 1 ($\mathbf{x_1, y_1}$)</h3>
-                <div class="input-group">
-                    <div class="input-box">
-                        <label for="x1-input">x-coordinate ($\mathbf{x_1}$):</label>
-                        <input type="number" id="x1-input" value="1" required step="any"
-                               placeholder="x1"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                <h3 class="fs-5 fw-bold text-center text-dark">Point 1 ($\mathbf{x_1, y_1}$)</h3>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="input-box">
+                            <label for="x1-input">x-coordinate ($\mathbf{x_1}$):</label>
+                            <input type="number" id="x1-input" required step="any"
+                                   placeholder="x1"
+                                   class="form-control input-field shadow-sm">
+                        </div>
                     </div>
-                    <div class="input-box">
-                        <label for="y1-input">y-coordinate ($\mathbf{y_1}$):</label>
-                        <input type="number" id="y1-input" value="5" required step="any"
-                               placeholder="y1"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    <div class="col-6">
+                        <div class="input-box">
+                            <label for="y1-input">y-coordinate ($\mathbf{y_1}$):</label>
+                            <input type="number" id="y1-input" required step="any"
+                                   placeholder="y1"
+                                   class="form-control input-field shadow-sm">
+                        </div>
                     </div>
                 </div>
 
-                <h3 class="text-lg font-bold text-center text-gray-800 pt-4 border-t border-gray-300">Point 2 ($\mathbf{x_2, y_2}$)</h3>
-                <div class="input-group">
-                    <div class="input-box">
-                        <label for="x2-input">x-coordinate ($\mathbf{x_2}$):</label>
-                        <input type="number" id="x2-input" value="3" required step="any"
-                               placeholder="x2"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                <h3 class="fs-5 fw-bold text-center text-dark pt-4 border-top border-secondary-subtle">Point 2 ($\mathbf{x_2, y_2}$)</h3>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="input-box">
+                            <label for="x2-input">x-coordinate ($\mathbf{x_2}$):</label>
+                            <input type="number" id="x2-input" required step="any"
+                                   placeholder="x2"
+                                   class="form-control input-field shadow-sm">
+                        </div>
                     </div>
-                    <div class="input-box">
-                        <label for="y2-input">y-coordinate ($\mathbf{y_2}$):</label>
-                        <input type="number" id="y2-input" value="11" required step="any"
-                               placeholder="y2"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    <div class="col-6">
+                        <div class="input-box">
+                            <label for="y2-input">y-coordinate ($\mathbf{y_2}$):</label>
+                            <input type="number" id="y2-input" required step="any"
+                                   placeholder="y2"
+                                   class="form-control input-field shadow-sm">
+                        </div>
                     </div>
                 </div>
 
                 <button type="submit"
-                        class="w-full bg-emerald-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-emerald-700 transition duration-150 transform hover:scale-[1.01]">
+                        class="btn btn-success w-100 fw-bold py-3 mt-4 shadow-lg"
+                        style="background-color: var(--emerald-deep); border-color: var(--emerald-deep);">
                     Find Equation of Line
                 </button>
             </form>
         </div>
 
-        <div id="result-container" class="result-section">
-            <div id="solution-output" class="result-card hidden"></div>
+        <div id="result-container" class="mt-4">
+            <div id="solution-output" class="result-card-custom d-none"></div>
         </div>
         
     </div>
@@ -171,6 +179,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     const TOLERANCE = 1e-9;
 
@@ -179,14 +189,12 @@
      */
     function displayResult(isError, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        outputDiv.classList.remove('d-none', 'result-error-custom', 'result-card-custom');
         
         if (isError) {
-            outputDiv.classList.add('result-error');
-            outputDiv.classList.remove('result-card');
+            outputDiv.classList.add('result-error-custom');
         } else {
-            outputDiv.classList.add('result-card');
-            outputDiv.classList.remove('result-error');
+            outputDiv.classList.add('result-card-custom');
         }
         outputDiv.innerHTML = contentHtml;
     }
@@ -196,48 +204,51 @@
      * @param {number} value - The number to format.
      * @returns {string} - Formatted string.
      */
-    function formatValue(value) {
+    function formatValue(value, decimals = 4) {
         if (Math.abs(value) < TOLERANCE) {
             return '0';
         }
-        return value.toFixed(4).replace(/\.?0+$/, '');
+        // Use a set number of decimal places for consistency
+        return value.toFixed(decimals).replace(/\.?0+$/, '');
     }
 
     /**
      * Constructs the final y = mx + b equation string.
+     * Handles formatting for LaTeX display.
      */
     function constructEquation(m, b) {
-        const m_str = formatValue(m);
-        const b_str = formatValue(b);
+        const m_val = formatValue(m, 6);
+        const b_val = formatValue(b, 6);
 
-        let equation = 'y = ';
+        let equation = '';
         let isZeroM = Math.abs(m) < TOLERANCE;
         let isZeroB = Math.abs(b) < TOLERANCE;
         
         if (isZeroM) {
-            // y = b (e.g., y = 5) or y = 0
-            equation += b_str;
+            // y = b or y = 0
+            equation = `y = ${b_val}`;
         } else {
-            // Include mx part
-            if (m_str === '1') {
-                equation += 'x';
-            } else if (m_str === '-1') {
-                equation += '-x';
+            // Start with y = mx
+            equation += 'y = ';
+            
+            if (Math.abs(m) === 1) {
+                equation += (m > 0 ? '' : '-') + 'x';
             } else {
-                equation += `${m_str}x`;
+                equation += `${m_val}x`;
             }
 
             // Include b part
             if (!isZeroB) {
                 if (b > 0) {
-                    equation += ` + ${b_str}`;
+                    equation += ` + ${b_val}`;
                 } else {
                     // b is negative, already has a minus sign
-                    equation += ` ${b_str}`; 
+                    // Use Math.abs(b) to ensure only one minus sign
+                    equation += ` - ${formatValue(Math.abs(b), 6)}`; 
                 }
             }
         }
-        return equation;
+        return `\\mathbf{${equation}}`;
     }
 
     /**
@@ -253,33 +264,47 @@
         const y2 = parseFloat(document.getElementById('y2-input').value);
 
         if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
-            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for all coordinates.</p>`;
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for all coordinates.</p>`;
             displayResult(true, htmlContent);
             return;
         }
         
-        // 2. Calculate Slope (m)
+        const P1_str = `(${formatValue(x1, 2)}, ${formatValue(y1, 2)})`;
+        const P2_str = `(${formatValue(x2, 2)}, ${formatValue(y2, 2)})`;
+
+        // 2. Check for Coincident Points
+        if (Math.abs(x1 - x2) < TOLERANCE && Math.abs(y1 - y2) < TOLERANCE) {
+            const htmlContent = `<p class="fw-bold text-center">Coincident Points</p><p class="text-center">The two points $\mathbf{${P1_str}}$ and $\mathbf{${P2_str}}$ are the same. A line cannot be uniquely defined by a single point.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
+        // 3. Calculate Slope (m)
         const deltaX = x2 - x1;
         const deltaY = y2 - y1;
         
         let m, m_str, b, b_str, finalEquation;
+        let htmlContent = '';
         
         if (Math.abs(deltaX) < TOLERANCE) {
             // Vertical line: slope is undefined, equation is x = constant
             m_str = 'Undefined';
             b_str = 'None';
-            finalEquation = `x = ${formatValue(x1)}`;
+            finalEquation = `x = ${formatValue(x1, 4)}`;
 
-            let htmlContent = `
-                <p class="output-label">Resulting Equation of the Line:</p>
-                <div class="equation-display text-red-600">
+            htmlContent = `
+                <p class="text-center fs-5 fw-bold text-dark">Resulting Equation of the Line:</p>
+                <div class="equation-display text-danger">
                     $$\\mathbf{${finalEquation}}$$
                 </div>
-                <div class="breakdown">
-                    <strong class="text-red-700">Line Type: Vertical Line</strong> <br>
-                    Slope ($\mathbf{m}$): Undefined (division by zero) <br>
-                    Y-Intercept ($\mathbf{b}$): None (unless x=0) <br>
-                    The line passes through $\mathbf{x=${formatValue(x1)}}$ for all y-values.
+                <div class="breakdown text-center">
+                    <strong class="text-danger">Line Type: Vertical Line</strong> <br>
+                    <p class="mb-0 mt-2">
+                        $$\\mathbf{m} = \\frac{y_2 - y_1}{x_2 - x_1} = \\frac{${formatValue(deltaY, 2)}}{0} = \\text{Undefined}$$
+                    </p>
+                    Slope ($\mathbf{m}$): $\mathbf{${m_str}}$ <br>
+                    Y-Intercept ($\mathbf{b}$): $\mathbf{${b_str}}$ <br>
+                    <small class="text-muted">The line passes through $\mathbf{x=${formatValue(x1, 2)}}$ for all y-values.</small>
                 </div>
             `;
             displayResult(false, htmlContent);
@@ -288,38 +313,69 @@
 
         // Calculate slope: m = (y2 - y1) / (x2 - x1)
         m = deltaY / deltaX;
-        m_str = formatValue(m);
+        m_str = formatValue(m, 4);
 
-        // 3. Calculate Y-Intercept (b) using point-slope form: b = y1 - m*x1
+        // 4. Calculate Y-Intercept (b) using point-slope form: b = y1 - m*x1
         b = y1 - (m * x1);
-        b_str = formatValue(b);
+        b_str = formatValue(b, 4);
 
-        // 4. Construct the final equation string
+        // 5. Construct the final equation string
         finalEquation = constructEquation(m, b);
 
-        // 5. Display results
-        let htmlContent = `
-            <p class="output-label">Equation of the Line ($\mathbf{y = mx + b}$):</p>
+        // 6. Display results with detailed steps
+        
+        // Step 1: Slope
+        htmlContent += `
+            <h5 class="text-center fw-bold text-success mb-3">Line Equation: $y=mx+b$</h5>
+            <p class="text-center fs-5 fw-bold text-dark">Resulting Equation of the Line:</p>
             <div class="equation-display">
                 $$\\mathbf{${finalEquation}}$$
             </div>
-            <div class="breakdown">
-                <strong class="text-emerald-700">Slope Calculation:</strong> $$\mathbf{m = \\frac{${formatValue(y2)} - ${formatValue(y1)}}{${formatValue(x2)} - ${formatValue(x1)}} = ${m_str}}$$ <br>
-                Slope ($\mathbf{m}$): $\mathbf{${m_str}}$ <br>
-                Y-Intercept ($\mathbf{b}$): $\mathbf{${b_str}}$
-            </div>
+            
+            <hr class="my-4 border-secondary">
+            
+            <h6 class="fw-bold text-dark">Step 1: Calculate the Slope ($m$)</h6>
+            <small class="text-muted">Formula: $m = \\frac{y_2 - y_1}{x_2 - x_1}$</small>
+            <p class="text-center fs-5 pt-2">
+                $$m = \\frac{${formatValue(y2, 2)} - ${formatValue(y1, 2)}}{${formatValue(x2, 2)} - ${formatValue(x1, 2)}} = \\frac{${formatValue(deltaY, 4)}}{${formatValue(deltaX, 4)}} \approx \\mathbf{${m_str}}$$
+            </p>
+            <p class="text-center fw-bold mb-3" style="color: var(--emerald-deep);">Slope ($\mathbf{m}$): $\mathbf{${m_str}}$</p>
+        `;
+
+        // Step 2: Y-Intercept
+        htmlContent += `
+            <hr class="my-4 border-secondary">
+            
+            <h6 class="fw-bold text-dark">Step 2: Calculate the Y-Intercept ($b$)</h6>
+            <small class="text-muted">Formula: $b = y_1 - m x_1$ (using Point 1: ${P1_str})</small>
+            <p class="text-center fs-5 pt-2">
+                $$b = ${formatValue(y1, 4)} - (${m_str})(${formatValue(x1, 4)}) \\approx \\mathbf{${b_str}}$$
+            </p>
+            <p class="text-center fw-bold mb-3" style="color: var(--emerald-deep);">Y-Intercept ($\mathbf{b}$): $\mathbf{${b_str}}$</p>
+        `;
+        
+        // Step 3: Final Equation
+        htmlContent += `
+            <hr class="my-4 border-secondary">
+            
+            <h6 class="fw-bold text-dark">Step 3: Write the Final Equation</h6>
+            <small class="text-muted">Substitute $m$ and $b$ into $y = mx + b$.</small>
+            <p class="text-center fs-4 pt-2">
+                $$y = \\mathbf{${finalEquation}}$$
+            </p>
         `;
         
         displayResult(false, htmlContent);
+
+        // Trigger MathJax re-render
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
+        }
     }
 
     // Attach handler to the form
     document.getElementById('line-form').addEventListener('submit', handleLineCalculation);
-
-    // Initial calculation for default value ((1, 5) and (3, 11) -> y = 3x + 2)
-    window.onload = function() {
-        // Manually trigger the calculation for the default value on load
-        document.getElementById('line-form').dispatchEvent(new Event('submit'));
-    };
+    
+    // FIXED: Removed the window.onload handler to ensure input fields are fresh.
 </script>
 {% endblock %}

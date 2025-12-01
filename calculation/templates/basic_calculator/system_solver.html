@@ -7,92 +7,86 @@
 {% block meta_keywords %}system of equations, linear algebra, 2x2 matrix, cramer's rule, simultaneous equations, solver{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <style>
-    /* Styling for the central calculation block */
+    /* Styling for the central calculation block (Bootstrap) */
     .solver-wrapper {
-        background: #fdfdff;
+        background: #ffffff;
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 650px;
+        max-width: 700px;
         margin: 0 auto;
-        font-family: 'Inter', sans-serif;
     }
     
     .equation-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
         margin-bottom: 25px;
     }
 
     .equation-input-group {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr; /* a, b, c columns */
+        display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         padding: 15px;
-        background-color: #f8f8fb;
+        background-color: #f8f9fa; /* Light gray background for equations */
         border-radius: 8px;
+        border: 1px solid #dee2e6;
+        margin-bottom: 15px;
     }
 
     .equation-label {
-        font-size: 1.2rem;
+        font-size: 1rem;
         font-weight: 600;
-        color: #3b82f6;
-        margin-bottom: 5px;
-        display: block;
-        text-align: center;
-        grid-column: span 3;
+        color: #0d6efd; /* Primary Blue */
+        margin-bottom: 0;
+        min-width: 130px; /* To align labels */
     }
 
     .input-coeff {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
+        width: 100px; /* Fixed width for inputs */
+        padding: 6px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
         text-align: center;
+        font-weight: 500;
     }
     
     .input-wrapper {
         display: flex;
         align-items: center;
+        margin-right: 15px;
     }
     
     .input-wrapper span {
         margin-left: 5px;
         font-weight: 500;
-        color: #6b7280;
+        color: #6c757d; /* Secondary gray text */
+        min-width: 10px;
     }
 
-    .result-box {
-        margin-top: 25px;
+    /* Result styling using Bootstrap alerts */
+    .result-box-success {
+        border-left: 5px solid #198754; /* Success Green */
+        background-color: #d1e7dd;
+        color: #0f5132;
         padding: 20px;
-        border-radius: 10px;
-        border-left: 5px solid #10b981;
-        background-color: #ecfdf5;
-        color: #065f46;
+        border-radius: 8px;
     }
     
     .result-error {
-        border-left: 5px solid #ef4444;
-        background-color: #fee2e2;
-        color: #991b1b;
-    }
-
-    /* LaTeX-style formatting for equations */
-    .latex-eq {
-        font-family: 'Times New Roman', serif;
-        font-style: italic;
+        border-left: 5px solid #dc3545; /* Danger Red */
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 20px;
+        border-radius: 8px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">System of Equations Solver ($2 \times 2$)</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark">System of Equations Solver ($2 \times 2$)</h1>
+    <p class="text-secondary mb-4 text-center">
         Solve the system:
         $$
         \begin{cases}
@@ -104,56 +98,53 @@
     </p>
 
     <div class="solver-wrapper">
-        <form id="system-form" class="space-y-6">
+        <form id="system-form" class="mb-4">
             
             <div class="equation-container">
                 
-                <!-- Equation 1 Input -->
                 <div class="equation-input-group">
-                    <label class="equation-label">Equation 1 ($a_1 x + b_1 y = c_1$)</label>
+                    <label class="equation-label">Eq. 1 ($a_1 x + b_1 y = c_1$):</label>
                     <div class="input-wrapper">
-                        <input type="number" id="a1" value="2" step="any" required class="input-coeff">
+                        <input type="text" id="a1" step="any" required class="input-coeff form-control" placeholder="a1">
                         <span>$x$</span>
                     </div>
                     <div class="input-wrapper">
-                        <input type="number" id="b1" value="3" step="any" required class="input-coeff">
+                        <input type="text" id="b1" step="any" required class="input-coeff form-control" placeholder="b1">
                         <span>$y$</span>
                     </div>
                     <div class="input-wrapper">
                         <span>$=$</span>
-                        <input type="number" id="c1" value="8" step="any" required class="input-coeff">
+                        <input type="text" id="c1" step="any" required class="input-coeff form-control" placeholder="c1">
                     </div>
                 </div>
 
-                <!-- Equation 2 Input -->
                 <div class="equation-input-group">
-                    <label class="equation-label">Equation 2 ($a_2 x + b_2 y = c_2$)</label>
+                    <label class="equation-label">Eq. 2 ($a_2 x + b_2 y = c_2$):</label>
                     <div class="input-wrapper">
-                        <input type="number" id="a2" value="1" step="any" required class="input-coeff">
+                        <input type="text" id="a2" step="any" required class="input-coeff form-control" placeholder="a2">
                         <span>$x$</span>
                     </div>
                     <div class="input-wrapper">
-                        <input type="number" id="b2" value="-1" step="any" required class="input-coeff">
+                        <input type="text" id="b2" step="any" required class="input-coeff form-control" placeholder="b2">
                         <span>$y$</span>
                     </div>
                     <div class="input-wrapper">
                         <span>$=$</span>
-                        <input type="number" id="c2" value="-1" step="any" required class="input-coeff">
+                        <input type="text" id="c2" step="any" required class="input-coeff form-control" placeholder="c2">
                     </div>
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn btn-primary w-100 fw-bold py-3 shadow-sm hover:shadow-lg transition">
                 Calculate Solution
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Results</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Results will be injected here -->
+        <div id="result-container" class="mt-4">
+            <h2 class="h5 fw-bold text-dark border-bottom pb-2">Solution</h2>
+            <div id="solution-output" class="p-3 border text-center text-muted rounded">
+                Enter all 6 coefficients above and click "Calculate Solution".
             </div>
         </div>
         
@@ -162,6 +153,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
     /**
      * Calculates the determinant of a 2x2 matrix: |A| = ad - bc
@@ -178,17 +170,26 @@
     document.getElementById('system-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const a1 = parseFloat(document.getElementById('a1').value);
-        const b1 = parseFloat(document.getElementById('b1').value);
-        const c1 = parseFloat(document.getElementById('c1').value);
-        const a2 = parseFloat(document.getElementById('a2').value);
-        const b2 = parseFloat(document.getElementById('b2').value);
-        const c2 = parseFloat(document.getElementById('c2').value);
+        // Use text input and parseFloat to handle empty/non-numeric input gracefully
+        const a1 = parseFloat(document.getElementById('a1').value.trim());
+        const b1 = parseFloat(document.getElementById('b1').value.trim());
+        const c1 = parseFloat(document.getElementById('c1').value.trim());
+        const a2 = parseFloat(document.getElementById('a2').value.trim());
+        const b2 = parseFloat(document.getElementById('b2').value.trim());
+        const c2 = parseFloat(document.getElementById('c2').value.trim());
 
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
-        outputDiv.classList.remove('result-error');
-        outputDiv.innerHTML = '';
+        
+        // --- Input Validation ---
+        if (isNaN(a1) || isNaN(b1) || isNaN(c1) || isNaN(a2) || isNaN(b2) || isNaN(c2)) {
+            const htmlContent = `
+                <p class="fw-bold mb-1">Invalid Input</p>
+                <p class="small mb-0">Please enter a numerical value for all six coefficients ($a_1, b_1, c_1, a_2, b_2, c_2$).</p>
+            `;
+            displayResult('result-error', htmlContent);
+            return;
+        }
+
 
         // --- 1. Calculate the Main Determinant (D) ---
         // D = | a1 b1 |
@@ -198,22 +199,27 @@
         let htmlContent = '';
         
         // --- 2. Check for Unique Solution ---
-        if (Math.abs(D) < 1e-9) { 
+        const epsilon = 1e-9; // Tolerance for floating point comparison
+        if (Math.abs(D) < epsilon) { 
             // Determinant is close to zero (parallel or same lines)
             
             // Calculate Dx and Dy to check consistency
             const Dx = determinant2x2(c1, b1, c2, b2);
             const Dy = determinant2x2(a1, c1, a2, c2);
+            
+            const a1_f = a1.toFixed(4).replace(/\.?0+$/, '');
+            const b1_f = b1.toFixed(4).replace(/\.?0+$/, '');
+            const c1_f = c1.toFixed(4).replace(/\.?0+$/, '');
 
-            if (Math.abs(Dx) < 1e-9 && Math.abs(Dy) < 1e-9) {
+            if (Math.abs(Dx) < epsilon && Math.abs(Dy) < epsilon) {
                 // Dx=0 and Dy=0 means the lines are identical (Infinite Solutions)
-                htmlContent += `<p class="text-lg font-bold mb-2">No Unique Solution (Dependent System)</p>`;
-                htmlContent += `<p>Determinant $D$ is zero. The two equations represent the **same line**, meaning there are **infinitely many solutions**.</p>`;
-                htmlContent += `<p class="mt-2">Solution is all points on the line: $${a1} x + ${b1} y = ${c1}$</p>`;
+                htmlContent += `<p class="fs-5 fw-bold mb-2">No Unique Solution (Dependent System)</p>`;
+                htmlContent += `<p>The main determinant $\\mathbf{D}$ is zero. The two equations represent the **same line**, meaning there are **infinitely many solutions**.</p>`;
+                htmlContent += `<p class="mt-2 fw-semibold">Solution: All points on the line $${a1_f} x + ${b1_f} y = ${c1_f}$</p>`;
             } else {
                 // Dx != 0 or Dy != 0 means the lines are parallel (No Solution)
-                htmlContent += `<p class="text-lg font-bold mb-2">No Solution (Inconsistent System)</p>`;
-                htmlContent += `<p>Determinant $D$ is zero. The two equations represent **parallel lines**, meaning there is **no solution**.</p>`;
+                htmlContent += `<p class="fs-5 fw-bold mb-2">No Solution (Inconsistent System)</p>`;
+                htmlContent += `<p>The main determinant $\\mathbf{D}$ is zero. The two equations represent **parallel lines**, meaning they never intersect and there is **no solution**.</p>`;
             }
             
             displayResult('result-error', htmlContent);
@@ -221,13 +227,7 @@
         }
 
         // --- 3. Calculate Determinants Dx and Dy (Unique Solution exists) ---
-        
-        // Dx = | c1 b1 |
-        //      | c2 b2 |
         const Dx = determinant2x2(c1, b1, c2, b2);
-
-        // Dy = | a1 c1 |
-        //      | a2 c2 |
         const Dy = determinant2x2(a1, c1, a2, c2);
 
         // --- 4. Calculate Roots (Cramer's Rule) ---
@@ -235,38 +235,34 @@
         const y = Dy / D;
 
         // Displaying results
-        htmlContent += `<p class="text-xl font-bold mb-3 text-green-700">Unique Solution Found</p>`;
+        htmlContent += `<p class="fs-5 fw-bold mb-3 text-success">Unique Solution Found</p>`;
         
         htmlContent += `<div class="mb-4">`;
-        htmlContent += `<p class="text-base font-semibold">Main Determinant ($D$): ${D.toFixed(4)}</p>`;
-        htmlContent += `<p class="text-base font-semibold">Determinant $D_x$: ${Dx.toFixed(4)}</p>`;
-        htmlContent += `<p class="text-base font-semibold">Determinant $D_y$: ${Dy.toFixed(4)}</p>`;
+        htmlContent += `<p class="text-base mb-1">Main Determinant ($\\mathbf{D}$): $\\mathbf{${D.toFixed(6).replace(/\.?0+$/, '')}}$</p>`;
+        htmlContent += `<p class="text-base mb-1">Determinant $\\mathbf{D_x}$: $\\mathbf{${Dx.toFixed(6).replace(/\.?0+$/, '')}}$</p>`;
+        htmlContent += `<p class="text-base mb-1">Determinant $\\mathbf{D_y}$: $\\mathbf{${Dy.toFixed(6).replace(/\.?0+$/, '')}}$</p>`;
         htmlContent += `</div>`;
         
-        htmlContent += `<p class="text-2xl font-bold mt-4">`;
-        htmlContent += `Solution: $x = \\mathbf{${x.toFixed(6)}}$ and $y = \\mathbf{${y.toFixed(6)}}$`;
+        htmlContent += `<p class="fs-4 fw-bolder mt-4">`;
+        htmlContent += `Solution: $\\mathbf{x} = ${x.toFixed(6).replace(/\.?0+$/, '')}$ and $\\mathbf{y} = ${y.toFixed(6).replace(/\.?0+$/, '')}$`;
         htmlContent += `</p>`;
         
-        displayResult('', htmlContent); // No error class
+        displayResult('result-box-success', htmlContent); // Success class
     });
 
     /**
      * Updates the results display with appropriate styling and content.
-     * @param {string} className - Tailwind class name for coloring (e.g., 'result-error').
+     * @param {string} className - Custom class name for styling (e.g., 'result-error', 'result-box-success').
      * @param {string} contentHtml - HTML string containing the calculated results.
      */
     function displayResult(className, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
-        // Reset classes
-        outputDiv.className = 'result-box'; 
-        if (className) {
-            outputDiv.classList.add(className);
-        }
+        // Reset classes and show
+        outputDiv.className = '';
+        outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
     }
     
-    // Initial State Check (if you want default values to appear immediately)
-    // window.onload = () => document.getElementById('system-form').dispatchEvent(new Event('submit'));
+    // FIXED: No window.onload call to keep fields empty on load.
 </script>
 {% endblock %}

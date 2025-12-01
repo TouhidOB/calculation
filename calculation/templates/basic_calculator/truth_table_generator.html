@@ -7,31 +7,30 @@
 {% block meta_keywords %}truth table, logic, boolean algebra, discrete math, AND, OR, NOT, XOR, calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <style>
-    /* Styling for the central calculation block (Amber/Yellow Theme) */
+    /* Styling for the central calculation block (Bootstrap Warning/Amber Theme) */
     .solver-wrapper {
-        background: #fffbe6; /* Very light yellow background */
+        background: #fffdf7; /* Very light yellow background */
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         max-width: 900px;
         margin: 0 auto;
-        font-family: 'Inter', sans-serif;
     }
     
     .input-section {
         padding: 25px;
         border-radius: 10px;
-        background-color: #fde68a; /* Light Amber */
-        border: 2px solid #f59e0b; /* Amber accent */
+        background-color: #ffedb3; /* Light Warning */
+        border: 2px solid #ffc107; /* Warning accent */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     .input-box label {
         font-size: 1rem;
         font-weight: 600;
-        color: #92400e; /* Dark Amber */
+        color: #664d03; /* Dark Warning color */
         display: block;
         margin-bottom: 5px;
     }
@@ -40,11 +39,11 @@
         width: 100%;
         padding: 12px;
         font-size: 1.2rem;
-        border: 2px solid #fbbf24; 
+        border: 2px solid #ffc107; 
         border-radius: 8px;
         text-align: left;
         font-weight: 700;
-        color: #b45309;
+        color: #7d470d;
         font-family: monospace;
     }
 
@@ -56,21 +55,22 @@
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #fffdf0; /* Lighter Amber */
-        border-left: 5px solid #d97706; /* Deep Amber accent */
+        background-color: #fff8e1; /* Lighter Amber */
+        border-left: 5px solid #ffc107; /* Deep Amber accent */
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Danger Red */
+        background-color: #f8d7da;
+        color: #721c24;
         padding: 20px;
         border-radius: 8px;
     }
     
     .table-container {
         overflow-x: auto;
-        max-height: 400px;
+        /* Increased max-height for bigger tables (up to 1024 rows) */
+        max-height: 500px; 
     }
 
     .truth-table {
@@ -81,13 +81,13 @@
 
     .truth-table th, .truth-table td {
         padding: 10px;
-        border: 1px solid #fcd34d;
+        border: 1px solid #ffe093; /* Light border */
         text-align: center;
     }
 
     .truth-table th {
-        background-color: #fef3c7; /* Header background */
-        color: #92400e;
+        background-color: #ffe8a5; /* Header background */
+        color: #664d03;
         font-weight: 700;
         position: sticky;
         top: 0;
@@ -95,7 +95,7 @@
     }
     
     .truth-table tbody tr:nth-child(even) {
-        background-color: #fff9e6;
+        background-color: #fff3c9;
     }
 
     /* Column specific styles */
@@ -106,46 +106,47 @@
 
     .col-result {
         font-weight: 800;
-        background-color: #fcd34d !important;
-        color: #78350f;
+        background-color: #ffc107 !important;
+        color: #664d03;
     }
     
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Truth Table Generator</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark">Truth Table Generator</h1>
+    <p class="text-secondary mb-4 text-center">
         Enter a logical expression using single uppercase variables (A-Z) and operators.
     </p>
 
     <div class="solver-wrapper">
         
         <div class="input-section">
-            <form id="truth-table-form" class="space-y-4">
+            <form id="truth-table-form" class="d-grid gap-4">
                 <div class="input-box">
                     <label for="expression-input">Logical Expression:</label>
                     <input type="text" id="expression-input" 
-                           value="(A OR NOT B) AND C" 
                            required
                            placeholder="e.g., (A AND B) OR NOT C"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="input-field form-control">
                 </div>
 
-                <div class="text-sm text-gray-700 text-center">
-                    <span class="font-bold">Supported Operators:</span> NOT, AND, OR, XOR, ( ).
+                <div class="small text-muted text-center">
+                    <span class="fw-bold text-dark">Supported Operators:</span> NOT, AND, OR, XOR, ( ).
                 </div>
                 
                 <button type="submit"
-                        class="w-full bg-amber-600 text-white font-bold py-3 mt-4 rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 transform hover:scale-[1.01]">
+                        class="btn btn-warning text-dark fw-bold py-3 mt-2 shadow-sm hover:shadow-lg transition">
                     Generate Truth Table
                 </button>
             </form>
         </div>
 
         <div id="result-container" class="result-section">
-            <div id="solution-output" class="result-card hidden"></div>
+            <div id="solution-output" class="p-4 border text-center text-muted rounded">
+                Enter a logical expression above and click "Generate Truth Table".
+            </div>
         </div>
         
     </div>
@@ -153,20 +154,21 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
     /**
      * Updates the UI with the calculation result or error.
      */
     function displayResult(isError, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        // Reset classes and style
+        outputDiv.className = '';
+        outputDiv.classList.add('p-4', 'rounded');
         
         if (isError) {
             outputDiv.classList.add('result-error');
-            outputDiv.classList.remove('result-card');
         } else {
             outputDiv.classList.add('result-card');
-            outputDiv.classList.remove('result-error');
         }
         outputDiv.innerHTML = contentHtml;
     }
@@ -230,7 +232,7 @@
             const row = [];
             for (let j = 0; j < n; j++) {
                 // Determine the value for the j-th variable (from left to right)
-                // Use bitwise shift to check the j-th bit from the left
+                // Use bitwise shift to check the j-th bit
                 const isTrue = ((i >> (n - 1 - j)) & 1) === 1;
                 row.push(isTrue);
             }
@@ -251,15 +253,17 @@
         
         const variables = extractVariables(userExpression);
         const numVariables = variables.length;
+        const maxVars = 10; // Increased capacity to 10 variables
 
         if (numVariables === 0) {
-            const htmlContent = `<p class="font-bold text-center">Invalid Expression</p><p class="text-center">Please use at least one uppercase variable (A-Z).</p>`;
+            const htmlContent = `<p class="fw-bold text-center">Invalid Expression</p><p class="text-center">Please use at least one uppercase variable (A-Z).</p>`;
             displayResult(true, htmlContent);
             return;
         }
 
-        if (numVariables > 6) {
-            const htmlContent = `<p class="font-bold text-center">Too Many Variables</p><p class="text-center">The expression has ${numVariables} variables, resulting in ${1 << numVariables} rows. Please simplify your expression (max 6 variables supported).</p>`;
+        if (numVariables > maxVars) {
+            const numRows = 1 << numVariables;
+            const htmlContent = `<p class="fw-bold text-center">Too Many Variables</p><p class="text-center">The expression has ${numVariables} variables, resulting in ${numRows} rows. The current limit is ${maxVars} variables (1024 rows) to prevent slowdowns. Please simplify your expression.</p>`;
             displayResult(true, htmlContent);
             return;
         }
@@ -267,6 +271,7 @@
         const combinations = generateCombinations(numVariables);
         let tableRowsHtml = '';
         let hasError = false;
+        const numRows = 1 << numVariables;
 
         // Build Table Header
         let tableHeaderHtml = '<tr>';
@@ -285,7 +290,7 @@
 
             if (result === 'ERROR') {
                 resultDisplay = 'ERROR';
-                rowClass = 'bg-red-200';
+                rowClass = 'bg-danger-subtle'; // Bootstrap class for error row
                 hasError = true;
             } else {
                 resultDisplay = result ? 'T' : 'F';
@@ -306,7 +311,7 @@
         });
 
         if (hasError) {
-             const htmlContent = `<p class="font-bold text-center">Evaluation Error</p><p class="text-center">The expression appears to have a syntax error or unsupported structure. Please check parentheses and operators.</p>`;
+             const htmlContent = `<p class="fw-bold text-center">Evaluation Error</p><p class="text-center">The expression appears to have a syntax error or unsupported structure. Please check parentheses and operators.</p>`;
             displayResult(true, htmlContent);
             return;
         }
@@ -314,9 +319,9 @@
 
         // Display the final table
         const outputHtml = `
-            <h3 class="text-xl font-bold text-center text-gray-700 mb-4">Truth Table ($2^{${numVariables}}$ rows)</h3>
+            <h3 class="fs-5 fw-bold text-center text-dark mb-4">Truth Table ($2^{${numVariables}} = ${numRows}$ rows)</h3>
             <div class="table-container">
-                <table class="truth-table">
+                <table class="truth-table table table-bordered table-striped mb-0">
                     <thead>
                         ${tableHeaderHtml}
                     </thead>
@@ -333,10 +338,6 @@
     // Attach handler to the form
     document.getElementById('truth-table-form').addEventListener('submit', handleTruthTableGeneration);
 
-    // Initial calculation for default value
-    window.onload = function() {
-        // Manually trigger the calculation for the default value on load
-        document.getElementById('truth-table-form').dispatchEvent(new Event('submit'));
-    };
+    // FIXED: Removed the window.onload auto-calculation.
 </script>
 {% endblock %}

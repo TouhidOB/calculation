@@ -2,16 +2,28 @@
 
 {% block title %}Function Limit Calculator{% endblock %}
 
-{% block meta_description %}Numerically estimate the limit of a function $f(x)$ as $x$ approaches a point $a$ or infinity, evaluating from both the left and right sides.{% endblock %}
+{% block meta_description %}Numerically estimate the limit of a function $f(x)$ as $x$ approaches a point $a$ or infinity, evaluating from both the left and right sides, and see the step-by-step table of values.{% endblock %}
 
-{% block meta_keywords %}limit calculator, calculus, limits, continuity, numerical estimation, L'Hopital's Rule, math solver{% endblock %}
+{% block meta_keywords %}limit calculator, calculus, limits, continuity, numerical estimation, L'Hopital's Rule, math solver, steps, table of values{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Indigo/Calculus Theme for Bootstrap) */
+    :root {
+        --indigo-lightest: #f8f8ff; /* Solver Wrapper Background */
+        --indigo-pale: #eef2ff; /* Input background */
+        --indigo-medium: #a5b4fc; /* Input border */
+        --indigo-dark: #4338ca; /* Dark indigo text/label */
+        --indigo-hot: #4f46e5; /* Indigo Accent */
+        --indigo-text: #4338ca; /* Result text color */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f8f8ff; /* Very light purple/blue */
+        background: var(--indigo-lightest);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,38 +32,41 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .input-group {
+    .input-group-custom {
         display: flex;
         align-items: center;
-        background-color: #eef2ff; /* Lightest purple/blue for input area */
+        background-color: var(--indigo-pale);
         padding: 15px;
         border-radius: 8px;
         margin-bottom: 20px;
+        border: 1px solid var(--indigo-medium);
     }
 
-    .input-group label {
+    .input-group-custom label {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #4338ca; /* Indigo color */
+        color: var(--indigo-dark);
         margin-right: 15px;
     }
 
-    #function-input {
+    .limit-input-field {
         flex-grow: 1;
         padding: 10px;
         font-size: 1.2rem;
-        border: 2px solid #a5b4fc;
+        border: 2px solid var(--indigo-medium);
         border-radius: 6px;
         font-family: 'Consolas', monospace;
+        color: var(--indigo-dark);
     }
     
     .limit-a-input {
         width: 100%;
         padding: 10px;
         font-size: 1.2rem;
-        border: 2px solid #a5b4fc;
+        border: 2px solid var(--indigo-medium);
         border-radius: 6px;
         text-align: center;
+        color: var(--indigo-dark);
     }
 
     .result-box {
@@ -61,9 +76,22 @@
         border-left: 5px solid;
     }
     
-    .result-success { border-left-color: #4f46e5; background-color: #eef2ff; color: #4338ca; } /* Indigo Success */
-    .result-error { border-left-color: #ef4444; background-color: #fee2e2; color: #991b1b; }
-    .result-infinite { border-left-color: #f59e0b; background-color: #fffbeb; color: #b45309; } /* Amber Warning */
+    /* Bootstrap-equivalent result styles */
+    .result-success { 
+        border-left-color: var(--indigo-hot); 
+        background-color: var(--indigo-pale); 
+        color: var(--indigo-text); 
+    }
+    .result-error { 
+        border-left-color: var(--bs-danger); 
+        background-color: #f8d7da; 
+        color: #842029; 
+    }
+    .result-infinite { 
+        border-left-color: var(--bs-warning); 
+        background-color: #fff3cd; 
+        color: #664d03; 
+    } 
 
     /* Styling for the LaTeX output */
     .latex-output {
@@ -72,43 +100,58 @@
         padding: 10px 0;
         overflow-x: auto;
     }
+    
+    .table-responsive-custom {
+        overflow-x: auto;
+        margin-top: 15px;
+    }
+    .table-custom th {
+        background-color: var(--indigo-dark);
+        color: white;
+        text-align: center;
+    }
+    .table-custom td {
+        font-family: monospace;
+        text-align: center;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Calculus: Limit Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">Numerically estimate the limit of the function $f(x)$ as $x$ approaches $a$.</p>
-
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Calculus: Limit Calculator</h1>
+    <p class="text-secondary mb-4 text-center">Numerically estimate the limit of the function $f(x)$ as $x$ approaches $a$.</p>
+    
     <div class="solver-wrapper">
-        <form id="limit-form" class="space-y-6">
+        <form id="limit-form" class="d-grid gap-4">
             
-            <div class="input-group shadow-md">
+            <div class="input-group-custom shadow-sm">
                 <label for="function-input">$$f(x) =$$</label>
-                <input type="text" id="function-input" value="(x^2 - 4) / (x - 2)" required
+                <input type="text" id="function-input" required
                        placeholder="e.g., sin(x) / x or (x^2 - 1) / (x - 1)"
-                       class="shadow-inner focus:shadow-lg transition-shadow">
+                       class="form-control limit-input-field">
             </div>
 
-            <div>
-                <label for="limit-a" class="block text-sm font-medium text-gray-700 text-center mb-1">
+            <div class="text-center">
+                <label for="limit-a" class="form-label text-secondary small mb-1">
                     Limit as $x \to a$. Enter $a$:
                 </label>
-                <input type="number" id="limit-a" value="2" step="any" required
+                <input type="number" id="limit-a" step="any" required
                        placeholder="e.g., 0, 1, or 2"
-                       class="limit-a-input shadow-md">
-                <p class="text-xs text-gray-500 text-center mt-1">For limits at infinity, use a very large number like 1e12.</p>
+                       class="form-control limit-a-input shadow-sm">
+                <p class="text-muted small mt-1">For limits at infinity ($\infty$ or $-\infty$), use a very large number like $10^{12}$ or $-10^{12}$.</p>
             </div>
 
             <button type="submit"
-                    class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 shadow-lg text-white"
+                    style="background-color: var(--indigo-hot); border-color: var(--indigo-hot);">
                 Calculate Limit
             </button>
         </form>
 
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Results: $$\lim_{x \to a} f(x)$$</h2>
-            <div id="solution-output" class="result-box hidden">
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Results: $$\lim_{x \to a} f(x)$$</h2>
+            <div id="solution-output" class="result-box d-none">
                 </div>
         </div>
         
@@ -117,8 +160,10 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
-    const DELTA = 1e-6; // Value used to approach the limit point 'a'
+    const DELTA_STEPS = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6]; // Steps for the table
     const TOLERANCE = 1e-4; // Tolerance for left-hand and right-hand limits to match
     const INFINITE_THRESHOLD = 1e10; // Threshold to classify a result as infinite
 
@@ -144,47 +189,177 @@
             .replace(/tan\(([^)]+)\)/g, 'Math.tan($1)');
             
         // 2. Safely create and return the function
-        return new Function('x', 'return ' + safeFuncStr);
+        try {
+            return new Function('x', 'return ' + safeFuncStr);
+        } catch (e) {
+             throw new Error("Invalid function syntax. Please check parentheses, operators, and function names.");
+        }
     }
     
     /**
-     * Attempts to numerically estimate the limit.
+     * Generates a table of values approaching 'a' from the left and right.
      * @param {Function} func - The executable function f(x).
      * @param {number} a - The point x approaches.
+     * @returns {string} HTML string for the table.
+     */
+    function generateTableHTML(func, a) {
+        let tableRows = '';
+        const isInfinite = Math.abs(a) > INFINITE_THRESHOLD;
+
+        // Determine the approach points
+        let steps = DELTA_STEPS;
+        if (isInfinite) {
+            // For infinity, use multiplier steps
+            steps = [1, 10, 100, 1000];
+        }
+
+        for (let i = 0; i < steps.length; i++) {
+            let delta = steps[i];
+            let x_left, x_right;
+            
+            if (isInfinite) {
+                // If a is near infinity, delta is a multiplier
+                if (a > 0) { // x -> +inf
+                    x_left = a - a/delta;
+                    x_right = '-'; // Only approach from the left for +inf
+                } else { // x -> -inf
+                    x_left = '-'; // Only approach from the right for -inf
+                    x_right = a + Math.abs(a)/delta;
+                }
+            } else {
+                // Standard limit point
+                x_left = a - delta;
+                x_right = a + delta;
+            }
+
+            let f_left_val, f_right_val;
+            let f_left_str = '-';
+            let f_right_str = '-';
+
+            // Calculate Left Side
+            if (!isInfinite || (isInfinite && a > 0)) {
+                try {
+                    f_left_val = func(x_left);
+                    if (!isFinite(f_left_val) || Math.abs(f_left_val) > INFINITE_THRESHOLD * 10) {
+                        f_left_str = f_left_val > 0 ? '$$\\infty$$' : '$$- \\infty$$';
+                    } else {
+                        f_left_str = f_left_val.toPrecision(7);
+                    }
+                } catch (e) {
+                    f_left_str = 'Error';
+                }
+            }
+
+            // Calculate Right Side
+            if (!isInfinite || (isInfinite && a < 0)) {
+                try {
+                    f_right_val = func(x_right);
+                    if (!isFinite(f_right_val) || Math.abs(f_right_val) > INFINITE_THRESHOLD * 10) {
+                         f_right_str = f_right_val > 0 ? '$$\\infty$$' : '$$- \\infty$$';
+                    } else {
+                        f_right_str = f_right_val.toPrecision(7);
+                    }
+                } catch (e) {
+                    f_right_str = 'Error';
+                }
+            }
+            
+            // Format x-values for display
+            let x_left_str = (x_left === '-') ? '-' : x_left.toFixed(isInfinite ? 0 : i + 2);
+            let x_right_str = (x_right === '-') ? '-' : x_right.toFixed(isInfinite ? 0 : i + 2);
+
+            tableRows += `
+                <tr>
+                    <td>${x_left_str}</td>
+                    <td>${f_left_str}</td>
+                    <td class="bg-light fw-bold">${isInfinite ? (a > 0 ? '$$\\infty$$' : '$$- \\infty$$') : a}</td>
+                    <td>${f_right_str}</td>
+                    <td>${x_right_str}</td>
+                </tr>
+            `;
+        }
+
+        const tableHTML = `
+            <h5 class="mt-4 mb-2 text-center text-primary">Numerical Estimation (Table of Values):</h5>
+            <div class="table-responsive table-responsive-custom">
+                <table class="table table-sm table-bordered table-custom mx-auto">
+                    <thead>
+                        <tr>
+                            <th colspan="2">Approaching ${isInfinite ? limitPoint : a} from the Left ($x < a$)</th>
+                            <th>Point $a$</th>
+                            <th colspan="2">Approaching ${isInfinite ? limitPoint : a} from the Right ($x > a$)</th>
+                        </tr>
+                        <tr>
+                            <th scope="col">$x$</th>
+                            <th scope="col">$f(x)$</th>
+                            <th scope="col">$$\\to$$</th>
+                            <th scope="col">$f(x)$</th>
+                            <th scope="col">$x$</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        return tableHTML;
+    }
+
+    /**
+     * Attempts to numerically estimate the limit.
+     * (Retained the original core logic for the final calculation)
      */
     function calculateLimitNumerically(func, a) {
-        let x_left = a - DELTA;
-        let x_right = a + DELTA;
+        // Use a much larger delta for limits at infinity
+        const approachDelta = Math.abs(a) > INFINITE_THRESHOLD ? Math.abs(a) / 100 : DELTA_STEPS[DELTA_STEPS.length - 1];
+        
+        let x_left = a - approachDelta;
+        let x_right = a + approachDelta;
+        
+        // Adjust for limits at infinity
+        if (a > INFINITE_THRESHOLD) { 
+            x_left = a - approachDelta; 
+            x_right = a; 
+        } else if (a < -INFINITE_THRESHOLD) { 
+            x_left = a; 
+            x_right = a + approachDelta; 
+        }
         
         let leftLimit, rightLimit;
 
         try {
             leftLimit = func(x_left);
             rightLimit = func(x_right);
+
+            if (Math.abs(a) > INFINITE_THRESHOLD) {
+                if (a > 0) rightLimit = leftLimit;
+                if (a < 0) leftLimit = rightLimit;
+            }
+
         } catch (e) {
-            return { limit: 'Error', left: 'Error', right: 'Error', exists: false };
+            return { limit: 'Error', left: 'Error', right: 'Error', exists: false, error: e.message };
         }
         
-        // Check for non-finite values (division by zero, log domain errors, etc.)
-        if (!isFinite(leftLimit) || !isFinite(rightLimit)) {
-             // Handle the "blow-up" cases (infinity or DNE)
+        const isLeftFinite = isFinite(leftLimit);
+        const isRightFinite = isFinite(rightLimit);
+        
+        if (!isLeftFinite || !isRightFinite) {
+             const leftStr = isLeftFinite ? leftLimit.toFixed(6) : (leftLimit > 0 ? '\\infty' : '-\\infty');
+             const rightStr = isRightFinite ? rightLimit.toFixed(6) : (rightLimit > 0 ? '\\infty' : '-\\infty');
+
              if (Math.abs(leftLimit) > INFINITE_THRESHOLD && Math.abs(rightLimit) > INFINITE_THRESHOLD) {
-                 // Both sides go to infinity, check signs
                  if (Math.sign(leftLimit) === Math.sign(rightLimit)) {
                      const signStr = leftLimit > 0 ? '\\infty' : '-\\infty';
-                     return { limit: signStr, left: signStr, right: signStr, exists: true };
+                     return { limit: signStr, left: leftStr, right: rightStr, exists: true };
                  } else {
-                     // Vertical asymptote, different signs (DNE)
-                     return { limit: 'DNE', left: leftLimit.toFixed(6), right: rightLimit.toFixed(6), exists: false };
+                     return { limit: 'DNE', left: leftStr, right: rightStr, exists: false };
                  }
              }
-             // If only one side is infinite, it DNE, but we return the values for insight
-             return { limit: 'DNE', left: isFinite(leftLimit) ? leftLimit.toFixed(6) : 'Non-Finite', right: isFinite(rightLimit) ? rightLimit.toFixed(6) : 'Non-Finite', exists: false };
+             return { limit: 'DNE', left: leftStr, right: rightStr, exists: false };
         }
-
-        // Check if the two sides agree within tolerance
+        
         if (Math.abs(leftLimit - rightLimit) < TOLERANCE) {
-            // Limit exists and is equal to the average of the two sides
             const limitValue = (leftLimit + rightLimit) / 2;
             return { 
                 limit: limitValue, 
@@ -193,7 +368,6 @@
                 exists: true 
             };
         } else {
-            // Limit DNE (Jump discontinuity or oscillating)
             return { 
                 limit: 'DNE', 
                 left: leftLimit.toFixed(6), 
@@ -203,64 +377,87 @@
         }
     }
 
+
     document.getElementById('limit-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const funcStr = document.getElementById('function-input').value.trim();
-        const a = parseFloat(document.getElementById('limit-a').value);
+        const aStr = document.getElementById('limit-a').value.trim();
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
+        outputDiv.classList.add('d-none');
         outputDiv.classList.remove('result-success', 'result-error', 'result-infinite');
         outputDiv.innerHTML = '';
+        
+        if (funcStr === '' || aStr === '' || isNaN(parseFloat(aStr))) {
+            displayResult('result-error', `<p class="fw-bold">Invalid Input</p><p>Please enter a function $f(x)$ and a valid limit point $a$.</p>`);
+            return;
+        }
+
+        const a = parseFloat(aStr);
+        let func;
 
         try {
-            if (funcStr === '' || isNaN(a)) {
-                throw new Error("Function and limit point 'a' must be valid inputs.");
-            }
-            
-            const func = createExecutableFunction(funcStr);
-            const results = calculateLimitNumerically(func, a);
-            
-            let htmlContent = '';
-            let resultClass = 'result-success';
-
-            // Format the limit expression
-            const limitExpression = `$$\\lim_{x \\to ${a}} ${funcStr} =$$`;
-
-            htmlContent += `<p class="text-xl font-bold mb-3 text-indigo-800">Limit Analysis</p>`;
-            htmlContent += `<div class="latex-output">${limitExpression}</div>`;
-
-            if (results.exists) {
-                if (results.limit === '\\infty' || results.limit === '-\\infty') {
-                    // Case: Limit is infinity
-                    htmlContent += `<p class="text-3xl font-extrabold text-center mt-3 text-yellow-800">$$\\mathbf{${results.limit}}$$</p>`;
-                    htmlContent += `<p class="text-sm text-center mt-2">(The function approaches positive or negative infinity at $x=${a}$)</p>`;
-                    resultClass = 'result-infinite';
-                } else {
-                    // Case: Limit exists (finite value)
-                    htmlContent += `<p class="text-3xl font-extrabold text-center mt-3">$$\\mathbf{${results.limit.toFixed(6)}}$$</p>`;
-                }
-            } else {
-                // Case: Limit DNE
-                htmlContent += `<p class="text-3xl font-extrabold text-center mt-3 text-red-700">$$\\mathbf{DNE}$$</p>`;
-                htmlContent += `<p class="text-sm text-center mt-2">(The left and right limits do not match or a vertical asymptote exists.)</p>`;
-                resultClass = 'result-error';
-            }
-            
-            // Detailed breakdown of left/right limits
-            htmlContent += `<hr class="my-4 border-indigo-300">`;
-            htmlContent += `<p class="text-lg font-semibold mb-2">Detailed Breakdown:</p>`;
-            htmlContent += `<ul class="list-disc list-inside space-y-1">`;
-            htmlContent += `<li>Limit from the Left ($x \\to ${a}^-$): $\\mathbf{${results.left}}$</li>`;
-            htmlContent += `<li>Limit from the Right ($x \\to ${a}^+$): $\\mathbf{${results.right}}$</li>`;
-            htmlContent += `</ul>`;
-
-            displayResult(resultClass, htmlContent);
-
+            func = createExecutableFunction(funcStr);
         } catch (error) {
-            console.error(error);
-            displayResult('result-error', `<p class="font-bold">Error:</p><p>${error.message || "An internal error occurred. Check the function syntax and the limit point 'a'."}</p>`);
+            displayResult('result-error', `<p class="fw-bold">Function Error:</p><p>${error.message}</p>`);
+            return;
+        }
+
+        const results = calculateLimitNumerically(func, a);
+        
+        let htmlContent = '';
+        let resultClass = 'result-success';
+
+        // Format the limit expression
+        let limitPoint = a;
+        let arrow = '\\to';
+        if (a > INFINITE_THRESHOLD) {
+            limitPoint = '\\infty';
+            arrow = '\\to';
+        } else if (a < -INFINITE_THRESHOLD) {
+            limitPoint = '-\\infty';
+            arrow = '\\to';
+        }
+        
+        const limitExpression = `$$\\lim_{x ${arrow} ${limitPoint}} \\left( ${funcStr} \\right) =$$`;
+
+        // 1. Final Result
+        htmlContent += `<p class="fs-5 fw-bold mb-3 text-center" style="color: var(--indigo-dark);">Limit Analysis</p>`;
+        htmlContent += `<div class="latex-output">${limitExpression}</div>`;
+
+        if (results.exists) {
+            if (results.limit === '\\infty' || results.limit === '-\\infty') {
+                htmlContent += `<p class="fs-1 fw-bolder text-center mt-3 text-warning">$$\\mathbf{${results.limit}}$$</p>`;
+                htmlContent += `<p class="small text-center mt-2 fw-semibold">(The function approaches ${results.limit === '\\infty' ? 'positive' : 'negative'} infinity at $x=${limitPoint}$.)</p>`;
+                resultClass = 'result-infinite';
+            } else {
+                htmlContent += `<p class="fs-1 fw-bolder text-center mt-3" style="color: var(--indigo-text);">$$\\mathbf{${results.limit.toFixed(6)}}$$</p>`;
+                htmlContent += `<p class="small text-center mt-2 fw-semibold">(The left and right limits agree on a finite value.)</p>`;
+            }
+        } else {
+            htmlContent += `<p class="fs-1 fw-bolder text-center mt-3 text-danger">$$\\mathbf{DNE}$$</p>`;
+            htmlContent += `<p class="small text-center mt-2 fw-semibold">(The left and right limits $\\approx \\mathbf{${results.left}}$ and $\\mathbf{${results.right}}$ do not match, or a discontinuity/asymptote exists.)</p>`;
+            resultClass = 'result-error';
+        }
+        
+        // 2. Detailed Breakdown (Table)
+        htmlContent += `<hr class="my-4 border-secondary">`;
+        htmlContent += generateTableHTML(func, a);
+
+        // 3. Summary of Left/Right Limits
+        htmlContent += `<hr class="my-4 border-secondary">`;
+        htmlContent += `<p class="fs-5 fw-semibold mb-2">Summary of One-Sided Limits:</p>`;
+        htmlContent += `<ul class="list-unstyled space-y-1">`;
+        htmlContent += `<li>$$\\lim_{x \\to ${a}^-} f(x) \\approx \\mathbf{${results.left}}$$</li>`;
+        htmlContent += `<li>$$\\lim_{x \\to ${a}^+} f(x) \\approx \\mathbf{${results.right}}$$</li>`;
+        htmlContent += `</ul>`;
+
+        displayResult(resultClass, htmlContent);
+
+        // Trigger MathJax re-render
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
         }
     });
 
@@ -274,7 +471,7 @@
             outputDiv.classList.add(className);
         }
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
     }
 </script>
 {% endblock %}

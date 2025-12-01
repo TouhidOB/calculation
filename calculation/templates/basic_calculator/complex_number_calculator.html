@@ -137,13 +137,13 @@
                         <div class="row g-2">
                             <div class="col-6">
                                 <label for="a1-input">Real Part (**a₁**):</label>
-                                <input type="number" id="a1-input" value="3" required step="any"
+                                <input type="number" id="a1-input" required step="any"
                                        placeholder="Real (a1)"
                                        class="form-control input-field shadow-sm">
                             </div>
                             <div class="col-6">
                                 <label for="b1-input">Imaginary Part (**b₁**):</label>
-                                <input type="number" id="b1-input" value="4" required step="any"
+                                <input type="number" id="b1-input" required step="any"
                                        placeholder="Imaginary (b1)"
                                        class="form-control input-field shadow-sm">
                             </div>
@@ -156,13 +156,13 @@
                         <div class="row g-2">
                             <div class="col-6">
                                 <label for="a2-input">Real Part (**a₂**):</label>
-                                <input type="number" id="a2-input" value="1" required step="any"
+                                <input type="number" id="a2-input" required step="any"
                                        placeholder="Real (a2)"
                                        class="form-control input-field shadow-sm">
                             </div>
                             <div class="col-6">
                                 <label for="b2-input">Imaginary Part (**b₂**):</label>
-                                <input type="number" id="b2-input" value="-2" required step="any"
+                                <input type="number" id="b2-input" required step="any"
                                        placeholder="Imaginary (b2)"
                                        class="form-control input-field shadow-sm">
                             </div>
@@ -194,7 +194,6 @@
 <script>
     /**
      * Formats a complex number (a + bi) into a LaTeX string for MathJax.
-     * This internal function is kept because the output needs high-quality math rendering.
      * @param {number} a - Real part.
      * @param {number} b - Imaginary part.
      * @returns {string} The formatted LaTeX string enclosed in $$ for display.
@@ -232,14 +231,10 @@
     
     /**
      * Generates an HTML card for a single result, using Bootstrap column structure.
-     * Uses Unicode Z₁, Z₂ for operation labels.
      */
     function createResultCard(title, resultComplex, operationSymbol) {
         const [a, b] = resultComplex;
-        // The result is formatted as LaTeX, including the $$ delimiters
         const formattedResult = formatComplex(a, b);
-        
-        // Use standard text for the operation label for better readability
         const operationLabel = `Z₁ ${operationSymbol} Z₂`;
 
         let html = `
@@ -269,7 +264,6 @@
             
             // Trigger MathJax re-render for all new content
             if (window.MathJax) {
-                // We use typesetPromise to ensure the new content is processed
                 window.MathJax.typesetPromise([outputDiv]);
             }
         }
@@ -278,22 +272,29 @@
     document.getElementById('complex-calculator-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const a1 = parseFloat(document.getElementById('a1-input').value.trim());
-        const b1 = parseFloat(document.getElementById('b1-input').value.trim());
-        const a2 = parseFloat(document.getElementById('a2-input').value.trim());
-        const b2 = parseFloat(document.getElementById('b2-input').value.trim());
+        // Get and trim values
+        const a1Val = document.getElementById('a1-input').value.trim();
+        const b1Val = document.getElementById('b1-input').value.trim();
+        const a2Val = document.getElementById('a2-input').value.trim();
+        const b2Val = document.getElementById('b2-input').value.trim();
+
+        // Convert to float
+        const a1 = parseFloat(a1Val);
+        const b1 = parseFloat(b1Val);
+        const a2 = parseFloat(a2Val);
+        const b2 = parseFloat(b2Val);
         
         const outputDiv = document.getElementById('solution-output');
         outputDiv.innerHTML = ''; 
 
         // --- Input Validation ---
-        if (isNaN(a1) || isNaN(b1) || isNaN(a2) || isNaN(b2)) {
+        if (a1Val === '' || b1Val === '' || a2Val === '' || b2Val === '' || isNaN(a1) || isNaN(b1) || isNaN(a2) || isNaN(b2)) {
             const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values (integers or decimals) for all four parts (a₁, b₁, a₂, b₂).</p>`;
             displayResults(htmlContent, true);
             return;
         }
 
-        // --- Core Calculations (Logic Unchanged) ---
+        // --- Core Calculations ---
         
         const addA = a1 + a2;
         const addB = b1 + b2;
@@ -305,7 +306,6 @@
         const denominator = (a2 * a2) + (b2 * b2);
 
         if (denominator === 0) {
-            // Used Unicode for Z₂
             const htmlContent = `<p class="fw-bold text-center">Division by Zero Error</p><p class="text-center">Cannot divide, as Complex Number 2 (**Z₂**) is zero (0 + 0i).</p>`;
             displayResults(htmlContent, true);
             return;
@@ -317,18 +317,14 @@
         // --- Result Display ---
         let htmlContent = '';
         
-        // Symbol used in createResultCard:
         htmlContent += createResultCard('Addition', [addA, addB], '+');
         htmlContent += createResultCard('Subtraction', [subA, subB], '-');
-        htmlContent += createResultCard('Multiplication', [multA, multB], '×'); // Used Unicode multiplication symbol
-        htmlContent += createResultCard('Division', [divA, divB], '÷'); // Used Unicode division symbol
+        htmlContent += createResultCard('Multiplication', [multA, multB], '×'); // Unicode multiplication symbol
+        htmlContent += createResultCard('Division', [divA, divB], '÷'); // Unicode division symbol
 
         displayResults(htmlContent, false);
     });
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('complex-calculator-form').dispatchEvent(new Event('submit'));
-    };
+    // FIX: Removed window.onload function, so the page loads clean and empty.
 </script>
 {% endblock %}

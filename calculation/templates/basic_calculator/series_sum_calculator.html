@@ -7,17 +7,16 @@
 {% block meta_keywords %}sum of series, arithmetic series, geometric series, Sn, sequence, progression, math calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <style>
-    /* Styling for the central calculation block (Lime/Green Theme) */
+    /* Styling for the central calculation block (Bootstrap Success/Green Theme) */
     .solver-wrapper {
-        background: #f7fee7; /* Very light lime background */
+        background: #f8f9fa; /* Light background */
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         max-width: 900px;
         margin: 0 auto;
-        font-family: 'Inter', sans-serif;
     }
     
     .converter-grid {
@@ -29,15 +28,15 @@
     .converter-section {
         padding: 25px;
         border-radius: 10px;
-        background-color: #ecfccb; /* Light lime green */
-        border: 2px solid #84cc16; /* Lime accent */
+        background-color: #f0fff0; /* Very light green/mint */
+        border: 2px solid #198754; /* Success Green accent */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     .input-box label {
         font-size: 0.9rem;
         font-weight: 500;
-        color: #3f6212; /* Dark olive green */
+        color: #0f5132; /* Darker green text */
         display: block;
         margin-bottom: 3px;
     }
@@ -46,25 +45,25 @@
         width: 100%;
         padding: 10px;
         font-size: 1.1rem;
-        border: 2px solid #bef264; /* Medium lime border */
+        border: 2px solid #28a745; /* Green border */
         border-radius: 6px;
         text-align: center;
         font-weight: 600;
-        color: #365314;
+        color: #155724;
     }
     
     .result-card {
         margin-top: 20px;
         padding: 15px;
         border-radius: 8px;
-        background-color: #f7fee7; /* Lightest lime */
-        border-left: 5px solid #65a30d; /* Olive green accent */
+        background-color: #d1e7dd; /* Light Success */
+        border-left: 5px solid #198754; /* Success accent */
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Danger (Red) */
+        background-color: #f8d7da;
+        color: #721c24;
         padding: 20px;
         border-radius: 8px;
     }
@@ -73,32 +72,32 @@
         font-size: 1.1rem;
         font-weight: 700;
         text-align: center;
-        color: #1f2937;
+        color: #212529;
     }
 
     .output-value {
         font-size: 1.6rem;
         font-weight: 800;
         text-align: center;
-        color: #4d7c0f; /* Deep lime green */
+        color: #0b500b; /* Deep green */
         word-break: break-all;
         margin-top: 5px;
     }
     .formula-display {
         font-size: 0.9rem;
-        color: #475569;
+        color: #495057;
         text-align: center;
         margin-top: 10px;
         padding-top: 5px;
-        border-top: 1px dashed #d9f99d;
+        border-top: 1px dashed #a3cfb4;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Sum of Series Calculator ($\mathbf{S_n}$)</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark">Sum of Series Calculator ($\mathbf{S_n}$)</h1>
+    <p class="text-secondary mb-4 text-center">
         Calculate the sum of the first $\mathbf{n}$ terms for Arithmetic and Geometric Progressions.
     </p>
 
@@ -106,76 +105,74 @@
         
         <div class="converter-grid">
 
-            <!-- --- 1. Arithmetic Series Sum --- -->
             <div class="converter-section">
-                <h3 class="text-xl font-bold text-center text-lime-700 mb-4">Arithmetic Series ($S_n$)</h3>
-                <p class="text-center text-sm text-lime-700 mb-4">Formula: $S_n = \frac{n}{2} [2a + (n-1)d]$</p>
-                <form id="arithmetic-form" class="space-y-4">
+                <h3 class="h5 text-center text-success fw-bold mb-4">Arithmetic Series ($S_n$)</h3>
+                <p class="text-center small text-success-emphasis mb-4">Formula: $S_n = \frac{n}{2} [2a + (n-1)d]$</p>
+                <form id="arithmetic-form" class="d-flex flex-column">
                     
-                    <div class="input-box">
+                    <div class="input-box mb-3">
                         <label for="arithmetic-a-input">First Term ($\mathbf{a}$):</label>
-                        <input type="number" id="arithmetic-a-input" value="2" required step="any"
-                               placeholder="a"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        <input type="text" id="arithmetic-a-input" required step="any"
+                               placeholder="e.g., 2"
+                               class="input-field shadow-sm form-control">
                     </div>
 
-                    <div class="input-box">
+                    <div class="input-box mb-3">
                         <label for="arithmetic-d-input">Common Difference ($\mathbf{d}$):</label>
-                        <input type="number" id="arithmetic-d-input" value="3" required step="any"
-                               placeholder="d"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        <input type="text" id="arithmetic-d-input" required step="any"
+                               placeholder="e.g., 3"
+                               class="input-field shadow-sm form-control">
                     </div>
                     
-                    <div class="input-box">
+                    <div class="input-box mb-3">
                         <label for="arithmetic-n-input">Number of Terms ($\mathbf{n}$, integer $> 0$):</label>
-                        <input type="number" id="arithmetic-n-input" value="5" required step="1" min="1"
-                               placeholder="n"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        <input type="number" id="arithmetic-n-input" required step="1" min="1"
+                               placeholder="e.g., 5"
+                               class="input-field shadow-sm form-control">
                     </div>
                     
                     <button type="submit"
-                            class="w-full bg-lime-600 text-white font-bold py-2 mt-4 rounded-lg shadow-xl hover:bg-lime-700 transition duration-150 transform hover:scale-[1.01]">
+                            class="btn btn-success text-white fw-bold py-2 mt-3 shadow-lg">
                         Calculate $\mathbf{S_n}$ (Arithmetic)
                     </button>
                 </form>
 
-                <div id="arithmetic-output" class="result-card hidden"></div>
+                <div id="arithmetic-output" class="result-card d-none"></div>
             </div>
 
-            <!-- --- 2. Geometric Series Sum --- -->
             <div class="converter-section">
-                <h3 class="text-xl font-bold text-center text-lime-700 mb-4">Geometric Series ($S_n$)</h3>
-                <p class="text-center text-sm text-lime-700 mb-4">Formula: $S_n = a \frac{1 - r^n}{1 - r}$ (for $r \neq 1$)</p>
-                <form id="geometric-form" class="space-y-4">
+                <h3 class="h5 text-center text-success fw-bold mb-4">Geometric Series ($S_n$)</h3>
+                <p class="text-center small text-success-emphasis mb-4">Formula: $S_n = a \frac{1 - r^n}{1 - r}$ (for $r \neq 1$)</p>
+                <form id="geometric-form" class="d-flex flex-column">
                     
-                    <div class="input-box">
+                    <div class="input-box mb-3">
                         <label for="geometric-a-input">First Term ($\mathbf{a}$):</label>
-                        <input type="number" id="geometric-a-input" value="3" required step="any"
-                               placeholder="a"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        <input type="text" id="geometric-a-input" required step="any"
+                               placeholder="e.g., 3"
+                               class="input-field shadow-sm form-control">
                     </div>
 
-                    <div class="input-box">
+                    <div class="input-box mb-3">
                         <label for="geometric-r-input">Common Ratio ($\mathbf{r}$):</label>
-                        <input type="number" id="geometric-r-input" value="2" required step="any"
-                               placeholder="r"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        <input type="text" id="geometric-r-input" required step="any"
+                               placeholder="e.g., 2"
+                               class="input-field shadow-sm form-control">
                     </div>
 
-                    <div class="input-box">
+                    <div class="input-box mb-3">
                         <label for="geometric-n-input">Number of Terms ($\mathbf{n}$, integer $> 0$):</label>
-                        <input type="number" id="geometric-n-input" value="4" required step="1" min="1"
-                               placeholder="n"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                        <input type="number" id="geometric-n-input" required step="1" min="1"
+                               placeholder="e.g., 4"
+                               class="input-field shadow-sm form-control">
                     </div>
 
                     <button type="submit"
-                            class="w-full bg-green-600 text-white font-bold py-2 mt-4 rounded-lg shadow-xl hover:bg-green-700 transition duration-150 transform hover:scale-[1.01]">
+                            class="btn btn-primary text-white fw-bold py-2 mt-3 shadow-lg">
                         Calculate $\mathbf{S_n}$ (Geometric)
                     </button>
                 </form>
 
-                <div id="geometric-output" class="result-card hidden"></div>
+                <div id="geometric-output" class="result-card d-none"></div>
             </div>
 
         </div>
@@ -185,13 +182,15 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
     /**
-     * Updates the results display with appropriate styling and content.
+     * Toggles the results display visibility and styling.
      */
     function displayResult(containerId, isError, contentHtml) {
         const outputDiv = document.getElementById(containerId);
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        // Ensure the correct display class is used (d-none in Bootstrap)
+        outputDiv.classList.remove('d-none', 'result-error', 'result-card');
         
         if (isError) {
             outputDiv.classList.add('result-error');
@@ -209,12 +208,16 @@
     function calculateArithmeticSum(e) {
         e.preventDefault();
 
-        const a = parseFloat(document.getElementById('arithmetic-a-input').value.trim());
-        const d = parseFloat(document.getElementById('arithmetic-d-input').value.trim());
-        const n = parseInt(document.getElementById('arithmetic-n-input').value.trim());
+        const a_val = document.getElementById('arithmetic-a-input').value.trim();
+        const d_val = document.getElementById('arithmetic-d-input').value.trim();
+        const n_val = document.getElementById('arithmetic-n-input').value.trim();
+
+        const a = parseFloat(a_val);
+        const d = parseFloat(d_val);
+        const n = parseInt(n_val);
         const containerId = 'arithmetic-output';
 
-        if (isNaN(a) || isNaN(d) || isNaN(n) || n <= 0 || n !== Math.floor(n)) {
+        if (a_val === '' || d_val === '' || n_val === '' || isNaN(a) || isNaN(d) || isNaN(n) || n <= 0 || n !== Math.floor(n)) {
             const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please ensure 'a' and 'd' are valid numbers, and 'n' is a positive integer.</p>`;
             displayResult(containerId, true, htmlContent);
             return;
@@ -223,7 +226,9 @@
         // Formula: S_n = n/2 * [2a + (n-1)d]
         const sum = (n / 2) * (2 * a + (n - 1) * d);
         
-        const result_f = sum.toFixed(4).replace(/\.?0+$/, ''); // Format result
+        const result_f = sum.toFixed(10).replace(/\.?0+$/, ''); // Format result with better precision
+        const a_f = a.toFixed(10).replace(/\.?0+$/, '');
+        const d_f = d.toFixed(10).replace(/\.?0+$/, '');
 
         // Result Display
         let htmlContent = `
@@ -232,7 +237,7 @@
                 $$\\mathbf{${result_f}}$$
             </div>
             <div class="formula-display">
-                Using formula: $$S_n = \\frac{n}{2} [2a + (n-1)d]$$
+                Calculation: $$S_{${n}} = \\frac{${n}}{2} [2(${a_f}) + (${n}-1)(${d_f})]$$
             </div>
         `;
         
@@ -245,12 +250,16 @@
     function calculateGeometricSum(e) {
         e.preventDefault();
 
-        const a = parseFloat(document.getElementById('geometric-a-input').value.trim());
-        const r = parseFloat(document.getElementById('geometric-r-input').value.trim());
-        const n = parseInt(document.getElementById('geometric-n-input').value.trim());
+        const a_val = document.getElementById('geometric-a-input').value.trim();
+        const r_val = document.getElementById('geometric-r-input').value.trim();
+        const n_val = document.getElementById('geometric-n-input').value.trim();
+
+        const a = parseFloat(a_val);
+        const r = parseFloat(r_val);
+        const n = parseInt(n_val);
         const containerId = 'geometric-output';
 
-        if (isNaN(a) || isNaN(r) || isNaN(n) || n <= 0 || n !== Math.floor(n)) {
+        if (a_val === '' || r_val === '' || n_val === '' || isNaN(a) || isNaN(r) || isNaN(n) || n <= 0 || n !== Math.floor(n)) {
             const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please ensure 'a' and 'r' are valid numbers, and 'n' is a positive integer.</p>`;
             displayResult(containerId, true, htmlContent);
             return;
@@ -258,18 +267,20 @@
 
         let sum;
         let formulaUsed;
+        const a_f = a.toFixed(10).replace(/\.?0+$/, '');
+        const r_f = r.toFixed(10).replace(/\.?0+$/, '');
 
         if (r === 1) {
             // Special Case: r = 1 -> S_n = n * a
             sum = n * a;
-            formulaUsed = `S_n = n \\cdot a`;
+            formulaUsed = `S_{${n}} = ${n} \\cdot ${a_f}`;
         } else {
             // General Formula: S_n = a * (1 - r^n) / (1 - r)
             sum = a * (1 - Math.pow(r, n)) / (1 - r);
-            formulaUsed = `S_n = a \\frac{1 - r^n}{1 - r}`;
+            formulaUsed = `S_{${n}} = ${a_f} \\frac{1 - (${r_f})^{${n}}}{1 - ${r_f}}`;
         }
         
-        const result_f = sum.toFixed(4).replace(/\.?0+$/, ''); // Format result
+        const result_f = sum.toFixed(10).replace(/\.?0+$/, ''); // Format result
 
         // Result Display
         let htmlContent = `
@@ -278,7 +289,7 @@
                 $$\\mathbf{${result_f}}$$
             </div>
             <div class="formula-display">
-                Using formula: $$${formulaUsed}$$
+                Calculation: $$${formulaUsed}$$
             </div>
         `;
         
@@ -289,11 +300,6 @@
     document.getElementById('arithmetic-form').addEventListener('submit', calculateArithmeticSum);
     document.getElementById('geometric-form').addEventListener('submit', calculateGeometricSum);
 
-    // Initial calculation for default values
-    window.onload = function() {
-        // Manually trigger the calculation for default values on load
-        document.getElementById('arithmetic-form').dispatchEvent(new Event('submit'));
-        document.getElementById('geometric-form').dispatchEvent(new Event('submit'));
-    };
+    // FIXED: Removed window.onload auto-calculation to ensure fresh fields on load.
 </script>
 {% endblock %}

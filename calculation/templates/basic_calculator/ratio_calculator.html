@@ -7,17 +7,16 @@
 {% block meta_keywords %}ratio calculator, ratio simplifier, lowest terms, proportion, math calculator, GCF{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <style>
-    /* Styling for the central calculation block */
+    /* Custom styling to ensure the calculator card looks nice and centered (Blue Theme) */
     .solver-wrapper {
-        background: #f7f7f7; /* Light gray background */
+        background: #ffffff;
         padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         max-width: 550px;
         margin: 0 auto;
-        font-family: 'Inter', sans-serif;
     }
     
     .input-grid {
@@ -26,21 +25,21 @@
         gap: 15px;
         align-items: center;
         padding: 20px;
-        border-radius: 8px;
-        background-color: #f0f4f8; /* Very light blue-gray */
-        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background-color: #f8f9fa; /* Light background */
+        border: 1px solid #dee2e6;
     }
 
     .input-grid .separator {
         font-size: 2.5rem;
         font-weight: 800;
-        color: #4b5563; /* Gray */
+        color: #6c757d; /* Secondary gray */
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #1f2937; /* Dark gray */
+        color: #212529; /* Dark text */
         margin-bottom: 5px;
         display: block;
         text-align: center;
@@ -50,11 +49,11 @@
         width: 100%;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #6b7280; /* Medium gray border */
-        border-radius: 8px;
+        border: 2px solid #adb5bd; /* Medium gray border */
+        border-radius: 0.5rem;
         text-align: center;
         font-weight: 700;
-        color: #1f2937;
+        color: #0d6efd; /* Primary blue */
     }
     
     .result-box {
@@ -64,16 +63,16 @@
         border-left: 5px solid;
     }
 
-    /* Custom result styles */
+    /* Bootstrap Color Adapters */
     .result-success {
-        border-left-color: #3b82f6; /* Blue */
-        background-color: #eff6ff;
-        color: #1e40af;
+        border-color: #0d6efd; /* Primary Blue */
+        background-color: #e9f2ff;
+        color: #0a58ca;
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-color: #dc3545; /* Danger Red */
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .output-label {
@@ -82,51 +81,51 @@
         text-align: center;
         margin-top: 5px;
         margin-bottom: 10px;
-        color: #1f2937;
+        color: #212529;
     }
     .output-value {
         font-size: 2.5rem;
         font-weight: 800;
         text-align: center;
-        color: #1e40af;
+        color: #0d6efd; /* Primary Blue */
         margin-top: 10px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Ratio Calculator & Simplifier</h1>
-    <p class="text-gray-600 mb-6 text-center">Enter the two parts of the ratio ($A:B$) to find the simplified ratio and the decimal value.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bold mb-2 text-dark">Ratio Calculator & Simplifier 🧮</h1>
+    <p class="text-secondary mb-5 text-center">Enter the two parts of the ratio ($A:B$) to find the simplified ratio and the decimal value.</p>
 
     <div class="solver-wrapper">
-        <form id="ratio-form" class="space-y-6">
+        <form id="ratio-form" class="space-y-4">
             
-            <div class="input-grid shadow-lg">
+            <div class="input-grid shadow-sm">
                 <div class="input-box">
                     <label for="part-a-input">Part A:</label>
-                    <input type="number" id="part-a-input" value="15" required step="any"
+                    <input type="number" id="part-a-input" value="" required step="any"
                            placeholder="e.g., 15"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="input-field form-control">
                 </div>
                 <div class="separator">:</div>
                 <div class="input-box">
                     <label for="part-b-input">Part B:</label>
-                    <input type="number" id="part-b-input" value="25" required step="any"
+                    <input type="number" id="part-b-input" value="" required step="any"
                            placeholder="e.g., 25"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="input-field form-control">
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn btn-primary w-100 fw-bold py-3 mt-4 shadow-sm hover-shadow">
                 Calculate Ratio
             </button>
         </form>
 
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Results</h2>
-            <div id="solution-output" class="result-box hidden">
+        <div id="result-container" class="mt-5">
+            <h2 class="h4 text-dark mb-4 border-bottom pb-2">Results</h2>
+            <div id="solution-output" class="result-box d-none">
                 </div>
         </div>
         
@@ -135,6 +134,11 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <script>
     /**
      * Calculates the Greatest Common Factor (GCF) of two non-negative integers
@@ -144,8 +148,9 @@
      * @returns {number} The GCF of a and b.
      */
     function gcd(a, b) {
-        a = Math.abs(a);
-        b = Math.abs(b);
+        // Handle floating point errors due to Math.abs
+        a = Math.round(Math.abs(a));
+        b = Math.round(Math.abs(b));
         
         // Euclidean Algorithm
         while (b) {
@@ -162,11 +167,35 @@
      * @returns {number} The number of decimal places.
      */
     function getDecimalPlaces(num) {
+        if (typeof num !== 'number' || isNaN(num)) return 0;
         const str = num.toString();
         if (str.includes('.')) {
+            // Check for potential scientific notation
+            if (str.includes('e')) {
+                const parts = str.split('e');
+                // Extremely simple check for exponent, often sufficient
+                return parseInt(parts[1], 10) < 0 ? Math.abs(parseInt(parts[1], 10)) : 0;
+            }
             return str.split('.')[1].length;
         }
         return 0;
+    }
+
+    /**
+     * Updates the results display with appropriate styling and content, and triggers MathJax.
+     */
+    function displayResult(className, contentHtml) {
+        const outputDiv = document.getElementById('solution-output');
+        
+        // Reset and apply new classes
+        outputDiv.classList.remove('d-none', 'result-error', 'result-success');
+        outputDiv.classList.add(className);
+        outputDiv.innerHTML = contentHtml;
+
+        // Trigger MathJax typesetting for the new content
+        if (typeof MathJax !== 'undefined') {
+             MathJax.typesetPromise([outputDiv]);
+        }
     }
 
     document.getElementById('ratio-form').addEventListener('submit', function(e) {
@@ -179,23 +208,21 @@
         const B = parseFloat(B_input);
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
-        outputDiv.className = 'result-box'; 
-        outputDiv.innerHTML = '';
-
+        outputDiv.classList.add('d-none'); // Hide output initially
+        
         let htmlContent = '';
         let resultClass = '';
 
         // --- Input Validation ---
         if (A_input === '' || B_input === '' || isNaN(A) || isNaN(B)) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for both parts of the ratio.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center mb-0">Please enter valid numerical values for both parts of the ratio.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
         }
 
         if (B === 0) {
-            htmlContent = `<p class="font-bold text-center">Invalid Ratio</p><p class="text-center">The second part of the ratio ($B$) cannot be zero.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Ratio</p><p class="text-center mb-0">The second part of the ratio ($B$) cannot be zero.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -207,8 +234,10 @@
         const decimalA = getDecimalPlaces(A);
         const decimalB = getDecimalPlaces(B);
         const maxDecimals = Math.max(decimalA, decimalB);
-        const factor = Math.pow(10, maxDecimals);
+        // Use 10^(maxDecimals) factor for scaling
+        const factor = Math.pow(10, maxDecimals); 
         
+        // Round to handle potential floating-point math issues before rounding
         const N_scaled = Math.round(A * factor);
         const D_scaled = Math.round(B * factor);
 
@@ -220,32 +249,35 @@
 
         // --- Decimal Value Calculation ---
         const decimalValue = A / B;
-        const formattedDecimal = decimalValue.toFixed(4); // Display with 4 decimal places
+        const formattedDecimal = decimalValue.toFixed(6).replace(/\.?0+$/, ''); // Max 6 decimals, trim trailing zeros
 
         // --- Result Display ---
         
-        htmlContent += `<p class="output-label">Simplified Ratio ($A':B'$)</p>`;
-        htmlContent += `<div class="output-value text-blue-700">$$\\mathbf{${A_simplified} : ${B_simplified}}$$</div>`;
+        htmlContent += `<div class="row text-center">`;
         
-        htmlContent += `<hr class="my-4 border-blue-300">`;
-
+        // Simplified Ratio
+        htmlContent += `<div class="col-md-6 mb-4 mb-md-0">`;
+        htmlContent += `<p class="output-label">Simplified Ratio ($A':B'$)</p>`;
+        htmlContent += `<div class="output-value">$$\\mathbf{${A_simplified} : ${B_simplified}}$$</div>`;
+        htmlContent += `</div>`;
+        
+        // Decimal Value
+        htmlContent += `<div class="col-md-6">`;
         htmlContent += `<p class="output-label">Decimal Value ($A / B$)</p>`;
-        htmlContent += `<div class="output-value text-blue-700">$$\\mathbf{${formattedDecimal}}$$</div>`;
-        htmlContent += `<p class="text-sm text-center text-gray-600 mt-1">(Ratio value rounded to 4 decimal places)</p>`;
+        htmlContent += `<div class="output-value">$$\\mathbf{${formattedDecimal}}$$</div>`;
+        htmlContent += `<p class="text-sm text-center text-secondary mt-1">(Ratio value)</p>`;
+        htmlContent += `</div>`;
+        
+        htmlContent += `</div>`; // end row
 
         resultClass = 'result-success';
         
         displayResult(resultClass, htmlContent);
     });
 
-    /**
-     * Updates the results display with appropriate styling and content.
-     */
-    function displayResult(className, contentHtml) {
-        const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add(className);
-        outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
-    }
+    // Initial setup on load: Ensure a clean start by hiding the output.
+    window.onload = function() {
+        document.getElementById('solution-output').classList.add('d-none');
+    };
 </script>
 {% endblock %}

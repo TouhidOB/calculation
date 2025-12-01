@@ -7,11 +7,24 @@
 {% block meta_keywords %}fraction simplifier, lowest terms, reduce fraction, GCF, GCD, math calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Green/Lime Theme for Bootstrap) */
+    :root {
+        --lime-lightest: #f7fee7; /* Solver Wrapper Background */
+        --mint-pale: #ecfdf5; /* Light mint/green */
+        --mint-border: #d9f99d; /* Light lime border */
+        --green-dark: #166534; /* Dark green label */
+        --green-medium: #a7f3d0; /* Medium green input border */
+        --green-hot: #10b981; /* Teal Green Accent */
+        --green-text: #065f46; /* Darker text */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f7fee7; /* Very light lime/yellow background */
+        background: var(--lime-lightest); 
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -26,28 +39,33 @@
         gap: 20px;
         padding: 20px;
         border-radius: 8px;
-        background-color: #ecfdf5; /* Light mint/green */
-        border: 1px solid #d9f99d;
+        background-color: var(--mint-pale); 
+        border: 1px solid var(--mint-border);
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #166534; /* Dark green */
+        color: var(--green-dark); 
         margin-bottom: 5px;
         display: block;
         text-align: center;
     }
 
     .input-field {
-        width: 100%;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #a7f3d0; /* Medium green border */
+        border: 2px solid var(--green-medium); 
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
-        color: #065f46;
+        color: var(--green-text);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06); /* Simulating shadow-inner */
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    .input-field:focus {
+        border-color: var(--green-hot) !important;
+        box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25) !important; /* Custom focus ring for green */
     }
     
     .fraction-display {
@@ -55,7 +73,7 @@
         font-weight: 800;
         text-align: center;
         margin: 20px 0;
-        color: #10b981;
+        color: var(--green-hot);
     }
 
     .result-box {
@@ -65,16 +83,16 @@
         border-left: 5px solid;
     }
 
-    /* Custom result styles */
+    /* Custom result styles (Using Bootstrap-like classes for structure) */
     .result-success {
-        border-left-color: #10b981; /* Teal Green */
+        border-left-color: var(--green-hot); /* Teal Green */
         background-color: #f0fdf4;
-        color: #065f46;
+        color: var(--green-text);
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .output-text {
@@ -87,37 +105,38 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Fraction Simplifier</h1>
-    <p class="text-gray-600 mb-6 text-center">Reduce any fraction $\frac{N}{D}$ to its lowest terms $\frac{n}{d}$.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Fraction Simplifier</h1>
+    <p class="text-secondary mb-4 text-center">Reduce any fraction $\frac{N}{D}$ to its lowest terms $\frac{n}{d}$.</p>
 
     <div class="solver-wrapper">
-        <form id="simplifier-form" class="space-y-6">
+        <form id="simplifier-form" class="d-grid gap-4">
             
             <div class="input-grid shadow-lg">
                 <div class="input-box">
                     <label for="numerator-input">Numerator ($N$):</label>
-                    <input type="number" id="numerator-input" value="12" required step="1"
+                    <input type="number" id="numerator-input" required step="1"
                            placeholder="e.g., 12"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
                 <div class="input-box">
                     <label for="denominator-input">Denominator ($D$):</label>
-                    <input type="number" id="denominator-input" value="18" required step="1"
+                    <input type="number" id="denominator-input" required step="1"
                            placeholder="e.g., 18"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-green-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn btn-success w-100 fw-bold py-3 shadow-lg"
+                    style="background-color: var(--green-hot); border-color: var(--green-hot);">
                 Simplify Fraction
             </button>
         </form>
 
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Simplified Result</h2>
-            <div id="solution-output" class="result-box hidden">
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Simplified Result</h2>
+            <div id="solution-output" class="result-box d-none">
                 </div>
         </div>
         
@@ -126,6 +145,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
      * Calculates the Greatest Common Factor (GCF) of two non-negative integers
@@ -157,7 +178,7 @@
         const D = parseInt(D_input, 10);
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
+        outputDiv.classList.add('d-none'); // Hide before new result
         outputDiv.className = 'result-box'; 
         outputDiv.innerHTML = '';
 
@@ -165,15 +186,22 @@
         let resultClass = '';
 
         // --- Input Validation ---
-        if (N_input === '' || D_input === '' || isNaN(N) || isNaN(D) || !Number.isInteger(N) || !Number.isInteger(D)) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter two whole numbers for the numerator and denominator.</p>`;
+        if (N_input === '' || D_input === '') {
+             htmlContent = `<p class="fw-bold text-center">Empty Input</p><p class="text-center">Please enter values for both the numerator and denominator.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+        
+        if (isNaN(N) || isNaN(D) || !Number.isInteger(N) || !Number.isInteger(D)) {
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter two whole numbers for the numerator and denominator.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
         }
 
         if (D === 0) {
-            htmlContent = `<p class="font-bold text-center">Invalid Operation</p><p class="text-center">The denominator (divisor) cannot be zero.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Operation</p><p class="text-center">The denominator (divisor) cannot be zero.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -194,8 +222,8 @@
         // --- Result Display ---
 
         // Display the original and GCF
-        htmlContent += `<p class="text-lg text-center">Original Fraction: $\\frac{${N}}{${D}}$</p>`;
-        htmlContent += `<p class="text-lg text-center mt-2">Greatest Common Factor (GCF) of ${Math.abs(N)} and ${Math.abs(D)}: $\\mathbf{${commonDivisor}}$</p>`;
+        htmlContent += `<p class="fs-5 text-center">Original Fraction: $\\frac{${N}}{${D}}$</p>`;
+        htmlContent += `<p class="fs-5 text-center mt-2">Greatest Common Factor (GCF) of ${Math.abs(N)} and ${Math.abs(D)}: $\\mathbf{${commonDivisor}}$</p>`;
         
         // Display the simplified fraction
         htmlContent += `<div class="fraction-display mt-4">`;
@@ -224,9 +252,16 @@
      */
     function displayResult(className, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
+        // Remove d-none (or hidden) and add the specific class
+        outputDiv.classList.remove('d-none', 'result-error', 'result-success');
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
+        
+        // Trigger MathJax re-render for the output
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([outputDiv]);
+        }
     }
 </script>
 {% endblock %}

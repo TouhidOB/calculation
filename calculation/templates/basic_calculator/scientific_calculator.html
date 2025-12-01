@@ -7,26 +7,25 @@
 {% block meta_keywords %}scientific calculator, trigonometry, math, functions, log, power, root, pi, complex calculation{% endblock %}
 
 {% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <style>
     /* Calculator specific styles */
     .calc-wrapper {
-        background: #f7f7f7;
-        padding: 25px;
+        background: #f8f9fa;
+        padding: 22px;
         border-radius: 12px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-        max-width: 550px; /* Wider for more buttons */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        max-width: 550px; /* Adjusted max width for a standard 6-column calculator */
         margin: 0 auto;
     }
 
     .display-screen {
-        background: #e9ecef;
-        border: 1px solid #ced4da;
-        border-radius: 8px;
-        padding: 10px 15px;
-        text-align: right;
-        margin-bottom: 15px;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 14px;
         font-family: 'Consolas', monospace;
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
     }
 
     #history-display {
@@ -36,375 +35,401 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        text-align: right;
     }
 
     #current-input {
-        font-size: 2.5rem;
-        font-weight: bold;
-        min-height: 45px;
-        line-height: 1.2;
+        font-size: 2.2rem;
+        font-weight: 700;
+        min-height: 46px;
+        line-height: 1.05;
+        text-align: right;
     }
 
     .calc-keys {
         display: grid;
-        grid-template-columns: repeat(6, 1fr); /* 6 columns for scientific layout */
+        grid-template-columns: repeat(6, 1fr); /* 6 columns maintained */
         gap: 8px;
     }
 
     .calc-btn {
-        padding: 15px 10px;
+        padding: 12px 8px;
         font-size: 1rem;
-        font-weight: 500;
-        border-radius: 6px;
+        font-weight: 600;
+        border-radius: 8px;
         border: none;
         cursor: pointer;
-        transition: background-color 0.15s ease, transform 0.05s ease;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        min-width: 0; /* Ensures buttons fit in grid */
+        transition: transform .06s ease, box-shadow .06s ease;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.06);
+        min-width: 0;
     }
 
-    .calc-btn:hover {
-        opacity: 0.9;
-    }
+    .calc-btn:active { transform: translateY(1px); }
 
-    .calc-btn:active {
-        transform: translateY(1px);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    }
+    .number-btn, .decimal-btn { background-color: #ffffff; color: #212529; }
+    .operator-btn { background-color: #ffc107; color: #212529; }
+    .function-btn { background-color: #e9f7ef; color: #0f5132; font-size: 0.95rem; }
+    .clear-btn { background-color: #dc3545; color: #fff; }
+    .special-btn { background-color: #6c757d; color: #fff; }
+    .equal-btn { background-color: #0d6efd; color: #fff; }
 
-    .number-btn, .decimal-btn {
-        background-color: #ffffff;
-        color: #333;
-    }
-    
-    .operator-btn {
-        background-color: #ff9500;
-        color: white;
-    }
-    
-    .function-btn {
-        background-color: #c8e6c9; /* Light green for functions */
-        color: #388e3c;
-        font-weight: bold;
-        font-size: 0.9rem;
-    }
-
-    .clear-btn, .special-btn {
-        background-color: #dc3545; /* Red for clear/dangerous actions */
-        color: white;
-        font-weight: bold;
-    }
-
-    .equal-btn {
-        background-color: #007bff; /* Blue for equals */
-        color: white;
-    }
-    
-    /* Grid span adjustments */
-    .zero-btn {
-        grid-column: span 2;
-        text-align: left;
-        padding-left: 20px;
-    }
+    .equal-btn-span { grid-column: span 2; }
+    .wide-span { grid-column: span 3; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-4">
-    <h1 class="mb-3">🔬 Scientific Calculator</h1>
-    <p class="small-muted">Access advanced math functions including trigonometry, logarithms, powers, and constants ($\pi$, $e$).</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bold mb-1">🔬 Scientific Calculator</h1>
+    <p class="text-center text-muted mb-4">Advanced math: trig, logs, powers, roots, factorial, percent, $\pi$ and $e$. Toggle degrees/radians for trig.</p>
 
-    <div class="calc-wrapper mt-4">
+    <div class="calc-wrapper">
         <div class="display-screen">
             <div id="history-display"></div>
             <div id="current-input">0</div>
         </div>
 
-        <div class="calc-keys">
-            <button class="calc-btn special-btn" data-type="clear">C</button>
-            <button class="calc-btn special-btn" data-type="backspace">⌫</button>
-            <button class="calc-btn function-btn" data-value="pow">xʸ</button>
-            <button class="calc-btn function-btn" data-value="sqrt">√</button>
-            <button class="calc-btn operator-btn" data-value="/">÷</button>
-            <button class="calc-btn function-btn" data-value="percent">%</button>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+            <small class="text-muted">Keyboard input enabled</small>
+            <div class="btn-group" role="group" aria-label="modes">
+                <button id="deg-btn" type="button" class="btn btn-outline-secondary btn-sm active">DEG</button>
+                <button id="rad-btn" type="button" class="btn btn-outline-secondary btn-sm">RAD</button>
+            </div>
+        </div>
 
-            <button class="calc-btn function-btn" data-value="sin">sin</button>
-            <button class="calc-btn function-btn" data-value="cos">cos</button>
-            <button class="calc-btn function-btn" data-value="tan">tan</button>
-            <button class="calc-btn function-btn" data-value="pi">π</button>
-            <button class="calc-btn number-btn" data-value="7">7</button>
-            <button class="calc-btn number-btn" data-value="8">8</button>
-            <button class="calc-btn number-btn" data-value="9">9</button>
-            <button class="calc-btn operator-btn" data-value="*">×</button>
+        <div class="calc-keys" id="keys">
+            <button class="calc-btn clear-btn" data-action="clear">C</button>
+            <button class="calc-btn special-btn" data-action="back">⌫</button>
+            <button class="calc-btn special-btn" data-action="sign">+/-</button>
+            <button class="calc-btn function-btn" data-action="token" data-value="(">(</button>
+            <button class="calc-btn function-btn" data-action="token" data-value=")">)</button>
+            <button class="calc-btn operator-btn" data-action="operator" data-value="/">÷</button>
+            
+            <button class="calc-btn function-btn" data-action="fn" data-value="log">log₁₀</button>
+            <button class="calc-btn function-btn" data-action="fn" data-value="ln">ln</button>
+            <button class="calc-btn function-btn" data-action="const" data-value="pi">π</button>
+            <button class="calc-btn number-btn" data-action="number" data-value="7">7</button>
+            <button class="calc-btn number-btn" data-action="number" data-value="8">8</button>
+            <button class="calc-btn number-btn" data-action="number" data-value="9">9</button>
+            <button class="calc-btn operator-btn" data-action="operator" data-value="*">×</button>
 
-            <button class="calc-btn function-btn" data-value="log">log</button>
-            <button class="calc-btn function-btn" data-value="ln">ln</button>
-            <button class="calc-btn function-btn" data-value="exp">e</button>
-            <button class="calc-btn function-btn" data-value="factorial">n!</button>
-            <button class="calc-btn number-btn" data-value="4">4</button>
-            <button class="calc-btn number-btn" data-value="5">5</button>
-            <button class="calc-btn number-btn" data-value="6">6</button>
-            <button class="calc-btn operator-btn" data-value="-">-</button>
+            <button class="calc-btn function-btn" data-action="fn" data-value="sin">sin</button>
+            <button class="calc-btn function-btn" data-action="fn" data-value="cos">cos</button>
+            <button class="calc-btn function-btn" data-action="fn" data-value="tan">tan</button>
+            <button class="calc-btn function-btn" data-action="fn" data-value="sqr">x²</button>
+            <button class="calc-btn number-btn" data-action="number" data-value="4">4</button>
+            <button class="calc-btn number-btn" data-action="number" data-value="5">5</button>
+            <button class="calc-btn number-btn" data-action="number" data-value="6">6</button>
+            <button class="calc-btn operator-btn" data-action="operator" data-value="-">-</button>
 
-            <button class="calc-btn function-btn" data-value="sq">x²</button>
-            <button class="calc-btn function-btn" data-value="inv">1/x</button>
-            <button class="calc-btn function-btn" data-value="(">(</button>
-            <button class="calc-btn function-btn" data-value=")">)</button>
-            <button class="calc-btn number-btn" data-value="1">1</button>
-            <button class="calc-btn number-btn" data-value="2">2</button>
-            <button class="calc-btn number-btn" data-value="3">3</button>
-            <button class="calc-btn operator-btn" data-value="+">+</button>
+            <button class="calc-btn function-btn" data-action="fn" data-value="fact">n!</button>
+            <button class="calc-btn function-btn" data-action="percent">%</button>
+            <button class="calc-btn function-btn" data-action="fn" data-value="sqrt">√</button>
+            <button class="calc-btn function-btn" data-action="fn" data-value="pow">xʸ</button>
+            <button class="calc-btn number-btn" data-action="number" data-value="1">1</button>
+            <button class="calc-btn number-btn" data-action="number" data-value="2">2</button>
+            <button class="calc-btn number-btn" data-action="number" data-value="3">3</button>
+            <button class="calc-btn operator-btn" data-action="operator" data-value="+">+</button>
 
-            <button class="calc-btn special-btn" data-type="sign">+/-</button>
-            <button class="calc-btn number-btn zero-btn" data-value="0">0</button>
-            <button class="calc-btn decimal-btn" data-value=".">.</button>
-            <button class="calc-btn equal-btn" data-type="equals">=</button>
+            <button class="calc-btn function-btn" data-action="const" data-value="e">e</button>
+            <button class="calc-btn function-btn" data-action="fn" data-value="inv">1/x</button>
+            <button class="calc-btn operator-btn" data-action="operator" data-value="%">mod</button>
+            <button class="calc-btn number-btn equal-btn-span" data-action="number" data-value="0">0</button>
+            <button class="calc-btn decimal-btn" data-action="dot" data-value=".">.</button>
+            <button class="calc-btn equal-btn" data-action="equals">=</button>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 <script>
-    // --- State Variables ---
-    let currentInput = '0';
+/*
+  Scientific Calculator Script - Fixed and Enhanced
+*/
+
+(() => {
+    // State
+    let current = '0';
     let history = '';
-    let waitingForSecondOperand = false;
-    let operator = null;
-    let firstOperand = null;
-    
-    // Flag to handle complex expression parsing for scientific functions
-    // This simplifies the logic by allowing standard JS eval for complex expressions
-    let expression = '0'; 
+    let tokens = []; 
+    let lastAnswer = null;
+    let degMode = true; 
 
-    const currentDisplay = document.getElementById('current-input');
-    const historyDisplay = document.getElementById('history-display');
-    const keys = document.querySelector('.calc-keys');
+    const currentEl = document.getElementById('current-input');
+    const historyEl = document.getElementById('history-display');
+    const keys = document.getElementById('keys');
+    const degBtn = document.getElementById('deg-btn');
+    const radBtn = document.getElementById('rad-btn');
 
-    // --- Helper Functions ---
+    // --- Core Utilities ---
 
     function updateDisplay() {
-        // Display the current input/result
-        currentDisplay.textContent = currentInput;
-        
-        // Display the full expression in history (more useful for scientific mode)
-        historyDisplay.textContent = history;
-    }
-    
-    function appendToExpression(value) {
-        if (expression === '0') {
-            expression = value;
-        } else {
-            expression += value;
-        }
-        history = expression;
+        currentEl.textContent = current;
+        historyEl.textContent = history;
     }
 
-    function clearCalculator() {
-        currentInput = '0';
+    function resetAll() {
+        current = '0';
         history = '';
-        expression = '0';
-        firstOperand = null;
-        operator = null;
-        waitingForSecondOperand = false;
+        tokens = [];
         updateDisplay();
     }
-    
+
+    function isNumericToken(t) {
+        return t && t.match(/^[0-9.eE-]+$/);
+    }
+
+    // --- Input Handlers ---
+
+    function appendNumber(num) {
+        if (tokens.length === 0 || !isNumericToken(tokens[tokens.length - 1])) {
+            tokens.push(num);
+        } else {
+            tokens[tokens.length - 1] += num;
+        }
+        current = tokens[tokens.length - 1];
+        history = tokens.join(' ');
+    }
+
+    function appendDot() {
+        if (tokens.length === 0 || !isNumericToken(tokens[tokens.length - 1])) {
+            tokens.push('0.');
+        } else if (!tokens[tokens.length - 1].includes('.')) {
+            tokens[tokens.length - 1] += '.';
+        }
+        current = tokens[tokens.length - 1];
+        history = tokens.join(' ');
+    }
+
+    function appendOperator(op) {
+        if (tokens.length === 0) {
+            if (op === '-') tokens.push(op); // Allow unary minus at start
+            return;
+        }
+        const last = tokens[tokens.length - 1];
+        if (last === '(' || last === ')' || isNumericToken(last)) {
+            tokens.push(op);
+        } else if (last.endsWith('(')) {
+            if (op === '-') tokens.push(op); // Allow unary minus inside parentheses
+        } else if (/[+\-*/^%]$/.test(last)) {
+            tokens[tokens.length - 1] = op; // Replace operator
+        }
+        current = op;
+        history = tokens.join(' ');
+    }
+
+    function appendFunction(fnName) {
+        // Push function name and opening parenthesis
+        tokens.push(fnName + '(');
+        history = tokens.join(' ');
+    }
+
+    function appendConst(c) {
+        let val;
+        if (c === 'pi') val = Math.PI.toString();
+        else if (c === 'e') val = Math.E.toString();
+        else return;
+
+        // Push the constant as a number token
+        appendNumber(val); 
+        history = tokens.join(' ');
+    }
+
+    function backspace() {
+        if (tokens.length === 0) return resetAll();
+        
+        const last = tokens[tokens.length - 1];
+        
+        if (last.endsWith('(')) {
+            // If function call (e.g., sin(), log()), remove the whole token
+            tokens.pop();
+        } else if (last.length > 1 && isNumericToken(last)) {
+            // If last token is a number, pop last char
+            tokens[tokens.length - 1] = last.slice(0, -1);
+            if (tokens[tokens.length - 1] === '' || tokens[tokens.length - 1] === '-') tokens.pop();
+        } else {
+            tokens.pop(); // Remove single-character token (operator, parenthesis)
+        }
+        
+        current = tokens.length > 0 ? tokens[tokens.length - 1] : '0';
+        history = tokens.join(' ');
+    }
+
+    function applyUnary(fn) {
+        if (tokens.length === 0) return;
+        const last = tokens[tokens.length - 1];
+        let val = parseFloat(last);
+
+        if (isNaN(val)) {
+            return;
+        }
+
+        let res;
+        switch (fn) {
+            case 'sqr': res = Math.pow(val, 2); break;
+            case 'inv': res = 1 / val; break;
+            case 'fact': res = factorial(Math.floor(val)); break;
+            case 'percent': res = val / 100; break;
+            case 'sign': res = val * -1; break;
+            default: return;
+        }
+        
+        tokens[tokens.length - 1] = String(res);
+        current = formatResult(res);
+        history = tokens.join(' ');
+    }
+
+    // --- Calculation Logic ---
+
     function factorial(n) {
-        if (n < 0) return NaN;
+        if (n < 0 || !Number.isInteger(n)) return NaN;
         if (n === 0 || n === 1) return 1;
-        let result = 1;
-        for (let i = 2; i <= n; i++) {
-            result *= i;
-        }
-        return result;
-    }
-
-    // --- Button Handlers ---
-
-    function handleNumber(digit) {
-        if (currentInput === '0' || waitingForSecondOperand) {
-            currentInput = digit;
-            waitingForSecondOperand = false;
-        } else {
-            currentInput += digit;
-        }
-        appendToExpression(digit);
-        updateDisplay();
-    }
-
-    function handleDecimal() {
-        if (!currentInput.includes('.')) {
-            currentInput += '.';
-        }
-        appendToExpression('.');
-        updateDisplay();
+        let r = 1;
+        for (let i = 2; i <= n; i++) r *= i;
+        return r;
     }
     
-    function handleOperator(op) {
-        // In scientific mode, operators are just appended to the expression
-        // We rely on the final 'equals' using eval()
-        if (op === '*') {
-            appendToExpression('*');
-            history += '×';
-        } else if (op === '/') {
-            appendToExpression('/');
-            history += '÷';
-        } else {
-            appendToExpression(op);
-            history += op;
-        }
-        currentInput = '0'; // Clear current input for the next number
-        updateDisplay();
-    }
+    function degToRad(x) { return x * (Math.PI / 180); }
 
-    function handleFunction(func) {
-        let funcName = '';
-        let funcSymbol = '';
-        const currentVal = parseFloat(currentInput);
+    function buildExpression() {
+        const mapFn = {
+            'sin(': 'Math.sin(', 'cos(': 'Math.cos(', 'tan(': 'Math.tan(',
+            'log(': 'Math.log10(', 'ln(': 'Math.log(', 'sqrt(': 'Math.sqrt('
+        };
 
-        switch (func) {
-            case 'pi':
-                currentInput = Math.PI.toString();
-                appendToExpression(Math.PI.toString());
-                break;
-            case 'exp':
-                currentInput = Math.E.toString();
-                appendToExpression(Math.E.toString());
-                break;
-            case 'sq':
-                // x^2: Immediate calculation on current input
-                currentInput = (currentVal * currentVal).toString();
-                history = `sq(${history})`;
-                expression = currentInput;
-                break;
-            case 'inv':
-                // 1/x: Immediate calculation
-                currentInput = (1 / currentVal).toString();
-                history = `1/(${history})`;
-                expression = currentInput;
-                break;
-            case 'sqrt':
-                // Square Root: Immediate calculation
-                currentInput = Math.sqrt(currentVal).toString();
-                history = `√(${history})`;
-                expression = currentInput;
-                break;
-            case 'factorial':
-                // Factorial: Immediate calculation
-                currentInput = factorial(Math.floor(currentVal)).toString();
-                history = `(${history})!`;
-                expression = currentInput;
-                break;
-            case 'percent':
-                // Percentage: Immediate calculation (used as x/100)
-                currentInput = (currentVal / 100).toString();
-                history = `(${history})%`;
-                expression = currentInput;
-                break;
-            case 'sin':
-            case 'cos':
-            case 'tan':
-            case 'log':
-            case 'ln':
-                // Trigonometric and Logarithmic functions: Treat as prefix
-                funcName = func;
-                funcSymbol = func;
-                
-                // If currentInput is a number, wrap it in the function and evaluate
-                if (currentInput !== '0' && !waitingForSecondOperand) {
-                    let angle = currentVal;
-                    
-                    // Convert degrees to radians for JS Math functions (defaulting to degrees)
-                    // For simplicity here, we assume the user intends degrees.
-                    const radians = angle * (Math.PI / 180);
-                    
-                    let result;
-                    if (func === 'sin') result = Math.sin(radians);
-                    else if (func === 'cos') result = Math.cos(radians);
-                    else if (func === 'tan') result = Math.tan(radians);
-                    else if (func === 'log') result = Math.log10(currentVal);
-                    else if (func === 'ln') result = Math.log(currentVal);
-
-                    currentInput = result.toString();
-                    history = `${funcSymbol}(${currentVal})`;
-                    expression = currentInput; // Reset expression to the result
+        let expr = '';
+        for (let t of tokens) {
+            let mapped = mapFn[t];
+            if (mapped) {
+                // Apply degree/radian conversion for trig functions
+                if (t === 'sin(' || t === 'cos(' || t === 'tan(') {
+                    expr += degMode ? mapped.replace('(', '(degToRad(') : mapped;
                 } else {
-                    // Append function call structure to expression
-                    appendToExpression(`${funcName}(`);
+                    expr += mapped;
                 }
-                break;
-            case 'pow':
-                // Power (x^y): Append structure, user needs to enter the exponent next
-                // Note: The history display logic is simplified here; a full scientific parser would be complex.
-                appendToExpression('**');
-                history += '^';
-                break;
-            case '(':
-            case ')':
-                appendToExpression(func);
-                break;
-        }
-        waitingForSecondOperand = true; // Wait for the next number/input
-        updateDisplay();
-    }
-
-    function handleEquals() {
-        try {
-            // Use eval for the full scientific expression
-            // NOTE: eval() is powerful but generally unsafe in production web apps. 
-            // For a learning example like this, it's the simplest way to implement a scientific calculator.
-            let result = eval(expression);
-
-            if (result === Infinity || isNaN(result)) {
-                currentInput = 'Error';
+            } else if (t === '^') {
+                expr += '**'; // JavaScript exponentiation operator
             } else {
-                currentInput = result.toFixed(10).replace(/\.?0+$/, ""); // Clean up floating point
+                expr += t;
             }
-            
-            history = `${expression} =`;
-            expression = currentInput; // Set expression to the result for further chaining
-            waitingForSecondOperand = true;
+        }
+        return expr;
+    }
 
+    function formatResult(v) {
+        if (typeof v === 'number') {
+            if (!isFinite(v)) return String(v);
+            // Use toPrecision for better handling of very small/large numbers, then clean up
+            let s = v.toPrecision(15).replace(/\.?(0+)$/, '');
+            return s;
+        }
+        return String(v);
+    }
+
+    function evaluate() {
+        if (tokens.length === 0) return;
+        
+        // Auto-close parentheses
+        let open = tokens.join('').split('(').length - 1;
+        let close = tokens.join('').split(')').length - 1;
+        while (close < open) { tokens.push(')'); close++; }
+
+        const expr = buildExpression();
+        try {
+            // Use the Function constructor for safe evaluation
+            const fn = new Function('degToRad', 'Math', `return ${expr};`);
+            let res = fn(degToRad, Math);
+            
+            if (!isFinite(res)) {
+                current = 'Overflow';
+            } else if (isNaN(res)) {
+                current = 'Math Error';
+            } else {
+                lastAnswer = res;
+                current = formatResult(res);
+            }
+            history = tokens.join(' ') + ' =';
+            tokens = [String(lastAnswer)];
         } catch (e) {
-            currentInput = 'Syntax Error';
+            current = 'Syntax Error';
             history = '';
-            expression = '0';
+            tokens = [];
         }
         updateDisplay();
     }
-    
-    // --- Event Listener ---
-    keys.addEventListener('click', (event) => {
-        const { target } = event;
-        const value = target.dataset.value;
-        const type = target.dataset.type;
 
-        if (!target.matches('.calc-btn')) return;
+    // --- Event Listener Setup ---
 
-        if (type === 'clear') {
-            clearCalculator();
-        } else if (type === 'backspace') {
-            // Simplified backspace for scientific mode: just clear the whole expression
-            clearCalculator(); 
-        } else if (type === 'sign') {
-            currentInput = (parseFloat(currentInput) * -1).toString();
-            // Complex expression modification is omitted for simplicity in this example
-            updateDisplay();
-        } else if (type === 'equals') {
-            handleEquals();
-        } else if (target.classList.contains('number-btn')) {
-            handleNumber(value);
-        } else if (target.classList.contains('decimal-btn')) {
-            handleDecimal();
-        } else if (target.classList.contains('operator-btn')) {
-            handleOperator(value);
-        } else if (target.classList.contains('function-btn')) {
-            handleFunction(value);
+    // 1. Button Click Handler
+    keys.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('button');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const value = btn.dataset.value;
+
+        if (action === 'number') { appendNumber(value); }
+        else if (action === 'dot') { appendDot(); }
+        else if (action === 'operator') { appendOperator(value); }
+        else if (action === 'token' && (value === '(' || value === ')')) { tokens.push(value); history = tokens.join(' '); }
+        else if (action === 'const') { appendConst(value); }
+        else if (action === 'clear') { resetAll(); }
+        else if (action === 'back') { backspace(); }
+        else if (action === 'sign') { applyUnary('sign'); }
+        else if (action === 'percent') { applyUnary('percent'); }
+        else if (action === 'equals') { evaluate(); }
+        else if (action === 'fn') {
+            switch (value) {
+                case 'sin': case 'cos': case 'tan':
+                case 'sqrt': case 'log': case 'ln':
+                    appendFunction(value); break;
+                case 'pow': appendOperator('^'); break;
+                case 'sqr': applyUnary('sqr'); break;
+                case 'inv': applyUnary('inv'); break;
+                case 'fact': applyUnary('fact'); break;
+                default: break;
+            }
         }
+        updateDisplay();
     });
 
-    // Initialize display
+    // 2. Degree / Radian Toggle
+    degBtn.addEventListener('click', () => { degMode = true; degBtn.classList.add('active'); radBtn.classList.remove('active'); });
+    radBtn.addEventListener('click', () => { degMode = false; radBtn.classList.add('active'); degBtn.classList.remove('active'); });
+
+    // 3. Keyboard Support
+    window.addEventListener('keydown', (e) => {
+        const key = e.key;
+
+        if (/[0-9]/.test(key)) {
+            e.preventDefault();
+            appendNumber(key);
+        } else if (['+', '-', '*', '/'].includes(key)) {
+            e.preventDefault();
+            appendOperator(key);
+        } else if (key === '.') {
+            e.preventDefault();
+            appendDot();
+        } else if (key === 'Enter' || key === '=') {
+            e.preventDefault();
+            evaluate();
+        } else if (key === 'Backspace') {
+            e.preventDefault();
+            backspace();
+        } else if (key === 'Delete') {
+            e.preventDefault();
+            resetAll();
+        } else if (key === '(' || key === ')') {
+            e.preventDefault();
+            tokens.push(key);
+            history = tokens.join(' ');
+        }
+        updateDisplay();
+    });
+
+    // Init
     updateDisplay();
+})();
 </script>
 {% endblock %}

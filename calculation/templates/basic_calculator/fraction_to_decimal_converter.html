@@ -7,11 +7,26 @@
 {% block meta_keywords %}fraction to decimal, decimal conversion, rational numbers, math calculator, precision{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Blue/Sky Theme for Bootstrap) */
+    :root {
+        --sky-lightest: #f0faff; /* Solver Wrapper Background */
+        --sky-pale: #e0f2fe; /* Light sky blue */
+        --sky-border: #bae6fd; /* Light blue border */
+        --sky-dark: #0369a1; /* Dark blue label */
+        --sky-medium: #38bdf8; /* Medium sky blue input border */
+        --sky-hot: #0ea5e9; /* Sky blue Accent */
+        --sky-text: #0c4a6e; /* Darker text */
+        --success-text: #065f46; /* Tailwind green-700 equivalent */
+        --warning-text: #c2410c; /* Tailwind orange-700 equivalent */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f0faff; /* Very light blue/cyan background */
+        background: var(--sky-lightest); 
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -26,28 +41,32 @@
         gap: 20px;
         padding: 20px;
         border-radius: 8px;
-        background-color: #e0f2fe; /* Light sky blue */
-        border: 1px solid #bae6fd;
+        background-color: var(--sky-pale); 
+        border: 1px solid var(--sky-border);
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #0369a1; /* Dark cyan/blue */
+        color: var(--sky-dark); 
         margin-bottom: 5px;
         display: block;
         text-align: center;
     }
 
     .input-field {
-        width: 100%;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #38bdf8; /* Medium sky blue border */
+        border: 2px solid var(--sky-medium); 
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
-        color: #0c4a6e;
+        color: var(--sky-text);
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    .input-field:focus {
+        border-color: var(--sky-hot) !important;
+        box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25) !important; /* Custom focus ring for sky blue */
     }
     
     .fraction-display {
@@ -55,7 +74,7 @@
         font-weight: 800;
         text-align: center;
         margin: 20px 0;
-        color: #0ea5e9; /* Sky blue */
+        color: var(--sky-hot);
     }
 
     .result-box {
@@ -65,16 +84,16 @@
         border-left: 5px solid;
     }
 
-    /* Custom result styles */
+    /* Custom result styles (Using Bootstrap-like classes for structure) */
     .result-success {
-        border-left-color: #0ea5e9; /* Sky blue */
+        border-left-color: var(--sky-hot); /* Sky blue */
         background-color: #f0f9ff;
-        color: #075985;
+        color: var(--sky-text);
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .output-text {
@@ -82,44 +101,52 @@
         font-weight: 700;
         word-break: break-all; /* Allows long decimal strings to wrap */
     }
+    
+    .decimal-type-box {
+        background-color: #ffffff;
+        border: 1px solid #c8e6f4;
+        padding: 1rem;
+        border-radius: 0.5rem;
+    }
+    .text-green { color: var(--success-text); }
+    .text-orange { color: var(--warning-text); }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Fraction to Decimal Converter</h1>
-    <p class="text-gray-600 mb-6 text-center">Enter a fraction $\frac{N}{D}$ to see its decimal representation.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Fraction to Decimal Converter</h1>
+    <p class="text-secondary mb-4 text-center">Enter a fraction $\frac{N}{D}$ to see its decimal representation.</p>
 
     <div class="solver-wrapper">
-        <form id="converter-form" class="space-y-6">
+        <form id="converter-form" class="d-grid gap-4">
             
             <div class="input-grid shadow-lg">
                 <div class="input-box">
                     <label for="numerator-input">Numerator ($N$):</label>
-                    <input type="number" id="numerator-input" value="3" required step="1"
+                    <input type="number" id="numerator-input" required step="1"
                            placeholder="e.g., 3"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
                 <div class="input-box">
                     <label for="denominator-input">Denominator ($D$):</label>
-                    <input type="number" id="denominator-input" value="8" required step="1"
+                    <input type="number" id="denominator-input" required step="1"
                            placeholder="e.g., 8"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-sky-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-sky-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn btn-primary w-100 fw-bold py-3 shadow-lg"
+                    style="background-color: var(--sky-hot); border-color: var(--sky-hot);">
                 Convert to Decimal
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Decimal Equivalent</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Decimal Equivalent</h2>
+            <div id="solution-output" class="result-box d-none">
+                </div>
         </div>
         
     </div>
@@ -127,6 +154,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     const DECIMAL_PRECISION = 20; // Show up to 20 decimal places for accuracy
 
@@ -140,7 +169,7 @@
         const D = parseInt(D_input, 10);
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
+        outputDiv.classList.add('d-none'); // Hide before new result
         outputDiv.className = 'result-box'; 
         outputDiv.innerHTML = '';
 
@@ -148,15 +177,22 @@
         let resultClass = '';
 
         // --- Input Validation ---
-        if (N_input === '' || D_input === '' || isNaN(N) || isNaN(D) || !Number.isInteger(N) || !Number.isInteger(D)) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter two whole numbers for the numerator and denominator.</p>`;
+        if (N_input === '' || D_input === '') {
+             htmlContent = `<p class="fw-bold text-center">Empty Input</p><p class="text-center">Please enter values for both the numerator and denominator.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+        
+        if (isNaN(N) || isNaN(D) || !Number.isInteger(N) || !Number.isInteger(D)) {
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter two whole numbers for the numerator and denominator.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
         }
 
         if (D === 0) {
-            htmlContent = `<p class="font-bold text-center">Invalid Operation</p><p class="text-center">The denominator (divisor) cannot be zero, as this results in an undefined value.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Operation</p><p class="text-center">The denominator (divisor) cannot be zero, as this results in an undefined value.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -167,17 +203,16 @@
         const decimalResult = N / D;
         
         // Format the result using toFixed for high precision display
-        // Note: JavaScript numbers have 15-17 digits of precision total.
         const highPrecisionDecimal = decimalResult.toFixed(DECIMAL_PRECISION);
         
         // --- Result Display ---
 
-        htmlContent += `<p class="text-lg text-center font-semibold">Conversion:</p>`;
+        htmlContent += `<p class="fs-5 text-center fw-semibold">Conversion:</p>`;
         htmlContent += `<div class="fraction-display mt-4">`;
         htmlContent += `$$\\frac{${N}}{${D}} \\approx \\mathbf{${highPrecisionDecimal}}$$`;
         htmlContent += `</div>`;
         
-        htmlContent += `<p class="text-sm text-center font-normal mt-4">Displaying result with ${DECIMAL_PRECISION} decimal places.</p>`;
+        htmlContent += `<p class="small text-center text-muted mt-4">Displaying result with ${DECIMAL_PRECISION} decimal places.</p>`;
         
         // Determine if it's terminating or potentially repeating based on denominator factors
         let isTerminating = false;
@@ -195,12 +230,12 @@
             isTerminating = true;
         }
         
-        htmlContent += `<div class="mt-4 p-3 rounded-lg bg-white border border-blue-200">`;
+        htmlContent += `<div class="mt-4 decimal-type-box">`;
         if (isTerminating) {
-            htmlContent += `<p class="output-text text-green-700 text-center">This fraction results in a <span class="font-extrabold">TERMINATING DECIMAL</span>.</p>`;
+            htmlContent += `<p class="output-text text-green text-center">This fraction results in a <span class="fw-bolder">TERMINATING DECIMAL</span>.</p>`;
         } else {
-            htmlContent += `<p class="output-text text-orange-700 text-center">This fraction results in a <span class="font-extrabold">REPEATING DECIMAL</span>.</p>`;
-            htmlContent += `<p class="text-sm text-center text-gray-600 mt-1">Note: Due to standard JavaScript number limits, the repeating bar is not shown, but the pattern is visible in the result above.</p>`;
+            htmlContent += `<p class="output-text text-orange text-center">This fraction results in a <span class="fw-bolder">REPEATING DECIMAL</span>.</p>`;
+            htmlContent += `<p class="small text-center text-secondary mt-1">Note: Due to standard JavaScript number limits, the repeating bar is not shown, but the pattern is visible in the result above.</p>`;
         }
         htmlContent += `</div>`;
 
@@ -214,9 +249,15 @@
      */
     function displayResult(className, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.remove('d-none', 'result-error', 'result-success');
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
+        
+        // Trigger MathJax re-render for the output
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([outputDiv]);
+        }
     }
 </script>
 {% endblock %}

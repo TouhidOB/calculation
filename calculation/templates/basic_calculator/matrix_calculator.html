@@ -7,9 +7,20 @@
 {% block meta_keywords %}matrix calculator, 2x2 matrix, matrix addition, matrix multiplication, determinant, linear algebra{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Purple/Indigo Theme for Bootstrap) */
+    :root {
+        --purple-main: #6f42c1; /* Theme Purple */
+        --purple-light: #e0e7ff; /* Matrix Box Border */
+        --purple-result-bg: #f3f0ff; /* Result background */
+        --purple-result-border: #8b5cf6; /* Result border */
+        --dark-text: #4a2d8a; /* Dark text for results */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
         background: #ffffff;
         padding: 30px;
@@ -20,17 +31,12 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .matrix-input-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-
-    .matrix-box {
+    .matrix-box-custom {
         padding: 15px;
-        border: 2px solid #e0e7ff; /* Light blue border */
+        border: 2px solid var(--purple-light);
         border-radius: 8px;
         text-align: center;
+        background-color: #fcfcfd;
     }
 
     .matrix-grid {
@@ -38,109 +44,112 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
         margin: 10px auto;
-        width: 150px; /* Fixed width for the matrix look */
+        width: 150px;
     }
 
     .matrix-input {
         width: 100%;
-        padding: 5px;
+        padding: 8px;
         border: 1px solid #ccc;
         border-radius: 4px;
         text-align: center;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    .matrix-input:focus {
+        border-color: var(--purple-main);
+        box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
     }
 
-    .result-box {
+    .result-box-custom {
         margin-top: 25px;
         padding: 20px;
         border-radius: 10px;
-        border-left: 5px solid #10b981;
-        background-color: #ecfdf5;
-        color: #065f46;
+        border-left: 5px solid var(--purple-result-border);
+        background-color: var(--purple-result-bg);
+        color: var(--dark-text);
     }
     
     .result-error {
-        border-left: 5px solid #ef4444;
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid var(--bs-danger);
+        background-color: #f8d7da;
+        color: #842029;
     }
     
     .result-matrix-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
+        gap: 10px;
         font-size: 1.25rem;
         font-weight: bold;
-        padding: 10px;
-        margin: 10px auto;
-        width: 150px;
-        border: 1px solid #aaa;
+        padding: 15px;
+        margin: 15px auto;
+        width: 160px;
+        border: 2px solid #aaa;
         border-radius: 5px;
-    }
-
-    /* Styling for the operation selection */
-    #operation {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 1.1rem;
-        background-color: #f9fafb;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Matrix Calculator ($2 \times 2$)</h1>
-    <p class="text-gray-600 mb-6 text-center">Perform operations on two $2 \times 2$ matrices: $A$ and $B$.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Matrix Calculator ($2 \times 2$)</h1>
+    <p class="text-secondary mb-4 text-center">Perform operations on two $2 \times 2$ matrices: $\mathbf{A}$ and $\mathbf{B}$.</p>
 
     <div class="solver-wrapper">
-        <form id="matrix-form" class="space-y-6">
+        <form id="matrix-form" class="d-grid gap-4">
             
-            <div class="matrix-input-container">
+            <div class="row g-4">
                 
-                <div class="matrix-box">
-                    <h3 class="text-xl font-semibold mb-3">Matrix A</h3>
-                    <div class="matrix-grid">
-                        <input type="number" id="a11" value="1" step="any" required class="matrix-input">
-                        <input type="number" id="a12" value="2" step="any" required class="matrix-input">
-                        <input type="number" id="a21" value="3" step="any" required class="matrix-input">
-                        <input type="number" id="a22" value="4" step="any" required class="matrix-input">
+                <div class="col-md-6">
+                    <div class="matrix-box-custom shadow-sm">
+                        <h3 class="fs-5 fw-semibold mb-3">Matrix A</h3>
+                        <div class="matrix-grid">
+                            <input type="number" id="a11" step="any" required class="form-control matrix-input" placeholder="a11">
+                            <input type="number" id="a12" step="any" required class="form-control matrix-input" placeholder="a12">
+                            <input type="number" id="a21" step="any" required class="form-control matrix-input" placeholder="a21">
+                            <input type="number" id="a22" step="any" required class="form-control matrix-input" placeholder="a22">
+                        </div>
                     </div>
                 </div>
 
-                <div class="matrix-box">
-                    <h3 class="text-xl font-semibold mb-3">Matrix B</h3>
-                    <div class="matrix-grid">
-                        <input type="number" id="b11" value="5" step="any" required class="matrix-input">
-                        <input type="number" id="b12" value="6" step="any" required class="matrix-input">
-                        <input type="number" id="b21" value="7" step="any" required class="matrix-input">
-                        <input type="number" id="b22" value="8" step="any" required class="matrix-input">
+                <div class="col-md-6">
+                    <div class="matrix-box-custom shadow-sm">
+                        <h3 class="fs-5 fw-semibold mb-3">Matrix B</h3>
+                        <div class="matrix-grid">
+                            <input type="number" id="b11" step="any" required class="form-control matrix-input" placeholder="b11">
+                            <input type="number" id="b12" step="any" required class="form-control matrix-input" placeholder="b12">
+                            <input type="number" id="b21" step="any" required class="form-control matrix-input" placeholder="b21">
+                            <input type="number" id="b22" step="any" required class="form-control matrix-input" placeholder="b22">
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="flex items-center justify-center space-x-4 pt-4">
-                <label for="operation" class="text-lg font-medium">Operation:</label>
-                <select id="operation" class="min-w-[200px]">
+            <div class="d-flex align-items-center justify-content-center pt-3">
+                <label for="operation" class="form-label mb-0 me-3 fs-5 fw-medium">Operation:</label>
+                <select id="operation" class="form-select w-50">
                     <option value="add">A + B (Addition)</option>
                     <option value="subtract">A - B (Subtraction)</option>
-                    <option value="multiply">A * B (Multiplication)</option>
+                    <option value="multiply">A $\times$ B (Multiplication)</option>
                     <option value="detA">det(A) (Determinant of A)</option>
                     <option value="detB">det(B) (Determinant of B)</option>
                 </select>
             </div>
 
             <button type="submit"
-                    class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg shadow-md hover:bg-purple-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 mt-3 shadow-lg text-white"
+                    style="background-color: var(--purple-main); border-color: var(--purple-main); transform: none !important;">
                 Execute Operation
             </button>
         </form>
 
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Result</h2>
-            <div id="solution-output" class="result-box hidden">
-                </div>
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Result</h2>
+            <div id="solution-output" class="result-box-custom d-none">
+            </div>
         </div>
         
     </div>
@@ -148,6 +157,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
      * Extracts matrix values from input fields and returns as a 2x2 array.
@@ -175,17 +186,26 @@
     }
     
     /**
+     * Formats a number to a fixed precision.
+     * @param {number} value - The number to format.
+     * @returns {string} Formatted string.
+     */
+    function formatNumber(value) {
+        return value.toFixed(4).replace(/\.?0+$/, '');
+    }
+
+    /**
      * Formats a 2x2 matrix result into an HTML grid.
      * @param {number[][]} M - The resulting 2x2 matrix.
      * @returns {string} HTML string for display.
      */
     function formatMatrixResult(M) {
         return `
-            <div class="result-matrix-grid">
-                <span>${M[0][0].toFixed(4)}</span>
-                <span>${M[0][1].toFixed(4)}</span>
-                <span>${M[1][0].toFixed(4)}</span>
-                <span>${M[1][1].toFixed(4)}</span>
+            <div class="result-matrix-grid text-center">
+                <span>${formatNumber(M[0][0])}</span>
+                <span>${formatNumber(M[0][1])}</span>
+                <span>${formatNumber(M[1][0])}</span>
+                <span>${formatNumber(M[1][1])}</span>
             </div>
         `;
     }
@@ -198,48 +218,82 @@
         const operation = document.getElementById('operation').value;
         const outputDiv = document.getElementById('solution-output');
         
-        outputDiv.classList.add('hidden');
-        outputDiv.classList.remove('result-error');
+        outputDiv.classList.add('d-none');
+        outputDiv.classList.remove('result-error', 'result-box-custom');
         outputDiv.innerHTML = '';
 
         let result;
         let htmlContent = '';
+        let formula = '';
+        const a11=A[0][0], a12=A[0][1], a21=A[1][0], a22=A[1][1];
+        const b11=B[0][0], b12=B[0][1], b21=B[1][0], b22=B[1][1];
         
         try {
+            // Check for valid numbers
+            if (A.flat().some(isNaN) || B.flat().some(isNaN)) {
+                throw new Error("All matrix elements must be valid numbers.");
+            }
+
             switch (operation) {
                 case 'add':
                     result = [
-                        [A[0][0] + B[0][0], A[0][1] + B[0][1]],
-                        [A[1][0] + B[1][0], A[1][1] + B[1][1]]
+                        [a11 + b11, a12 + b12],
+                        [a21 + b21, a22 + b22]
                     ];
-                    htmlContent += `<p class="text-xl font-bold mb-3">Result of $A + B$:</p>${formatMatrixResult(result)}`;
+                    formula = `
+                        $$\\mathbf{A} + \\mathbf{B} = 
+                        \\begin{pmatrix} a_{11}+b_{11} & a_{12}+b_{12} \\\\ a_{21}+b_{21} & a_{22}+b_{22} \\end{pmatrix}$$
+                        <small>$$\\mathbf{A} + \\mathbf{B} = 
+                        \\begin{pmatrix} ${formatNumber(a11)}+${formatNumber(b11)} & ${formatNumber(a12)}+${formatNumber(b12)} \\\\ ${formatNumber(a21)}+${formatNumber(b21)} & ${formatNumber(a22)}+${formatNumber(b22)} \\end{pmatrix}$$</small>
+                    `;
+                    htmlContent += `<h4 class="fs-5 fw-bold mb-3 text-center">Result of $\mathbf{A} + \mathbf{B}$ (Addition)</h4>${formatMatrixResult(result)}${formula}`;
                     break;
 
                 case 'subtract':
                     result = [
-                        [A[0][0] - B[0][0], A[0][1] - B[0][1]],
-                        [A[1][0] - B[1][0], A[1][1] - B[1][1]]
+                        [a11 - b11, a12 - b12],
+                        [a21 - b21, a22 - b22]
                     ];
-                    htmlContent += `<p class="text-xl font-bold mb-3">Result of $A - B$:</p>${formatMatrixResult(result)}`;
+                    formula = `
+                        $$\\mathbf{A} - \\mathbf{B} = 
+                        \\begin{pmatrix} a_{11}-b_{11} & a_{12}-b_{12} \\\\ a_{21}-b_{21} & a_{22}-b_{22} \\end{pmatrix}$$
+                        <small>$$\\mathbf{A} - \\mathbf{B} = 
+                        \\begin{pmatrix} ${formatNumber(a11)}-${formatNumber(b11)} & ${formatNumber(a12)}-${formatNumber(b12)} \\\\ ${formatNumber(a21)}-${formatNumber(b21)} & ${formatNumber(a22)}-${formatNumber(b22)} \\end{pmatrix}$$</small>
+                    `;
+                    htmlContent += `<h4 class="fs-5 fw-bold mb-3 text-center">Result of $\mathbf{A} - \mathbf{B}$ (Subtraction)</h4>${formatMatrixResult(result)}${formula}`;
                     break;
                     
                 case 'multiply':
                     // Matrix multiplication (dot product)
                     result = [
-                        [A[0][0] * B[0][0] + A[0][1] * B[1][0], A[0][0] * B[0][1] + A[0][1] * B[1][1]],
-                        [A[1][0] * B[0][0] + A[1][1] * B[1][0], A[1][0] * B[0][1] + A[1][1] * B[1][1]]
+                        [a11 * b11 + a12 * b21, a11 * b12 + a12 * b22],
+                        [a21 * b11 + a22 * b21, a21 * b12 + a22 * b22]
                     ];
-                    htmlContent += `<p class="text-xl font-bold mb-3">Result of $A \\times B$:</p>${formatMatrixResult(result)}`;
+                    formula = `
+                        $$\\mathbf{A} \\times \\mathbf{B} = 
+                        \\begin{pmatrix} a_{11}b_{11} + a_{12}b_{21} & a_{11}b_{12} + a_{12}b_{22} \\\\ a_{21}b_{11} + a_{22}b_{21} & a_{21}b_{12} + a_{22}b_{22} \\end{pmatrix}$$
+                        <p class="small text-center mt-3">$$\\mathbf{A} \\times \\mathbf{B} = 
+                        \\begin{pmatrix} ${formatNumber(result[0][0])} & ${formatNumber(result[0][1])} \\\\ ${formatNumber(result[1][0])} & ${formatNumber(result[1][1])} \\end{pmatrix}$$</p>
+                    `;
+                    htmlContent += `<h4 class="fs-5 fw-bold mb-3 text-center">Result of $\mathbf{A} \times \mathbf{B}$ (Multiplication)</h4>${formatMatrixResult(result)}${formula}`;
                     break;
 
                 case 'detA':
                     result = determinant2x2(A);
-                    htmlContent += `<p class="text-xl font-bold mb-3">Determinant of Matrix $A$:</p><p class="text-3xl font-extrabold">${result.toFixed(6)}</p>`;
+                    formula = `
+                        $$\\det(\\mathbf{A}) = a_{11}a_{22} - a_{12}a_{21}$$
+                        $$\\det(\\mathbf{A}) = (${formatNumber(a11)})(${formatNumber(a22)}) - (${formatNumber(a12)})(${formatNumber(a21)}) \\approx \\mathbf{${formatNumber(result)}}$$
+                    `;
+                    htmlContent += `<h4 class="fs-5 fw-bold mb-3 text-center">Determinant of Matrix $\mathbf{A}$</h4><p class="text-center fs-1 fw-bolder" style="color: var(--purple-main);">${formatNumber(result)}</p><p class="mt-3">${formula}</p>`;
                     break;
                     
                 case 'detB':
                     result = determinant2x2(B);
-                    htmlContent += `<p class="text-xl font-bold mb-3">Determinant of Matrix $B$:</p><p class="text-3xl font-extrabold">${result.toFixed(6)}</p>`;
+                    formula = `
+                        $$\\det(\\mathbf{B}) = b_{11}b_{22} - b_{12}b_{21}$$
+                        $$\\det(\\mathbf{B}) = (${formatNumber(b11)})(${formatNumber(b22)}) - (${formatNumber(b12)})(${formatNumber(b21)}) \\approx \\mathbf{${formatNumber(result)}}$$
+                    `;
+                    htmlContent += `<h4 class="fs-5 fw-bold mb-3 text-center">Determinant of Matrix $\mathbf{B}$</h4><p class="text-center fs-1 fw-bolder" style="color: var(--purple-main);">${formatNumber(result)}</p><p class="mt-3">${formula}</p>`;
                     break;
 
                 default:
@@ -249,7 +303,7 @@
             displayResult('', htmlContent);
 
         } catch (error) {
-            displayResult('result-error', `<p class="font-bold">Calculation Error:</p><p>${error.message}</p>`);
+            displayResult('result-error', `<p class="fw-bold">Calculation Error:</p><p>${error.message}</p>`);
         }
     });
 
@@ -258,12 +312,17 @@
      */
     function displayResult(className, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.className = 'result-box'; 
+        outputDiv.classList.add('result-box-custom'); 
         if (className) {
             outputDiv.classList.add(className);
         }
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
+        
+        // Trigger MathJax re-render
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
+        }
     }
 </script>
 {% endblock %}

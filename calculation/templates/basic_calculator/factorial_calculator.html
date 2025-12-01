@@ -129,7 +129,7 @@
             <form id="factorial-form" class="d-grid gap-3">
                 <div class="input-box">
                     <label for="n-input">Enter Integer (**n** $\ge$ 0):</label>
-                    <input type="number" id="n-input" value="7" required step="1" min="0"
+                    <input type="number" id="n-input" required step="1" min="0"
                            placeholder="e.g., 7 or 15"
                            class="form-control shadow-sm">
                 </div>
@@ -155,7 +155,7 @@
 
 <script>
     /**
-     * Calculates the factorial of a non-negative integer using BigInt. (Logic Unchanged)
+     * Calculates the factorial of a non-negative integer using BigInt.
      * @param {number} n - The input integer.
      * @returns {BigInt} The factorial result.
      */
@@ -228,19 +228,20 @@
             const mantissa = resultDisplay.substring(0, 1) + '.' + resultDisplay.substring(1, 10); 
             
             // Format the extremely large result in scientific notation for display using LaTeX
-            resultDisplay = `${mantissa} \\times 10^{${exponent}}`;
+            // Using \\mathbf{} to keep the text bold as per the style
+            resultDisplay = `\\mathbf{${mantissa} \\times 10^{${exponent}}}`; 
             calculationNote = `The full result (which has **${resultDisplay.length} digits**) is too long to display. It is shown in scientific notation for readability.`;
         } else {
-            // Use the comma-formatted result for smaller numbers
-            resultDisplay = formattedResult;
+            // Use the comma-formatted result for smaller numbers, wrapped in \\mathbf{} for boldness
+            resultDisplay = `\\mathbf{${formattedResult}}`;
         }
 
 
-        // Result Display: Used MathJax only for the final output equation
+        // Result Display: Used MathJax for the final output equation
         let htmlContent = `
-            <p class="output-label">Result for !${n}:</p>
+            <p class="output-label">Result for ${n}!:</p>
             <div class="output-value">
-                $$\\mathbf{${resultDisplay}}$$
+                $${resultDisplay}$
             </div>
             <div class="explanation">
                 ${calculationNote}
@@ -253,9 +254,6 @@
     // Attach handler to the form
     document.getElementById('factorial-form').addEventListener('submit', handleFactorialCalculation);
 
-    // Initial calculation for default value
-    window.onload = function() {
-        document.getElementById('factorial-form').dispatchEvent(new Event('submit'));
-    };
+    // REMOVED: window.onload function to prevent automatic calculation on page load.
 </script>
 {% endblock %}

@@ -2,16 +2,26 @@
 
 {% block title %}Proportion Solver (A/B = C/X){% endblock %}
 
-{% block meta_description %}Solve for the unknown variable (X) in a proportional relationship using cross-multiplication: A/B = C/X.{% endblock %}
+{% block meta_description %}Solve for the unknown variable (X) in a proportional relationship using cross-multiplication: A/B = C/X. Displays the result and the steps.{% endblock %}
 
 {% block meta_keywords %}proportion calculator, ratio solver, cross multiplication, solve for X, math equation{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Green/Teal Theme for Bootstrap) */
+    :root {
+        --green-main: #10b981; /* Teal Green for accent */
+        --dark-green: #065f46; /* Dark Green for text */
+        --light-green: #f0fdf4; /* Result Success Background */
+        --pale-yellow-green: #f7fee7; /* Solver Wrapper Background */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f7fee7; /* Very light lime/yellow background */
+        background: var(--pale-yellow-green);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,43 +30,22 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .proportion-grid {
+    .proportion-grid-custom {
         display: grid;
-        grid-template-columns: 1fr 20px 1fr 20px 1fr; /* A / B = C */
-        gap: 10px;
+        grid-template-columns: 1fr auto 1fr; /* [A/B] = [C/X] */
+        gap: 15px;
         align-items: center;
         padding: 20px;
         border-radius: 8px;
-        background-color: #f0fdfa; /* Light mint */
+        background-color: var(--light-green); 
         border: 1px solid #d9f99d;
     }
 
-    .proportion-grid .input-box {
+    .proportion-grid-custom .input-box {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        min-height: 80px; /* Ensure visual spacing */
-    }
-
-    .input-box label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #166534; /* Dark green */
-        margin-bottom: 5px;
-        display: block;
-        text-align: center;
-    }
-
-    .input-field {
-        width: 100%;
-        padding: 12px;
-        font-size: 1.4rem;
-        border: 2px solid #a7f3d0; /* Medium green border */
-        border-radius: 8px;
-        text-align: center;
-        font-weight: 700;
-        color: #065f46;
     }
 
     /* Styling for the large fraction display */
@@ -67,21 +56,40 @@
         font-size: 2.5rem;
         font-weight: 700;
         line-height: 1; /* Tighter line height for fraction look */
+        color: var(--dark-green);
+    }
+    .fraction-part > * {
+        margin: 5px 0;
     }
     .fraction-bar {
         height: 3px;
-        background-color: #065f46;
+        background-color: var(--dark-green);
         width: 100%;
-        margin: 5px 0;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.4rem;
+        border: 2px solid var(--green-main);
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+        color: var(--dark-green);
+    }
+    .input-field:focus {
+        border-color: var(--green-main);
+        box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
     }
 
     .equals-sign {
         font-size: 2.5rem;
         font-weight: 800;
-        color: #16a34a; /* Emerald green */
+        color: var(--green-main);
+        padding: 0 10px;
     }
     
-    .result-box {
+    .result-box-custom {
         margin-top: 25px;
         padding: 20px;
         border-radius: 12px;
@@ -90,14 +98,14 @@
 
     /* Custom result styles */
     .result-success {
-        border-left-color: #10b981; /* Teal Green */
-        background-color: #f0fdf4;
-        color: #065f46;
+        border-left-color: var(--green-main); 
+        background-color: var(--light-green);
+        color: var(--dark-green);
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: var(--bs-danger); /* Red */
+        background-color: #f8d7da;
+        color: var(--bs-danger-text);
     }
 
     .output-label {
@@ -112,50 +120,56 @@
         font-size: 3.5rem;
         font-weight: 800;
         text-align: center;
-        color: #10b981;
+        color: var(--green-main);
         margin-top: 10px;
+    }
+    .x-placeholder {
+        font-size: 1.8rem;
+        color: var(--green-main);
+        font-weight: 800;
+        padding: 12px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Proportion Solver</h1>
-    <p class="text-gray-600 mb-6 text-center">Enter the values for $A$, $B$, and $C$ to solve for $X$ in the equation: $\\frac{A}{B} = \\frac{C}{X}$</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Proportion Solver</h1>
+    <p class="text-secondary mb-4 text-center">Enter the values for $\mathbf{A}$, $\mathbf{B}$, and $\mathbf{C}$ to solve for the unknown $\mathbf{X}$ using cross-multiplication.</p>
+    
+    <div class="text-center mb-4 fs-4 fw-bold text-success">
+        $$\mathbf{\frac{A}{B} = \frac{C}{X}}$$
+    </div>
 
-    <div class="solver-wrapper">
-        <form id="proportion-form" class="space-y-6">
+    <div class="solver-wrapper shadow-lg">
+        <form id="proportion-form" class="d-grid gap-4">
             
-            <div class="proportion-grid shadow-lg">
-                <!-- Fraction A/B -->
+            <div class="proportion-grid-custom shadow-sm">
                 <div class="fraction-part">
-                    <input type="number" id="part-a-input" value="4" required step="any" class="input-field" placeholder="A (Top)">
-                    <div class="fraction-bar bg-green-700"></div>
-                    <input type="number" id="part-b-input" value="6" required step="any" class="input-field" placeholder="B (Bottom)">
+                    <input type="number" id="part-a-input" required step="any" class="form-control input-field" placeholder="A (Numerator)">
+                    <div class="fraction-bar"></div>
+                    <input type="number" id="part-b-input" required step="any" class="form-control input-field" placeholder="B (Denominator)">
                 </div>
 
                 <div class="equals-sign">=</div>
 
-                <!-- Fraction C/X -->
                 <div class="fraction-part">
-                    <input type="number" id="part-c-input" value="10" required step="any" class="input-field" placeholder="C (Top)">
-                    <div class="fraction-bar bg-green-700"></div>
-                    <div class="output-value text-xl text-green-700 font-bold">X</div>
+                    <input type="number" id="part-c-input" required step="any" class="form-control input-field" placeholder="C (Numerator)">
+                    <div class="fraction-bar"></div>
+                    <div class="x-placeholder">X</div>
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-green-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 mt-3 shadow-xl text-white btn-success">
                 Solve for X
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Solution</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Solution</h2>
+            <div id="solution-output" class="result-box-custom d-none">
+                </div>
         </div>
         
     </div>
@@ -163,6 +177,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     document.getElementById('proportion-form').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -176,8 +192,9 @@
         const C = parseFloat(C_input);
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
-        outputDiv.className = 'result-box'; 
+        // Clear all custom result classes and ensure it starts as hidden/d-none
+        outputDiv.classList.remove('result-error', 'result-success');
+        outputDiv.classList.add('d-none'); // Ensure it starts hidden
         outputDiv.innerHTML = '';
 
         let htmlContent = '';
@@ -185,14 +202,15 @@
 
         // --- Input Validation ---
         if (A_input === '' || B_input === '' || C_input === '' || isNaN(A) || isNaN(B) || isNaN(C)) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for A, B, and C.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for $\mathbf{A}$, $\mathbf{B}$, and $\mathbf{C}$.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
         }
 
-        if (A === 0) {
-            htmlContent = `<p class="font-bold text-center">Division by Zero</p><p class="text-center">The first numerator ($A$) cannot be zero, as it leads to division by zero when solving for $X$.</p>`;
+        // Check if B is zero (B=0 is impossible for a fraction)
+        if (B === 0) {
+            htmlContent = `<p class="fw-bold text-center">Math Error: Division by Zero</p><p class="text-center">The denominator ($\mathbf{B}$) cannot be zero.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -201,24 +219,42 @@
         // --- Calculation (Cross-Multiplication) ---
         // A / B = C / X  => A * X = B * C => X = (B * C) / A
         
+        if (A === 0) {
+            // Case: 0/B = C/X => 0 = C/X. This implies C must be 0 or X is undefined.
+            if (C === 0) {
+                htmlContent = `<p class="fw-bold text-center">Indeterminate Solution</p><p class="text-center">If $\\mathbf{A=0}$ and $\\mathbf{C=0}$, the equation becomes $\\mathbf{0=0}$, and $\\mathbf{X}$ can be any non-zero number.</p>`;
+                resultClass = 'result-error';
+            } else {
+                htmlContent = `<p class="fw-bold text-center">No Solution</p><p class="text-center">The equation $\\mathbf{\\frac{0}{${B}} = \\frac{${C}}{X}}$ has no finite solution for $\\mathbf{X}$ (X would approach $\\mathbf{\\infty}$).</p>`;
+                resultClass = 'result-error';
+            }
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+        
         const numerator = B * C;
         const result = numerator / A;
         
         // Format the result to a maximum of 4 decimal places
-        const formattedResult = parseFloat(result.toFixed(4));
+        const formattedResult = result.toLocaleString('en-US', { maximumFractionDigits: 4 });
         
         // --- Result Display ---
         
-        htmlContent += `<p class="output-label">Equation Solved via Cross-Multiplication:</p>`;
-        htmlContent += `<p class="text-lg text-center font-mono text-gray-700">
+        htmlContent += `<p class="output-label">Step 1: Cross-Multiplication</p>`;
+        htmlContent += `<p class="text-center fs-5 text-secondary">
                            $X = \\frac{B \\cdot C}{A} \\Rightarrow X = \\frac{${B} \\cdot ${C}}{${A}}$
+                        </p>`;
+        
+        htmlContent += `<p class="output-label mt-4">Step 2: Calculate Result</p>`;
+        htmlContent += `<p class="text-center fs-5 text-secondary">
+                           $X = \\frac{${numerator.toLocaleString('en-US', { maximumFractionDigits: 4 })}}{${A.toLocaleString('en-US', { maximumFractionDigits: 4 })}} $
                         </p>`;
 
         htmlContent += `<p class="output-label mt-6">The value of X is:</p>`;
-        htmlContent += `<div class="output-value">$$\\mathbf{${formattedResult}}$$</div>`;
+        htmlContent += `<div class="output-value">$$\mathbf{${formattedResult}}$$</div>`;
 
-        htmlContent += `<p class="text-sm text-center text-gray-600 mt-4">
-                            The solved proportion is: $\\frac{${A}}{${B}} = \\frac{${C}}{${formattedResult}}$
+        htmlContent += `<p class="text-sm text-center text-muted mt-4">
+                            The solved proportion is: $\\mathbf{\\frac{${A.toLocaleString('en-US', { maximumFractionDigits: 4 })}}{\\mathbf{${B.toLocaleString('en-US', { maximumFractionDigits: 4 })}}} = \\frac{${C.toLocaleString('en-US', { maximumFractionDigits: 4 })}}{\\mathbf{${formattedResult}}}}}$
                         </p>`;
         
         resultClass = 'result-success';
@@ -233,7 +269,13 @@
         const outputDiv = document.getElementById('solution-output');
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        // FIXED: Remove 'd-none' (Bootstrap class) to show the result
+        outputDiv.classList.remove('d-none');
+        
+        // Trigger MathJax re-render for formulas
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
+        }
     }
 </script>
 {% endblock %}

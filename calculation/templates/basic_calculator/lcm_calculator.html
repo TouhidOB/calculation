@@ -7,11 +7,24 @@
 {% block meta_keywords %}LCM, Least Common Multiple, GCF, GCD, factor calculator, multiple, number theory{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Teal/Mint Theme for Bootstrap) */
+    :root {
+        --teal-lightest: #f0fdfa; /* Solver Wrapper Background */
+        --teal-border: #ccfbf1; /* Light teal border/bg */
+        --teal-dark: #047876; /* Dark teal label */
+        --teal-medium: #2dd4bf; /* Medium teal input border */
+        --teal-hot: #14b8a6; /* Teal Accent */
+        --teal-text: #0d9488; /* Darker teal input text */
+        --result-text: #0f766e; /* Result text color */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f0fdfa; /* Very light teal/mint background */
+        background: var(--teal-lightest); 
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -26,27 +39,33 @@
         gap: 20px;
         padding: 15px;
         border-radius: 8px;
-        background-color: #f0fdfa;
-        border: 1px solid #ccfbf1; /* Light teal border */
+        background-color: var(--teal-lightest);
+        border: 1px solid var(--teal-border);
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #047876; /* Dark teal */
+        color: var(--teal-dark);
         margin-bottom: 5px;
         display: block;
+        text-align: center;
     }
 
     .input-field {
-        width: 100%;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #2dd4bf; /* Medium teal border */
+        border: 2px solid var(--teal-medium);
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
-        color: #0d9488;
+        color: var(--teal-text);
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075); 
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    .input-field:focus {
+        border-color: var(--teal-hot) !important;
+        box-shadow: 0 0 0 0.25rem rgba(20, 184, 166, 0.25) !important; /* Custom focus ring for teal */
     }
     
     .result-box {
@@ -56,16 +75,16 @@
         border-left: 5px solid;
     }
 
-    /* Custom result styles */
+    /* Custom result styles (Using Bootstrap-like classes for structure) */
     .result-success {
-        border-left-color: #14b8a6; /* Teal */
-        background-color: #ccfbf1;
-        color: #0f766e;
+        border-left-color: var(--teal-hot); /* Teal */
+        background-color: var(--teal-border);
+        color: var(--result-text);
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: #dc3545; /* Bootstrap danger red */
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .output-text {
@@ -73,45 +92,45 @@
         font-weight: 800;
         text-align: center;
         margin-top: 10px;
+        color: var(--teal-text); /* Ensure output color uses theme */
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Least Common Multiple (LCM) Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">Find the smallest positive integer that is a multiple of both $A$ and $B$.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Least Common Multiple (LCM) Calculator</h1>
+    <p class="text-secondary mb-4 text-center">Find the smallest positive integer that is a multiple of both $A$ and $B$.</p>
 
     <div class="solver-wrapper">
-        <form id="lcm-form" class="space-y-6">
+        <form id="lcm-form" class="d-grid gap-4">
             
             <div class="input-grid shadow-lg">
                 <div class="input-box">
                     <label for="number-a">First Integer ($A$):</label>
-                    <input type="number" id="number-a" value="12" required min="1" step="1"
+                    <input type="number" id="number-a" required min="1" step="1"
                            placeholder="e.g., 12"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
                 <div class="input-box">
                     <label for="number-b">Second Integer ($B$):</label>
-                    <input type="number" id="number-b" value="18" required min="1" step="1"
+                    <input type="number" id="number-b" required min="1" step="1"
                            placeholder="e.g., 18"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-teal-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 shadow-lg text-white"
+                    style="background-color: var(--teal-hot); border-color: var(--teal-hot);">
                 Calculate LCM (A, B)
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Result: LCM(A, B)</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Result: LCM(A, B)</h2>
+            <div id="solution-output" class="result-box d-none">
+                </div>
         </div>
         
     </div>
@@ -119,6 +138,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
      * Calculates the Greatest Common Factor (GCF) of two non-negative integers
@@ -148,16 +169,14 @@
      * @returns {number} The LCM of a and b.
      */
     function lcm(a, b) {
-        // Since we validate for positive integers, Math.abs is technically redundant
-        // but kept for robustness, and we check for a * b === 0
         if (a === 0 || b === 0) return 0;
         
         // Calculate GCF first
         const commonDivisor = gcd(a, b);
         
         // Calculate LCM using the formula: LCM(a, b) = (|a * b|) / GCF(a, b)
-        // We use Math.floor(a / commonDivisor) to prevent potential floating point errors
-        // or unnecessary large intermediate products before the division.
+        // Using b / commonDivisor first to keep the numbers smaller and avoid overflow
+        // for very large integers (though JavaScript's limits still apply).
         return Math.abs(a * (b / commonDivisor));
     }
 
@@ -172,7 +191,7 @@
         const B = parseInt(inputB, 10);
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
+        outputDiv.classList.add('d-none'); // Hide before new result
         outputDiv.className = 'result-box'; 
         outputDiv.innerHTML = '';
 
@@ -180,8 +199,15 @@
         let resultClass = '';
 
         // --- Input Validation ---
-        if (inputA === '' || inputB === '' || isNaN(A) || isNaN(B) || A < 1 || B < 1 || !Number.isInteger(A) || !Number.isInteger(B)) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter two positive whole numbers (integers $\ge 1$).</p>`;
+        if (inputA === '' || inputB === '') {
+             htmlContent = `<p class="fw-bold text-center">Empty Input</p><p class="text-center">Please enter values for both Integer A and Integer B.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+        
+        if (isNaN(A) || isNaN(B) || A < 1 || B < 1 || !Number.isInteger(A) || !Number.isInteger(B)) {
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter two positive whole numbers (integers $\ge 1$).</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -189,11 +215,18 @@
 
         // --- LCM Calculation ---
         const result = lcm(A, B);
+        const commonDivisor = gcd(A, B); // Get GCF for display
         
         // --- Result Display ---
-        htmlContent += `<p class="text-lg font-bold text-center">The Least Common Multiple of ${A} and ${B} is:</p>`;
-        htmlContent += `<p class="output-text text-teal-700">$$\\mathbf{${result}}$$</p>`;
+        htmlContent += `<p class="fs-5 fw-bold text-center">The Least Common Multiple of ${A} and ${B} is:</p>`;
+        htmlContent += `<p class="output-text">$$\\mathbf{${result}}$$</p>`;
         
+        // Display GCF calculation used
+        htmlContent += `<div class="mt-3 small text-center text-secondary">`;
+        htmlContent += `<p>Calculation Method:</p>`;
+        htmlContent += `$$ \\text{LCM}(A, B) = \\frac{|A \\times B|}{\\text{GCF}(A, B)} = \\frac{|${A} \\times ${B}|}{${commonDivisor}} = \\mathbf{${result}} $$`;
+        htmlContent += `</div>`;
+
         resultClass = 'result-success';
         
         displayResult(resultClass, htmlContent);
@@ -204,9 +237,15 @@
      */
     function displayResult(className, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.remove('d-none', 'result-error', 'result-success');
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
+        
+        // Trigger MathJax re-render for the output
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([outputDiv]);
+        }
     }
 </script>
 {% endblock %}

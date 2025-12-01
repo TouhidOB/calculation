@@ -7,11 +7,23 @@
 {% block meta_keywords %}logarithm, antilog, log, natural log, ln, exponential, base 10, e, custom base, math calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block (Indigo/Purple Theme) */
+    /* 🎨 Define Custom Theme Colors (Indigo/Purple Theme for Bootstrap) */
+    :root {
+        --indigo-lightest: #f8faff; /* Solver Wrapper Background */
+        --indigo-pale: #eef2ff; /* Result background */
+        --indigo-accent: #6366f1; /* Indigo accent border */
+        --purple-accent: #8b5cf6; /* Violet accent border */
+        --deep-violet: #6d28d9; /* Deep violet result text */
+        --input-bg: #e0f2fe; /* Light sky blue input section */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f8faff; /* Very light blue background */
+        background: var(--indigo-lightest);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,25 +32,13 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .converter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 30px;
-    }
-
     .converter-section {
         padding: 25px;
         border-radius: 10px;
-        background-color: #e0f2fe; /* Light sky blue */
-        border: 2px solid #6366f1; /* Indigo accent */
+        background-color: var(--input-bg);
+        border: 2px solid var(--indigo-accent);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    }
-    
-    .input-group-half {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-top: 15px;
+        height: 100%; /* Ensure equal height in grid */
     }
     
     .input-box label {
@@ -47,6 +47,7 @@
         color: #3730a3; /* Dark indigo */
         display: block;
         margin-bottom: 3px;
+        text-align: center;
     }
 
     .input-field {
@@ -59,19 +60,23 @@
         font-weight: 600;
         color: #4338ca;
     }
+    .input-field:focus {
+        border-color: var(--indigo-accent);
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+    }
     
-    .result-card {
+    .result-card-custom {
         margin-top: 20px;
         padding: 15px;
         border-radius: 8px;
-        background-color: #eef2ff; /* Lightest indigo */
-        border-left: 5px solid #8b5cf6; /* Violet accent */
+        background-color: var(--indigo-pale);
+        border-left: 5px solid var(--purple-accent); /* Violet accent */
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid var(--bs-danger); /* Red */
+        background-color: #f8d7da;
+        color: #842029;
         padding: 20px;
         border-radius: 8px;
     }
@@ -87,7 +92,7 @@
         font-size: 1.6rem;
         font-weight: 800;
         text-align: center;
-        color: #6d28d9; /* Deep violet */
+        color: var(--deep-violet);
         word-break: break-all;
         margin-top: 5px;
     }
@@ -97,103 +102,104 @@
         text-align: center;
         margin-top: 5px;
     }
-
-    .action-buttons {
-        display: flex;
-        gap: 10px;
-    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Logarithm and Antilog Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Logarithm and Antilog Calculator</h1>
+    <p class="text-secondary mb-4 text-center">
         Calculate logarithms ($\log_b x$) and exponentials ($b^x$) for custom or standard bases (10 and $e$).
     </p>
 
     <div class="solver-wrapper">
         
-        <div class="converter-grid">
+        <div class="row g-4 justify-content-center">
 
-            <!-- --- 1. Logarithm Calculator --- -->
-            <div class="converter-section">
-                <h3 class="text-xl font-bold text-center text-indigo-700 mb-4">Logarithm $\log_b(\mathbf{X})$</h3>
-                <form id="log-form" class="space-y-4">
-                    <p class="text-center text-sm text-indigo-700 mb-2">Note: $\mathbf{X}$ must be greater than zero.</p>
+            <div class="col-lg-6 col-md-12">
+                <div class="converter-section shadow-lg">
+                    <h3 class="fs-5 fw-bold text-center text-primary mb-4">Logarithm $\log_b(\mathbf{X})$</h3>
+                    <p class="text-center small text-primary mb-3">Note: The number ($\mathbf{X}$) must be greater than zero.</p>
                     
-                    <div class="input-box">
-                        <label for="log-number-input">Number ($\mathbf{X}$):</label>
-                        <input type="number" id="log-number-input" value="1000" required step="any"
-                               placeholder="e.g., 1000"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
-                    </div>
+                    <form id="log-form" class="d-grid gap-3">
+                        
+                        <div class="input-box">
+                            <label for="log-number-input">Number ($\mathbf{X}$):</label>
+                            <input type="number" id="log-number-input" required step="any"
+                                   placeholder="e.g., 1000"
+                                   class="form-control input-field shadow-sm">
+                        </div>
 
-                    <div class="input-box">
-                        <label for="log-base-input">Base ($\mathbf{b}$, default 10):</label>
-                        <input type="number" id="log-base-input" value="10" required step="any"
-                               placeholder="e.g., 10, 2, or 2.71828"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
-                    </div>
-                    
-                    <div class="action-buttons pt-2">
-                        <button type="button" onclick="calculateLog(10)"
-                            class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.01]">
-                            Calculate $\log_{10}(\mathbf{X})$
+                        <div class="input-box">
+                            <label for="log-base-input">Base ($\mathbf{b}$, default 10):</label>
+                            <input type="number" id="log-base-input" required step="any"
+                                   placeholder="e.g., 10, 2, or 2.71828"
+                                   class="form-control input-field shadow-sm">
+                        </div>
+                        
+                        <div class="d-flex gap-2 pt-2">
+                            <button type="button" onclick="calculateLog(10)"
+                                class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
+                                Calculate $\log_{10}(\mathbf{X})$
+                            </button>
+                            <button type="button" onclick="calculateLog(Math.E)"
+                                class="btn w-100 fw-bold py-2 shadow-sm"
+                                style="background-color: var(--purple-accent); border-color: var(--purple-accent);">
+                                Calculate $\ln(\mathbf{X})$
+                            </button>
+                        </div>
+
+                        <button type="submit"
+                            class="btn btn-secondary w-100 fw-bold py-2 shadow-sm">
+                            Calculate Custom $\log_b(\mathbf{X})$
                         </button>
-                        <button type="button" onclick="calculateLog(Math.E)"
-                            class="w-full bg-purple-600 text-white font-bold py-2 rounded-lg shadow-md hover:bg-purple-700 transition duration-150 transform hover:scale-[1.01]">
-                            Calculate $\ln(\mathbf{X})$
-                        </button>
-                    </div>
+                    </form>
 
-                    <button type="submit"
-                        class="w-full bg-gray-600 text-white font-bold py-2 rounded-lg shadow-md hover:bg-gray-700 transition duration-150 transform hover:scale-[1.01]">
-                        Calculate Custom $\log_b(\mathbf{X})$
-                    </button>
-                </form>
-
-                <div id="log-output" class="result-card hidden"></div>
+                    <div id="log-output" class="result-card-custom d-none"></div>
+                </div>
             </div>
 
-            <!-- --- 2. Antilogarithm Calculator (Exponential) --- -->
-            <div class="converter-section">
-                <h3 class="text-xl font-bold text-center text-indigo-700 mb-4">Antilogarithm $\mathbf{b}^\mathbf{X}$</h3>
-                <form id="antilog-form" class="space-y-4">
-                    <p class="text-center text-sm text-indigo-700 mb-2">Calculate the power: Base $\mathbf{b}$ raised to Exponent $\mathbf{X}$.</p>
+            <div class="col-lg-6 col-md-12">
+                <div class="converter-section shadow-lg">
+                    <h3 class="fs-5 fw-bold text-center text-primary mb-4">Antilogarithm $\mathbf{b}^\mathbf{X}$</h3>
+                    <p class="text-center small text-primary mb-3">Calculate the power: Base $\mathbf{b}$ raised to Exponent $\mathbf{X}$.</p>
                     
-                    <div class="input-box">
-                        <label for="antilog-exponent-input">Exponent ($\mathbf{X}$):</label>
-                        <input type="number" id="antilog-exponent-input" value="3" required step="any"
-                               placeholder="e.g., 3"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
-                    </div>
+                    <form id="antilog-form" class="d-grid gap-3">
+                        
+                        <div class="input-box">
+                            <label for="antilog-exponent-input">Exponent ($\mathbf{X}$):</label>
+                            <input type="number" id="antilog-exponent-input" required step="any"
+                                   placeholder="e.g., 3"
+                                   class="form-control input-field shadow-sm">
+                        </div>
 
-                    <div class="input-box">
-                        <label for="antilog-base-input">Base ($\mathbf{b}$, default 10):</label>
-                        <input type="number" id="antilog-base-input" value="10" required step="any"
-                               placeholder="e.g., 10, 2, or 2.71828"
-                               class="input-field shadow-inner focus:shadow-xl transition-shadow">
-                    </div>
-                    
-                    <div class="action-buttons pt-2">
-                        <button type="button" onclick="calculateAntilog(10)"
-                            class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.01]">
-                            Calculate $10^\mathbf{X}$
+                        <div class="input-box">
+                            <label for="antilog-base-input">Base ($\mathbf{b}$, default 10):</label>
+                            <input type="number" id="antilog-base-input" required step="any"
+                                   placeholder="e.g., 10, 2, or 2.71828"
+                                   class="form-control input-field shadow-sm">
+                        </div>
+                        
+                        <div class="d-flex gap-2 pt-2">
+                            <button type="button" onclick="calculateAntilog(10)"
+                                class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
+                                Calculate $10^\mathbf{X}$
+                            </button>
+                            <button type="button" onclick="calculateAntilog(Math.E)"
+                                class="btn w-100 fw-bold py-2 shadow-sm"
+                                style="background-color: var(--purple-accent); border-color: var(--purple-accent);">
+                                Calculate $e^\mathbf{X}$
+                            </button>
+                        </div>
+
+                        <button type="submit"
+                            class="btn btn-secondary w-100 fw-bold py-2 shadow-sm">
+                            Calculate Custom $\mathbf{b}^\mathbf{X}$
                         </button>
-                        <button type="button" onclick="calculateAntilog(Math.E)"
-                            class="w-full bg-purple-600 text-white font-bold py-2 rounded-lg shadow-md hover:bg-purple-700 transition duration-150 transform hover:scale-[1.01]">
-                            Calculate $e^\mathbf{X}$
-                        </button>
-                    </div>
+                    </form>
 
-                    <button type="submit"
-                        class="w-full bg-gray-600 text-white font-bold py-2 rounded-lg shadow-md hover:bg-gray-700 transition duration-150 transform hover:scale-[1.01]">
-                        Calculate Custom $\mathbf{b}^\mathbf{X}$
-                    </button>
-                </form>
-
-                <div id="antilog-output" class="result-card hidden"></div>
+                    <div id="antilog-output" class="result-card-custom d-none"></div>
+                </div>
             </div>
 
         </div>
@@ -203,22 +209,30 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     const E = Math.E;
+    const TOLERANCE = 1e-9;
 
     /**
      * Updates the results display with appropriate styling and content.
      */
     function displayResult(containerId, isError, contentHtml) {
         const outputDiv = document.getElementById(containerId);
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
+        outputDiv.classList.remove('d-none', 'result-error', 'result-card-custom');
         
         if (isError) {
             outputDiv.classList.add('result-error');
         } else {
-            outputDiv.classList.add('result-card');
+            outputDiv.classList.add('result-card-custom');
         }
         outputDiv.innerHTML = contentHtml;
+        
+        // Trigger MathJax re-render
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
+        }
     }
 
     /**
@@ -230,28 +244,38 @@
         const bInput = document.getElementById('log-base-input');
         
         const X = parseFloat(xInput.value.trim());
-        let B = presetBase !== null ? presetBase : parseFloat(bInput.value.trim());
+        let B;
 
-        const isCustom = presetBase === null;
         const containerId = 'log-output';
-        document.getElementById(containerId).classList.add('hidden');
+        document.getElementById(containerId).classList.add('d-none');
         
-        if (isCustom) {
-            // Update input field if calculated via custom submit button
-            B = parseFloat(bInput.value.trim()); 
-        } else {
-            // Update input field if calculated via a preset button
+        if (presetBase !== null) {
+            B = presetBase;
             bInput.value = (presetBase === 10) ? 10 : 'e';
+        } else {
+            B = parseFloat(bInput.value.trim()); 
         }
 
-        if (isNaN(X) || isNaN(B) || B <= 0 || B === 1) {
-            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numbers. Base ($\mathbf{b}$) must be positive and not equal to 1.</p>`;
+        if (isNaN(X) || isNaN(B) || B < TOLERANCE) {
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values. Base ($\mathbf{b}$) must be a positive number.</p>`;
+            displayResult(containerId, true, htmlContent);
+            return;
+        }
+        
+        if (Math.abs(B - 1) < TOLERANCE) {
+            const htmlContent = `<p class="fw-bold text-center">Domain Error</p><p class="text-center">The logarithm base ($\mathbf{b}$) cannot be equal to 1.</p>`;
             displayResult(containerId, true, htmlContent);
             return;
         }
 
-        if (X <= 0) {
-            const htmlContent = `<p class="font-bold text-center">Domain Error</p><p class="text-center">The number ($\mathbf{X}$) must be greater than zero for the logarithm to be defined ($\mathbf{X} > 0$).</p>`;
+        if (X <= TOLERANCE) {
+            let errorMsg;
+            if (Math.abs(X) < TOLERANCE) {
+                errorMsg = "Logarithm of zero is undefined ($\mathbf{\\log_b(0)}$).";
+            } else {
+                errorMsg = "The number ($\mathbf{X}$) must be greater than zero for the logarithm to be defined ($\mathbf{X} > 0$).";
+            }
+            const htmlContent = `<p class="fw-bold text-center">Domain Error</p><p class="text-center">${errorMsg}</p>`;
             displayResult(containerId, true, htmlContent);
             return;
         }
@@ -261,18 +285,22 @@
         const result_f = result.toFixed(6);
 
         // Prepare labels for display
-        const baseSymbol = (B === 10) ? '10' : (B === E) ? 'e' : B.toFixed(4).replace(/\.?0+$/, '');
-        const logSymbol = (B === E) ? '\\ln' : `\\log_{${baseSymbol}}`;
-        const inputBaseDisplay = (B === E) ? `e \\approx ${E.toFixed(6)}` : B.toFixed(6);
+        const baseSymbol = (Math.abs(B - 10) < TOLERANCE) ? '10' : (Math.abs(B - E) < TOLERANCE) ? 'e' : B.toFixed(4).replace(/\.?0+$/, '');
+        const logSymbol = (Math.abs(B - E) < TOLERANCE) ? '\\ln' : `\\log_{${baseSymbol}}`;
+        const inputBaseDisplay = (Math.abs(B - E) < TOLERANCE) ? `e \\approx ${E.toFixed(6)}` : B.toFixed(6);
         
         // Result Display
         let htmlContent = `
             <p class="output-label">Result:</p>
             <div class="output-value">
-                $$${logSymbol}(\\mathbf{${X.toLocaleString()}}) \\approx \\mathbf{${result_f}}$$
+                $$\\mathbf{${logSymbol}(\\mathbf{${X.toLocaleString()}}) \\approx \\mathbf{${result_f}}}$$
             </div>
+            
+            <p class="result-subtext fw-semibold pt-2 text-dark">Calculation Breakdown:</p>
             <p class="result-subtext">
-                Calculation: ${logSymbol}(\\mathbf{${X.toLocaleString()}}) = ${result_f}
+                Using Change of Base Formula:
+                $$${logSymbol}(\\mathbf{X}) = \\frac{\\ln(\\mathbf{X})}{\\ln(\\mathbf{b})}$$
+                $$\\frac{\\ln(${X.toFixed(6)})}{\\ln(${inputBaseDisplay})} \\approx \\mathbf{${result_f}}$$
             </p>
             <p class="result-subtext">
                 Base used ($\mathbf{b}$): ${inputBaseDisplay}
@@ -297,22 +325,20 @@
         const bInput = document.getElementById('antilog-base-input');
         
         const X = parseFloat(xInput.value.trim());
-        let B = presetBase !== null ? presetBase : parseFloat(bInput.value.trim());
+        let B;
 
-        const isCustom = presetBase === null;
         const containerId = 'antilog-output';
-        document.getElementById(containerId).classList.add('hidden');
+        document.getElementById(containerId).classList.add('d-none');
         
-        if (isCustom) {
-            // Update input field if calculated via custom submit button
-            B = parseFloat(bInput.value.trim()); 
-        } else {
-            // Update input field if calculated via a preset button
+        if (presetBase !== null) {
+            B = presetBase;
             bInput.value = (presetBase === 10) ? 10 : 'e';
+        } else {
+            B = parseFloat(bInput.value.trim()); 
         }
 
         if (isNaN(X) || isNaN(B) || B < 0) {
-            const htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numbers. Base ($\mathbf{b}$) must be non-negative.</p>`;
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values. Base ($\mathbf{b}$) must be non-negative.</p>`;
             displayResult(containerId, true, htmlContent);
             return;
         }
@@ -326,15 +352,15 @@
         
         if (Math.abs(result) > 1e15 || (Math.abs(result) < 1e-15 && result !== 0)) {
             result_display = result.toExponential(6);
-            result_subtext = `(Scientific: ${result_display})`;
+            result_subtext = `(Scientific Notation: ${result_display})`;
         } else {
             result_display = result.toFixed(6).replace(/\.?0+$/, '');
             result_subtext = `(Standard Form: ${result_display})`;
         }
 
         // Prepare labels for display
-        const baseSymbol = (B === 10) ? '10' : (B === E) ? 'e' : B.toFixed(4).replace(/\.?0+$/, '');
-        const inputBaseDisplay = (B === E) ? `e \\approx ${E.toFixed(6)}` : B.toFixed(6);
+        const baseSymbol = (Math.abs(B - 10) < TOLERANCE) ? '10' : (Math.abs(B - E) < TOLERANCE) ? 'e' : B.toFixed(4).replace(/\.?0+$/, '');
+        const inputBaseDisplay = (Math.abs(B - E) < TOLERANCE) ? `e \\approx ${E.toFixed(6)}` : B.toFixed(6);
 
         // Result Display
         let htmlContent = `
@@ -342,8 +368,10 @@
             <div class="output-value">
                 $$\\mathbf{${baseSymbol}^{\\mathbf{${X.toLocaleString()}}} \\approx \\mathbf{${result_display}}}$$
             </div>
+            <p class="result-subtext fw-semibold pt-2 text-dark">Calculation Breakdown:</p>
             <p class="result-subtext">
-                Calculation: $\\mathbf{${baseSymbol}^{\\mathbf{${X.toLocaleString()}}}$ $
+                The antilogarithm is simply the exponential function:
+                $$\\mathbf{b}^{\\mathbf{X}}$$
             </p>
             <p class="result-subtext">
                 Value: ${result_subtext}

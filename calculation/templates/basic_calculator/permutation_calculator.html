@@ -2,16 +2,27 @@
 
 {% block title %}Permutation Calculator (nPr){% endblock %}
 
-{% block meta_description %}Calculate the number of permutations (arrangements) of 'r' items chosen from a set of 'n' items using the nPr formula. Formula: nPr = n! / (n-r)!{% endblock %}
+{% block meta_description %}Calculate the number of permutations (arrangements) of 'r' items chosen from a set of 'n' items using the nPr formula. Formula: $\text{nPr} = \frac{n!}{(n-r)!}$.{% endblock %}
 
 {% block meta_keywords %}permutation calculator, nPr, combinatorics, arrangements, factorial, probability math{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Indigo/Blue Theme for Bootstrap) */
+    :root {
+        --indigo-main: #4338ca; /* Deep Indigo for button/accent */
+        --indigo-dark: #3730a3; /* Darker Indigo for text */
+        --lavender-pale: #f7faff; /* Solver Wrapper Background */
+        --lavender-light: #eef2ff; /* Input Section Background */
+        --indigo-accent: #a5b4fc; /* Medium Indigo border */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f7faff; /* Very light blue/indigo background */
+        background: var(--lavender-pale);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,37 +31,40 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .input-grid {
+    .input-grid-custom {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
         padding: 20px;
         border-radius: 8px;
-        background-color: #eef2ff; /* Lightest indigo */
+        background-color: var(--lavender-light);
         border: 1px solid #c7d2fe;
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #4338ca; /* Indigo */
+        color: var(--indigo-main);
         margin-bottom: 5px;
         display: block;
         text-align: center;
     }
 
     .input-field {
-        width: 100%;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #a5b4fc; /* Medium indigo border */
+        border: 2px solid var(--indigo-accent);
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
-        color: #3730a3;
+        color: var(--indigo-dark);
+    }
+    .input-field:focus {
+        border-color: var(--indigo-main);
+        box-shadow: 0 0 0 0.25rem rgba(67, 56, 202, 0.25);
     }
     
-    .result-box {
+    .result-box-custom {
         margin-top: 25px;
         padding: 20px;
         border-radius: 12px;
@@ -59,14 +73,14 @@
 
     /* Custom result styles */
     .result-success {
-        border-left-color: #4f46e5; /* Indigo */
+        border-left-color: var(--indigo-main); 
         background-color: #f7faff;
-        color: #3730a3;
+        color: var(--indigo-dark);
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: var(--bs-danger); 
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .output-label {
@@ -81,7 +95,7 @@
         font-size: 3rem;
         font-weight: 800;
         text-align: center;
-        color: #4f46e5;
+        color: var(--indigo-main);
         margin-top: 10px;
         word-break: break-all;
     }
@@ -89,44 +103,46 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Permutation Calculator ($\text{nPr}$)</h1>
-    <p class="text-gray-600 mb-6 text-center">Calculates the number of arrangements of $r$ items chosen from $n$ items. 
-    $$
-        \text{nPr} = \frac{n!}{(n-r)!}
-    $$
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Permutation Calculator ($\mathbf{nPr}$)</h1>
+    <p class="text-secondary mb-4 text-center">
+        Calculates the number of **arrangements** of $r$ items chosen from $n$ items, where **order matters**.
     </p>
+    <div class="text-center mb-4">
+        $$
+            \mathbf{\text{nPr} = P(n, r) = \frac{n!}{(n-r)!}}
+        $$
+    </div>
 
-    <div class="solver-wrapper">
-        <form id="permutation-form" class="space-y-6">
+    <div class="solver-wrapper shadow-lg">
+        <form id="permutation-form" class="d-grid gap-4">
             
-            <div class="input-grid shadow-lg">
+            <div class="input-grid-custom shadow-sm">
                 <div class="input-box">
-                    <label for="n-input">Total Items ($n$):</label>
-                    <input type="number" id="n-input" value="10" required step="1" min="0"
+                    <label for="n-input">Total Items <br> (mathbf{n}):</label>
+                    <input type="number" id="n-input" required step="1" min="0"
                            placeholder="e.g., 10 (Total people)"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
                 <div class="input-box">
-                    <label for="r-input">Items to Choose ($r$):</label>
-                    <input type="number" id="r-input" value="3" required step="1" min="0"
-                           placeholder="e.g., 3 (First, Second, Third place)"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    <label for="r-input">Items to Arrange (mathbf{r}):</label>
+                    <input type="number" id="r-input" required step="1" min="0"
+                           placeholder="e.g., 3 (Positions)"
+                           class="form-control input-field">
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.01]">
-                Calculate $\text{nPr}$
+                    class="btn w-100 fw-bold py-3 mt-3 shadow-xl text-white"
+                    style="background-color: var(--indigo-main); border-color: var(--indigo-main);">
+                Calculate $\mathbf{\text{nPr}}$
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Result</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Result</h2>
+            <div id="solution-output" class="result-box-custom d-none">
+                </div>
         </div>
         
     </div>
@@ -134,6 +150,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
      * Calculates the factorial of a non-negative integer.
@@ -141,6 +159,7 @@
      * @returns {number} The factorial.
      */
     function factorial(num) {
+        // Use BigInt for potentially large numbers, though result calculation avoids large factorials
         if (num < 0) return NaN;
         if (num === 0) return 1;
         let result = 1;
@@ -160,12 +179,14 @@
      */
     function calculatePermutation(n, r) {
         if (r === 0) return 1; // nP0 = 1
-        if (n === r) return factorial(n); // nPn = n!
-
+        // Note: For n > 20, standard JS number precision may fail. Use a library for larger numbers.
+        
         let result = 1;
         // nPr = n * (n-1) * ... * (n - r + 1)
         for (let i = 0; i < r; i++) {
             result *= (n - i);
+            // Simple check to warn about large numbers
+            if (result === Infinity) return Infinity; 
         }
         return result;
     }
@@ -177,23 +198,23 @@
         const r = parseInt(document.getElementById('r-input').value.trim());
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
-        outputDiv.className = 'result-box'; 
+        outputDiv.classList.add('d-none');
+        outputDiv.classList.remove('result-error', 'result-success');
         outputDiv.innerHTML = '';
 
         let htmlContent = '';
         let resultClass = '';
 
         // --- Input Validation ---
-        if (isNaN(n) || isNaN(r) || n < 0 || r < 0) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter non-negative integers for both $n$ and $r$.</p>`;
+        if (isNaN(n) || isNaN(r) || !Number.isInteger(n) || !Number.isInteger(r) || n < 0 || r < 0) {
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter non-negative **integers** for both $\mathbf{n}$ and $\mathbf{r}$.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
         }
 
         if (r > n) {
-            htmlContent = `<p class="font-bold text-center">Invalid Parameters</p><p class="text-center">The number of items to choose ($r=${r}$) cannot be greater than the total number of items ($n=${n}$).</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Parameters</p><p class="text-center">The number of items to arrange ($\mathbf{r=${r}}$) cannot be greater than the total number of items ($\mathbf{n=${n}}$).</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -202,17 +223,26 @@
         // --- Calculation ---
         const result = calculatePermutation(n, r);
         
+        if (result === Infinity) {
+             htmlContent = `<p class="fw-bold text-center">Result Too Large</p><p class="text-center">The result exceeds the maximum safe number representation in this calculator. Result is mathematically correct but cannot be displayed precisely.</p>`;
+            resultClass = 'result-error';
+            displayResult(resultClass, htmlContent);
+            return;
+        }
+
+        const formattedResult = result.toLocaleString();
+        
         // --- Result Display ---
         
-        htmlContent += `<p class="output-label">Result of Permutation:</p>`;
-        htmlContent += `<p class="text-lg text-center font-mono text-gray-700">
-                           $$\\text{P}(${n}, ${r}) = \\frac{${n}!}{(\\mathbf{${n}-${r}})!} = \\text{P}(${n}, ${r})$$
+        htmlContent += `<p class="output-label">Result of Permutation ($\mathbf{P(${n}, ${r})}$):</p>`;
+        htmlContent += `<p class="text-lg text-center fw-normal text-secondary">
+                           Formula: $\mathbf{P(${n}, ${r})} = \frac{${n}!}{(\mathbf{${n}-${r}})!}$
                         </p>`;
 
-        htmlContent += `<div class="output-value">$$\\mathbf{${result.toLocaleString()}}$$</div>`;
+        htmlContent += `<div class="output-value">$$\mathbf{${formattedResult}}$$</div>`;
         
-        htmlContent += `<p class="text-sm text-center text-gray-600 mt-4">
-                            There are $\\mathbf{${result.toLocaleString()}}$ unique ways to arrange ${r} items from a set of ${n}.
+        htmlContent += `<p class="small text-center text-secondary mt-4">
+                            There are $\mathbf{${formattedResult}}$ unique **ordered arrangements** possible when choosing ${r} items from a set of ${n}$.
                         </p>`;
 
         resultClass = 'result-success';
@@ -227,7 +257,12 @@
         const outputDiv = document.getElementById('solution-output');
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
+
+        // Trigger MathJax re-render
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
+        }
     }
 </script>
 {% endblock %}

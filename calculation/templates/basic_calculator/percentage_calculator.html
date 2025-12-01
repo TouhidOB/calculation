@@ -7,11 +7,23 @@
 {% block meta_keywords %}percentage calculator, percent of a number, discount calculator, math utility, finance{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Pink/Rose Theme for Bootstrap) */
+    :root {
+        --pink-main: #d63384; /* Bootstrap Pink */
+        --pink-dark: #9d174d; /* Dark Rose for labels */
+        --pink-pale: #fdf2f8; /* Solver Wrapper Background */
+        --pink-light: #fce7f6; /* Input Section Background */
+        --pink-accent: #ec4899; /* Medium Rose border */
+        --result-bg: #fdf4ff; /* Result Card Background */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #fdf2f8; /* Light pink/rose background */
+        background: var(--pink-pale);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,37 +32,40 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .input-grid {
+    .input-grid-custom {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
         padding: 20px;
         border-radius: 8px;
-        background-color: #fce7f6; /* Lighter pink */
+        background-color: var(--pink-light);
         border: 1px solid #fbcfe8;
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #9d174d; /* Dark rose */
+        color: var(--pink-dark);
         margin-bottom: 5px;
         display: block;
         text-align: center;
     }
 
     .input-field {
-        width: 100%;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #ec4899; /* Medium rose border */
+        border: 2px solid var(--pink-accent);
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
         color: #831843;
     }
+    .input-field:focus {
+        border-color: var(--pink-main);
+        box-shadow: 0 0 0 0.25rem rgba(214, 51, 132, 0.25);
+    }
     
-    .result-box {
+    .result-box-custom {
         margin-top: 25px;
         padding: 20px;
         border-radius: 12px;
@@ -60,13 +75,13 @@
     /* Custom result styles */
     .result-success {
         border-left-color: #db2777; /* Hot Pink */
-        background-color: #fdf4ff;
-        color: #9d174d;
+        background-color: var(--result-bg);
+        color: var(--pink-dark);
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: var(--bs-danger); 
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .output-text {
@@ -79,47 +94,46 @@
         font-size: 3rem;
         font-weight: 800;
         text-align: center;
-        color: #db2777;
+        color: var(--pink-main);
         margin-top: 10px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Percentage Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">Calculates "What is $X\%$ of $Y$?".</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Percentage Calculator</h1>
+    <p class="text-secondary mb-4 text-center">Calculates "What is $\mathbf{X\%}$ of $\mathbf{Y}$?".</p>
 
-    <div class="solver-wrapper">
-        <form id="percentage-form" class="space-y-6">
+    <div class="solver-wrapper shadow-lg">
+        <form id="percentage-form" class="d-grid gap-4">
             
-            <div class="input-grid shadow-lg">
+            <div class="input-grid-custom shadow-sm">
                 <div class="input-box">
-                    <label for="percent-input">Percentage ($X\%$):</label>
-                    <input type="number" id="percent-input" value="15" required step="any"
+                    <label for="percent-input">Percentage ($\mathbf{X\%}$):</label>
+                    <input type="number" id="percent-input" required step="any"
                            placeholder="e.g., 15"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
                 <div class="input-box">
-                    <label for="number-input">Base Number ($Y$):</label>
-                    <input type="number" id="number-input" value="200" required step="any"
+                    <label for="number-input">Base Number ($\mathbf{Y}$):</label>
+                    <input type="number" id="number-input" required step="any"
                            placeholder="e.g., 200"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-pink-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-pink-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 mt-3 shadow-xl text-white"
+                    style="background-color: var(--pink-main); border-color: var(--pink-main);">
                 Calculate Result
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Calculation Result</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Calculation Result</h2>
+            <div id="solution-output" class="result-box-custom d-none">
+                </div>
         </div>
         
     </div>
@@ -127,6 +141,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     document.getElementById('percentage-form').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -138,8 +154,8 @@
         const Y = parseFloat(Y_input); // Base number
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
-        outputDiv.className = 'result-box'; 
+        outputDiv.classList.add('d-none');
+        outputDiv.classList.remove('result-error', 'result-success');
         outputDiv.innerHTML = '';
 
         let htmlContent = '';
@@ -147,7 +163,7 @@
 
         // --- Input Validation ---
         if (X_input === '' || Y_input === '' || isNaN(X) || isNaN(Y)) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for both the percentage and the number.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numerical values for both the percentage and the number.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -158,14 +174,25 @@
         const result = (X / 100) * Y;
         
         // Format the result to a maximum of 4 decimal places, trimming trailing zeros
-        const formattedResult = parseFloat(result.toFixed(4));
+        // Use a function to ensure correct formatting and avoid displaying unnecessary precision
+        function formatNumber(num) {
+            return parseFloat(num.toFixed(4)).toLocaleString('en-US', {
+                maximumFractionDigits: 4,
+            });
+        }
+        
+        const formattedResult = formatNumber(result);
+        const XF = formatNumber(X);
+        const YF = formatNumber(Y);
         
         // --- Result Display ---
-        htmlContent += `<p class="output-text">What is $\\mathbf{${X}\\%}$ of $\\mathbf{${Y}}$?</p>`;
+        htmlContent += `<p class="output-text">What is $\\mathbf{${XF}\\%}$ of $\\mathbf{${YF}}$?</p>`;
         htmlContent += `<p class="output-text mt-1">The answer is:</p>`;
         htmlContent += `<div class="output-value">$$\\mathbf{${formattedResult}}$$</div>`;
 
-        htmlContent += `<p class="output-text text-gray-600 mt-4">Calculated using the formula: $\\frac{${X}}{100} \\cdot ${Y}$</p>`;
+        htmlContent += `<p class="output-text text-secondary mt-4">
+                            Calculated using the formula: $$ \\text{Result} = \\frac{X}{100} \\times Y = \\frac{${XF}}{100} \\times ${YF} $$
+                        </p>`;
         
         resultClass = 'result-success';
         
@@ -179,7 +206,12 @@
         const outputDiv = document.getElementById('solution-output');
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
+        
+        // Trigger MathJax re-render
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
+        }
     }
 </script>
 {% endblock %}

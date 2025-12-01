@@ -7,11 +7,24 @@
 {% block meta_keywords %}linear regression, least squares, line of best fit, slope, y-intercept, statistics calculator, data modeling{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Blue/Sky-Blue Theme for Bootstrap) */
+    :root {
+        --sky-lightest: #f8fafc; /* Solver Wrapper Background */
+        --sky-pale: #f0f9ff; /* Input background */
+        --sky-medium: #38bdf8; /* Input border */
+        --sky-dark: #0c4a6e; /* Dark text/label */
+        --sky-accent: #0ea5e9; /* Sky Blue accent */
+        --sky-text: #075985; /* Input/Result text color */
+        --final-eq-bg: #e0f2fe; /* Final equation background */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #f8fafc; /* Very light blue background */
+        background: var(--sky-lightest);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,20 +33,20 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .input-grid {
+    .input-grid-custom {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
         padding: 20px;
         border-radius: 8px;
-        background-color: #f0f9ff; /* Lightest blue */
+        background-color: var(--sky-pale);
         border: 1px solid #bae6fd;
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #0c4a6e; /* Dark cyan */
+        color: var(--sky-dark);
         margin-bottom: 5px;
         display: block;
         text-align: center;
@@ -44,54 +57,51 @@
         min-height: 150px;
         padding: 15px;
         font-size: 1.1rem;
-        border: 2px solid #38bdf8; /* Medium blue border */
+        border: 2px solid var(--sky-medium); 
         border-radius: 8px;
         font-family: monospace;
         font-weight: 500;
-        color: #075985;
+        color: var(--sky-text);
         resize: vertical;
+        transition: box-shadow 0.3s ease;
+    }
+    .data-input-field:focus {
+        border-color: var(--sky-accent);
+        box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
     }
     
-    .result-box {
+    .result-box-custom {
         margin-top: 25px;
         padding: 20px;
         border-radius: 12px;
         border-left: 5px solid;
     }
 
-    /* Custom result styles */
+    /* Custom result styles (using Bootstrap structure) */
     .result-success {
-        border-left-color: #0ea5e9; /* Sky Blue */
-        background-color: #f0f9ff;
-        color: #075985;
+        border-left-color: var(--sky-accent); /* Sky Blue */
+        background-color: var(--sky-pale);
+        color: var(--sky-text);
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: var(--bs-danger); /* Red */
+        background-color: #f8d7da;
+        color: #842029;
     }
 
     .final-equation-box {
         margin-top: 20px;
         padding: 15px;
         border-radius: 8px;
-        background-color: #e0f2fe; /* Very light sky blue */
-        border: 2px solid #0ea5e9;
-    }
-
-    .output-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        text-align: center;
-        margin-bottom: 5px;
-        color: #0c4a6e;
+        background-color: var(--final-eq-bg); 
+        border: 2px solid var(--sky-accent);
     }
 
     .output-value {
         font-size: 1.8rem;
         font-weight: 800;
         text-align: center;
-        color: #0ea5e9;
+        color: var(--sky-accent);
         word-break: break-all;
     }
     .equation-value {
@@ -104,41 +114,43 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Linear Regression Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">Find the line of best fit ($\hat{y} = mx + b$) using the Least Squares Method for your paired data.</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Linear Regression Calculator</h1>
+    <p class="text-secondary mb-4 text-center">Find the line of best fit ($\hat{y} = mx + b$) using the Least Squares Method for your paired data.</p>
+    
+
+[Image of Least Squares Regression Line]
 
     <div class="solver-wrapper">
-        <form id="regression-form" class="space-y-6">
+        <form id="regression-form" class="d-grid gap-4">
             
-            <div class="input-grid shadow-lg">
+            <div class="input-grid-custom shadow-lg">
                 <div class="input-box">
-                    <label for="x-data-input">X Data (Independent Variable) [e.g., 1, 2, 3, 4, 5]:</label>
+                    <label for="x-data-input">X Data (Independent Variable):</label>
                     <textarea id="x-data-input" required
                               placeholder="e.g., 1, 2, 3, 4, 5"
-                              class="data-input-field shadow-inner focus:shadow-xl transition-shadow">1, 2, 3, 4, 5</textarea>
+                              class="data-input-field form-control"></textarea>
                 </div>
                 <div class="input-box">
-                    <label for="y-data-input">Y Data (Dependent Variable) [e.g., 2.1, 4.3, 5.8, 8.2, 9.9]:</label>
+                    <label for="y-data-input">Y Data (Dependent Variable):</label>
                     <textarea id="y-data-input" required
                               placeholder="e.g., 2.1, 4.3, 5.8, 8.2, 9.9"
-                              class="data-input-field shadow-inner focus:shadow-xl transition-shadow">2.1, 4.3, 5.8, 8.2, 9.9</textarea>
+                              class="data-input-field form-control"></textarea>
                 </div>
             </div>
-            <p class="text-sm text-gray-500 text-center">Ensure the number of values in the X and Y lists are exactly the same.</p>
+            <p class="text-muted small text-center">Enter numbers separated by commas or spaces. Ensure the number of values in the X and Y lists are exactly the same.</p>
 
             <button type="submit"
-                    class="w-full bg-sky-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-sky-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 shadow-lg text-white"
+                    style="background-color: var(--sky-accent); border-color: var(--sky-accent);">
                 Calculate Regression Line
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Regression Results</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Regression Results</h2>
+            <div id="solution-output" class="result-box-custom d-none">
+                </div>
         </div>
         
     </div>
@@ -146,6 +158,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
      * Parses and validates data from a raw string input.
@@ -167,8 +181,8 @@
         const yDataRaw = document.getElementById('y-data-input').value.trim();
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
-        outputDiv.className = 'result-box'; 
+        outputDiv.classList.add('d-none');
+        outputDiv.classList.remove('result-success', 'result-error');
         outputDiv.innerHTML = '';
 
         let htmlContent = '';
@@ -180,14 +194,14 @@
 
         // --- Input Validation ---
         if (N < 2) {
-            htmlContent = `<p class="font-bold text-center">Insufficient Data</p><p class="text-center">You must provide at least two data points for X and Y.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Insufficient Data</p><p class="text-center">You must provide at least two data points for X and Y.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
         }
         
         if (X.length !== Y.length) {
-            htmlContent = `<p class="font-bold text-center">Data Mismatch</p><p class="text-center">The number of X values (${X.length}) must match the number of Y values (${Y.length}).</p>`;
+            htmlContent = `<p class="fw-bold text-center">Data Mismatch</p><p class="text-center">The number of X values (${X.length}) must match the number of Y values (${Y.length}).</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -217,7 +231,7 @@
         const slopeDenominator = (N * sumX2) - (sumX * sumX);
 
         if (slopeDenominator === 0) {
-            htmlContent = `<p class="font-bold text-center">Vertical Line Error</p><p class="text-center">The X data points are identical (or collinear vertically), resulting in a division by zero. Linear regression cannot be calculated.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Vertical Line Error</p><p class="text-center">All X data points are identical. The line is vertical ($\mathbf{x} = \bar{x}$), and the slope is undefined. Linear regression cannot be calculated.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -233,10 +247,18 @@
         const b = meanY - (m * meanX);
         
         // Format results
-        const m_f = m.toFixed(4);
-        const b_f = b.toFixed(4);
-        const meanX_f = meanX.toFixed(2);
-        const meanY_f = meanY.toFixed(2);
+        const precision = 4;
+        const m_f = m.toFixed(precision);
+        const b_f = b.toFixed(precision);
+        const meanX_f = meanX.toFixed(precision);
+        const meanY_f = meanY.toFixed(precision);
+        
+        const sumX_f = sumX.toFixed(precision);
+        const sumY_f = sumY.toFixed(precision);
+        const sumXY_f = sumXY.toFixed(precision);
+        const sumX2_f = sumX2.toFixed(precision);
+        const slopeNumerator_f = slopeNumerator.toFixed(precision);
+        const slopeDenominator_f = slopeDenominator.toFixed(precision);
 
         // 3. Construct Final Equation String
         const sign = b >= 0 ? '+' : '-';
@@ -247,38 +269,60 @@
 
         // --- Result Display ---
         
-        htmlContent += `<div class="grid grid-cols-2 gap-4 mb-6 text-center">
-            <div>
-                <span class="output-label">Mean X ($\bar{x}$):</span>
-                <span class="output-value text-xl">$$\\mathbf{${meanX_f}}$$</span>
-            </div>
-            <div>
-                <span class="output-label">Mean Y ($\bar{y}$):</span>
-                <span class="output-value text-xl">$$\\mathbf{${meanY_f}}$$</span>
-            </div>
-        </div>`;
-        
-        htmlContent += `<div class="grid grid-cols-2 gap-4 mb-6 text-center">
-            <div>
-                <span class="output-label">Slope ($m$):</span>
-                <span class="output-value text-2xl text-sky-600">$$\\mathbf{${m_f}}$$</span>
-            </div>
-            <div>
-                <span class="output-label">Y-Intercept ($b$):</span>
-                <span class="output-value text-2xl text-sky-600">$$\\mathbf{${b_f}}$$</span>
-            </div>
-        </div>`;
+        htmlContent += `<h5 class="text-center fw-bold mb-3" style="color: var(--sky-dark);">Final Regression Line</h5>`;
 
         htmlContent += `<div class="final-equation-box">
-            <p class="output-label text-xl">Line of Best Fit Equation</p>
+            <p class="text-center fw-semibold fs-5 mb-1" style="color: var(--sky-dark);">Line of Best Fit Equation</p>
             <div class="equation-value">
                 ${finalEquation}
             </div>
         </div>`;
 
+        htmlContent += `<div class="row row-cols-2 g-3 my-4 text-center">
+            <div class="col">
+                <p class="mb-1 fw-semibold">Slope ($m$):</p>
+                <p class="output-value fs-3 text-primary">${m_f}</p>
+            </div>
+            <div class="col">
+                <p class="mb-1 fw-semibold">Y-Intercept ($b$):</p>
+                <p class="output-value fs-3 text-primary">${b_f}</p>
+            </div>
+        </div>`;
+        
+        htmlContent += `<div class="p-3 border rounded-3 bg-light">
+            <h6 class="fw-bold text-dark mb-3">Calculation Details (Least Squares Method)</h6>
+            
+            <p class="small text-muted mb-1">Summary Statistics ($N = ${N}$):</p>
+            <div class="row row-cols-2 g-2 small text-center mb-3">
+                <div class="col">$$\\sum X = ${sumX_f}$$</div>
+                <div class="col">$$\\sum Y = ${sumY_f}$$</div>
+                <div class="col">$$\\sum X^2 = ${sumX2_f}$$</div>
+                <div class="col">$$\\sum XY = ${sumXY_f}$$</div>
+                <div class="col">$$\\bar{x} = ${meanX_f}$$</div>
+                <div class="col">$$\\bar{y} = ${meanY_f}$$</div>
+            </div>
+
+            <h6 class="fw-bold text-primary">1. Slope Formula ($m$):</h6>
+            <p class="text-center fs-5">
+                $$m = \\frac{N \\sum XY - (\\sum X)(\\sum Y)}{N \\sum X^2 - (\\sum X)^2}$$
+                $$m = \\frac{${slopeNumerator_f}}{${slopeDenominator_f}} \\approx \\mathbf{${m_f}}$$
+            </p>
+            
+            <h6 class="fw-bold text-primary">2. Y-Intercept Formula ($b$):</h6>
+            <p class="text-center fs-5">
+                $$b = \\bar{y} - m\\bar{x}$$
+                $$b = ${meanY_f} - (${m_f})(${meanX_f}) \\approx \\mathbf{${b_f}}$$
+            </p>
+        </div>`;
+
         resultClass = 'result-success';
         
         displayResult(resultClass, htmlContent);
+        
+        // Trigger MathJax re-render
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
+        }
     });
 
     /**
@@ -286,9 +330,9 @@
      */
     function displayResult(className, contentHtml) {
         const outputDiv = document.getElementById('solution-output');
+        outputDiv.classList.remove('d-none', 'result-error', 'result-success');
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
     }
 </script>
 {% endblock %}

@@ -7,11 +7,21 @@
 {% block meta_keywords %}probability calculator, basic probability, odds, favorable outcomes, total outcomes, fraction, percentage{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
-    /* Styling for the central calculation block */
+    /* 🎨 Define Custom Theme Colors (Orange/Amber Theme for Bootstrap) */
+    :root {
+        --orange-main: #f97316; /* Tailwind Orange-600 for accent */
+        --orange-dark: #c2410c; /* Dark orange for labels */
+        --light-peach: #fff7ed; /* Input Section Background */
+        --pale-yellow: #fffdf7; /* Solver Wrapper Background */
+    }
+
+    /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: #fffdf7; /* Very light yellow/orange background */
+        background: var(--pale-yellow);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -20,37 +30,40 @@
         font-family: 'Inter', sans-serif;
     }
     
-    .input-grid {
+    .input-grid-custom {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
         padding: 20px;
         border-radius: 8px;
-        background-color: #fff7ed; /* Lightest orange/peach */
+        background-color: var(--light-peach);
         border: 1px solid #fed7aa;
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #c2410c; /* Dark orange */
+        color: var(--orange-dark);
         margin-bottom: 5px;
         display: block;
         text-align: center;
     }
 
     .input-field {
-        width: 100%;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid #fb923c; /* Medium orange border */
+        border: 2px solid #fb923c;
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
         color: #9a3412;
     }
+    .input-field:focus {
+        border-color: var(--orange-main);
+        box-shadow: 0 0 0 0.25rem rgba(249, 115, 22, 0.25);
+    }
     
-    .result-box {
+    .result-box-custom {
         margin-top: 25px;
         padding: 20px;
         border-radius: 12px;
@@ -59,14 +72,14 @@
 
     /* Custom result styles */
     .result-success {
-        border-left-color: #f97316; /* Orange */
-        background-color: #fff7ed;
+        border-left-color: var(--orange-main); 
+        background-color: var(--light-peach);
         color: #9a3412;
     }
     .result-error {
-        border-left-color: #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left-color: var(--bs-danger); /* Red */
+        background-color: #f8d7da;
+        color: var(--bs-danger-text);
     }
 
     .output-grid {
@@ -81,20 +94,20 @@
         padding: 15px 10px;
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        background-color: #ffedd5; /* Lighter orange */
+        background-color: #ffedd5; 
     }
 
     .output-label {
         font-size: 1rem;
         font-weight: 600;
-        color: #c2410c;
+        color: var(--orange-dark);
         margin-bottom: 5px;
     }
 
     .output-value {
         font-size: 1.8rem;
         font-weight: 800;
-        color: #f97316;
+        color: var(--orange-main);
         line-height: 1.2;
     }
     /* Specific styling for the fraction display */
@@ -108,40 +121,44 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Probability Calculator</h1>
-    <p class="text-gray-600 mb-6 text-center">Calculates probability ($P$) using the formula: $P = \\frac{\\text{Favorable Outcomes}}{\\text{Total Possible Outcomes}}$</p>
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Probability Calculator</h1>
+    <p class="text-secondary mb-4 text-center">
+        Calculates probability ($\mathbf{P(E)}$) using the fundamental formula:
+        $$
+            \mathbf{P(E)} = \frac{\mathbf{\text{Favorable Outcomes}} (F)}{\mathbf{\text{Total Possible Outcomes}} (N)}
+        $$
+    </p>
 
-    <div class="solver-wrapper">
-        <form id="probability-form" class="space-y-6">
+    <div class="solver-wrapper shadow-lg">
+        <form id="probability-form" class="d-grid gap-4">
             
-            <div class="input-grid shadow-lg">
+            <div class="input-grid-custom shadow-sm">
                 <div class="input-box">
-                    <label for="favorable-input">Favorable Outcomes ($F$):</label>
-                    <input type="number" id="favorable-input" value="3" required step="1" min="0"
-                           placeholder="e.g., 3 (Rolling a 1 or 2 or 3)"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                    <label for="favorable-input">Favorable Outcomes ($\mathbf{F}$):</label>
+                    <input type="number" id="favorable-input" required step="1" min="0"
+                           placeholder="e.g., 3 (Rolling a 1, 2, or 3)"
+                           class="form-control input-field">
                 </div>
                 <div class="input-box">
-                    <label for="total-input">Total Possible Outcomes ($N$):</label>
-                    <input type="number" id="total-input" value="6" required step="1" min="1"
+                    <label for="total-input">Total Possible Outcomes ($\mathbf{N}$):</label>
+                    <input type="number" id="total-input" required step="1" min="1"
                            placeholder="e.g., 6 (Rolling a single die)"
-                           class="input-field shadow-inner focus:shadow-xl transition-shadow">
+                           class="form-control input-field">
                 </div>
             </div>
 
             <button type="submit"
-                    class="w-full bg-amber-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-amber-700 transition duration-150 transform hover:scale-[1.01]">
+                    class="btn w-100 fw-bold py-3 mt-3 shadow-xl text-white"
+                    style="background-color: var(--orange-main); border-color: var(--orange-main);">
                 Calculate Probability
             </button>
         </form>
 
-        <!-- Result Display Area -->
-        <div id="result-container" class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Results</h2>
-            <div id="solution-output" class="result-box hidden">
-                <!-- Result will be displayed here -->
-            </div>
+        <div id="result-container" class="mt-4">
+            <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Results</h2>
+            <div id="solution-output" class="result-box-custom d-none">
+                </div>
         </div>
         
     </div>
@@ -149,6 +166,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 <script>
     /**
      * Calculates the Greatest Common Factor (GCF) of two non-negative integers
@@ -173,27 +192,30 @@
     document.getElementById('probability-form').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const F = parseInt(document.getElementById('favorable-input').value.trim());
-        const N = parseInt(document.getElementById('total-input').value.trim());
+        const F_input = document.getElementById('favorable-input').value.trim();
+        const N_input = document.getElementById('total-input').value.trim();
+        
+        const F = parseInt(F_input);
+        const N = parseInt(N_input);
         
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.add('hidden');
-        outputDiv.className = 'result-box'; 
+        outputDiv.classList.add('d-none');
+        outputDiv.classList.remove('result-error', 'result-success'); 
         outputDiv.innerHTML = '';
 
         let htmlContent = '';
         let resultClass = '';
 
         // --- Input Validation ---
-        if (isNaN(F) || isNaN(N) || F < 0 || N <= 0) {
-            htmlContent = `<p class="font-bold text-center">Invalid Input</p><p class="text-center">Favorable outcomes must be $\\geq 0$. Total outcomes must be $\\geq 1$.</p>`;
+        if (F_input === '' || N_input === '' || isNaN(F) || isNaN(N) || !Number.isInteger(F) || !Number.isInteger(N) || F < 0 || N <= 0) {
+            htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter positive whole numbers. Favorable outcomes ($\mathbf{F}$) must be $\\mathbf{\\geq 0}$. Total outcomes ($\mathbf{N}$) must be $\\mathbf{\\geq 1}$.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
         }
 
         if (F > N) {
-            htmlContent = `<p class="font-bold text-center">Invalid Probability</p><p class="text-center">Favorable outcomes ($F=${F}$) cannot be greater than Total outcomes ($N=${N}$).</p>`;
+            htmlContent = `<p class="fw-bold text-center">Invalid Probability</p><p class="text-center">Favorable outcomes ($\mathbf{F=${F}}$) cannot be greater than Total outcomes ($\mathbf{N=${N}}$).</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
@@ -203,7 +225,8 @@
         
         // 1. Decimal Probability
         const probabilityDecimal = F / N;
-        const probabilityDecimalF = probabilityDecimal.toFixed(4);
+        // Check for edge case of 0/N
+        const probabilityDecimalF = (N === 0) ? '0.0000' : probabilityDecimal.toFixed(4);
 
         // 2. Percentage
         const probabilityPercent = probabilityDecimal * 100;
@@ -218,8 +241,8 @@
 
         // --- Result Display ---
         
-        htmlContent += `<p class="text-center text-lg font-medium mb-6">
-                            Probability ($P$) Calculation: $\\frac{F}{N} = \\frac{${F}}{${N}}$
+        htmlContent += `<p class="text-center fs-5 fw-medium mb-4 text-dark">
+                            Probability ($P$) Calculation: $\\mathbf{P} = \\frac{\\mathbf{F}}{\\mathbf{N}} = \\frac{${F}}{${N}}$
                         </p>`;
 
         htmlContent += `<div class="output-grid">
@@ -249,7 +272,12 @@
         const outputDiv = document.getElementById('solution-output');
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
-        outputDiv.classList.remove('hidden');
+        outputDiv.classList.remove('d-none');
+        
+        // Trigger MathJax re-render for formulas
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
+        }
     }
 </script>
 {% endblock %}

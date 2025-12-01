@@ -7,23 +7,22 @@
 {% block meta_keywords %}trigonometry, identity, verifier, solver, sin, cos, tan, csc, sec, cot, math calculator{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <style>
-    /* Styling for the central calculation block (Blue/Navy Theme) */
+    /* Styling for the central calculation block (Bootstrap Primary/Navy Theme) */
     .solver-wrapper {
-        background: #f8faff; /* Very light blue background */
+        background: #ffffff; /* White background */
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         max-width: 900px;
         margin: 0 auto;
-        font-family: 'Inter', sans-serif;
     }
     
     .input-box label {
         font-size: 0.95rem;
         font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
+        color: #0d4484; /* Dark Blue */
         display: block;
         margin-bottom: 5px;
     }
@@ -32,12 +31,12 @@
         width: 100%;
         padding: 12px;
         font-size: 1.1rem;
-        border: 2px solid #3b82f6; /* Blue border */
+        border: 2px solid #0d6efd; /* Primary Blue border */
         border-radius: 8px;
         font-family: monospace;
         text-align: left;
         font-weight: 500;
-        color: #1e3a8a;
+        color: #212529;
     }
 
     .result-section {
@@ -48,14 +47,15 @@
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        background-color: #eff6ff; /* Lightest Blue */
-        border-left: 5px solid #2563eb; /* Strong Blue accent */
+        /* Success alert style */
+        background-color: #d1e7dd; 
+        border-left: 5px solid #198754; 
     }
 
     .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
+        border-left: 5px solid #dc3545; /* Danger Red */
+        background-color: #f8d7da;
+        color: #721c24;
         padding: 20px;
         border-radius: 8px;
     }
@@ -67,101 +67,108 @@
         margin-bottom: 15px;
     }
     
-    .status-success { color: #10b981; } /* Emerald Green */
-    .status-failure { color: #ef4444; } /* Red */
-    .status-info { color: #2563eb; } /* Blue */
+    .status-success { color: #0f5132; } /* Dark green */
+    .status-failure { color: #dc3545; } /* Danger red */
+    .status-info { color: #0d6efd; } /* Primary blue */
 
     .test-table th, .test-table td {
         padding: 8px;
         text-align: center;
-        border-bottom: 1px solid #bfdbfe; /* Light Blue separator */
+        border-bottom: 1px solid #c9d8f3; /* Light Blue separator */
         font-family: monospace;
     }
     .test-table th {
-        background-color: #dbeafe; /* Very light blue header */
+        background-color: #e9ecef; /* Light gray header */
         font-weight: 700;
-        color: #1e40af;
+        color: #212529;
     }
     .test-table tr:hover {
-        background-color: #f0f7ff;
+        background-color: #f7f9fb;
     }
     
     /* Utility for reference section */
     .reference-section {
         margin-top: 40px;
         padding-top: 20px;
-        border-top: 2px dashed #bfdbfe;
+        border-top: 2px dashed #e9ecef;
     }
 
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 md:p-8">
-    <h1 class="text-3xl font-extrabold mb-2 text-gray-900 text-center">Trigonometric Identity Verifier</h1>
-    <p class="text-gray-600 mb-6 text-center">
+<div class="container my-5">
+    <h1 class="text-center fw-bolder mb-2 text-dark">Trigonometric Identity Verifier</h1>
+    <p class="text-secondary mb-4 text-center">
         Test if two trigonometric expressions are equivalent by numerically comparing their values across multiple angles.
     </p>
 
     <div class="solver-wrapper">
         
-        <form id="identity-form" class="space-y-4">
-            <p class="text-sm text-center text-gray-500 mb-4">
+        <form id="identity-form" class="d-grid gap-4">
+            <p class="small text-center text-muted mb-2">
                 Use `x` for the angle variable, `PI` for $\pi$, `sin()`, `cos()`, `tan()`, `pow(base, exp)`, etc.
             </p>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="input-box">
-                    <label for="lhs-input">Left Hand Side (LHS):</label>
-                    <input type="text" id="lhs-input" 
-                           value="sin(x)*sec(x)" 
-                           required 
-                           placeholder="e.g., sin(x)^2 + cos(x)^2"
-                           class="expression-input shadow-inner focus:shadow-xl transition-shadow">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-box">
+                        <label for="lhs-input">Left Hand Side (LHS):</label>
+                        <input type="text" id="lhs-input" 
+                               required 
+                               placeholder="e.g., sin(x)^2 + cos(x)^2"
+                               class="expression-input form-control">
+                    </div>
                 </div>
                 
-                <div class="input-box">
-                    <label for="rhs-input">Right Hand Side (RHS):</label>
-                    <input type="text" id="rhs-input" 
-                           value="tan(x)" 
-                           required 
-                           placeholder="e.g., 1"
-                           class="expression-input shadow-inner focus:shadow-xl transition-shadow">
+                <div class="col-md-6">
+                    <div class="input-box">
+                        <label for="rhs-input">Right Hand Side (RHS):</label>
+                        <input type="text" id="rhs-input" 
+                               required 
+                               placeholder="e.g., 1"
+                               class="expression-input form-control">
+                    </div>
                 </div>
             </div>
 
-            <div class="flex flex-col md:flex-row gap-4 items-center">
-                <div class="input-box w-full md:w-1/3">
-                    <label for="unit-selector">Angle Unit:</label>
-                    <select id="unit-selector" class="input-field shadow-inner focus:shadow-xl transition-shadow bg-white text-base">
-                        <option value="radians">Radians</option>
-                        <option value="degrees">Degrees</option>
-                    </select>
+            <div class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <div class="input-box">
+                        <label for="unit-selector">Angle Unit:</label>
+                        <select id="unit-selector" class="form-select bg-white">
+                            <option value="radians">Radians</option>
+                            <option value="degrees">Degrees</option>
+                        </select>
+                    </div>
                 </div>
                 
-                <button type="submit"
-                        class="w-full md:w-2/3 bg-blue-600 text-white font-bold py-3 rounded-lg shadow-xl hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01]">
-                    Run Identity Verification Tests
-                </button>
+                <div class="col-md-8 d-grid">
+                    <button type="submit"
+                            class="btn btn-primary fw-bold py-3 shadow-sm hover:shadow-lg transition">
+                        Run Identity Verification Tests
+                    </button>
+                </div>
             </div>
         </form>
 
         <div id="result-container" class="result-section">
-            <div id="solution-output" class="result-card hidden"></div>
+            <div id="solution-output" class="p-4 border text-center text-muted rounded">
+                Enter two trigonometric expressions above and click "Run Identity Verification Tests".
+            </div>
         </div>
         
-        <!-- Reference Section -->
         <div class="reference-section">
-            <h4 class="text-xl font-bold text-center text-gray-700 mb-3">Function Syntax Reference</h4>
-            <div class="text-sm text-gray-600 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div>$\mathbf{\sin(x)}$: `sin(x)`</div>
-                <div>$\mathbf{\cos(x)}$: `cos(x)`</div>
-                <div>$\mathbf{\tan(x)}$: `tan(x)`</div>
-                <div>$\mathbf{x^n}$: `pow(x, n)`</div>
-                <div>$\mathbf{\csc(x)}$: `csc(x)`</div>
-                <div>$\mathbf{\sec(x)}$: `sec(x)`</div>
-                <div>$\mathbf{\cot(x)}$: `cot(x)`</div>
-                <div>$\mathbf{\pi}$: `PI`</div>
+            <h4 class="h6 fw-bold text-center text-secondary mb-3">Function Syntax Reference</h4>
+            <div class="small text-muted row text-center g-2">
+                <div class="col-6 col-md-3">$\mathbf{\sin(x)}$: `sin(x)`</div>
+                <div class="col-6 col-md-3">$\mathbf{\cos(x)}$: `cos(x)`</div>
+                <div class="col-6 col-md-3">$\mathbf{\tan(x)}$: `tan(x)`</div>
+                <div class="col-6 col-md-3">$\mathbf{x^n}$: `pow(x, n)`</div>
+                <div class="col-6 col-md-3">$\mathbf{\csc(x)}$: `csc(x)`</div>
+                <div class="col-6 col-md-3">$\mathbf{\sec(x)}$: `sec(x)`</div>
+                <div class="col-6 col-md-3">$\mathbf{\cot(x)}$: `cot(x)`</div>
+                <div class="col-6 col-md-3">$\mathbf{\pi}$: `PI`</div>
             </div>
         </div>
 
@@ -170,6 +177,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
     const TOLERANCE = 1e-9; // Tolerance for floating point comparisons
     const PI = Math.PI;
@@ -214,16 +222,14 @@
      */
     function evalExpression(expression, x) {
         try {
-            // Create a function dynamically to evaluate the expression
-            // This isolates the evaluation context, minimizing external scope exposure.
+            // Use Function constructor for safe execution context
             const evaluator = new Function('x', 'Math', `
-                // Import necessary Math functions into local scope for simplicity
+                // Local aliases for Math functions for cleaner expression execution
                 const sin = Math.sin;
                 const cos = Math.cos;
                 const tan = Math.tan;
                 const pow = Math.pow;
                 const PI = Math.PI;
-                // Add more Math functions here if needed
                 
                 return ${expression};
             `);
@@ -269,10 +275,10 @@
      */
     function formatValue(value) {
         if (isNaN(value)) {
-            return '<span class="text-red-500 font-bold">Undefined (NaN)</span>';
+            return '<span class="text-danger fw-bold">Undefined (NaN)</span>';
         }
         if (!isFinite(value)) {
-            return '<span class="text-red-500 font-bold">Infinity</span>';
+            return '<span class="text-danger fw-bold">Infinity</span>';
         }
         if (Math.abs(value) < TOLERANCE) {
             return '0';
@@ -285,15 +291,16 @@
      */
     function displayResult(isError, statusMessage, detailsHtml) {
         const outputDiv = document.getElementById('solution-output');
-        outputDiv.classList.remove('hidden', 'result-error', 'result-card');
-        
+        // Reset classes and style
+        outputDiv.className = '';
+        outputDiv.classList.add('p-4', 'rounded');
+
         if (isError) {
             outputDiv.classList.add('result-error');
-            outputDiv.classList.remove('result-card');
         } else {
             outputDiv.classList.add('result-card');
-            outputDiv.classList.remove('result-error');
         }
+        
         outputDiv.innerHTML = `
             <div class="status-text ${isError ? 'status-failure' : 'status-success'}">${statusMessage}</div>
             ${detailsHtml}
@@ -308,6 +315,14 @@
         const lhsExpression = document.getElementById('lhs-input').value.trim();
         const rhsExpression = document.getElementById('rhs-input').value.trim();
         const unit = document.getElementById('unit-selector').value;
+        const outputDiv = document.getElementById('solution-output');
+
+        if (lhsExpression === '' || rhsExpression === '') {
+            outputDiv.innerHTML = `<div class="p-4 border text-center text-muted rounded">
+                Please enter expressions for both the Left Hand Side and Right Hand Side.
+            </div>`;
+            return;
+        }
 
         // Clean expressions once
         const cleanLHS = cleanExpression(lhsExpression);
@@ -339,8 +354,7 @@
             let passed;
 
             if (isUndefined) {
-                // For identities involving division by zero, the results must both be undefined to pass.
-                // Since JavaScript handles 1/0 as Infinity, we check if they are both non-finite or both NaN.
+                // Check if they are both non-finite/NaN (e.g., both 1/0, both tan(PI/2))
                 passed = (isNaN(lhsResult) && isNaN(rhsResult)) || (!isFinite(lhsResult) && !isFinite(rhsResult));
                 
             } else {
@@ -353,7 +367,7 @@
             }
 
             testRows += `
-                <tr class="${passed ? 'text-gray-700' : 'bg-red-100 text-red-800 font-semibold'}">
+                <tr class="${passed ? '' : 'bg-danger-subtle text-danger fw-semibold'}">
                     <td>${angleDisplay}</td>
                     <td>${formatValue(lhsResult)}</td>
                     <td>${formatValue(rhsResult)}</td>
@@ -363,17 +377,17 @@
         }
         
         const detailsHtml = `
-            <div class="text-sm text-center text-gray-600 mb-4">
-                Tested across ${testAnglesRad.length} angles (in ${unit}). Results must match within $\\pm 10^{-9}$ tolerance.
+            <div class="small text-center text-muted mb-4">
+                Tested across **${testAnglesRad.length}** angles (in **${unit}**). Results must match within $\\pm 10^{-9}$ tolerance.
             </div>
-            <div class="overflow-x-auto">
-                <table class="test-table w-full text-sm rounded-lg overflow-hidden">
-                    <thead>
+            <div class="table-responsive">
+                <table class="test-table table table-sm w-100 mb-0">
+                    <thead class="bg-light">
                         <tr>
-                            <th class="w-1/4">Angle (x)</th>
-                            <th class="w-1/4">LHS Value</th>
-                            <th class="w-1/4">RHS Value</th>
-                            <th class="w-1/4">Result</th>
+                            <th class="w-25">Angle (x)</th>
+                            <th class="w-25">LHS Value</th>
+                            <th class="w-25">RHS Value</th>
+                            <th class="w-25">Result</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -401,7 +415,8 @@
      * Attempts to simplify a radian angle for display (e.g., PI/2).
      */
     function simplifyRadian(rad) {
-        const denominators = [1, 2, 3, 4, 6];
+        // Use common denominators for display simplification
+        const denominators = [1, 2, 3, 4, 6]; 
         for (const d of denominators) {
             const ratio = rad / (PI / d);
             const nearestInt = Math.round(ratio);
@@ -422,10 +437,6 @@
     // Attach handler to the form
     document.getElementById('identity-form').addEventListener('submit', handleIdentityVerification);
 
-    // Initial calculation for default values
-    window.onload = function() {
-        // Manually trigger the verification for the default sin(x)sec(x) = tan(x) identity
-        document.getElementById('identity-form').dispatchEvent(new Event('submit'));
-    };
+    // FIXED: Removed the window.onload auto-calculation.
 </script>
 {% endblock %}
