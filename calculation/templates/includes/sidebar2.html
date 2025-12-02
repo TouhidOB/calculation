@@ -1,0 +1,139 @@
+<div class="sidebar">
+    
+    <input id="searchInputMobile" type="text" placeholder="Search calculators..." class="form-control" onkeyup="filterCalculators()">
+
+    <h3 class="mt-3">All Calculators</h3>
+
+
+    {% with finance_list="budget_calculator net_worth dti savings_goal emergency_fund cash_flow spending_tracker inflation_calculator cost_of_living_comparison_calculator paycheck_calculator overtime_pay_calculator hourly_to_salary_converter salary_to_hourly_converter disposable_income_calculator discretionary_income_calculator financial_health_check_calculator bill_splitting_calculator yearly_expense_planner sinking_fund_calculator gift_tax_calculator allowance_calculator latte_factor_calculator expense_report_calculator personal_inflation_rate_calculator rainy_day_fund_calculator fire_calculator wage_garnishment_calculator severance_pay_calculator windfall_tax_calculator holiday_budget_calculator charitable_donation_tax_deduction_calculator moving_cost_calculator subscription_management_calculator personal_loan_comparison_calculator credit_utilization_calculator debt_consolidation_savings_calculator balance_transfer_calculator student_loan_affordability_calculator mortgage_affordability_calculator car_affordability_calculator rent_affordability_calculator no_spend_challenge_calculator cash_envelope_system_planner biweekly_budget_converter annual_budget_planner sp500_historical_return_simulator rule_of_72_calculator rule_of_114_144_calculator net_worth_projection_calculator" %}
+
+    <div class="dropdown mt-4 {% if request.resolver_match.url_name in finance_list %}show{% endif %}">
+        <h5 class="dropdown-toggle" id="financeDropdown" data-bs-toggle="dropdown" aria-expanded="{% if request.resolver_match.url_name in finance_list %}true{% else %}false{% endif %}" style="cursor: pointer;">Finance Calculators</h5>
+
+        <ul class="dropdown-menu {% if request.resolver_match.url_name in finance_list %}show{% endif %}" aria-labelledby="financeDropdown">
+                
+            <li><a href="{% url 'budget_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'budget_calculator' %}active{% endif %}">Budget Calculator</a></li>
+            <li><a href="{% url 'net_worth' %}" class="dropdown-item {% if request.resolver_match.url_name == 'net_worth' %}active{% endif %}">Net Worth Calculator</a></li>
+            <li><a href="{% url 'dti' %}" class="dropdown-item {% if request.resolver_match.url_name == 'dti' %}active{% endif %}">Debt To Income Ratio Calculator</a></li>
+            <li><a href="{% url 'savings_goal' %}" class="dropdown-item {% if request.resolver_match.url_name == 'savings_goal' %}active{% endif %}">Savings Goal Calculator</a></li>
+            <li><a href="{% url 'emergency_fund' %}" class="dropdown-item {% if request.resolver_match.url_name == 'emergency_fund' %}active{% endif %}">Emergency Fund Calculator</a></li>
+            <li><a href="{% url 'cash_flow' %}" class="dropdown-item {% if request.resolver_match.url_name == 'cash_flow' %}active{% endif %}">Cash Flow Calculator</a></li>
+            <li><a href="{% url 'spending_tracker' %}" class="dropdown-item {% if request.resolver_match.url_name == 'spending_tracker' %}active{% endif %}">Spending Tracker Calculator</a></li>
+            <li><a href="{% url 'inflation_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'inflation_calculator' %}active{% endif %}">Inflation Calculator</a></li>
+            <li><a href="{% url 'cost_of_living_comparison_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'cost_of_living_comparison_calculator' %}active{% endif %}">Cost Of Living Comparison Calculator</a></li>
+            <li><a href="{% url 'paycheck_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'paycheck_calculator' %}active{% endif %}">Paycheck Calculator</a></li>
+            <li><a href="{% url 'overtime_pay_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'overtime_pay_calculator' %}active{% endif %}">Overtime Pay Calculator</a></li>
+            <li><a href="{% url 'hourly_to_salary_converter' %}" class="dropdown-item {% if request.resolver_match.url_name == 'hourly_to_salary_converter' %}active{% endif %}">Hourly to Salary Calculator</a></li>
+            <li><a href="{% url 'salary_to_hourly_converter' %}" class="dropdown-item {% if request.resolver_match.url_name == 'salary_to_hourly_converter' %}active{% endif %}">Salary to Hourly Calculator</a></li>
+            <li><a href="{% url 'disposable_income_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'disposable_income_calculator' %}active{% endif %}">Disposable Income Calculator</a></li>
+            <li><a href="{% url 'discretionary_income_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'discretionary_income_calculator' %}active{% endif %}">Discretionary Income Calculator</a></li>
+            <li><a href="{% url 'financial_health_check_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'financial_health_check_calculator' %}active{% endif %}">Financial Health Check Calculator</a></li>
+            <li><a href="{% url 'bill_splitting_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'bill_splitting_calculator' %}active{% endif %}">Bill Splitting Calculator</a></li>
+            <li><a href="{% url 'yearly_expense_planner' %}" class="dropdown-item {% if request.resolver_match.url_name == 'yearly_expense_planner' %}active{% endif %}">Yearly Expense Planner Calculator</a></li>
+            <li><a href="{% url 'sinking_fund_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'sinking_fund_calculator' %}active{% endif %}">Sinking Fund Calculator</a></li>
+            <li><a href="{% url 'gift_tax_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'gift_tax_calculator' %}active{% endif %}">Gift Tax Calculator</a></li>
+            <li><a href="{% url 'allowance_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'allowance_calculator' %}active{% endif %}">Allowance Calculator</a></li>
+            <li><a href="{% url 'latte_factor_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'latte_factor_calculator' %}active{% endif %}">Latte Factor Calculator</a></li>
+            <li><a href="{% url 'expense_report_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'expense_report_calculator' %}active{% endif %}">Expense Report Calculator</a></li>
+            <li><a href="{% url 'personal_inflation_rate_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'personal_inflation_rate_calculator' %}active{% endif %}">Personal Inflation Rate Calculator</a></li>
+            <li><a href="{% url 'rainy_day_fund_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'rainy_day_fund_calculator' %}active{% endif %}">Rainy Day Fund Calculator</a></li>
+            <li><a href="{% url 'fire_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'fire_calculator' %}active{% endif %}">Fire Calculator</a></li>
+            <li><a href="{% url 'wage_garnishment_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'wage_garnishment_calculator' %}active{% endif %}">Wage Garnishment Calculator</a></li>
+            <li><a href="{% url 'severance_pay_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'severance_pay_calculator' %}active{% endif %}">Severance Pay Calculator</a></li>
+            <li><a href="{% url 'windfall_tax_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'windfall_tax_calculator' %}active{% endif %}">Windfall Tax Calculator</a></li>
+            <li><a href="{% url 'holiday_budget_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'holiday_budget_calculator' %}active{% endif %}">Holiday Budget Calculator</a></li>
+            <li><a href="{% url 'charitable_donation_tax_deduction_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'charitable_donation_tax_deduction_calculator' %}active{% endif %}">Charitable Donation Tax Deduction Calculator</a></li>
+            <li><a href="{% url 'moving_cost_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'moving_cost_calculator' %}active{% endif %}">Moving Cost Calculator</a></li>
+            <li><a href="{% url 'subscription_management_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'subscription_management_calculator' %}active{% endif %}">Subscription Management Calculator</a></li>
+            <li><a href="{% url 'personal_loan_comparison_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'personal_loan_comparison_calculator' %}active{% endif %}">Personal Loan Comparison Calculator</a></li>
+            <li><a href="{% url 'credit_utilization_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'credit_utilization_calculator' %}active{% endif %}">Credit Utilization Calculator</a></li>
+            <li><a href="{% url 'debt_consolidation_savings_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'debt_consolidation_savings_calculator' %}active{% endif %}">Debt Consolidation Savings Calculator</a></li>
+            <li><a href="{% url 'balance_transfer_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'balance_transfer_calculator' %}active{% endif %}">Balance Transfer Calculator</a></li>
+            <li><a href="{% url 'student_loan_affordability_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'student_loan_affordability_calculator' %}active{% endif %}">Student Loan Affordability Calculator</a></li>
+            <li><a href="{% url 'mortgage_affordability_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'mortgage_affordability_calculator' %}active{% endif %}">Mortgage Affordability Calculator</a></li>
+            <li><a href="{% url 'car_affordability_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'car_affordability_calculator' %}active{% endif %}">Car Affordability Calculator</a></li>
+            <li><a href="{% url 'rent_affordability_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'rent_affordability_calculator' %}active{% endif %}">Rent Affordability Calculator</a></li>
+            <li><a href="{% url 'no_spend_challenge_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'no_spend_challenge_calculator' %}active{% endif %}">No Spend Challenge Calculator</a></li>
+            <li><a href="{% url 'cash_envelope_system_planner' %}" class="dropdown-item {% if request.resolver_match.url_name == 'cash_envelope_system_planner' %}active{% endif %}">Cash Envelope System Planner Calculator</a></li>
+            <li><a href="{% url 'biweekly_budget_converter' %}" class="dropdown-item {% if request.resolver_match.url_name == 'biweekly_budget_converter' %}active{% endif %}">Biweekly Budget Converter Calculator</a></li>
+            <li><a href="{% url 'annual_budget_planner' %}" class="dropdown-item {% if request.resolver_match.url_name == 'annual_budget_planner' %}active{% endif %}">Annual Budget Planner Calculator</a></li>
+            <li><a href="{% url 'sp500_historical_return_simulator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'sp500_historical_return_simulator' %}active{% endif %}">sp500 Historical Return Simulator</a></li>
+            <li><a href="{% url 'rule_of_72_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'rule_of_72_calculator' %}active{% endif %}">Rule of 72 Calculator</a></li>
+            <li><a href="{% url 'rule_of_114_144_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'rule_of_114_144_calculator' %}active{% endif %}">Rule of 114 144 Calculator</a></li>
+            <li><a href="{% url 'net_worth_projection_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'net_worth_projection_calculator' %}active{% endif %}">Net Worth Projection Calculator</a></li>
+        </ul>
+    </div>
+    {% endwith %}
+
+
+
+    {% with health_list="bmi basal_metabolic_rate_calculator total_daily_energy_expenditure calorie_deficit_calculator calorie_surplus_calculator macronutrient_calculator body_fat_calculator_navy one_rep_max_calculator target_heart_rate_calculator vo2_max_calculator running_pace_calculator blood_alcohol_content_calculator water_intake_calculator protein_intake_calculator fiber_intake_calculator sleep_cycle_calculator due_date_calculator pregnancy_weight_gain_calculator body_surface_area_calculator lean_body_mass_calculator waist_to_hip_ratio_calculator heart_rate_recovery_calculator mets_calculator calorie_burn_calculator cycling_pwr_calculator swimming_pace_calculator rep_max_percentage_converter gym_plate_calculator ideal_weight_calculator carb_cycling_calculator if_window_planner creatine_loading_calculator caffeine_half_life_calculator egfr_calculator basal_insulin_calculator child_dose_calculator apgar_score_calculator psa_density_calculator a1c_converter fertility_ovulation_calculator child_height_predictor strength_standard_calculator fitness_age_calculator race_time_predictor race_pace_planner hill_grade_calculator treadmill_pace_converter swimming_interval_calculator crossfit_pacing_calculator" %}
+
+    <div class="dropdown mt-4 {% if request.resolver_match.url_name in health_list %}show{% endif %}">
+        <h5 class="dropdown-toggle"
+            id="healthDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="{% if request.resolver_match.url_name in health_list %}true{% else %}false{% endif %}"
+            style="cursor: pointer;">
+            Health & Fitness Calculators
+        </h5>
+
+        <ul class="dropdown-menu {% if request.resolver_match.url_name in health_list %}show{% endif %}"
+            aria-labelledby="healthDropdown">
+
+            <li><a href="{% url 'bmi' %}" class="dropdown-item {% if request.resolver_match.url_name == 'bmi' %}active{% endif %}">BMI Calculator</a></li>
+            <li><a href="{% url 'basal_metabolic_rate_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'basal_metabolic_rate_calculator' %}active{% endif %}">Basal Metabolic Rate Calculator</a></li>
+            <li><a href="{% url 'total_daily_energy_expenditure' %}" class="dropdown-item {% if request.resolver_match.url_name == 'total_daily_energy_energy_expenditure' %}active{% endif %}">Total Daily Energy Expenditure</a></li>
+            <li><a href="{% url 'calorie_deficit_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'calorie_deficit_calculator' %}active{% endif %}">Calorie Deficit Calculator</a></li>
+            <li><a href="{% url 'calorie_surplus_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'calorie_surplus_calculator' %}active{% endif %}">Calorie Surplus Calculator</a></li>
+            <li><a href="{% url 'macronutrient_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'macronutrient_calculator' %}active{% endif %}">Macronutrient Calculator</a></li>
+            <li><a href="{% url 'body_fat_calculator_navy' %}" class="dropdown-item {% if request.resolver_match.url_name == 'body_fat_calculator_navy' %}active{% endif %}">Body Fat Calculator (Navy)</a></li>
+            <li><a href="{% url 'one_rep_max_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'one_rep_max_calculator' %}active{% endif %}">One Rep Max Calculator</a></li>
+            <li><a href="{% url 'target_heart_rate_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'target_heart_rate_calculator' %}active{% endif %}">Target Heart Rate Calculator</a></li>
+            <li><a href="{% url 'vo2_max_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'vo2_max_calculator' %}active{% endif %}">VO2 Max Calculator</a></li>
+            <li><a href="{% url 'running_pace_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'running_pace_calculator' %}active{% endif %}">Running Pace Calculator</a></li>
+            <li><a href="{% url 'blood_alcohol_content_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'blood_alcohol_content_calculator' %}active{% endif %}">Blood Alcohol Content Calculator</a></li>
+            <li><a href="{% url 'water_intake_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'water_intake_calculator' %}active{% endif %}">Water Intake Calculator</a></li>
+            <li><a href="{% url 'protein_intake_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'protein_intake_calculator' %}active{% endif %}">Protein Intake Calculator</a></li>
+            <li><a href="{% url 'fiber_intake_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'fiber_intake_calculator' %}active{% endif %}">Fiber Intake Calculator</a></li>
+            <li><a href="{% url 'sleep_cycle_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'sleep_cycle_calculator' %}active{% endif %}">Sleep Cycle Calculator</a></li>
+            <li><a href="{% url 'due_date_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'due_date_calculator' %}active{% endif %}">Due Date Calculator</a></li>
+            <li><a href="{% url 'pregnancy_weight_gain_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'pregnancy_weight_gain_calculator' %}active{% endif %}">Pregnancy Weight Gain Calculator</a></li>
+            <li><a href="{% url 'body_surface_area_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'body_surface_area_calculator' %}active{% endif %}">Body Surface Area Calculator</a></li>
+            <li><a href="{% url 'lean_body_mass_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'lean_body_mass_calculator' %}active{% endif %}">Lean Body Mass Calculator</a></li>
+            <li><a href="{% url 'waist_to_hip_ratio_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'waist_to_hip_ratio_calculator' %}active{% endif %}">Waist To Hip Ratio Calculator</a></li>
+            <li><a href="{% url 'heart_rate_recovery_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'heart_rate_recovery_calculator' %}active{% endif %}">Heart Rate Recovery Calculator</a></li>
+            <li><a href="{% url 'mets_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'mets_calculator' %}active{% endif %}">Metabolic Equivalents Calculator</a></li>
+            <li><a href="{% url 'calorie_burn_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'calorie_burn_calculator' %}active{% endif %}">Calorie Burn Calculator</a></li>
+            <li><a href="{% url 'cycling_pwr_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'cycling_pwr_calculator' %}active{% endif %}">Cycling PWR Calculator</a></li>
+            <li><a href="{% url 'swimming_pace_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'swimming_pace_calculator' %}active{% endif %}">Swimming Pace Calculator</a></li>
+            <li><a href="{% url 'rep_max_percentage_converter' %}" class="dropdown-item {% if request.resolver_match.url_name == 'rep_max_percentage_converter' %}active{% endif %}">Rep Max Percentage Converter</a></li>
+            <li><a href="{% url 'gym_plate_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'gym_plate_calculator' %}active{% endif %}">Gym Plate Converter</a></li>
+            <li><a href="{% url 'ideal_weight_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'ideal_weight_calculator' %}active{% endif %}">Ideal Weight Calculator</a></li>
+            <li><a href="{% url 'carb_cycling_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'carb_cycling_calculator' %}active{% endif %}">Carb Cycling Calculator</a></li>
+            <li><a href="{% url 'if_window_planner' %}" class="dropdown-item {% if request.resolver_match.url_name == 'if_window_planner' %}active{% endif %}">Intermittent Fasting Window Planner</a></li>
+            <li><a href="{% url 'creatine_loading_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'creatine_loading_calculator' %}active{% endif %}">Creatine Loading Calculator</a></li>
+            <li><a href="{% url 'caffeine_half_life_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'caffeine_half_life_calculator' %}active{% endif %}">Caffeine Half Life Calculator</a></li>
+            <li><a href="{% url 'egfr_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'egfr_calculator' %}active{% endif %}">Glomerular Filtration Rate Calculator</a></li>
+            <li><a href="{% url 'basal_insulin_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'basal_insulin_calculator' %}active{% endif %}">Basal Insulin Calculator</a></li>
+            <li><a href="{% url 'child_dose_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'child_dose_calculator' %}active{% endif %}">Child Dose Calculator</a></li>
+            <li><a href="{% url 'apgar_score_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'apgar_score_calculator' %}active{% endif %}">Apgar Score Calculator</a></li>
+            <li><a href="{% url 'psa_density_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'psa_density_calculator' %}active{% endif %}">PSA Density Calculator</a></li>
+            <li><a href="{% url 'a1c_converter' %}" class="dropdown-item {% if request.resolver_match.url_name == 'a1c_converter' %}active{% endif %}">A1C Converter</a></li>
+            <li><a href="{% url 'fertility_ovulation_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'fertility_ovulation_calculator' %}active{% endif %}">Fertility Ovulation Calculator</a></li>
+            <li><a href="{% url 'child_height_predictor' %}" class="dropdown-item {% if request.resolver_match.url_name == 'child_height_predictor' %}active{% endif %}">Child Height Predictor Calculator</a></li>
+            <li><a href="{% url 'strength_standard_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'strength_standard_calculator' %}active{% endif %}">Strength Standard Calculator</a></li>
+            <li><a href="{% url 'fitness_age_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'fitness_age_calculator' %}active{% endif %}">Fitness Age Calculator</a></li>
+            <li><a href="{% url 'race_time_predictor' %}" class="dropdown-item {% if request.resolver_match.url_name == 'race_time_predictor' %}active{% endif %}">Race Time Predictor</a></li>
+            <li><a href="{% url 'race_pace_planner' %}" class="dropdown-item {% if request.resolver_match.url_name == 'race_pace_planner' %}active{% endif %}">Race Pace Planner</a></li>
+            <li><a href="{% url 'hill_grade_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'hill_grade_calculator' %}active{% endif %}">Hill Grade Calculator</a></li>
+            <li><a href="{% url 'treadmill_pace_converter' %}" class="dropdown-item {% if request.resolver_match.url_name == 'treadmill_pace_converter' %}active{% endif %}">Treadmill Pace Converter</a></li>
+            <li><a href="{% url 'swimming_interval_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'swimming_interval_calculator' %}active{% endif %}">Swimming Interval Calculator</a></li>
+            <li><a href="{% url 'crossfit_pacing_calculator' %}" class="dropdown-item {% if request.resolver_match.url_name == 'crossfit_pacing_calculator' %}active{% endif %}">Crossfit Pacing Calculator</a></li>
+
+        </ul>
+    </div>
+
+    {% endwith %}
+
+</div>

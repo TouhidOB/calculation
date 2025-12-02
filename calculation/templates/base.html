@@ -34,7 +34,7 @@
 
         /* Sidebar Desktop */
         .sidebar {
-            width: 260px;
+            width: 280px;
             background: #f5f5f5;
             border-right: 1px solid #ddd;
             padding: 20px;
@@ -46,14 +46,28 @@
 
         .sidebar a {
             display: block;
-            padding: 7px 0;
+            padding: 2px 5px;
             color: #333;
             text-decoration: none;
         }
-        .sidebar a:hover, .sidebar a.active {
-            font-weight: bold;
-            color: #007bff;
+        .dropdown-menu{
+            padding: 0 5px;
         }
+        .dropdown-menu .dropdown-item.active{
+            padding: 5px 5px;
+            border-radius: 10px;
+        }
+
+        .sidebar a:hover{
+            font-weight: bold;
+            background-color: #696d71;
+            color: #ffffff;
+        }
+        .sidebar a.active {
+            font-weight: bold;
+            background-color: #007bff;
+            color: #ffffff;
+         }
         
         .content { flex: 1; padding: 20px; }
         
@@ -155,6 +169,25 @@ function filterCalculators() {
         link.style.display = text.includes(input) ? "block" : "none";
     });
 }
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const sidebar = document.getElementById("sidebar");
+
+    // Restore saved scroll position
+    const savedPosition = localStorage.getItem("sidebar-scroll");
+    if (savedPosition) {
+        sidebar.scrollTop = savedPosition;
+    }
+
+    // Save scroll position on any link click inside sidebar
+    sidebar.querySelectorAll("a").forEach(link => {
+        link.addEventListener("click", () => {
+            localStorage.setItem("sidebar-scroll", sidebar.scrollTop);
+        });
+    });
+});
 </script>
 
 {% block extra_js %}
