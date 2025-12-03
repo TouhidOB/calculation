@@ -22,6 +22,7 @@ urlpatterns = [
     path('math/', include('basic_calculator.urls')),
     path('finance/', include('finance.urls')),
     path('health/', include('health.urls')),
+    path('business/', include('business_investment.urls')),
 ]
 
 

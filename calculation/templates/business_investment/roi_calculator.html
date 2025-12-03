@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Return on Investment (ROI) Calculator{% endblock %}
+
+{% block meta_description %}Calculate your investment's ROI, Annualized ROI (CAGR), and Net Profit, including options for holding period and total investment costs/expense ratios.{% endblock %}
+
+{% block meta_keywords %}ROI calculator, annualized return, CAGR, net profit, investment calculator, finance, expense ratio{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+
+    .holding-period-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    #roi-chart {
+        max-width: 300px !important;   /* controls width */
+        max-height: 300px !important;  /* controls height */
+        margin: 0 auto;
+        display: block;
+    }
+
+    /* Customizing the text color for positive/negative returns */
+    .text-positive { color: #198754; font-weight: bold; }
+    .text-negative { color: #dc3545; font-weight: bold; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">📈 Advanced Return on Investment (ROI) Calculator</h1>
+    <p class="small-muted">Calculate your **Simple ROI**, **Annualized ROI (CAGR)**, and **Net Profit** by inputting investment figures, holding period, and estimated costs.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="roi-form">
+            <h5 class="section-title">Step 1: Investment Values</h5>
+
+            <div class="input-group my-3">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" id="initial_investment" placeholder="Initial Investment (e.g., 10000)" min="0" step="0.01" required>
+            </div>
+
+            <div class="input-group my-3">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" id="final_value" placeholder="Final Value/Proceeds (e.g., 12500)" min="0" step="0.01" required>
+            </div>
+            
+            <h5 class="section-title mt-4">Step 2: Investment Costs & Holding Period</h5>
+
+            <div class="input-group my-3">
+                <input type="number" class="form-control" id="total_costs" placeholder="Total Costs (Fees, Taxes, Expenses)" min="0" step="0.01" value="0">
+                <span class="input-group-text">$</span>
+            </div>
+
+            <label class="form-label d-block mt-3">Holding Period</label>
+            <div class="row g-2">
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="holding_years" placeholder="Years (e.g., 3)" min="0" required value="1">
+                        <span class="input-group-text">Years</span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="holding_months" placeholder="Months (0-11)" min="0" max="11" value="0">
+                        <span class="input-group-text">Months</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary mt-4" type="submit">Calculate ROI</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="roi-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Performance Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="roi-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="roi-body"></tbody>
+        </table>
+
+        <canvas id="roi-chart" class="d-none"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let roiChart = null;
+
+    document.getElementById('roi-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        // Use initial_investment.value || 0 to safely get the value, then parse.
+        const initial_investment = parseFloat(document.getElementById('initial_investment').value || 0);
+        const final_value = parseFloat(document.getElementById('final_value').value || 0);
+        const total_costs = parseFloat(document.getElementById('total_costs').value || 0);
+        const holding_years = parseFloat(document.getElementById('holding_years').value || 0);
+        const holding_months = parseFloat(document.getElementById('holding_months').value || 0);
+
+        // Basic validation: Initial Investment must be greater than zero for ROI calculation
+        if (initial_investment <= 0) {
+            displayError("Initial Investment must be greater than zero to calculate a percentage return.");
+            return;
+        }
+
+        // 2. Calculate Intermediate Values
+        const net_profit = final_value - initial_investment - total_costs;
+        const total_years = holding_years + (holding_months / 12);
+        const net_investment = initial_investment; // The principal amount used as the denominator
+        
+        // Simple ROI calculation: (Net Profit / Initial Investment) * 100
+        let simple_roi = (net_profit / net_investment) * 100;
+        let annualized_roi = 0;
+
+        // 3. Calculate Annualized ROI (CAGR)
+        if (total_years > 0) {
+            const net_final_value = final_value - total_costs;
+            const ratio = net_final_value / initial_investment;
+
+            if (ratio < 0) {
+                // Total loss (ratio is negative): We approximate Annualized ROI.
+                // It's technically complex, but using (Simple ROI) / Years is a common approximation for loss.
+                annualized_roi = simple_roi / total_years;
+            } else if (ratio === 0) {
+                // Lost all principal and profit/costs are nil. A total -100% loss.
+                annualized_roi = -100; 
+            } else {
+                // CAGR formula: ((Net Final Value / Initial Investment) ^ (1/N)) - 1
+                annualized_roi = (Math.pow(ratio, 1 / total_years) - 1) * 100;
+            }
+        } else {
+            // Holding period is effectively zero (e.g., 0 years and 0 months)
+            annualized_roi = simple_roi;
+        }
+
+        // 4. Formatting Results
+        const net_profit_formatted = net_profit.toFixed(2);
+        const simple_roi_formatted = simple_roi.toFixed(2);
+        const annualized_roi_formatted = annualized_roi.toFixed(2);
+
+        // Determine colors for results
+        const profit_class = net_profit >= 0 ? 'text-positive' : 'text-negative';
+        const roi_class = simple_roi >= 0 ? 'text-positive' : 'text-negative';
+        const cagr_class = annualized_roi >= 0 ? 'text-positive' : 'text-negative';
+
+        // 5. Update Result Display (Alert Box)
+        const res = document.getElementById('roi-result');
+        res.classList.remove('d-none', 'alert-danger', 'alert-success', 'alert-warning');
+        res.classList.add(net_profit >= 0 ? 'alert-success' : 'alert-danger');
+        res.innerHTML = `
+**Net Profit/Loss:** <span class="${profit_class}" style="font-size:1.5rem;">$${net_profit_formatted}</span>
+**Simple ROI:** <span class="${roi_class}">${simple_roi_formatted}%</span>
+**Annualized ROI (CAGR):** <span class="${cagr_class}">${annualized_roi_formatted}%</span>
+`;
+
+        // 6. Update Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('roi-table').classList.remove('d-none');
+        const tableBody = document.getElementById('roi-body');
+        tableBody.innerHTML = `
+        <tr><td>Initial Investment</td><td>$${initial_investment.toFixed(2)}</td></tr>
+        <tr><td>Final Value/Proceeds</td><td>$${final_value.toFixed(2)}</td></tr>
+        <tr><td>Total Investment Costs</td><td>$${total_costs.toFixed(2)}</td></tr>
+        <tr><td>**Net Profit/Loss**</td><td><span class="${profit_class}">$${net_profit_formatted}</span></td></tr>
+        <tr><td>**Simple ROI**</td><td><span class="${roi_class}">${simple_roi_formatted}%</span></td></tr>
+        <tr><td>**Annualized ROI (CAGR)**</td><td><span class="${cagr_class}">${annualized_roi_formatted}%</span></td></tr>
+        `;
+
+        // 7. Update Chart
+        const ctx = document.getElementById('roi-chart').getContext('2d');
+        document.getElementById('roi-chart').classList.remove('d-none');
+        if (roiChart) roiChart.destroy();
+        
+        let chartLabels = ['Initial Investment', 'Total Costs'];
+        let chartData = [initial_investment.toFixed(2), total_costs.toFixed(2)];
+        let chartColors = ['#36a2eb', '#ff9f40']; // Blue for principal, Orange for costs
+        let chartTitle = 'Investment Component Breakdown';
+
+        if (net_profit >= 0) {
+            // If profitable, show Initial Investment + Costs + Profit
+            chartLabels.push('Net Profit');
+            chartData.push(net_profit.toFixed(2));
+            chartColors.push('#4bc0c0'); // Greenish for profit
+            chartTitle = 'Final Value Components';
+        } else {
+            // If loss, show Initial Investment vs. Final Value (excluding costs from the pie)
+            chartLabels = ['Final Value', 'Money Lost'];
+            // Money Lost = Initial + Costs - Final Value (absolute loss)
+            const money_lost = initial_investment + total_costs - final_value;
+            chartData = [final_value.toFixed(2), money_lost.toFixed(2)];
+            chartColors = ['#36a2eb', '#dc3545']; // Blue for what's left, Red for loss
+            chartTitle = 'Initial Investment vs. Final Result';
+        }
+        
+        roiChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    data: chartData,
+                    backgroundColor: chartColors,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: chartTitle }
+                }
+            }
+        });
+    });
+
+    function displayError(message) {
+        const res = document.getElementById('roi-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        // Hide other results
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('roi-table').classList.add('d-none');
+        document.getElementById('roi-chart').classList.add('d-none');
+        if (roiChart) roiChart.destroy();
+    }
+</script>
+
+{% endblock %}

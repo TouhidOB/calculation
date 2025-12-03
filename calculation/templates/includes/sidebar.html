@@ -1,4 +1,4 @@
-<div class="sidebar" id="sidebar">
+<div class="sidebar pb-5" id="sidebar">
     <input id="searchInputMobile" type="text" placeholder="Search calculators..." class="form-control" onkeyup="filterCalculators()">
 
     <h3 class="mt-3">All Calculators</h3>
@@ -159,5 +159,14 @@
     <a href="{% url 'truth_table_generator' %}" class="{% if request.resolver_match.url_name == 'truth_table_generator' %}active{% endif %}">Truth Table Generator</a>
     <a href="{% url 'boolean_algebra_calculator' %}" class="{% if request.resolver_match.url_name == 'boolean_algebra_calculator' %}active{% endif %}">Boolean Algebra Generator</a>
     
+    
+    
+    <h5 class="mt-5">Business And Investment Calculators</h5>
+    <a href="{% url 'roi_calculator' %}" class="{% if request.resolver_match.url_name == 'roi_calculator' %}active{% endif %}">Return On Investment Calculator</a>
+    <a href="{% url 'compound_interest_calculator' %}" class="{% if request.resolver_match.url_name == 'compound_interest_calculator' %}active{% endif %}">Compound Interest Calculator</a>
+    <a href="{% url 'net_present_value_calculator' %}" class="{% if request.resolver_match.url_name == 'net_present_value_calculator' %}active{% endif %}">Net Present Value Calculator (NPV)</a>
+    <a href="{% url 'internal_rate_of_return_calculator' %}" class="{% if request.resolver_match.url_name == 'internal_rate_of_return_calculator' %}active{% endif %}">Internal Rate of Return Calculator (IRR)</a>
+    <a href="{% url 'payback_period_calculator' %}" class="{% if request.resolver_match.url_name == 'payback_period_calculator' %}active{% endif %}">Payback Period Calculator</a>
+    <a href="{% url 'break_even_analysis_calculator' %}" class="{% if request.resolver_match.url_name == 'break_even_analysis_calculator' %}active{% endif %}">Break-Even Analysis Calculator</a>
     
 </div>

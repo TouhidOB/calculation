@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Internal Rate of Return (IRR) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Internal Rate of Return (IRR) for an investment project and determine if it exceeds the required hurdle rate.{% endblock %}
+
+{% block meta_keywords %}IRR calculator, internal rate of return, capital budgeting, discount rate, investment decision, hurdle rate{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables */
+    .calc-card {
+        transition: box-shadow 0.3s ease;
+    }
+
+    .calc-card:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-decision-accept { 
+        color: var(--bs-success); 
+        font-weight: bold; 
+        font-size: 1.75rem; 
+    }
+    
+    .text-decision-reject { 
+        color: var(--bs-danger); 
+        font-weight: bold; 
+        font-size: 1.75rem; 
+    }
+    
+    .text-decision-neutral { 
+        color: var(--bs-info); 
+        font-weight: bold; 
+        font-size: 1.75rem; 
+    }
+
+    .input-group-text-year {
+        min-width: 140px; 
+        justify-content: left;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">🎯 Internal Rate of Return (IRR) Calculator</h1>
+        <p class="lead text-muted">Find the **Internal Rate of Return (IRR)**, the effective rate of return an investment yields. Project is accepted if IRR > Hurdle Rate.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg calc-card">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i> IRR Parameters</h4>
+                </div>
+                <div class="card-body">
+
+                    <form id="irr-form">
+                        
+                        <h5 class="text-primary border-bottom pb-2 mb-3">Step 1: Core Inputs</h5>
+
+                        <div class="mb-3">
+                            <label for="initial_investment" class="form-label fw-bold">Initial Investment ($) (Year 0 Outflow)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-danger">-$</span>
+                                <input type="number" class="form-control" id="initial_investment" placeholder="e.g., 50000" min="0" step="1" required>
+                            </div>
+                            <p class="form-text text-muted mt-1">Note: Enter the **positive** amount; the calculator treats this as a Year 0 negative cash flow.</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="hurdle_rate" class="form-label fw-bold">Required Rate of Return (Hurdle Rate) (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="hurdle_rate" placeholder="e.g., 10" min="0" max="100" step="0.01" required>
+                                <span class="input-group-text bg-light border-start-0 text-dark">%</span>
+                            </div>
+                            <p class="form-text text-muted mt-1">Used to compare against the calculated IRR for the final decision.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="num_periods" class="form-label fw-bold">Number of Cash Flow Periods (Years)</label>
+                            <select class="form-select" id="num_periods" required>
+                                <option value="1">1 Year</option>
+                                <option value="2">2 Years</option>
+                                <option value="3" selected>3 Years</option>
+                                <option value="4">4 Years</option>
+                                <option value="5">5 Years</option>
+                                <option value="6">6 Years</option>
+                                <option value="7">7 Years</option>
+                                <option value="8">8 Years</option>
+                                <option value="9">9 Years</option>
+                                <option value="10">10 Years</option>
+                            </select>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">Step 2: Annual Cash Flows (Inflows)</h5>
+
+                        <div id="cash-flow-inputs">
+                            </div>
+
+                        <button class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" type="submit">
+                            <i class="bi bi-percent me-2"></i> Calculate Internal Rate of Return (IRR)
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-lg mt-5 d-none" id="results-card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-check-circle-fill me-2"></i> IRR Decision</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert p-4 result-alert" id="irr-result"></div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4 d-none" id="table-title">Input Cash Flow Summary</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mt-2 d-none" id="irr-table">
+                            <thead>
+                                <tr class="table-light">
+                                    <th>Year</th>
+                                    <th>Cash Flow ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="irr-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- UI Logic: Dynamically create cash flow inputs ---
+
+    function createCashFlowInputs(numPeriods) {
+        const container = document.getElementById('cash-flow-inputs');
+        container.innerHTML = '';
+        for (let i = 1; i <= numPeriods; i++) {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-3';
+            div.innerHTML = `
+                <span class="input-group-text bg-light text-dark input-group-text-year">Year ${i} Cash Flow</span>
+                <input type="number" class="form-control cash-flow-input" id="cf_${i}" 
+                    placeholder="e.g., 15000" step="0.01" required value="0">
+                <span class="input-group-text">$</span>
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    // Event listener for number of periods change
+    document.getElementById('num_periods').addEventListener('change', function() {
+        createCashFlowInputs(parseInt(this.value));
+    });
+    
+    // Run once on load for initial state (reads the selected default)
+    window.onload = function() {
+        const initialPeriods = parseInt(document.getElementById('num_periods').value);
+        createCashFlowInputs(initialPeriods);
+    };
+
+    // --- IRR Calculation Core Function (Iterative Solver) ---
+
+    /**
+     * Calculates the Net Present Value (NPV) for a given rate and cash flow series.
+     * @param {number} rate - The discount rate (as a decimal).
+     * @param {number[]} cashFlows - Array of cash flows, including Year 0 (initial investment as negative).
+     * @returns {number} The calculated NPV.
+     */
+    function calculateNPV(rate, cashFlows) {
+        let npv = 0;
+        for (let t = 0; t < cashFlows.length; t++) {
+            // NPV = Sum( CFt / (1 + rate)^t )
+            // Handle rate = -1 (where 1+rate is 0) by returning a very large number (or infinity) to guide the solver away.
+            if (rate === -1 && t > 0) return Infinity; 
+            npv += cashFlows[t] / Math.pow((1 + rate), t);
+        }
+        return npv;
+    }
+
+    /**
+     * Iteratively calculates the Internal Rate of Return (IRR) using the Secant Method.
+     * @param {number[]} cashFlows - Array of cash flows, starting with Year 0 (negative initial investment).
+     * @returns {number | null} The IRR as a decimal, or null if no solution is found/convergence fails.
+     */
+    function calculateIRR(cashFlows) {
+        // 1. Initial Checks
+        const initialOutflow = cashFlows[0];
+        const futureInflows = cashFlows.slice(1).some(cf => cf > 0);
+
+        if (initialOutflow >= 0 || !futureInflows) {
+            // IRR is undefined if there's no initial investment or no future return
+            return null; 
+        }
+
+        // 2. Setup Iteration
+        const MAX_ITERATIONS = 100;
+        const PRECISION = 1e-7;
+
+        // Initial guesses (Secant Method)
+        let rate1 = 0.1; // 10%
+        let rate2 = 0.05; // 5%
+
+        let resultRate = null;
+
+        // 3. Iteration Loop
+        for (let i = 0; i < MAX_ITERATIONS; i++) {
+            const npv1 = calculateNPV(rate1, cashFlows);
+            const npv2 = calculateNPV(rate2, cashFlows);
+
+            // Secant Method step: next rate = rate2 - NPV2 * (rate2 - rate1) / (NPV2 - NPV1)
+            let nextRate;
+            if (Math.abs(npv2 - npv1) < PRECISION) {
+                // Prevent division by zero
+                break;
+            }
+            nextRate = rate2 - npv2 * ((rate2 - rate1) / (npv2 - npv1));
+
+            // Check for convergence
+            if (Math.abs(nextRate - rate2) < PRECISION) {
+                resultRate = nextRate;
+                break;
+            }
+
+            // Shift rates for next iteration
+            rate1 = rate2;
+            rate2 = nextRate;
+        }
+
+        // Final check for unrealistic rates (IRR > 1000% or < -99.99%)
+        if (resultRate !== null && (resultRate > 10 || resultRate < -0.9999)) {
+            return null;
+        }
+
+        return resultRate;
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('irr-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Show the results card first
+        document.getElementById('results-card').classList.remove('d-none');
+
+        try {
+            // 1. Get Inputs
+            const initial_investment_input = parseFloat(document.getElementById('initial_investment').value || 0);
+            const initial_investment_outflow = -Math.abs(initial_investment_input);
+            const hurdle_rate_percent = parseFloat(document.getElementById('hurdle_rate').value || 0);
+            const hurdle_rate = hurdle_rate_percent / 100;
+
+            const numPeriods = parseInt(document.getElementById('num_periods').value);
+            
+            // Gather all cash flows, including the Year 0 investment
+            const cashFlows = [initial_investment_outflow];
+            for (let i = 1; i <= numPeriods; i++) {
+                const cf = parseFloat(document.getElementById(`cf_${i}`).value || 0);
+                cashFlows.push(cf);
+            }
+
+            // Validation checks
+            if (initial_investment_input <= 0) {
+                displayError("Initial Investment (Year 0 Outflow) must be a positive number.");
+                return;
+            }
+            if (cashFlows.slice(1).every(cf => cf <= 0)) {
+                displayError("The project must have future positive cash flows (inflows) to calculate a meaningful IRR.");
+                return;
+            }
+
+            // 2. Calculate IRR
+            const IRR_decimal = calculateIRR(cashFlows);
+
+            // 3. Format and Decision
+            let IRR_formatted, decision, decision_class, alert_class;
+
+            if (IRR_decimal === null) {
+                IRR_formatted = "N/A (Solver Failed/Invalid Cash Flows)";
+                decision = "Cannot determine IRR due to non-standard cash flow pattern (e.g., no sign change or complex returns).";
+                decision_class = "text-decision-neutral";
+                alert_class = 'alert-warning';
+            } else {
+                const IRR_percent = IRR_decimal * 100;
+                IRR_formatted = `${IRR_percent.toFixed(2)}%`;
+
+                if (IRR_decimal > hurdle_rate) {
+                    decision = 'Accept Project: IRR exceeds Hurdle Rate.';
+                    decision_class = 'text-decision-accept';
+                    alert_class = 'alert-success';
+                } else if (IRR_decimal < hurdle_rate) {
+                    decision = 'Reject Project: Hurdle Rate exceeds IRR.';
+                    decision_class = 'text-decision-reject';
+                    alert_class = 'alert-danger';
+                } else {
+                    decision = 'Indifferent: IRR equals Hurdle Rate.';
+                    decision_class = 'text-decision-neutral';
+                    alert_class = 'alert-info';
+                }
+            }
+
+            // 4. Update Result Display
+            const res = document.getElementById('irr-result');
+            res.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-danger', 'alert-warning');
+            res.classList.add(alert_class);
+            res.innerHTML = `
+**Required Hurdle Rate:** <span class="fw-bold text-dark">${hurdle_rate_percent.toFixed(2)}%</span>
+**Calculated Internal Rate of Return (IRR):** <span class="${decision_class}">${IRR_formatted}</span>
+---
+**Project Decision:** <span class="${decision_class}">${decision}</span>
+<p class="small mt-2 mb-0">Rule: Accept if IRR > Hurdle Rate; Reject if IRR < Hurdle Rate.</p>
+`;
+
+            // 5. Update Table
+            document.getElementById('table-title').classList.remove('d-none');
+            document.getElementById('irr-table').classList.remove('d-none');
+            const tableBody = document.getElementById('irr-body');
+            tableBody.innerHTML = '';
+
+            // Formatting function for cash flows
+            const signDisplayFormatter = new Intl.NumberFormat('en-US', { 
+                style: 'currency', 
+                currency: 'USD', 
+                signDisplay: 'always', 
+                minimumFractionDigits: 2 
+            });
+
+            // Populate table body with cash flows
+            cashFlows.forEach((cf, index) => {
+                const yearLabel = index === 0 ? '0 (Initial Outflow)' : index;
+                const cf_formatted = signDisplayFormatter.format(cf);
+                const rowClass = index === 0 ? 'table-secondary fw-bold' : '';
+                const textClass = cf < 0 ? 'text-danger' : 'text-success';
+
+                tableBody.innerHTML += `
+                    <tr class="${rowClass}">
+                        <td>${yearLabel}</td>
+                        <td class="${textClass}">${cf_formatted}</td>
+                    </tr>
+                `;
+            });
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all cash flow fields are filled with valid numbers.");
+        }
+    });
+    
+    function displayError(message) {
+        document.getElementById('results-card').classList.remove('d-none');
+        const res = document.getElementById('irr-result');
+        res.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-warning');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('irr-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

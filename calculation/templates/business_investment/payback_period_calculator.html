@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}Payback Period Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Payback Period for an investment project to determine how quickly the initial investment is recovered from future cash flows.{% endblock %}
+
+{% block meta_keywords %}Payback period calculator, capital budgeting, liquidity, cash recovery, financial metric{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables */
+    .calc-card {
+        transition: box-shadow 0.3s ease;
+    }
+
+    .calc-card:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-result { 
+        color: var(--bs-primary); 
+        font-weight: bold; 
+        font-size: 1.8rem; 
+    }
+    
+    .text-decision-accept { 
+        color: var(--bs-success); 
+        font-weight: bold; 
+    }
+
+    .text-decision-reject { 
+        color: var(--bs-danger); 
+        font-weight: bold; 
+    }
+
+    .input-group-text-year {
+        min-width: 140px; 
+        justify-content: left;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">⏳ Payback Period Calculator</h1>
+        <p class="lead text-muted">Calculate the **Payback Period**, the time required for the cumulative cash inflows from an investment to equal the initial cash outflow. This metric measures project **liquidity**.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg calc-card">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0"><i class="bi bi-clock-fill me-2"></i> Recovery Parameters</h4>
+                </div>
+                <div class="card-body">
+
+                    <form id="payback-form">
+                        
+                        <h5 class="text-primary border-bottom pb-2 mb-3">Step 1: Core Inputs</h5>
+
+                        <div class="mb-3">
+                            <label for="initial_investment" class="form-label fw-bold">Initial Investment ($) (Year 0 Outflow)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-danger">-$</span>
+                                <input type="number" class="form-control" id="initial_investment" placeholder="e.g., 100000" min="0" step="1" required>
+                            </div>
+                            <p class="form-text text-muted mt-1">Enter the positive amount; this is the target recovery value.</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="max_payback" class="form-label fw-bold">Maximum Acceptable Payback Period (Years)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="max_payback" placeholder="e.g., 5" min="0.1" max="20" step="0.1" required>
+                                <span class="input-group-text bg-light border-start-0 text-dark"><i class="bi bi-calendar-event me-1"></i> Years</span>
+                            </div>
+                            <p class="form-text text-muted mt-1">This is your company's decision criterion (Hurdle Period).</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="num_periods" class="form-label fw-bold">Number of Cash Flow Periods (Years)</label>
+                            <select class="form-select" id="num_periods" required>
+                                <option value="1">1 Year</option>
+                                <option value="2">2 Years</option>
+                                <option value="3" selected>3 Years</option>
+                                <option value="4">4 Years</option>
+                                <option value="5">5 Years</option>
+                                <option value="6">6 Years</option>
+                                <option value="7">7 Years</option>
+                                <option value="8">8 Years</option>
+                                <option value="9">9 Years</option>
+                                <option value="10">10 Years</option>
+                            </select>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">Step 2: Annual Cash Flows (Inflows)</h5>
+
+                        <div id="cash-flow-inputs">
+                            </div>
+
+                        <button class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" type="submit">
+                            <i class="bi bi-calculator me-2"></i> Calculate Payback Period
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-lg mt-5 d-none" id="results-card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Payback Analysis</h4>
+                </div>
+                <div class="card-body">
+
+                    <div class="alert p-4 result-alert" id="payback-result"></div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4 d-none" id="table-title">Cash Flow and Recovery Summary</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mt-2 d-none" id="payback-table">
+                            <thead>
+                                <tr class="table-light">
+                                    <th>Year</th>
+                                    <th>Cash Flow ($)</th>
+                                    <th>Cumulative Cash Flow ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payback-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- UI Logic: Dynamically create cash flow inputs ---
+
+    function createCashFlowInputs(numPeriods) {
+        const container = document.getElementById('cash-flow-inputs');
+        container.innerHTML = '';
+        for (let i = 1; i <= numPeriods; i++) {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-3';
+            div.innerHTML = `
+                <span class="input-group-text bg-light text-dark input-group-text-year">Year ${i} Cash Flow</span>
+                <input type="number" class="form-control cash-flow-input" id="cf_${i}" 
+                    placeholder="e.g., 25000" step="0.01" required value="0">
+                <span class="input-group-text">$</span>
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    // Event listener for number of periods change
+    document.getElementById('num_periods').addEventListener('change', function() {
+        createCashFlowInputs(parseInt(this.value));
+    });
+    
+    // Run once on load for initial state (reads the selected default from the HTML)
+    window.onload = function() {
+        const initialPeriods = parseInt(document.getElementById('num_periods').value);
+        createCashFlowInputs(initialPeriods);
+    };
+
+    // --- Calculation Logic ---
+
+    document.getElementById('payback-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Show results card
+        document.getElementById('results-card').classList.remove('d-none');
+
+        try {
+            // 1. Get Inputs
+            const initial_investment = parseFloat(document.getElementById('initial_investment').value || 0);
+            const max_payback = parseFloat(document.getElementById('max_payback').value || 0);
+            const numPeriods = parseInt(document.getElementById('num_periods').value);
+            
+            const cashFlows = [];
+            for (let i = 1; i <= numPeriods; i++) {
+                const cf = parseFloat(document.getElementById(`cf_${i}`).value || 0);
+                cashFlows.push(cf);
+            }
+
+            if (initial_investment <= 0) {
+                displayError("Initial Investment must be a positive amount.");
+                return;
+            }
+
+            // 2. Calculate Payback Period and build table data
+            
+            let cumulative_cf = -initial_investment;
+            let payback_period = 0;
+            let recovered = false;
+            const tableData = [];
+
+            // Year 0 initial investment row
+            tableData.push({
+                year: 0,
+                cf: -initial_investment,
+                cumulative: -initial_investment
+            });
+
+            for (let i = 0; i < numPeriods; i++) {
+                const year = i + 1;
+                const cash_flow = cashFlows[i];
+                
+                // The amount needed to recover *before* this year's cash flow
+                const balance_needed_before = Math.abs(cumulative_cf); 
+
+                // Update cumulative cash flow
+                cumulative_cf += cash_flow;
+
+                if (!recovered) {
+                    if (cumulative_cf >= 0) {
+                        // Payback occurs in this year
+                        
+                        // Formula: Years passed (i) + (Balance Needed / Current Year's Flow)
+                        let fraction_of_year;
+                        if (cash_flow > 0) {
+                            fraction_of_year = balance_needed_before / cash_flow;
+                        } else {
+                            // Should not happen if payback occurs, but handles zero flow gracefully
+                            fraction_of_year = 1; 
+                        }
+                        
+                        payback_period = i + fraction_of_year;
+                        recovered = true;
+                    } else {
+                        // Not yet recovered, running period count is the current year
+                        payback_period = year;
+                    }
+                }
+                
+                // For table
+                tableData.push({
+                    year: year,
+                    cf: cash_flow,
+                    cumulative: cumulative_cf
+                });
+            }
+
+            // 3. Formatting and Decision
+            let result_text, decision, decision_class, alert_class;
+            
+            if (!recovered) {
+                result_text = `The investment is **NEVER** recovered within the ${numPeriods} periods provided.`;
+                decision = 'Reject Project: Payback period exceeds the project\'s life.';
+                decision_class = 'text-decision-reject';
+                alert_class = 'alert-danger';
+            } else {
+                const period_formatted = payback_period.toFixed(2);
+                result_text = `${period_formatted} Years`;
+                
+                if (payback_period <= max_payback) {
+                    decision = `Accept Project: Payback Period (${period_formatted} yrs) is **shorter** than the Maximum acceptable period (${max_payback.toFixed(1)} yrs).`;
+                    decision_class = 'text-decision-accept';
+                    alert_class = 'alert-success';
+                } else {
+                    decision = `Reject Project: Payback Period (${period_formatted} yrs) is **longer** than the Maximum acceptable period (${max_payback.toFixed(1)} yrs).`;
+                    decision_class = 'text-decision-reject';
+                    // Use alert-warning for 'missed the cut-off' scenario
+                    alert_class = 'alert-warning'; 
+                }
+            }
+
+            // 4. Update Result Display
+            const res = document.getElementById('payback-result');
+            res.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-danger', 'alert-warning');
+            res.classList.add(alert_class);
+            res.innerHTML = `
+**Calculated Payback Period:** <span class="text-result">${result_text}</span>
+**Maximum Acceptable Period:** <span class="fw-bold text-dark">${max_payback.toFixed(1)} Years</span>
+---
+**Project Decision:** <span class="${decision_class}">${decision}</span>
+<p class="small mt-2 mb-0">Rule: Accept if Calculated Payback Period $\le$ Maximum Acceptable Period.</p>
+`;
+
+            // 5. Update Table
+            document.getElementById('table-title').classList.remove('d-none');
+            document.getElementById('payback-table').classList.remove('d-none');
+            const tableBody = document.getElementById('payback-body');
+            tableBody.innerHTML = '';
+
+            // Formatting function
+            const signDisplayFormatter = new Intl.NumberFormat('en-US', { 
+                style: 'currency', 
+                currency: 'USD', 
+                signDisplay: 'always', 
+                minimumFractionDigits: 2 
+            });
+
+            // Populate table body with cash flows
+            tableData.forEach((item, index) => {
+                const yearLabel = item.year === 0 ? '0 (Initial Outflow)' : item.year;
+                const cf_formatted = signDisplayFormatter.format(item.cf);
+                const cumulative_formatted = signDisplayFormatter.format(item.cumulative);
+
+                // Determine if this is the payback year (cumulative goes from negative to non-negative)
+                const isPaybackYear = item.cumulative >= 0 && index > 0 && tableData[index-1].cumulative < 0;
+                
+                const rowClass = item.year === 0 ? 'table-secondary fw-bold' : (isPaybackYear ? 'table-primary fw-bold' : '');
+                const cumulativeClass = item.cumulative < 0 ? 'text-danger' : 'text-success';
+
+                tableBody.innerHTML += `
+                    <tr class="${rowClass}">
+                        <td>${yearLabel}</td>
+                        <td>${cf_formatted}</td>
+                        <td class="${cumulativeClass}">${cumulative_formatted}</td>
+                    </tr>
+                `;
+            });
+            
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all fields are filled with valid numbers.");
+        }
+    });
+    
+    function displayError(message) {
+        document.getElementById('results-card').classList.remove('d-none');
+        const res = document.getElementById('payback-result');
+        res.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-warning');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('payback-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Compound Interest Calculator{% endblock %}
+
+{% block meta_description %}Calculate the future value of your investment using compound interest, factoring in initial
+principal, annual rate, compounding frequency, and regular contributions.{% endblock %}
+
+{% block meta_keywords %}compound interest, future value, financial calculator, CAGR, investment, regular
+contributions{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Remove the old calc-wrapper and section-title styles, relying on Bootstrap classes */
+
+    .calc-card {
+        /* Optional: Add a subtle lift on hover for better user experience */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .calc-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        /* Cleaned up result box using Bootstrap's default alerts */
+        white-space: pre-wrap;
+        border-left: 5px solid var(--bs-primary); /* Use Bootstrap primary color variable */
+    }
+
+    .highlight-value {
+        font-size: 1.75rem; /* Slightly larger for better emphasis */
+        font-weight: 700;
+        color: var(--bs-success); /* Use Bootstrap success color for final results */
+    }
+
+
+    #ci-chart {
+        max-width: 300px !important;   /* controls width */
+        max-height: 300px !important;  /* controls height */
+        margin: 0 auto;
+        display: block;
+    }
+
+    .input-group-text {
+        min-width: 45px; /* Ensure uniform width for input-group-text for alignment */
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-primary">💰 Compound Interest & Savings Calculator</h1>
+        <p class="lead text-muted">Determine the **Future Value** of your investment, factoring in compounding interest and
+            periodic contributions over time.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg calc-card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Investment Parameters</h4>
+                </div>
+                <div class="card-body">
+                    <form id="ci-form">
+
+                        <h5 class="text-secondary border-bottom pb-2 mb-3">Step 1: Core Investment Details</h5>
+
+                        <div class="mb-3">
+                            <label for="principal" class="form-label fw-bold">Initial Principal ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-dark">$</span>
+                                <input type="number" class="form-control" id="principal" placeholder="e.g., 10000" min="0" step="1"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="rate" class="form-label fw-bold">Annual Interest Rate (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="rate" placeholder="e.g., 7.5" min="0.01" max="100"
+                                    step="0.01" required>
+                                <span class="input-group-text bg-light border-start-0 text-dark">%</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="years" class="form-label fw-bold">Time Period (Years)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="years" placeholder="e.g., 15" min="1"
+                                    max="50" required>
+                                <span class="input-group-text bg-light border-start-0 text-dark">Years</span>
+                            </div>
+                        </div>
+
+                        <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4">Step 2: Compounding & Contributions</h5>
+
+                        <div class="mb-3">
+                            <label for="compounding_n" class="form-label fw-bold">Compounding Frequency ($n$)</label>
+                            <select class="form-select" id="compounding_n" required>
+                                <option value="1">Annually (1)</option>
+                                <option value="2">Semi-annually (2)</option>
+                                <option value="4">Quarterly (4)</option>
+                                <option value="12" selected>Monthly (12)</option>
+                                <option value="365">Daily (365)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="contribution" class="form-label fw-bold" id="pmt_label">Regular Contribution (per period)
+                                ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-dark">$</span>
+                                <input type="number" class="form-control" id="contribution"
+                                    placeholder="e.g., 500 (Optional)" min="0" step="0.01" value="0">
+                            </div>
+                            <p class="form-text text-muted mt-1">Note: Contribution frequency matches the Compounding Frequency
+                                selected above.</p>
+                        </div>
+
+                        <button class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" type="submit">
+                            <i class="bi bi-calculator-fill me-2"></i> Calculate Future Value
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-lg mt-5 d-none" id="results-card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Calculation Results</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info p-4 result-alert" id="ci-result"></div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4 d-none" id="table-title">Projected Summary Breakdown</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mt-2 d-none" id="ci-table">
+                            <thead>
+                                <tr class="table-light">
+                                    <th>Metric</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ci-body"></tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4 d-none" id="chart-title">Visual Breakdown</h5>
+                    <div class="chart-container">
+                        <canvas id="ci-chart" class="d-none"></canvas>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let ciChart = null;
+
+    // Function to update the PMT label dynamically
+    function updatePmtLabel() {
+        const selectElement = document.getElementById('compounding_n');
+        // Ensure element exists and has selected options
+        if (selectElement && selectElement.options.length > 0) {
+            const freq = selectElement.options[selectElement.selectedIndex].text;
+            const period = freq.split('(')[0].trim();
+            document.getElementById('pmt_label').textContent = `Regular Contribution (${period}) ($)`;
+        }
+    }
+
+    // Event listener for compounding frequency change
+    document.getElementById('compounding_n').addEventListener('change', updatePmtLabel);
+
+    // Run once on load
+    window.onload = updatePmtLabel;
+
+
+    document.getElementById('ci-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs and Convert to appropriate types
+        try {
+            // Using a helper function for safe float/int parsing
+            const getNumericValue = (id, type = 'float', defaultValue = 0) => {
+                const value = document.getElementById(id).value;
+                if (!value) return defaultValue;
+                return type === 'int' ? parseInt(value) : parseFloat(value);
+            };
+
+            const P = getNumericValue('principal'); // Principal
+            const r = getNumericValue('rate') / 100; // Annual Rate (as decimal)
+            const t = getNumericValue('years'); // Time in Years
+            const n = getNumericValue('compounding_n', 'int'); // Compounding Frequency
+            const PMT = getNumericValue('contribution'); // Periodic Contribution
+
+            // Validation for meaningful calculation
+            if (P <= 0 && PMT <= 0) {
+                displayError("Initial Principal or Regular Contribution must be greater than zero to calculate Future Value.");
+                return;
+            }
+            if (t <= 0) {
+                displayError("Time period must be at least 1 year.");
+                return;
+            }
+
+            // 2. Calculate Variables
+            const nt = n * t; // Total number of compounding periods
+            const rate_per_period = r / n; // Rate per compounding period
+
+            // 3. Compound Interest Formula (Future Value)
+
+            // Part A: Future Value of Initial Principal
+            // $FV_{P} = P \times (1 + \frac{r}{n})^{n \times t}$
+            const FV_principal = P * Math.pow((1 + rate_per_period), nt);
+
+            // Part B: Future Value of Annuity (Regular Contributions)
+            // $FV_{A} = PMT \times \frac{(1 + r/n)^{n \times t} - 1}{r/n}$
+            let FV_annuity = 0;
+
+            if (PMT > 0) {
+                if (rate_per_period === 0) {
+                    // If rate is 0, the annuity simplifies to PMT * nt
+                    FV_annuity = PMT * nt;
+                } else {
+                    const numerator = Math.pow((1 + rate_per_period), nt) - 1;
+                    FV_annuity = PMT * (numerator / rate_per_period);
+                }
+            }
+
+            const FV_total = FV_principal + FV_annuity;
+
+            // 4. Calculate Total Contributions & Interest
+            const total_periodic_contributions = PMT * nt;
+            const total_contributions = P + total_periodic_contributions;
+            const total_interest_earned = FV_total - total_contributions;
+
+            // 5. Format Results
+            const formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            const formatCurrency = (value) => formatter.format(value);
+
+            const FV_formatted = formatCurrency(FV_total);
+            const interest_formatted = formatCurrency(total_interest_earned);
+            const contributions_formatted = formatCurrency(total_contributions);
+
+            // 6. Update Result Display
+            document.getElementById('results-card').classList.remove('d-none'); // Show the results card
+
+            const res = document.getElementById('ci-result');
+            res.classList.remove('d-none', 'alert-danger');
+            res.classList.add('alert-info'); // Use alert-info for general results
+            res.innerHTML = `
+**Projected Future Value:** <span class="highlight-value">${FV_formatted}</span>
+**Total Interest Earned:** <span class="highlight-value text-warning">${interest_formatted}</span>
+**Total Principal & Contributions:** <span class="highlight-value text-primary">${contributions_formatted}</span>
+`;
+
+            // 7. Update Table
+            document.getElementById('table-title').classList.remove('d-none');
+            document.getElementById('ci-table').classList.remove('d-none');
+            const tableBody = document.getElementById('ci-body');
+            tableBody.innerHTML = `
+            <tr><td>Initial Principal</td><td>${formatCurrency(P)}</td></tr>
+            <tr><td>Total Periodic Contributions (${n} times/yr × ${t} yrs)</td><td>${formatCurrency(total_periodic_contributions)}</td></tr>
+            <tr class="table-primary"><td>**Total Money Invested (P + PMT × nt)**</td><td>**${contributions_formatted}**</td></tr>
+            <tr class="table-warning"><td>**Total Interest Earned**</td><td>**${interest_formatted}**</td></tr>
+            <tr class="table-success"><td>**Projected Future Value**</td><td><span class="highlight-value text-success">${FV_formatted}</span></td></tr>
+            `;
+
+            // 8. Update Chart
+            const ctx = document.getElementById('ci-chart').getContext('2d');
+            document.getElementById('chart-title').classList.remove('d-none');
+            document.getElementById('ci-chart').classList.remove('d-none');
+            if (ciChart) ciChart.destroy();
+
+            ciChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Initial Principal', 'Periodic Contributions', 'Total Interest'],
+                    datasets: [{
+                        data: [
+                            P,
+                            total_periodic_contributions,
+                            Math.max(0, total_interest_earned) // Ensure interest is not negative for pie chart
+                        ],
+                        backgroundColor: [
+                            '#0d6efd', // Primary Blue (Bootstrap)
+                            '#ffc107', // Warning Yellow (Bootstrap)
+                            '#198754'   // Success Green (Bootstrap)
+                        ],
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { 
+                            display: true, 
+                            text: `Future Value Breakdown: ${FV_formatted}`,
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please check your input values.");
+        }
+    });
+
+    function displayError(message) {
+        document.getElementById('results-card').classList.remove('d-none');
+        const res = document.getElementById('ci-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('ci-table').classList.add('d-none');
+        document.getElementById('ci-chart').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('chart-title').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

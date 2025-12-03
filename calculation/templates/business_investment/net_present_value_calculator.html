@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Net Present Value (NPV) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Net Present Value (NPV) of an investment project, using initial investment, discount rate, and projected cash flows for up to 10 periods (years).{% endblock %}
+
+{% block meta_keywords %}NPV calculator, net present value, capital budgeting, discounted cash flow, DCF, financial modeling{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles to integrate better with Bootstrap colors */
+    .calc-card {
+        transition: box-shadow 0.3s ease;
+    }
+
+    .calc-card:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    canvas {
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+        /* Use CSS variable for a clean line */
+        border-left: 5px solid var(--bs-primary); 
+    }
+    
+    .text-decision-accept { 
+        color: var(--bs-success); 
+        font-weight: bold; 
+        font-size: 1.5rem;
+    }
+
+    .text-decision-reject { 
+        color: var(--bs-danger); 
+        font-weight: bold; 
+        font-size: 1.5rem;
+    }
+
+    .input-group-text-year {
+        min-width: 140px; 
+        justify-content: left;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">📈 Net Present Value (NPV) Calculator</h1>
+        <p class="lead text-muted">Determine the **Net Present Value (NPV)** of a potential investment to assess its profitability. NPV is the current value of all future cash flows minus the initial investment.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg calc-card">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0"><i class="bi bi-gear-fill me-2"></i> Investment Parameters</h4>
+                </div>
+                <div class="card-body">
+
+                    <form id="npv-form">
+                        
+                        <h5 class="text-primary border-bottom pb-2 mb-3">Step 1: Core Inputs</h5>
+
+                        <div class="mb-3">
+                            <label for="initial_investment" class="form-label fw-bold">Initial Investment ($) (Year 0 Outflow)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-danger">-$</span>
+                                <input type="number" class="form-control" id="initial_investment" placeholder="e.g., 50000" min="0" step="1" required>
+                            </div>
+                            <p class="form-text text-muted mt-1">Note: Enter the **positive** amount; the calculator treats this as a Year 0 outflow (negative).</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="discount_rate" class="form-label fw-bold">Discount Rate / Required Rate of Return (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="discount_rate" placeholder="e.g., 10" min="0.1" max="100" step="0.01" required>
+                                <span class="input-group-text bg-light border-start-0 text-dark">%</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="num_periods" class="form-label fw-bold">Number of Cash Flow Periods (Years)</label>
+                            <select class="form-select" id="num_periods" required>
+                                <option value="1">1 Year</option>
+                                <option value="2">2 Years</option>
+                                <option value="3" selected>3 Years</option>
+                                <option value="4">4 Years</option>
+                                <option value="5">5 Years</option>
+                                <option value="6">6 Years</option>
+                                <option value="7">7 Years</option>
+                                <option value="8">8 Years</option>
+                                <option value="9">9 Years</option>
+                                <option value="10">10 Years</option>
+                            </select>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">Step 2: Annual Cash Flows (Inflows)</h5>
+
+                        <div id="cash-flow-inputs">
+                            </div>
+
+                        <button class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" type="submit">
+                            <i class="bi bi-bar-chart-fill me-2"></i> Calculate Net Present Value
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-lg mt-5 d-none" id="results-card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-currency-dollar me-2"></i> NPV Calculation Results</h4>
+                </div>
+                <div class="card-body">
+
+                    <div class="alert p-4 result-alert" id="npv-result"></div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4 d-none" id="table-title">Discounted Cash Flow Summary</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mt-2 d-none" id="npv-table">
+                            <thead>
+                                <tr class="table-light">
+                                    <th>Year</th>
+                                    <th>Cash Flow ($)</th>
+                                    <th>Discount Factor</th>
+                                    <th>PV of Flow ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="npv-body"></tbody>
+                        </table>
+                    </div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4 d-none" id="chart-title">Visual Breakdown (Present Value per Period)</h5>
+                    <canvas id="npv-chart" class="d-none"></canvas>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let npvChart = null;
+
+    // --- UI Logic: Dynamically create cash flow inputs ---
+
+    function createCashFlowInputs(numPeriods) {
+        const container = document.getElementById('cash-flow-inputs');
+        container.innerHTML = '';
+        for (let i = 1; i <= numPeriods; i++) {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-3';
+            div.innerHTML = `
+                <span class="input-group-text bg-light text-dark input-group-text-year">Year ${i} Cash Flow</span>
+                <input type="number" class="form-control cash-flow-input" id="cf_${i}" 
+                    placeholder="e.g., 15000 (0 for no flow)" step="0.01" required value="0">
+                <span class="input-group-text">$</span>
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    // Event listener for number of periods change
+    document.getElementById('num_periods').addEventListener('change', function() {
+        createCashFlowInputs(parseInt(this.value));
+    });
+    
+    // Run once on load for initial state (using the selected default of 3 years)
+    window.onload = function() {
+        const initialPeriods = parseInt(document.getElementById('num_periods').value);
+        createCashFlowInputs(initialPeriods);
+    };
+
+    // --- Calculation Logic ---
+
+    document.getElementById('npv-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        try {
+            // 1. Get Inputs
+            const initial_investment_input = parseFloat(document.getElementById('initial_investment').value || 0);
+            const initial_investment_outflow = -Math.abs(initial_investment_input);
+            const rate = parseFloat(document.getElementById('discount_rate').value || 0) / 100;
+            const numPeriods = parseInt(document.getElementById('num_periods').value);
+            
+            // Get all cash flows dynamically
+            const cashFlows = [];
+            for (let i = 1; i <= numPeriods; i++) {
+                const cf = parseFloat(document.getElementById(`cf_${i}`).value || 0);
+                cashFlows.push(cf);
+            }
+
+            // Critical Validation
+            if (initial_investment_input <= 0) {
+                displayError("Initial Investment must be entered and must be greater than zero.");
+                return;
+            }
+            if (rate <= 0) {
+                displayError("The Discount Rate must be greater than zero.");
+                return;
+            }
+
+            // 2. Calculate NPV and build table data
+            let total_pv = 0;
+            const tableData = [];
+            const pvData = [initial_investment_outflow]; // PVs including the initial outflow
+
+            // Process initial investment for table summary
+            tableData.push({
+                year: 0,
+                cf: initial_investment_outflow,
+                df: 1.0000,
+                pv: initial_investment_outflow
+            });
+
+            for (let i = 0; i < numPeriods; i++) {
+                const year = i + 1;
+                const cash_flow = cashFlows[i];
+                
+                // Discount Factor: $1 / (1 + r)^t$
+                const discount_factor = 1 / Math.pow((1 + rate), year);
+                
+                // Present Value: CF * DF
+                const present_value = cash_flow * discount_factor;
+
+                total_pv += present_value;
+                
+                // For table
+                tableData.push({
+                    year: year,
+                    cf: cash_flow,
+                    df: discount_factor,
+                    pv: present_value
+                });
+
+                // For chart
+                pvData.push(present_value);
+            }
+
+            const NPV = total_pv + initial_investment_outflow;
+
+            // 3. Formatting and Decision
+            const formatter = new Intl.NumberFormat('en-US', { 
+                style: 'currency', 
+                currency: 'USD', 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+            const signDisplayFormatter = new Intl.NumberFormat('en-US', { 
+                style: 'currency', 
+                currency: 'USD', 
+                signDisplay: 'always', 
+                minimumFractionDigits: 2 
+            });
+
+            const NPV_formatted = formatter.format(NPV);
+            const decision = NPV >= 0 ? 'Accept Project' : 'Reject Project';
+            const decision_class = NPV >= 0 ? 'text-decision-accept' : 'text-decision-reject';
+            const alert_class = NPV >= 0 ? 'alert-success' : 'alert-danger';
+
+            // Show results card
+            document.getElementById('results-card').classList.remove('d-none');
+
+            // 4. Update Result Display
+            const res = document.getElementById('npv-result');
+            res.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-danger');
+            res.classList.add(alert_class); // Use alert-success/alert-danger based on decision
+            res.innerHTML = `
+**Calculated Net Present Value (NPV):** <span class="${decision_class}">${NPV_formatted}</span>
+**Project Decision:** <span class="${decision_class.replace('text-', 'fw-bold ')}">${decision}</span>
+<p class="small mt-2 mb-0">Rule: Accept if NPV > 0 (or NPV = 0), Reject if NPV < 0.</p>
+`;
+
+            // 5. Update Table
+            document.getElementById('table-title').classList.remove('d-none');
+            document.getElementById('npv-table').classList.remove('d-none');
+            const tableBody = document.getElementById('npv-body');
+            tableBody.innerHTML = '';
+
+            // Populate table body with calculated data
+            tableData.forEach(item => {
+                tableBody.innerHTML += `
+                    <tr class="${item.year === 0 ? 'table-secondary fw-bold' : ''}">
+                        <td>${item.year === 0 ? '0 (Initial)' : item.year}</td>
+                        <td>${signDisplayFormatter.format(item.cf)}</td>
+                        <td>${item.df.toFixed(4)}</td>
+                        <td class="${item.pv >= 0 ? 'text-success' : 'text-danger'}">${signDisplayFormatter.format(item.pv)}</td>
+                    </tr>
+                `;
+            });
+            // Add NPV row
+            tableBody.innerHTML += `
+                <tr class="table-primary fw-bold">
+                    <td colspan="3">NET PRESENT VALUE (NPV)</td>
+                    <td class="${decision_class}">${NPV_formatted}</td>
+                </tr>
+            `;
+
+            // 6. Update Chart (Bar chart for Present Value of each flow)
+            document.getElementById('chart-title').classList.remove('d-none');
+            const ctx = document.getElementById('npv-chart').getContext('2d');
+            document.getElementById('npv-chart').classList.remove('d-none');
+            if (npvChart) npvChart.destroy();
+
+            npvChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: tableData.map(d => d.year === 0 ? 'Y0 (Investment)' : `Y${d.year}`),
+                    datasets: [{
+                        label: 'Present Value of Cash Flow',
+                        data: pvData,
+                        // Use Bootstrap colors for chart bars (Red for Outflow, Green for Inflow)
+                        backgroundColor: pvData.map(pv => pv < 0 ? 'rgba(220, 53, 69, 0.7)' : 'rgba(25, 135, 84, 0.7)'), // danger vs success
+                        borderColor: pvData.map(pv => pv < 0 ? '#dc3545' : '#198754'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { 
+                            display: true, 
+                            text: `Present Value of Cash Flows (NPV: ${NPV_formatted})`,
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: 'Present Value ($)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Time Period' }
+                        }
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all cash flow fields are filled.");
+        }
+    });
+    
+    function displayError(message) {
+        document.getElementById('results-card').classList.remove('d-none');
+        const res = document.getElementById('npv-result');
+        res.classList.remove('d-none', 'alert-info', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('npv-table').classList.add('d-none');
+        document.getElementById('npv-chart').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('chart-title').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

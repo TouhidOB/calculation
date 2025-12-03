@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Break-Even Analysis Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Break-Even Point in units and sales revenue by analyzing fixed costs, variable costs, and selling price.{% endblock %}
+
+{% block meta_keywords %}Break-even analysis, fixed costs, variable costs, selling price, contribution margin, BEP{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables */
+    .calc-card {
+        transition: box-shadow 0.3s ease;
+    }
+
+    .calc-card:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .text-unit-result { 
+        color: var(--bs-primary); 
+        font-weight: bold; 
+        font-size: 1.8rem; 
+    }
+    
+    .text-revenue-result { 
+        color: var(--bs-success); 
+        font-weight: bold; 
+        font-size: 1.8rem; 
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">📈 Break-Even Analysis Calculator</h1>
+        <p class="lead text-muted">Calculate the **Break-Even Point (BEP)**, the sales level where total revenue equals total costs. At the BEP, **Profit = $0**.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg calc-card">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0"><i class="bi bi-gear-fill me-2"></i> Cost & Pricing Inputs</h4>
+                </div>
+                <div class="card-body">
+
+                    <form id="be-form">
+                        
+                        <h5 class="text-primary border-bottom pb-2 mb-3">Step 1: Input Financial Data</h5>
+
+                        <div class="mb-3">
+                            <label for="fixed_costs" class="form-label fw-bold">Total Fixed Costs ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-secondary text-white"><i class="bi bi-currency-dollar"></i></span>
+                                <input type="number" class="form-control" id="fixed_costs" placeholder="e.g., 50000" min="0" step="0.01" required>
+                            </div>
+                            <p class="form-text text-muted mt-1">Costs that **do not change** with production volume (e.g., rent, salaries).</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="selling_price" class="form-label fw-bold">Selling Price per Unit ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-success-subtle text-success"><i class="bi bi-tag-fill"></i></span>
+                                <input type="number" class="form-control" id="selling_price" placeholder="e.g., 50" min="0.01" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="variable_cost" class="form-label fw-bold">Variable Cost per Unit ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger-subtle text-danger"><i class="bi bi-calculator"></i></span>
+                                <input type="number" class="form-control" id="variable_cost" placeholder="e.g., 20" min="0" step="0.01" required>
+                            </div>
+                            <p class="form-text text-muted mt-1">Costs that **vary directly** with production volume (e.g., raw materials).</p>
+                        </div>
+
+                        <button class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" type="submit">
+                            <i class="bi bi-graph-up me-2"></i> Calculate Break-Even Point (BEP)
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-lg mt-5 d-none" id="results-card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-bar-chart-fill me-2"></i> Analysis Results</h4>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="alert alert-info p-4 result-alert" id="be-result"></div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4 d-none" id="table-title">Break-Even Calculation Summary</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mt-3 d-none" id="be-table">
+                            <tbody id="be-body"></tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4 text-center"><p class="small text-muted mt-2">Visual representation of Total Costs (Fixed + Variable) crossing Total Revenue at the BEP.</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Calculation Logic ---
+
+    document.getElementById('be-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Show the results card first
+        document.getElementById('results-card').classList.remove('d-none');
+
+        try {
+            // 1. Get Inputs
+            const fixed_costs = parseFloat(document.getElementById('fixed_costs').value);
+            const selling_price = parseFloat(document.getElementById('selling_price').value);
+            const variable_cost = parseFloat(document.getElementById('variable_cost').value);
+
+            // 2. Validation
+            if (isNaN(fixed_costs) || isNaN(selling_price) || isNaN(variable_cost)) {
+                displayError("Please enter valid numerical values for all fields.");
+                return;
+            }
+
+            if (fixed_costs < 0 || selling_price <= 0 || variable_cost < 0) {
+                displayError("Fixed Costs and Variable Cost must be non-negative. Selling Price must be greater than zero.");
+                return;
+            }
+
+            const contribution_margin_per_unit = selling_price - variable_cost;
+
+            if (contribution_margin_per_unit <= 0) {
+                displayError(`The Contribution Margin ($${selling_price.toFixed(2)} - $${variable_cost.toFixed(2)} = $${contribution_margin_per_unit.toFixed(2)}) must be greater than zero. Selling Price must exceed Variable Cost to cover Fixed Costs.`);
+                return;
+            }
+
+            // 3. Core Calculations
+            
+            // BEP in Units = Total Fixed Costs / Contribution Margin per Unit
+            const bep_units = fixed_costs / contribution_margin_per_unit;
+
+            // Contribution Margin Ratio (CMR) = Contribution Margin / Selling Price
+            const cm_ratio = contribution_margin_per_unit / selling_price;
+
+            // BEP in Revenue = Total Fixed Costs / Contribution Margin Ratio
+            const bep_revenue = fixed_costs / cm_ratio;
+
+            // 4. Formatting
+            const bep_units_rounded = Math.ceil(bep_units); // Must sell whole units to break even
+            
+            const revenue_formatted = bep_revenue.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+            const cm_per_unit_formatted = contribution_margin_per_unit.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+            const cm_ratio_formatted = (cm_ratio * 100).toFixed(2) + '%';
+            const fixed_costs_formatted = fixed_costs.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+
+
+            // 5. Update Result Display
+            const res = document.getElementById('be-result');
+            res.classList.remove('d-none', 'alert-danger', 'alert-warning');
+            res.classList.add('alert-info');
+            
+            res.innerHTML = `
+**Break-Even Point in Units (BEP-Units):**
+You must sell <span class="text-unit-result">${bep_units_rounded} Units</span> to cover all costs. (Exact: ${bep_units.toFixed(2)} units)
+<hr>
+**Break-Even Point in Sales Revenue (BEP-Revenue):**
+You must achieve sales of <span class="text-revenue-result">${revenue_formatted}</span> to cover all costs.
+<p class="small mt-2 mb-0">Sales above these points represent a **profit**; sales below represent a **loss**.</p>
+`;
+            
+            // 6. Update Table
+            document.getElementById('table-title').classList.remove('d-none');
+            document.getElementById('be-table').classList.remove('d-none');
+            const tableBody = document.getElementById('be-body');
+            
+            tableBody.innerHTML = `
+                <tr>
+                    <td class="fw-bold text-nowrap">Total Fixed Costs (FC)</td>
+                    <td><span class="text-dark fw-bold">${fixed_costs_formatted}</span></td>
+                </tr>
+                <tr>
+                    <td class="fw-bold text-nowrap">Contribution Margin per Unit (P - VC)</td>
+                    <td>$${selling_price.toFixed(2)} - $${variable_cost.toFixed(2)} = <span class="text-info fw-bold">${cm_per_unit_formatted}</span></td>
+                </tr>
+                <tr>
+                    <td class="fw-bold text-nowrap">Contribution Margin Ratio (CMR)</td>
+                    <td>${contribution_margin_per_unit.toFixed(2)} / $${selling_price.toFixed(2)} = <span class="text-info fw-bold">${cm_ratio_formatted}</span></td>
+                </tr>
+                <tr class="table-primary">
+                    <td class="fw-bold text-nowrap">BEP in Units ($\frac{\text{FC}}{\text{CM per Unit}}$)</td>
+                    <td>${fixed_costs.toLocaleString('en-US', { minimumFractionDigits: 2 })} / ${contribution_margin_per_unit.toFixed(2)} = **${bep_units_rounded} Units**</td>
+                </tr>
+                <tr class="table-success">
+                    <td class="fw-bold text-nowrap">BEP in Revenue ($\frac{\text{FC}}{\text{CMR}}$)</td>
+                    <td>${fixed_costs.toLocaleString('en-US', { minimumFractionDigits: 2 })} / ${cm_ratio.toFixed(4)} = **${revenue_formatted}**</td>
+                </tr>
+                `;
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all fields are filled with valid numbers.");
+        }
+    });
+    
+    function displayError(message) {
+        document.getElementById('results-card').classList.remove('d-none');
+        const res = document.getElementById('be-result');
+        res.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-warning');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('be-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    }
+</script>
+
+{% endblock %}

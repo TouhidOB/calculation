@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'basic_calculator',
     'finance',
     'health',
+    'business_investment',
 ]
 
 MIDDLEWARE = [
