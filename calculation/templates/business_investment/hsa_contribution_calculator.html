@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}HSA Contribution Calculator{% endblock %}
+
+{% block meta_description %}Estimate your maximum 2024 Health Savings Account (HSA) contribution based on IRS limits, age, and HDHP eligibility for Self or Family coverage.{% endblock %}
+
+{% block meta_keywords %}HSA, Health Savings Account, 2024 limits, HDHP, contribution limit, tax savings, catch-up contribution{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for a fresh, indigo-themed look */
+    :root {
+        --bs-indigo-600: #4f46e5;
+        --bs-indigo-100: #eef2ff;
+        --bs-indigo-800: #3730a3;
+    }
+
+    .calc-wrapper {
+        background-color: var(--bs-white);
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+    }
+
+    .header-icon {
+        color: var(--bs-indigo-600);
+    }
+    
+    .input-group-text {
+        background-color: var(--bs-light);
+        color: var(--bs-indigo-600);
+        font-weight: 600;
+    }
+
+    /* Coverage Button Styling */
+    .btn-coverage {
+        background-color: white;
+        color: var(--bs-indigo-600);
+        border: 2px solid var(--bs-indigo-100);
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .btn-coverage:hover:not(.active) {
+        background-color: var(--bs-indigo-100);
+        border-color: var(--bs-indigo-600);
+    }
+    .btn-coverage.active {
+        background-color: var(--bs-indigo-600);
+        color: white;
+        box-shadow: 0 4px 8px rgba(79, 70, 229, 0.4);
+        border-color: var(--bs-indigo-600);
+    }
+
+    /* Results Section Styling */
+    .result-box {
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    .result-box:hover {
+        transform: translateY(-3px);
+    }
+
+    .max-limit-value {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--bs-indigo-800);
+    }
+    
+    .goal-value {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--bs-dark);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="calc-wrapper p-5">
+                <h1 class="h3 fw-bold header-icon pb-3 mb-4 border-bottom d-flex align-items-center">
+                    <i class="bi bi-clipboard-check-fill fs-3 me-3"></i> HSA Contribution Forecaster (2024)
+                </h1>
+                <p class="text-muted mb-4 small">
+                    Estimate your **maximum tax-advantaged contribution** based on IRS limits, age, and HDHP coverage.
+                </p>
+
+                <form id="hsa-form" class="needs-validation" novalidate>
+                    
+                    <div class="p-4 rounded-3 mb-4 border border-indigo-100 bg-indigo-100">
+                        <label class="form-label fs-5 fw-semibold text-indigo-800 mb-3 d-flex align-items-center">
+                            <i class="bi bi-person-fill me-2"></i> 1. Select Coverage Type
+                        </label>
+                        <div class="btn-group w-100" role="group">
+                            <button
+                                type="button"
+                                id="btn-self"
+                                class="btn btn-coverage flex-grow-1 p-3"
+                                data-coverage="SELF"
+                            >
+                                Self-Only
+                            </button>
+                            <button
+                                type="button"
+                                id="btn-family"
+                                class="btn btn-coverage flex-grow-1 p-3 active"
+                                data-coverage="FAMILY"
+                            >
+                                Family
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4 mb-4">
+                        
+                        <div class="col-md-6">
+                            <label for="age" class="form-label fw-semibold text-dark d-flex align-items-center">
+                                <i class="bi bi-calendar-event me-2"></i> 2. Your Age
+                            </label>
+                            <input
+                                id="age"
+                                type="number"
+                                min="18"
+                                max="100"
+                                class="form-control p-3"
+                                placeholder="e.g., 40" 
+                                required
+                                >
+                            <p id="age-message" class="text-muted mt-1 small">
+                                Catch-up applies at age 55+.
+                            </p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="months" class="form-label fw-semibold text-dark d-flex align-items-center">
+                                <i class="bi bi-calendar-check me-2"></i> 3. HDHP Months Eligible
+                            </label>
+                            <select
+                                id="months"
+                                class="form-select p-3"
+                                required
+                            >
+                                </select>
+                            <p class="text-muted mt-1 small">
+                                Pro-rata calculation based on eligibility (1st day of the month).
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="goal" class="form-label fw-semibold text-dark d-flex align-items-center">
+                            <i class="bi bi-cash-stack me-2"></i> 4. Your Annual Contribution Goal
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text p-3 fs-5">$</span>
+                            <input
+                                id="goal"
+                                type="number"
+                                min="0"
+                                class="form-control p-3 fs-5 fw-bold"
+                                placeholder="e.g., 4000"
+                                required
+                                >
+                        </div>
+                        <p class="text-muted mt-1 small">The total amount you plan to contribute this year.</p>
+                    </div>
+
+                    <button class="btn btn-lg w-100 mt-4 shadow" style="background-color: var(--bs-indigo-600); color: white;" type="submit">
+                        <i class="bi bi-arrow-right-circle-fill me-2"></i> Check Contribution Status
+                    </button>
+                </form>
+                
+                <hr class="my-5">
+
+                <div class="pt-2">
+                    <h2 class="h4 fw-bold text-indigo-800 mb-4 d-flex align-items-center">
+                        <i class="bi bi-graph-up-arrow me-2"></i> Your Contribution Results
+                    </h2>
+                    
+                    <div class="row g-4 mb-4">
+                        
+                        <div class="col-md-6">
+                            <div class="result-box border border-2 border-indigo-600 bg-indigo-100 shadow-sm">
+                                <p class="text-sm fw-medium text-indigo-800 mb-1 small">Your Calculated Max Limit</p>
+                                <p id="max_contribution_display" class="max-limit-value">--</p>
+                                <p id="eligibility-details" class="text-muted small mb-0">
+                                    --
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="result-box border border-2 border-secondary-subtle bg-light shadow-sm">
+                                <p class="text-sm fw-medium text-muted mb-1 small">Your Planned Goal</p>
+                                <p id="annual_goal_display" class="goal-value">--</p>
+                                <p class="text-muted small mb-0">
+                                    The amount you set in the form.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="status-message-box" class="mt-4 p-4 rounded-3 border-2 d-flex align-items-start shadow-sm" style="display: none;">
+                        <i id="status-icon" class="bi fs-5 flex-shrink-0 me-3 mt-1"></i>
+                        <p id="status-message-text" class="mb-0 fw-semibold small"></p>
+                    </div>
+                    
+                    <div class="mt-4 p-3 alert alert-warning d-flex align-items-start small" role="alert">
+                        <i class="bi bi-info-circle-fill fs-5 flex-shrink-0 me-3 mt-1"></i>
+                        <div>
+                            <span class="fw-bold">Important Note:</span> This calculation uses a simple **pro-rata method**. It does **not** account for the complex "**Last Month Rule**" which can allow the full annual limit in certain circumstances. Consult a tax professional for final accuracy.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- 2024 IRS contribution limits (from original React code) ---
+    const LIMITS = {
+        SELF: 4150,
+        FAMILY: 8300,
+        CATCH_UP: 1000,
+        MAX_MONTHS: 12,
+    };
+    const MONTH_OPTIONS = Array.from({ length: LIMITS.MAX_MONTHS }, (_, i) => i + 1);
+
+    // Helper to format currency
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(amount);
+    };
+
+    // --- DOM Elements ---
+    const form = document.getElementById('hsa-form');
+    const ageInput = document.getElementById('age');
+    const goalInput = document.getElementById('goal');
+    const monthsSelect = document.getElementById('months');
+    const btnSelf = document.getElementById('btn-self');
+    const btnFamily = document.getElementById('btn-family');
+    
+    // Output Elements
+    const ageMessage = document.getElementById('age-message');
+    const maxContributionDisplay = document.getElementById('max_contribution_display');
+    const annualGoalDisplay = document.getElementById('annual_goal_display');
+    const eligibilityDetails = document.getElementById('eligibility-details');
+    const statusMessageBox = document.getElementById('status-message-box');
+    const statusIcon = document.getElementById('status-icon');
+    const statusMessageText = document.getElementById('status-message-text');
+
+    // --- State Variables (Mimicking React's useState) ---
+    let coverageType = 'FAMILY';
+    
+    // --- Initial Setup ---
+
+    // Populate months dropdown
+    MONTH_OPTIONS.forEach(m => {
+        const option = document.createElement('option');
+        option.value = m;
+        option.textContent = m + ' Months';
+        monthsSelect.appendChild(option);
+    });
+    monthsSelect.value = LIMITS.MAX_MONTHS; // Default to 12
+
+    // Set initial display to clean slate
+    function resetDisplay() {
+        maxContributionDisplay.textContent = '--';
+        annualGoalDisplay.textContent = '--';
+        eligibilityDetails.textContent = '--';
+        statusMessageBox.style.display = 'none';
+        ageMessage.textContent = 'Catch-up applies at age 55+.';
+        // Ensure the correct button starts active
+        btnSelf.classList.remove('active');
+        btnFamily.classList.add('active');
+    }
+
+    /**
+     * Main calculation function (Equivalent to React's useMemo)
+     */
+    function calculateHSA() {
+        const age = parseFloat(ageInput.value);
+        const annualGoal = parseFloat(goalInput.value);
+        const monthsEligible = parseInt(monthsSelect.value);
+
+        // Check for empty or invalid inputs before calculation
+        if (isNaN(age) || isNaN(annualGoal) || isNaN(monthsEligible)) {
+             statusMessageBox.style.display = 'none';
+             return;
+        }
+
+        // --- 1. Determine Limits ---
+        let baseLimit = coverageType === 'SELF' ? LIMITS.SELF : LIMITS.FAMILY;
+        let catchUp = 0;
+
+        // Check for catch-up contribution (Age 55+)
+        if (age >= 55) {
+            catchUp = LIMITS.CATCH_UP;
+            ageMessage.textContent = 'Catch-up contribution applied (+$1,000).';
+        } else {
+            ageMessage.textContent = 'Catch-up applies at age 55+.';
+        }
+
+        const totalAnnualLimit = baseLimit + catchUp;
+        
+        // --- 2. Calculate Pro-Rata Limit ---
+        const monthlyLimit = totalAnnualLimit / LIMITS.MAX_MONTHS;
+        const maxAllowed = Math.floor(monthlyLimit * monthsEligible);
+
+        // --- 3. Compare Goal to Limit ---
+        const difference = annualGoal - maxAllowed;
+        const isOver = difference > 0;
+        const isUnder = difference < 0;
+
+        let statusText = '';
+        let statusClass = '';
+        let iconClass = '';
+
+        if (annualGoal <= 0) {
+            statusText = 'Enter an annual contribution goal to see the result.';
+            statusClass = 'alert-info border-info text-info';
+            iconClass = 'bi-info-circle-fill';
+        } else if (isOver) {
+            statusText = `You are over the limit by ${formatCurrency(difference)}. **Reduce your goal to avoid penalties.**`;
+            statusClass = 'alert-danger border-danger text-danger';
+            iconClass = 'bi-exclamation-triangle-fill';
+        } else if (isUnder) {
+            statusText = `You can contribute up to **${formatCurrency(Math.abs(difference))}** more to maximize your HSA.`;
+            statusClass = 'alert-success border-success text-success';
+            iconClass = 'bi-check-circle-fill';
+        } else {
+            statusText = `**Perfect!** You've matched the maximum allowable contribution for the year.`;
+            statusClass = 'alert-success border-success text-success';
+            iconClass = 'bi-check-circle-fill';
+        }
+
+        // --- 4. Update Display ---
+        
+        // Max Limit Box
+        maxContributionDisplay.textContent = formatCurrency(maxAllowed);
+        eligibilityDetails.textContent = `(${monthsEligible}/${LIMITS.MAX_MONTHS} months eligible)`;
+        
+        // Goal Box
+        annualGoalDisplay.textContent = formatCurrency(annualGoal);
+
+        // Status Message Box
+        statusMessageBox.className = `mt-4 p-4 rounded-3 border-2 d-flex align-items-start shadow-sm ${statusClass}`;
+        statusIcon.className = `bi fs-5 flex-shrink-0 me-3 mt-1 ${iconClass}`;
+        statusMessageText.innerHTML = statusText;
+        statusMessageBox.style.display = 'flex'; // Show the message box
+    }
+
+    // --- Event Handlers ---
+
+    // 1. Coverage Type Switch
+    [btnSelf, btnFamily].forEach(button => {
+        button.addEventListener('click', function() {
+            coverageType = this.getAttribute('data-coverage');
+            btnSelf.classList.remove('active');
+            btnFamily.classList.remove('active');
+            this.classList.add('active');
+            calculateHSA();
+        });
+    });
+
+    // 2. Input/Change listeners (only runs calc if inputs are valid numbers)
+    [ageInput, goalInput, monthsSelect].forEach(input => {
+        input.addEventListener('change', calculateHSA);
+        input.addEventListener('input', calculateHSA);
+    });
+
+    // 3. Form Submission (main trigger)
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Force calculation on submit, regardless of input event debounce
+        calculateHSA();
+    });
+
+    // Initial action on page load (sets a blank slate)
+    document.addEventListener('DOMContentLoaded', resetDisplay);
+</script>
+{% endblock %}

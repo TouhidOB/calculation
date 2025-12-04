@@ -44,5 +44,12 @@ urlpatterns = [
     path('certificate_of_deposit_calculator/', views.certificate_of_deposit_calculator, name='certificate_of_deposit_calculator'),
     path('annuity_payout_calculator/', views.annuity_payout_calculator, name='annuity_payout_calculator'),
     path('retirement_calculator/', views.retirement_calculator, name='retirement_calculator'),
+    path('roth_ira_cetirement_calculator/', views.roth_ira_cetirement_calculator, name='roth_ira_cetirement_calculator'),
+    path('social_security_benefits_calculator/', views.social_security_benefits_calculator, name='social_security_benefits_calculator'),
+    path('retirement_pension_forecaster/', views.retirement_pension_forecaster, name='retirement_pension_forecaster'),
+    path('hsa_contribution_calculator/', views.hsa_contribution_calculator, name='hsa_contribution_calculator'),
+    path('profit_and_loss_calculator/', views.profit_and_loss_calculator, name='profit_and_loss_calculator'),
+    path('forex_pip_calculator/', views.forex_pip_calculator, name='forex_pip_calculator'),
+    path('crypto_profit_calculator/', views.crypto_profit_calculator, name='crypto_profit_calculator'),
 
 ]

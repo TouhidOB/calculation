@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}Crypto Profit/Loss Calculator{% endblock %}
+
+{% block meta_description %}Calculate net Profit/Loss and ROI for a cryptocurrency trade, factoring in entry price, exit price, and both buy and sell transaction fees.{% endblock %}
+
+{% block meta_keywords %}Crypto PNL, Bitcoin, Ethereum, ROI, Return on Investment, cryptocurrency trading, fees calculator, profit calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for a clean, crypto-themed look (Indigo/Teal/Monospace for prices) */
+    :root {
+        --bs-indigo-600: #4f46e5;
+        --bs-indigo-100: #eef2ff;
+        --bs-indigo-800: #3730a3;
+        --bs-yellow-500: #f59e0b; /* For ROI */
+    }
+
+    .calc-wrapper {
+        background-color: var(--bs-white);
+        border-radius: 1rem;
+        box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.1);
+    }
+
+    .header-icon {
+        color: var(--bs-indigo-600);
+    }
+
+    .input-price {
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-weight: 700;
+    }
+
+    /* Metric Boxes */
+    .metric-box {
+        padding: 1rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .final-pnl-value {
+        font-size: 3rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+    .final-pnl-box {
+        border-width: 2px !important;
+    }
+    .roi-value {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--bs-yellow-500);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="calc-wrapper p-5">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <h1 class="h4 fw-bold header-icon d-flex align-items-center mb-0">
+                        <i class="bi bi-bar-chart-fill fs-3 me-3"></i> Crypto Profit Calculator
+                    </h1>
+                    <button
+                        id="reset-button"
+                        class="btn btn-sm text-muted hover-opacity-75 d-flex align-items-center"
+                        type="button"
+                    >
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </button>
+                </div>
+
+                <form id="crypto-form" class="needs-validation" novalidate>
+                    
+                    <h2 class="fs-5 fw-semibold text-dark mb-3">Trade Details</h2>
+                    
+                    <div class="mb-4">
+                        <label for="cryptoName" class="form-label fw-semibold text-dark">Cryptocurrency</label>
+                        <input
+                            id="cryptoName"
+                            type="text"
+                            class="form-control p-3"
+                            placeholder="e.g., Bitcoin (BTC)"
+                            required
+                        >
+                    </div>
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <label for="amount" class="form-label fw-semibold text-dark">Amount (<span id="coin-symbol">COIN</span>)</label>
+                            <input
+                                id="amount"
+                                type="number"
+                                step="any"
+                                min="0"
+                                class="form-control p-3 input-price"
+                                placeholder="e.g., 0.5"
+                                required
+                            >
+                        </div>
+                        <div class="col-md-4">
+                            <label for="entryPrice" class="form-label fw-semibold text-dark">Entry Price ($)</label>
+                            <input
+                                id="entryPrice"
+                                type="number"
+                                step="any"
+                                min="0"
+                                class="form-control p-3 input-price"
+                                placeholder="e.g., 30000"
+                                required
+                            >
+                        </div>
+                        <div class="col-md-4">
+                            <label for="exitPrice" class="form-label fw-semibold text-dark">Exit Price ($)</label>
+                            <input
+                                id="exitPrice"
+                                type="number"
+                                step="any"
+                                min="0"
+                                class="form-control p-3 input-price"
+                                placeholder="e.g., 45000"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-indigo-100 rounded-lg border border-indigo-300 mb-5">
+                        <h2 class="fs-5 fw-semibold text-indigo-800 d-flex align-items-center mb-3">
+                            <i class="bi bi-lightning-fill me-2"></i> Transaction Fees (%)
+                        </h2>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="buyFee" class="form-label fw-semibold text-indigo-800">Buy Fee Rate (%)</label>
+                                <input
+                                    id="buyFee"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    class="form-control p-3 input-price"
+                                    placeholder="e.g., 0.1"
+                                    required
+                                >
+                            </div>
+                            <div class="col-md-6">
+                                <label for="sellFee" class="form-label fw-semibold text-indigo-800">Sell Fee Rate (%)</label>
+                                <input
+                                    id="sellFee"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    class="form-control p-3 input-price"
+                                    placeholder="e.g., 0.1"
+                                    required
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="pt-2 border-top border-gray-200 space-y-4">
+                    <h2 class="fs-4 fw-bold text-indigo-800 mb-4">Calculated Results</h2>
+
+                    <div id="pnl-result-box" class="final-pnl-box p-5 rounded-xl border d-flex flex-column items-center justify-content-center mb-4">
+                        <div class="d-flex align-items-center">
+                            <i id="pnl-icon" class="bi fs-3 me-4 flex-shrink-0"></i>
+                            <div class='d-flex flex-column text-center'>
+                                <span class="text-lg fw-medium text-muted">Net Profit/Loss</span>
+                                <span id="pnl-at-final-display" class="final-pnl-value">
+                                    --
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4 text-center">
+                        
+                        <div class="col-md-6">
+                            <div class="metric-box bg-light border border-secondary-subtle">
+                                <p class="text-sm fw-medium text-muted mb-1">Total Buy Cost (with Fee)</p>
+                                <p id="total-buy-cost-display" class="fs-4 fw-extrabold text-dark mt-1">--</p>
+                                <p id="raw-cost-display" class="text-xs text-muted mb-0">Initial Investment: --</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="metric-box bg-light border border-secondary-subtle">
+                                <p class="text-sm fw-medium text-muted mb-1">Total Sell Revenue (after Fee)</p>
+                                <p id="total-revenue-display" class="fs-4 fw-extrabold text-dark mt-1">--</p>
+                                <p id="raw-revenue-display" class="text-xs text-muted mb-0">Raw Revenue: --</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-warning-subtle rounded-lg border border-warning-subtle text-center">
+                        <p class="text-sm font-medium text-warning-emphasis">Return on Investment (ROI)</p>
+                        <p id="roi-display" class="roi-value mt-1">
+                            --
+                        </p>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Helper Functions ---
+
+    // Helper to format currency
+    const formatCurrency = (amount) => {
+        // Use up to 4 decimals for precision in small crypto amounts/fees
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4, 
+        }).format(amount);
+    };
+
+    // Helper to format percentage
+    const formatPercentage = (amount) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'percent',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(amount / 100);
+    };
+    
+    // --- DOM Elements ---
+    const form = document.getElementById('crypto-form');
+    const resetButton = document.getElementById('reset-button');
+
+    // Input Elements
+    const cryptoNameInput = document.getElementById('cryptoName');
+    const amountInput = document.getElementById('amount');
+    const entryPriceInput = document.getElementById('entryPrice');
+    const exitPriceInput = document.getElementById('exitPrice');
+    const buyFeeInput = document.getElementById('buyFee');
+    const sellFeeInput = document.getElementById('sellFee');
+    
+    // Output Elements
+    const coinSymbolDisplay = document.getElementById('coin-symbol');
+    const pnlAtFinalDisplay = document.getElementById('pnl-at-final-display');
+    const pnlResultBox = document.getElementById('pnl-result-box');
+    const pnlIcon = document.getElementById('pnl-icon');
+    const totalBuyCostDisplay = document.getElementById('total-buy-cost-display');
+    const rawCostDisplay = document.getElementById('raw-cost-display');
+    const totalRevenueDisplay = document.getElementById('total-revenue-display');
+    const rawRevenueDisplay = document.getElementById('raw-revenue-display');
+    const roiDisplay = document.getElementById('roi-display');
+
+
+    // --- State/Input Accessors ---
+
+    function getInputs() {
+        return {
+            cryptoName: cryptoNameInput.value.trim() || 'COIN',
+            amount: parseFloat(amountInput.value) || 0,
+            entryPrice: parseFloat(entryPriceInput.value) || 0,
+            exitPrice: parseFloat(exitPriceInput.value) || 0,
+            buyFeeRate: parseFloat(buyFeeInput.value) || 0,
+            sellFeeRate: parseFloat(sellFeeInput.value) || 0,
+        };
+    }
+    
+    // --- Main Logic ---
+
+    function calculateCryptoPNL() {
+        const {
+            cryptoName,
+            amount,
+            entryPrice,
+            exitPrice,
+            buyFeeRate,
+            sellFeeRate,
+        } = getInputs();
+
+        // 1. Input Validation: Check if core numeric inputs are valid
+        if (amount <= 0 || entryPrice <= 0 || exitPrice <= 0) {
+            updateAllDisplays('--', '--', '--', '--', 'border-secondary bg-light', 'bi-currency-dollar text-muted', '--');
+            return;
+        }
+
+        // --- Core Calculations ---
+        
+        const rawCost = amount * entryPrice;
+        const rawRevenue = amount * exitPrice;
+
+        // Calculate total cost including fee
+        const buyFeeAmount = rawCost * (buyFeeRate / 100);
+        const totalBuyCost = rawCost + buyFeeAmount;
+
+        // Calculate total revenue after fee deduction
+        const sellFeeAmount = rawRevenue * (sellFeeRate / 100);
+        const totalRevenue = rawRevenue - sellFeeAmount;
+        
+        // Core results
+        const netProfitLoss = totalRevenue - totalBuyCost;
+        const roi = (totalBuyCost > 0) ? (netProfitLoss / totalBuyCost) * 100 : 0;
+
+        // --- Update Displays ---
+        
+        // Update Coin Symbol
+        // Tries to extract the symbol from parentheses, e.g., 'Bitcoin (BTC)' -> 'BTC'
+        const match = cryptoName.match(/\(([^)]+)\)$/);
+        coinSymbolDisplay.textContent = match ? match[1].toUpperCase() : 'COIN';
+
+        // PNL Styling
+        let pnlColorClass, pnlIconClass;
+
+        if (netProfitLoss > 0) {
+            pnlColorClass = 'border-success bg-success-subtle';
+            pnlIconClass = 'bi-graph-up-arrow text-success';
+        } else if (netProfitLoss < 0) {
+            pnlColorClass = 'border-danger bg-danger-subtle';
+            pnlIconClass = 'bi-graph-down-arrow text-danger';
+        } else {
+            pnlColorClass = 'border-secondary bg-light';
+            pnlIconClass = 'bi-currency-dollar text-muted';
+        }
+
+        updateAllDisplays(
+            formatCurrency(netProfitLoss),
+            formatCurrency(totalBuyCost),
+            formatCurrency(rawCost),
+            formatCurrency(totalRevenue),
+            formatCurrency(rawRevenue),
+            pnlColorClass,
+            pnlIconClass,
+            formatPercentage(roi)
+        );
+    }
+    
+    // Central function to update all PNL related fields
+    function updateAllDisplays(pnl, cost, rawCost, revenue, rawRevenue, boxClass, iconClass, roi) {
+        // PNL Box
+        pnlAtFinalDisplay.textContent = pnl;
+        pnlResultBox.className = `final-pnl-box p-5 rounded-xl border d-flex flex-column items-center justify-content-center mb-4 ${boxClass}`;
+        pnlIcon.className = `bi fs-3 me-4 flex-shrink-0 ${iconClass}`;
+        
+        // Cost/Revenue Boxes
+        totalBuyCostDisplay.textContent = cost;
+        rawCostDisplay.textContent = `Initial Investment: ${rawCost}`;
+        totalRevenueDisplay.textContent = revenue;
+        rawRevenueDisplay.textContent = `Raw Revenue: ${rawRevenue}`;
+        
+        // ROI
+        roiDisplay.textContent = roi;
+    }
+
+    // Function to reset all inputs and outputs
+    function resetDisplay() {
+        // Clear all inputs
+        cryptoNameInput.value = '';
+        amountInput.value = '';
+        entryPriceInput.value = '';
+        exitPriceInput.value = '';
+        buyFeeInput.value = '';
+        sellFeeInput.value = '';
+        
+        // Reset output fields
+        coinSymbolDisplay.textContent = 'COIN';
+        updateAllDisplays('--', '--', '--', '--', '--', 'border-secondary bg-light', 'bi-currency-dollar text-muted', '--');
+    }
+
+
+    // --- Event Listeners ---
+    
+    // Inputs that trigger calculation
+    [cryptoNameInput, amountInput, entryPriceInput, exitPriceInput, buyFeeInput, sellFeeInput].forEach(input => {
+        input.addEventListener('input', calculateCryptoPNL);
+        input.addEventListener('change', calculateCryptoPNL);
+    });
+    
+    // Reset button handler
+    resetButton.addEventListener('click', resetDisplay);
+
+    // Initial page load: Reset to clean slate
+    document.addEventListener('DOMContentLoaded', resetDisplay);
+</script>
+{% endblock %}

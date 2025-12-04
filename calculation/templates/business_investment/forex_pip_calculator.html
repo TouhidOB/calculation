@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+
+{% block title %}Forex Pip and P/L Calculator{% endblock %}
+
+{% block meta_description %}Calculate Forex pip value, pip difference, and total Profit/Loss for any currency pair and account type using standard lot sizes.{% endblock %}
+
+{% block meta_keywords %}Forex, Pip Calculator, P/L, Profit Loss, Currency Trading, Lot Size, Pip Value{% endblock %}
+
+{% block extra_head %}
+<!-- Include Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for a professional, focused look (Indigo/Teal/Monospace for prices) */
+    :root {
+        --bs-indigo-600: #4f46e5;
+        --bs-indigo-100: #eef2ff;
+        --bs-indigo-800: #3730a3;
+        --bs-teal-500: #14b8a6;
+    }
+
+    .calc-wrapper {
+        background-color: var(--bs-white);
+        border-radius: 1rem;
+        box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.15);
+    }
+
+    .header-icon {
+        color: var(--bs-indigo-600);
+    }
+
+    .input-group-text {
+        background-color: var(--bs-indigo-100);
+        color: var(--bs-indigo-600);
+        font-weight: 600;
+        border: 1px solid var(--bs-indigo-600);
+    }
+
+    .input-price {
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-weight: 700;
+    }
+
+    /* Metric Boxes */
+    .metric-box {
+        padding: 1rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        min-height: 120px; /* Ensure consistent height */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .final-pnl-value {
+        font-size: 3rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+    .final-pnl-box {
+        border-width: 2px !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="calc-wrapper p-5">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <h1 class="h4 fw-bold header-icon d-flex align-items-center mb-0">
+                        <i class="bi bi-graph-up-arrow fs-3 me-3"></i> Forex Pip Calculator
+                    </h1>
+                    <button
+                        id="reset-button"
+                        class="btn btn-sm text-muted hover-opacity-75 d-flex align-items-center"
+                        type="button"
+                    >
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </button>
+                </div>
+
+                <form id="forex-form" class="needs-validation" novalidate>
+                    
+                    <!-- 1. Trade Parameters -->
+                    <div class="p-4 bg-indigo-100 rounded-lg border border-indigo-300 mb-5">
+                        <h2 class="fs-5 fw-semibold text-indigo-800 d-flex align-items-center mb-3">
+                            <i class="bi bi-gear-fill me-2"></i> Trade Settings
+                        </h2>
+                        
+                        <!-- Currency Selection -->
+                        <div class="row g-3 mb-4">
+                            <!-- Base Currency -->
+                            <div class="col-md-4">
+                                <label for="base" class="form-label small fw-semibold text-gray-700 mb-1">Base Currency</label>
+                                <input
+                                    id="base"
+                                    type="text"
+                                    class="form-control p-3 uppercase"
+                                    placeholder="e.g., EUR"
+                                    maxlength="3"
+                                    required
+                                >
+                            </div>
+                            <!-- Quote Currency -->
+                            <div class="col-md-4">
+                                <label for="quote" class="form-label small fw-semibold text-gray-700 mb-1">Quote Currency</label>
+                                <input
+                                    id="quote"
+                                    type="text"
+                                    class="form-control p-3 uppercase"
+                                    placeholder="e.g., USD"
+                                    maxlength="3"
+                                    required
+                                >
+                            </div>
+                            <!-- Account Currency -->
+                            <div class="col-md-4">
+                                <label for="account" class="form-label small fw-semibold text-gray-700 mb-1">Account Currency</label>
+                                <input
+                                    id="account"
+                                    type="text"
+                                    class="form-control p-3 uppercase"
+                                    placeholder="e.g., USD"
+                                    maxlength="3"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Trade Size -->
+                        <div>
+                            <label for="lots" class="form-label fw-semibold text-dark">Trade Size (Lots)</label>
+                            <div class="input-group">
+                                <span class="input-group-text p-3">
+                                    <i class="bi bi-layers-fill"></i>
+                                </span>
+                                <input
+                                    id="lots"
+                                    type="number"
+                                    min="0.01"
+                                    step="0.01"
+                                    class="form-control p-3 input-price"
+                                    placeholder="e.g., 1.0 (Standard Lot)"
+                                    required
+                                >
+                            </div>
+                             <p id="lot-size-units" class="text-muted mt-1 small">1 Lot = 100,000 units.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2. Price Movement -->
+                    <h2 class="fs-5 fw-semibold text-dark d-flex align-items-center mb-3">
+                        <i class="bi bi-bullseye me-2"></i> Price Movement
+                    </h2>
+                    <div class="row g-4 mb-5">
+                        <!-- Entry Price -->
+                        <div class="col-md-6">
+                            <label for="entry" class="form-label fw-semibold text-dark">Entry Price</label>
+                            <input
+                                id="entry"
+                                type="number"
+                                step="0.00001"
+                                class="form-control p-3 input-price"
+                                placeholder="e.g., 1.0850"
+                                required
+                            >
+                        </div>
+                        <!-- Exit Price -->
+                        <div class="col-md-6">
+                            <label for="exit" class="form-label fw-semibold text-dark">Exit Price</label>
+                            <input
+                                id="exit"
+                                type="number"
+                                step="0.00001"
+                                class="form-control p-3 input-price"
+                                placeholder="e.g., 1.0900"
+                                required
+                            >
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Conversion Input (Conditional) -->
+                <div id="conversion-section" class="p-4 bg-warning-subtle rounded-lg border border-warning-subtle mb-5" style="display: none;">
+                    <p class="small fw-bold text-warning-emphasis mb-2 d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Conversion Required: <span id="conversion-pair"></span>
+                    </p>
+                    <label for="conversionRate" class="form-label small fw-semibold text-warning-emphasis mb-1">
+                        Exchange Rate (<span id="conversion-label"></span>)
+                    </label>
+                    <input
+                        id="conversionRate"
+                        type="number"
+                        min="0"
+                        step="0.00001"
+                        class="form-control p-3 input-price"
+                        placeholder="e.g., 1.05"
+                        required
+                    >
+                </div>
+
+
+                <!-- 3. Results -->
+                <div class="pt-2 border-top border-gray-200 space-y-4">
+                    <h2 class="fs-4 fw-bold text-indigo-800 mb-4">Calculated Results</h2>
+
+                    <div class="row g-4 mb-4 text-center">
+                        
+                        <!-- Pip Difference -->
+                        <div class="col-md-4">
+                            <div class="metric-box bg-light border border-secondary-subtle">
+                                <p class="text-sm fw-medium text-muted mb-1">Pip Difference</p>
+                                <p id="pip-difference-display" class="fs-3 fw-extrabold text-dark mt-1">--</p>
+                                <p id="pip-pair-display" class="text-xs text-muted mb-0">--</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Pip Value -->
+                        <div class="col-md-4">
+                            <div class="metric-box bg-light border border-secondary-subtle">
+                                <p class="text-sm fw-medium text-muted mb-1">Pip Value</p>
+                                <p id="pip-value-display" class="fs-3 fw-extrabold text-dark mt-1">--</p>
+                                <p id="pip-value-currency-display" class="text-xs text-muted mb-0">--</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Pip Size -->
+                        <div class="col-md-4">
+                            <div class="metric-box bg-light border border-secondary-subtle">
+                                <p class="text-sm fw-medium text-muted mb-1">Pip Size</p>
+                                <p id="pip-size-display" class="fs-3 fw-extrabold text-dark mt-1">--</p>
+                                <p id="pip-size-desc-display" class="text-xs text-muted mb-0">--</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total P/L Result -->
+                    <div id="pnl-result-box" class="final-pnl-box p-5 rounded-xl border d-flex flex-column items-center justify-content-center mt-5">
+                        <div class="d-flex align-items-center">
+                            <i id="pnl-icon" class="bi fs-3 me-4 flex-shrink-0"></i>
+                            <div class='d-flex flex-column text-center'>
+                                <span class="text-lg fw-medium text-muted">Total Profit/Loss</span>
+                                <span id="pnl-at-final-display" class="final-pnl-value">
+                                    --
+                                </span>
+                            </div>
+                        </div>
+                        <p id="pnl-account-currency" class="small mt-2 mb-0">
+                            In Account Currency (---)
+                        </p>
+                    </div>
+                    
+                    <!-- Disclaimer -->
+                    <div class="mt-4 p-3 alert alert-info d-flex align-items-start small" role="alert">
+                        <i class="bi bi-info-circle-fill fs-5 flex-shrink-0 me-3 mt-1"></i>
+                        <div>
+                            <span class="fw-bold">Note on Complexity:</span> The P/L is calculated in the Quote Currency and converted to the Account Currency using the provided rate. This calculation uses the standard lot size of **100,000 units**.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Configuration constants
+    const STANDARD_LOT_SIZE = 100000;
+    const JPY_PIP_FACTOR = 0.01;
+    const DEFAULT_PIP_FACTOR = 0.0001;
+    
+    // --- Helper Functions ---
+
+    // Helper to format number (for pips/rates)
+    const formatNumber = (amount, decimals = 4) => {
+        return new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+        }).format(amount);
+    };
+
+    // Helper to format currency for P/L
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD', // Use generic USD symbol for display
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(amount);
+    };
+    
+    // --- DOM Elements ---
+    const form = document.getElementById('forex-form');
+    const resetButton = document.getElementById('reset-button');
+
+    // Input Elements
+    const baseInput = document.getElementById('base');
+    const quoteInput = document.getElementById('quote');
+    const accountInput = document.getElementById('account');
+    const lotsInput = document.getElementById('lots');
+    const entryInput = document.getElementById('entry');
+    const exitInput = document.getElementById('exit');
+    const conversionRateInput = document.getElementById('conversionRate');
+    
+    // Output Elements
+    const lotSizeUnitsDisplay = document.getElementById('lot-size-units');
+    const conversionSection = document.getElementById('conversion-section');
+    const conversionPairDisplay = document.getElementById('conversion-pair');
+    const conversionLabelDisplay = document.getElementById('conversion-label');
+    const pipDifferenceDisplay = document.getElementById('pip-difference-display');
+    const pipPairDisplay = document.getElementById('pip-pair-display');
+    const pipValueDisplay = document.getElementById('pip-value-display');
+    const pipValueCurrencyDisplay = document.getElementById('pip-value-currency-display');
+    const pipSizeDisplay = document.getElementById('pip-size-display');
+    const pipSizeDescDisplay = document.getElementById('pip-size-desc-display');
+    const pnlAtFinalDisplay = document.getElementById('pnl-at-final-display');
+    const pnlResultBox = document.getElementById('pnl-result-box');
+    const pnlIcon = document.getElementById('pnl-icon');
+    const pnlAccountCurrencyDisplay = document.getElementById('pnl-account-currency');
+
+    // --- State/Input Accessors ---
+
+    function getInputs() {
+        return {
+            baseCurrency: baseInput.value.toUpperCase(),
+            quoteCurrency: quoteInput.value.toUpperCase(),
+            accountCurrency: accountInput.value.toUpperCase(),
+            tradeSizeLots: parseFloat(lotsInput.value) || 0,
+            entryPrice: parseFloat(entryInput.value) || 0,
+            exitPrice: parseFloat(exitInput.value) || 0,
+            conversionRate: parseFloat(conversionRateInput.value) || 1.0,
+        };
+    }
+    
+    // --- Main Logic ---
+
+    function calculateForexPNL() {
+        const {
+            baseCurrency,
+            quoteCurrency,
+            accountCurrency,
+            tradeSizeLots,
+            entryPrice,
+            exitPrice,
+            conversionRate,
+        } = getInputs();
+
+        // 1. Input Validation: Check if core numeric inputs are valid
+        if (tradeSizeLots <= 0 || entryPrice <= 0 || exitPrice <= 0) {
+            updateAllDisplays('--', 'border-secondary bg-light', 'bi-currency-dollar text-muted', '---');
+            return;
+        }
+
+        // --- Core Calculations ---
+
+        // 1. Determine Pip Size
+        const isJpyPair = quoteCurrency === 'JPY';
+        const pipSize = isJpyPair ? JPY_PIP_FACTOR : DEFAULT_PIP_FACTOR;
+
+        // 2. Calculate Pip Difference
+        const priceChange = exitPrice - entryPrice;
+        const pipDifference = priceChange / pipSize;
+
+        // 3. Determine Pip Value in Quote Currency
+        const lotSizeInUnits = tradeSizeLots * STANDARD_LOT_SIZE;
+        // Formula: (Pip Size / Exit Price) * Lot Size
+        const pipValueInQuote = (pipSize / exitPrice) * lotSizeInUnits;
+
+        // 4. Calculate P/L in Quote Currency
+        let totalPNL = pipDifference * pipValueInQuote;
+
+        // 5. Apply Conversion if necessary
+        const isConversionRequired = quoteCurrency !== accountCurrency;
+        
+        if (isConversionRequired) {
+            // Apply conversion rate: PNL in Account Currency = PNL Quote * Conversion Rate (Quote/Account)
+            totalPNL *= conversionRate;
+        }
+
+        // --- Update Displays ---
+        
+        // Lot Size Units (always update based on current base currency)
+        lotSizeUnitsDisplay.textContent = `1 Lot = ${formatNumber(STANDARD_LOT_SIZE, 0)} units. Trade size: ${formatNumber(lotSizeInUnits, 0)} ${baseCurrency}.`;
+
+        // Conversion Section (show/hide)
+        if (isConversionRequired) {
+            conversionSection.style.display = 'block';
+            conversionPairDisplay.textContent = `${quoteCurrency}/${accountCurrency}`;
+            conversionLabelDisplay.textContent = `${quoteCurrency} to ${accountCurrency}`;
+        } else {
+            conversionSection.style.display = 'none';
+        }
+
+        // Pip Metrics
+        pipDifferenceDisplay.textContent = formatNumber(pipDifference, 2);
+        pipPairDisplay.textContent = `${baseCurrency}/${quoteCurrency}`;
+        pipValueDisplay.textContent = formatNumber(pipValueInQuote, 2);
+        pipValueCurrencyDisplay.textContent = `Per Pip in ${quoteCurrency}`;
+        pipSizeDisplay.textContent = formatNumber(pipSize, isJpyPair ? 2 : 4);
+        pipSizeDescDisplay.textContent = isJpyPair ? `(J-Pairs: ${JPY_PIP_FACTOR})` : `(Non-J-Pairs: ${DEFAULT_PIP_FACTOR})`;
+
+        // Final P/L Styling and Display
+        let pnlColorClass, pnlIconClass;
+
+        if (totalPNL > 0) {
+            pnlColorClass = 'border-success bg-success-subtle';
+            pnlIconClass = 'bi-graph-up-arrow text-success';
+        } else if (totalPNL < 0) {
+            pnlColorClass = 'border-danger bg-danger-subtle';
+            pnlIconClass = 'bi-graph-down-arrow text-danger';
+        } else {
+            pnlColorClass = 'border-secondary bg-light';
+            pnlIconClass = 'bi-currency-dollar text-muted';
+        }
+
+        updateAllDisplays(formatCurrency(totalPNL), pnlColorClass, pnlIconClass, accountCurrency);
+    }
+    
+    // Central function to update all PNL related fields
+    function updateAllDisplays(pnlValue, boxClass, iconClass, currency) {
+        pnlAtFinalDisplay.textContent = pnlValue;
+        pnlResultBox.className = `final-pnl-box p-5 rounded-xl border d-flex flex-column items-center justify-content-center mt-5 ${boxClass}`;
+        pnlIcon.className = `bi fs-3 me-4 flex-shrink-0 ${iconClass}`;
+        pnlAccountCurrencyDisplay.textContent = `In Account Currency (${currency})`;
+    }
+
+    // Function to reset all inputs and outputs
+    function resetDisplay() {
+        // Clear all inputs
+        baseInput.value = '';
+        quoteInput.value = '';
+        accountInput.value = '';
+        lotsInput.value = '';
+        entryInput.value = '';
+        exitInput.value = '';
+        conversionRateInput.value = '';
+
+        // Reset output fields
+        lotSizeUnitsDisplay.textContent = '1 Lot = 100,000 units.';
+        conversionSection.style.display = 'none';
+        pipDifferenceDisplay.textContent = '--';
+        pipPairDisplay.textContent = '--';
+        pipValueDisplay.textContent = '--';
+        pipValueCurrencyDisplay.textContent = '--';
+        pipSizeDisplay.textContent = '--';
+        pipSizeDescDisplay.textContent = '--';
+
+        // Reset PNL box
+        updateAllDisplays('--', 'border-secondary bg-light', 'bi-currency-dollar text-muted', '---');
+    }
+
+
+    // --- Event Listeners ---
+    
+    // Inputs that trigger calculation
+    [baseInput, quoteInput, accountInput, lotsInput, entryInput, exitInput, conversionRateInput].forEach(input => {
+        input.addEventListener('input', calculateForexPNL);
+        input.addEventListener('change', calculateForexPNL);
+    });
+    
+    // Reset button handler
+    resetButton.addEventListener('click', resetDisplay);
+
+    // Initial page load: Reset to clean slate
+    document.addEventListener('DOMContentLoaded', resetDisplay);
+</script>
+{% endblock %}

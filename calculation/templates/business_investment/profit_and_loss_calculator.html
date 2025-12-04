@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+
+{% block title %}Option P/L Calculator{% endblock %}
+
+{% block meta_description %}Calculate Profit/Loss, maximum profit, maximum loss, and breakeven price for single leg call and put options (Long/Short).{% endblock %}
+
+{% block meta_keywords %}Options PNL, Call, Put, Long, Short, Breakeven, Max Profit, Max Loss, financial calculator{% endblock %}
+
+{% block extra_head %}
+<!-- Include Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for a fresh, professional look (Indigo/Teal theme) */
+    :root {
+        --bs-indigo-600: #4f46e5;
+        --bs-teal: #14b8a6;
+        --bs-teal-100: #ccfbf1;
+        --bs-indigo-100: #eef2ff;
+        --bs-indigo-800: #3730a3;
+    }
+
+    .calc-wrapper {
+        background-color: var(--bs-white);
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+    }
+
+    .header-icon {
+        color: var(--bs-indigo-600);
+    }
+
+    .input-group-text {
+        background-color: var(--bs-indigo-100);
+        color: var(--bs-indigo-600);
+        font-weight: 600;
+        border: 1px solid var(--bs-indigo-600);
+    }
+
+    /* Option/Position Button Styling */
+    .btn-option {
+        background-color: white;
+        color: var(--bs-indigo-600);
+        border: 2px solid var(--bs-indigo-100);
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    .btn-option:hover:not(.active) {
+        background-color: var(--bs-indigo-100);
+        border-color: var(--bs-indigo-600);
+    }
+    .btn-option.active {
+        background-color: var(--bs-indigo-600);
+        color: white;
+        box-shadow: 0 4px 8px rgba(79, 70, 229, 0.4);
+        border-color: var(--bs-indigo-600);
+    }
+
+    /* Key Metric Boxes */
+    .metric-box {
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .breakeven-box {
+        background-color: #f3f4f6; /* Light Gray */
+        border: 2px solid #e5e7eb;
+    }
+    
+    .final-pnl-value {
+        font-size: 2.5rem;
+        font-weight: 900;
+    }
+    .final-pnl-box {
+        border-width: 2px !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="calc-wrapper p-5">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <h1 class="h4 fw-bold header-icon d-flex align-items-center mb-0">
+                        <i class="bi bi-layers-half fs-3 me-3"></i> Option P/L Calculator
+                    </h1>
+                    <button
+                        id="reset-button"
+                        class="btn btn-sm text-muted hover-opacity-75 d-flex align-items-center"
+                        type="button"
+                    >
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </button>
+                </div>
+
+                <form id="pnl-form" class="needs-validation" novalidate>
+                    
+                    <!-- 1. Define the Option -->
+                    <h2 class="fs-5 fw-semibold text-dark mb-3">1. Define the Trade</h2>
+                    
+                    <!-- Type & Position Selector -->
+                    <div class="row g-4 mb-4">
+                        <!-- Option Type -->
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-2">Option Type</label>
+                            <div class="btn-group w-100" role="group">
+                                <button
+                                    type="button"
+                                    id="btn-call"
+                                    class="btn btn-option p-3 active"
+                                    data-type="CALL"
+                                >
+                                    Call
+                                </button>
+                                <button
+                                    type="button"
+                                    id="btn-put"
+                                    class="btn btn-option p-3"
+                                    data-type="PUT"
+                                >
+                                    Put
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Position -->
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted mb-2">Position</label>
+                            <div class="btn-group w-100" role="group">
+                                <button
+                                    type="button"
+                                    id="btn-long"
+                                    class="btn btn-option p-3 active"
+                                    data-position="LONG"
+                                >
+                                    Long (Buy)
+                                </button>
+                                <button
+                                    type="button"
+                                    id="btn-short"
+                                    class="btn btn-option p-3"
+                                    data-position="SHORT"
+                                >
+                                    Short (Sell)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Strike and Premium Inputs -->
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <label for="strike" class="form-label fw-semibold text-dark">Strike Price ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text p-3"><i class="bi bi-tag-fill"></i></span>
+                                <input
+                                    id="strike"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="form-control p-3"
+                                    placeholder="e.g., 100.00"
+                                    required
+                                    aria-label="Strike Price"
+                                >
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="premium" class="form-label fw-semibold text-dark">Premium Paid/Received ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text p-3"><i class="bi bi-currency-dollar"></i></span>
+                                <input
+                                    id="premium"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="form-control p-3"
+                                    placeholder="e.g., 5.00"
+                                    required
+                                    aria-label="Premium"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <!-- 2. Key Metrics -->
+                <h2 class="fs-5 fw-semibold text-dark mb-3">2. Key Metrics (Per Contract)</h2>
+
+                <!-- Breakeven Price -->
+                <div class="metric-box breakeven-box mb-4 d-flex justify-content-between align-items-center">
+                    <p class="h6 fw-bold text-muted mb-0 d-flex align-items-center">
+                        <i class="bi bi-dash-circle-fill me-2 text-indigo-600"></i> Breakeven Price (Per Share)
+                    </p>
+                    <span id="breakeven-price-display" class="fs-4 fw-extrabold text-indigo-800">
+                        --
+                    </span>
+                </div>
+
+                <!-- Max P/L -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <div class="metric-box bg-teal-100 border border-teal-500">
+                            <p class="text-sm fw-medium text-teal-800 mb-1">Max Profit</p>
+                            <p id="max-profit-display" class="fs-4 fw-extrabold text-teal">
+                                --
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="metric-box bg-danger-subtle border border-danger-subtle">
+                            <p class="text-sm fw-medium text-danger-emphasis mb-1">Max Loss</p>
+                            <p id="max-loss-display" class="fs-4 fw-extrabold text-danger">
+                                --
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- 3. Scenario Analysis -->
+                <h2 class="fs-5 fw-semibold text-dark mb-3">3. P/L Scenario Analysis</h2>
+                    
+                <!-- Final Stock Price Input -->
+                <div class="mb-4">
+                    <label for="finalPrice" class="form-label fw-semibold text-dark">Final Stock Price at Expiration ($)</label>
+                    <div class="input-group">
+                        <span class="input-group-text p-3"><i class="bi bi-graph-up-arrow"></i></span>
+                        <input
+                            id="finalPrice"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            class="form-control p-3 fs-5 fw-bold"
+                            placeholder="e.g., 110.00"
+                            required
+                            aria-label="Final Stock Price"
+                        >
+                    </div>
+                    <p class="text-muted mt-1 small">The stock price when the option expires.</p>
+                </div>
+
+                <!-- Result Box -->
+                <div id="pnl-result-box" class="final-pnl-box p-4 rounded-xl border d-flex items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i id="pnl-icon" class="bi fs-3 me-3 flex-shrink-0"></i>
+                        <div class='d-flex flex-column'>
+                            <span class="small fw-medium text-muted">Profit/Loss at Final Price:</span>
+                            <span id="pnl-at-final-display" class="final-pnl-value">
+                                --
+                            </span>
+                        </div>
+                    </div>
+                    <p class="small text-muted text-end mb-0">
+                        Based on 1 Contract (100 shares)
+                    </p>
+                </div>
+                
+                <div class="mt-4 p-3 alert alert-info d-flex align-items-start small" role="alert">
+                    <i class="bi bi-info-circle-fill fs-5 flex-shrink-0 me-3 mt-1"></i>
+                    <div>
+                        <span class="fw-bold">Visualize the Strategy:</span> Understanding the potential payoff is easier when visualized. The P/L calculation determines the profit curve. 
+
+[Image of option profit and loss graph]
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Configuration
+    const SHARES_PER_CONTRACT = 100;
+
+    // --- Helper Functions ---
+
+    // Helper to format currency
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(amount);
+    };
+
+    // Main P/L calculation logic (per contract, multiplying by SHARES_PER_CONTRACT)
+    const calculatePNL = (type, position, strike, premium, finalPrice) => {
+        if (type === 'CALL') {
+            const intrinsicValue = Math.max(0, finalPrice - strike);
+            const pnlPerShare = intrinsicValue - premium;
+            return position === 'LONG' ? pnlPerShare * SHARES_PER_CONTRACT : -pnlPerShare * SHARES_PER_CONTRACT;
+        } else { // PUT
+            const intrinsicValue = Math.max(0, strike - finalPrice);
+            const pnlPerShare = intrinsicValue - premium;
+            return position === 'LONG' ? pnlPerShare * SHARES_PER_CONTRACT : -pnlPerShare * SHARES_PER_CONTRACT;
+        }
+    };
+
+    // Renders Max Profit/Loss value with proper formatting and color
+    const renderProfitLoss = (value) => {
+        if (typeof value === 'string') {
+            return `<span class="fw-extrabold text-indigo-600">${value}</span>`;
+        }
+        const isLoss = value < 0;
+        const color = isLoss ? 'text-danger' : 'text-success';
+        return `<span class="fw-extrabold ${color}">${formatCurrency(value)}</span>`;
+    };
+
+    // --- DOM Elements ---
+    const form = document.getElementById('pnl-form');
+    const resetButton = document.getElementById('reset-button');
+    const strikeInput = document.getElementById('strike');
+    const premiumInput = document.getElementById('premium');
+    const finalPriceInput = document.getElementById('finalPrice');
+    const btnCall = document.getElementById('btn-call');
+    const btnPut = document.getElementById('btn-put');
+    const btnLong = document.getElementById('btn-long');
+    const btnShort = document.getElementById('btn-short');
+
+    // Output Elements
+    const breakevenDisplay = document.getElementById('breakeven-price-display');
+    const maxProfitDisplay = document.getElementById('max-profit-display');
+    const maxLossDisplay = document.getElementById('max-loss-display');
+    const pnlAtFinalDisplay = document.getElementById('pnl-at-final-display');
+    const pnlResultBox = document.getElementById('pnl-result-box');
+    const pnlIcon = document.getElementById('pnl-icon');
+
+    // --- State Variables ---
+    let optionType = 'CALL';
+    let position = 'LONG';
+
+    // --- Main Logic ---
+
+    function calculateOptionsPNL() {
+        const strikePrice = parseFloat(strikeInput.value);
+        const premium = parseFloat(premiumInput.value);
+        const finalPrice = parseFloat(finalPriceInput.value);
+
+        // Guard clause: stop if any required input is not a valid number
+        if (isNaN(strikePrice) || isNaN(premium) || isNaN(finalPrice)) {
+            // Update only if an interaction occurred but data is incomplete
+            updatePnlDisplay('--', 'border-secondary', 'bi-currency-dollar text-muted');
+            return;
+        }
+
+        // --- Calculate Key Metrics ---
+        let maxProfit, maxLoss, breakevenPrice;
+
+        const premiumTotal = premium * SHARES_PER_CONTRACT;
+        const strikePremium = strikePrice + premium;
+        const strikeMinusPremium = strikePrice - premium;
+
+        if (optionType === 'CALL') {
+            if (position === 'LONG') {
+                maxProfit = 'Unlimited';
+                maxLoss = -premiumTotal;
+                breakevenPrice = strikePremium;
+            } else { // Short Call
+                maxProfit = premiumTotal;
+                maxLoss = 'Unlimited';
+                breakevenPrice = strikePremium;
+            }
+        } else { // PUT
+            if (position === 'LONG') {
+                maxProfit = (strikePrice - premium) * SHARES_PER_CONTRACT; // Max profit at S=0
+                maxLoss = -premiumTotal;
+                breakevenPrice = strikeMinusPremium;
+            } else { // Short Put
+                maxProfit = premiumTotal;
+                maxLoss = (strikePrice * SHARES_PER_CONTRACT) - premiumTotal; // Max loss at S=0
+                breakevenPrice = strikeMinusPremium;
+            }
+        }
+
+        // --- Calculate Scenario P/L ---
+        const pnlAtFinal = calculatePNL(optionType, position, strikePrice, premium, finalPrice);
+
+        // --- Update Displays ---
+        breakevenDisplay.textContent = formatCurrency(breakevenPrice);
+        maxProfitDisplay.innerHTML = renderProfitLoss(maxProfit);
+        maxLossDisplay.innerHTML = renderProfitLoss(maxLoss);
+        
+        // Final P/L Styling
+        let pnlColorClass, pnlIconClass;
+
+        if (pnlAtFinal > 0) {
+            pnlColorClass = 'border-success bg-success-subtle';
+            pnlIconClass = 'bi-graph-up text-success';
+        } else if (pnlAtFinal < 0) {
+            pnlColorClass = 'border-danger bg-danger-subtle';
+            pnlIconClass = 'bi-graph-down text-danger';
+        } else {
+            pnlColorClass = 'border-secondary bg-light';
+            pnlIconClass = 'bi-currency-dollar text-muted';
+        }
+
+        updatePnlDisplay(formatCurrency(pnlAtFinal), pnlColorClass, pnlIconClass);
+    }
+
+    function updatePnlDisplay(value, boxClass, iconClass) {
+        pnlAtFinalDisplay.textContent = value;
+        pnlResultBox.className = `final-pnl-box p-4 rounded-xl border d-flex items-center justify-content-between ${boxClass}`;
+        pnlIcon.className = `bi fs-3 me-3 flex-shrink-0 ${iconClass}`;
+    }
+
+    function resetDisplay() {
+        // Clear all inputs
+        strikeInput.value = '';
+        premiumInput.value = '';
+        finalPriceInput.value = '';
+
+        // Reset state variables and active buttons
+        optionType = 'CALL';
+        position = 'LONG';
+        btnCall.classList.add('active');
+        btnPut.classList.remove('active');
+        btnLong.classList.add('active');
+        btnShort.classList.remove('active');
+
+        // Reset output fields to clean slate
+        breakevenDisplay.textContent = '--';
+        maxProfitDisplay.innerHTML = renderProfitLoss('--');
+        maxLossDisplay.innerHTML = renderProfitLoss('--');
+        updatePnlDisplay('--', 'border-secondary bg-light', 'bi-currency-dollar text-muted');
+    }
+
+    // --- Event Listeners ---
+
+    // Option/Position selector logic
+    document.querySelectorAll('.btn-option').forEach(button => {
+        button.addEventListener('click', function() {
+            const dataKey = this.getAttribute('data-type') ? 'data-type' : 'data-position';
+            const value = this.getAttribute(dataKey);
+            
+            if (dataKey === 'data-type') {
+                optionType = value;
+                btnCall.classList.toggle('active', value === 'CALL');
+                btnPut.classList.toggle('active', value === 'PUT');
+            } else {
+                position = value;
+                btnLong.classList.toggle('active', value === 'LONG');
+                btnShort.classList.toggle('active', value === 'SHORT');
+            }
+            calculateOptionsPNL();
+        });
+    });
+
+    // Input listeners for real-time calculation
+    [strikeInput, premiumInput, finalPriceInput].forEach(input => {
+        input.addEventListener('input', calculateOptionsPNL);
+        input.addEventListener('change', calculateOptionsPNL);
+    });
+    
+    // Reset button handler
+    resetButton.addEventListener('click', resetDisplay);
+
+    // Initial page load: Reset to clean slate
+    document.addEventListener('DOMContentLoaded', resetDisplay);
+
+</script>
+{% endblock %}

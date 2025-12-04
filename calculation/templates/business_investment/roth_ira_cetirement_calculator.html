@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Roth IRA Retirement Calculator{% endblock %}
+
+{% block meta_description %}Project your total Roth IRA balance at retirement by calculating the future value of your current savings and all future contributions using compound interest.{% endendblock %}
+
+{% block meta_keywords %}Roth IRA calculator, tax-free growth, retirement savings, future value, compounding, financial planning, investment projection{% endendblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance, emphasizing Roth's danger/tax-free theme */
+    .calc-wrapper {
+        background: var(--bs-white);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(220, 53, 69, 0.15); /* Soft shadow with theme color (Danger/Red) */
+        border: 1px solid var(--bs-light);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: var(--bs-danger); /* Bootstrap Danger/Red for emphasis */
+    }
+
+    .result-card {
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .main-result { 
+        color: var(--bs-danger); /* Red for the final tax-free amount */
+        font-weight: bold; 
+        font-size: 3.5rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    .secondary-result {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--bs-success); /* Green for positive growth components */
+    }
+
+    /* Input group color for consistency */
+    .input-group-text {
+        background-color: var(--bs-light);
+        color: var(--bs-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark"><i class="bi bi-fire me-2 text-danger"></i> Roth IRA Retirement Projection</h1>
+        <p class="lead text-muted">Project the **tax-free future value** of your retirement savings using your current balance and regular contributions.</p>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="calc-wrapper">
+
+                <div class="mb-4 p-3 border-start border-4 border-danger bg-danger-subtle bg-opacity-10">
+                    <p class="mb-0 small text-dark fw-bold">
+                        The total future balance is the sum of two compounded components:
+                    </p>
+                    <ol class="small mb-0">
+                        <li>**Future Value (FV) of Current Balance:** Calculated using $FV = P (1 + r)^t$</li>
+                        <li>**Future Value of Annuity (FVA) of Contributions:** Calculated using $FVA = PMT \times \left[ \frac{(1 + i)^n - 1}{i} \right]$</li>
+                    </ol>
+                    
+
+[Image of compound interest formula]
+
+                </div>
+                <form id="roth-ira-form">
+                    <h5 class="section-title border-bottom pb-2 mb-4"><i class="bi bi-coin me-1"></i> Current Situation & Growth Assumptions</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="current_balance" class="form-label">Current Roth IRA Balance</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                                <input type="number" class="form-control" id="current_balance" placeholder="e.g., 10000" min="0" step="1" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="annual_return" class="form-label">Expected Annual Return (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="annual_return" placeholder="e.g., 7.0" min="0.1" step="0.1" required>
+                                <span class="input-group-text"><i class="bi bi-percent"></i></span>
+                            </div>
+                            <div class="form-text">Typical long-term assumption is 6% to 8%.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="years_to_retirement" class="form-label mt-3">Years Until Retirement</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="years_to_retirement" placeholder="e.g., 35" min="1" step="1" required>
+                                <span class="input-group-text"><i class="bi bi-clock-fill"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="section-title mt-5 border-bottom pb-2 mb-4"><i class="bi bi-calendar-check me-1"></i> Contribution Details</h5>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="annual_contribution" class="form-label">Total Annual Contribution</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="annual_contribution" placeholder="e.g., 7000" min="0" step="1" required>
+                            </div>
+                            <div class="form-text">This is the total amount contributed yearly (e.g., the annual IRA limit).</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Contribution Frequency</label><br>
+                            <div class="btn-group w-100 mt-1" role="group" aria-label="Contribution frequency">
+                                <input type="radio" class="btn-check" name="contribution_frequency" id="freq_annually" value="1" autocomplete="off" checked>
+                                <label class="btn btn-outline-danger" for="freq_annually"><i class="bi bi-calendar-event"></i> Annually</label>
+
+                                <input type="radio" class="btn-check" name="contribution_frequency" id="freq_monthly" value="12" autocomplete="off">
+                                <label class="btn btn-outline-danger" for="freq_monthly"><i class="bi bi-calendar-week"></i> Monthly</label>
+                            </div>
+                            <p class="form-text mt-2 mb-0">Assumes contributions happen at the end of the period.</p>
+                        </div>
+                    </div>
+
+
+                    <button class="btn btn-danger btn-lg mt-5 w-100 shadow" type="submit">
+                        <i class="bi bi-graph-up-arrow me-2"></i> Project Retirement Balance
+                    </button>
+                </form>
+
+                <div id="roth-ira-summary" class="d-none">
+                    <h5 class="section-title mt-5 border-bottom pb-2"><i class="bi bi-check-circle-fill me-1"></i> Projected Tax-Free Balance</h5>
+                    <div class="row g-4 justify-content-center">
+                        <div class="col-lg-10">
+                            <div class="card result-card border-danger bg-danger-subtle">
+                                <div class="card-body">
+                                    <h6 class="card-title text-danger fw-bold">Projected Total Tax-Free at Retirement</h6>
+                                    <p id="total_balance" class="main-result"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="text-muted mt-4 mb-3"><i class="bi bi-info-circle me-1"></i> Breakdown of Funds</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title text-muted small mb-1">Total Contributions (Cash In)</h6>
+                                    <p id="total_contributions" class="secondary-result text-dark mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title text-muted small mb-1">Tax-Free Investment Earnings</h6>
+                                    <p id="total_earnings" class="secondary-result text-success mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert mt-4 d-none" id="error-message"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('roth-ira-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // Helper function for formatting currency
+    const currencyFormatter = (value) => {
+        const formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+        });
+        return formatter.format(Math.max(0, value)); // Ensure non-negative display
+    };
+
+    // --- Core Calculation Logic ---
+
+    /**
+     * Calculates the Future Value of a lump sum (Current Balance).
+     * FV = P * (1 + r)^t
+     * @param {number} P - Present Value (Initial Balance)
+     * @param {number} r - Annual interest rate (decimal)
+     * @param {number} t - Total number of years
+     */
+    function calculateFutureValueOfPV(P, r, t) {
+        return P * Math.pow(1 + r, t);
+    }
+
+    /**
+     * Calculates the Future Value of periodic contributions (Ordinary Annuity).
+     * FV = PMT_period * [((1 + i)^n - 1) / i]
+     * @param {number} PMT_period - Periodic contribution amount
+     * @param {number} i - Periodic interest rate (Annual Rate / Periods per year)
+     * @param {number} n - Total number of periods (Years * Periods per year)
+     */
+    function calculateFutureValueOfAnnuity(PMT_period, i, n) {
+        if (i === 0) {
+            return PMT_period * n; // Simple growth if rate is zero
+        }
+        // Future Value Annuity Factor (FVAF) = [(1 + i)^n - 1] / i
+        const fvaf = (Math.pow(1 + i, n) - 1) / i;
+        return PMT_period * fvaf;
+    }
+
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('roth-ira-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            // Using || 0 for P just in case the field is left blank in the 'fresh' form
+            const P = parseFloat(document.getElementById('current_balance').value || 0); 
+            const R_percent = parseFloat(document.getElementById('annual_return').value);
+            const T = parseInt(document.getElementById('years_to_retirement').value);
+            const Annual_Contrib = parseFloat(document.getElementById('annual_contribution').value);
+            
+            const frequencyElement = document.querySelector('input[name="contribution_frequency"]:checked');
+            // m = periods per year (1 for annual, 12 for monthly)
+            const m = parseInt(frequencyElement ? frequencyElement.value : '1'); 
+
+
+            if (isNaN(R_percent) || isNaN(T) || isNaN(Annual_Contrib) || !frequencyElement) {
+                displayError("Please fill out all required fields with valid numbers.");
+                return;
+            }
+
+            if (P < 0 || T <= 0 || Annual_Contrib < 0) {
+                displayError("Balance and Annual Contribution must be non-negative, and Years must be positive.");
+                return;
+            }
+
+            // 2. Prepare Variables
+            const R = R_percent / 100; // Annual Rate (decimal)
+            
+            // Adjust rate, payment, and periods based on contribution frequency (m)
+            const i = R / m; // Periodic Rate
+            const n = T * m; // Total Periods
+            const PMT_period = Annual_Contrib / m; // Periodic Contribution
+
+            // 3. Core Future Value Calculations
+            
+            // FV of Current Balance (Lump sum grows annually, assumed for simplicity)
+            const fv_pv = calculateFutureValueOfPV(P, R, T);
+            
+            // FV of Future Contributions (Annuity calculation based on periodic payment)
+            const fv_pmt = calculateFutureValueOfAnnuity(PMT_period, i, n);
+            
+            // Total Projected Balance
+            const totalFutureValue = fv_pv + fv_pmt;
+            
+            // Total Contributions (Cash In) = Initial Balance + (Annual Contribution * Years)
+            const totalCashIn = P + (Annual_Contrib * T);
+            
+            // Total Earnings = Total FV - Total Cash In
+            const totalEarnings = totalFutureValue - totalCashIn;
+
+            // 4. Update Summary Totals
+            
+            document.getElementById('total_balance').textContent = currencyFormatter(totalFutureValue);
+            document.getElementById('total_contributions').textContent = currencyFormatter(totalCashIn);
+            document.getElementById('total_earnings').textContent = currencyFormatter(totalEarnings);
+
+            // 5. Show Results
+            document.getElementById('roth-ira-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

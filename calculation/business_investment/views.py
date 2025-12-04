@@ -129,3 +129,24 @@ def annuity_payout_calculator(request):
 def retirement_calculator(request):
     return render(request, 'business_investment/401k_retirement_calculator.html')
 
+def roth_ira_cetirement_calculator(request):
+    return render(request, 'business_investment/roth_ira_cetirement_calculator.html')
+
+def social_security_benefits_calculator(request):
+    return render(request, 'business_investment/social_security_benefits_calculator.html')
+
+def retirement_pension_forecaster(request):
+    return render(request, 'business_investment/retirement_pension_forecaster.html')
+
+def hsa_contribution_calculator(request):
+    return render(request, 'business_investment/hsa_contribution_calculator.html')
+
+def profit_and_loss_calculator(request):
+    return render(request, 'business_investment/profit_and_loss_calculator.html')
+
+def forex_pip_calculator(request):
+    return render(request, 'business_investment/forex_pip_calculator.html')
+
+def crypto_profit_calculator(request):
+    return render(request, 'business_investment/crypto_profit_calculator.html')
+

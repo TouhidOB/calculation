@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}Retirement Pension Forecaster{% endblock %}
+
+{% block meta_description %}Project your defined contribution pension pot and estimate your future annual and monthly retirement income based on current savings and future contributions.{% endblock %}
+
+{% block meta_keywords %}pension calculator, retirement pot, defined contribution, monthly income, annual income, future value, compounding, financial planning{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance */
+    .calc-wrapper {
+        background: var(--bs-white);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(13, 110, 253, 0.15); /* Soft shadow with theme color (Primary/Blue) */
+        border: 1px solid var(--bs-light);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: var(--bs-primary);
+    }
+
+    /* Output Panel Styling (Matching the React's 'bg-blue-50') */
+    .output-panel {
+        background-color: var(--bs-blue-100); /* Use a light blue for the output background */
+        padding: 30px;
+        border-radius: 0 12px 12px 0; /* Only right side rounded if lg:grid-cols-2 */
+    }
+
+    /* Result Card Styles (Matching React's colored cards) */
+    .result-card-blue {
+        background-color: var(--bs-primary); /* Blue for total pot */
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        transition: transform 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-card-green {
+        background-color: var(--bs-success); /* Green for income */
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        transition: transform 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .main-result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-top: 5px;
+    }
+
+    /* Input group color for consistency */
+    .input-group-text {
+        background-color: var(--bs-light);
+        color: var(--bs-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="row g-0">
+                    
+                    <div class="col-lg-6 p-4 p-md-5 border-end">
+                        <h1 class="h3 fw-bold text-dark border-bottom pb-3 mb-4">
+                            <i class="bi bi-wallet-fill me-2 text-primary"></i> Retirement Pension Forecaster
+                        </h1>
+                        <p class="small text-muted mb-4">
+                            Project your Defined Contribution (DC) pension pot and estimated annual income.
+                        </p>
+
+                        <form id="pension-form" class="needs-validation" novalidate>
+                            
+                            <h5 class="section-title border-bottom pb-2 mb-4"><i class="bi bi-person-fill me-1"></i> Personal Timeline</h5>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="current_age" class="form-label">1. Current Age</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="current_age" placeholder="30" min="18" max="100" step="1" required>
+                                        <span class="input-group-text">Age</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="retirement_age" class="form-label">2. Planned Retirement Age</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="retirement_age" placeholder="65" min="19" max="100" step="1" required>
+                                        <span class="input-group-text">Age</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="section-title mt-5 border-bottom pb-2 mb-4"><i class="bi bi-currency-dollar me-1"></i> Financials</h5>
+
+                            <div class="mb-4">
+                                <label for="current_pot" class="form-label">3. Current Pension Savings Value</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="current_pot" placeholder="50000" min="0" step="100" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="monthly_contribution" class="form-label">4. Monthly Contribution (You + Employer)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="monthly_contribution" placeholder="500" min="0" step="10" required>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="annual_growth_rate" class="form-label">5. Expected Annual Growth Rate</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="annual_growth_rate" placeholder="7.0" min="0.1" max="20" step="0.1" required>
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="annuity_rate" class="form-label">6. Annuity/Withdrawal Rate (Annual)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="annuity_rate" placeholder="4.0" min="1" max="10" step="0.1" required>
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text">e.g., The 4% rule.</div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary btn-lg w-100 mt-5 shadow" type="submit">
+                                <i class="bi bi-graph-up-arrow me-2"></i> Forecast Retirement
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="col-lg-6 output-panel">
+                        <h2 class="h3 fw-bold text-primary border-bottom border-primary pb-3 mb-4">
+                            Your Retirement Forecast
+                        </h2>
+
+                        <div class="text-center bg-white p-4 rounded-xl shadow border border-primary-subtle mb-4">
+                            <p class="text-sm fw-semibold text-muted mb-0">Time Until Retirement</p>
+                            <p id="years_to_retirement_display" class="text-4xl fw-bolder text-primary mt-1">
+                                -- Years
+                            </p>
+                        </div>
+                        
+                        <div id="results-summary" class="d-none">
+                            <div class="space-y-3">
+                                <div class="result-card-blue">
+                                    <h3 class="h6 fw-bold">Projected Total Retirement Pot</h3>
+                                    <p id="total_pot_display" class="main-result-value">--</p>
+                                    <p class="small opacity-80 mb-0">
+                                        This is the estimated total value of your savings when you reach retirement age.
+                                    </p>
+                                </div>
+                                <div class="result-card-green">
+                                    <h3 class="h6 fw-bold">Estimated Annual Income</h3>
+                                    <p id="annual_income_display" class="main-result-value">--</p>
+                                    <p id="annual_income_desc" class="small opacity-80 mb-0">
+                                        Based on a 4% annual withdrawal/annuity rate.
+                                    </p>
+                                </div>
+                                <div class="result-card-green" style="background-color: #198754;">
+                                    <h3 class="h6 fw-bold">Estimated Monthly Income</h3>
+                                    <p id="monthly_income_display" class="main-result-value">--</p>
+                                    <p class="small opacity-80 mb-0">
+                                        The steady income you could receive monthly.
+                                    </p>
+                                </div>
+                            </div>
+    
+                            <div class="text-sm text-muted space-y-2 pt-4 mt-4 border-top border-primary-subtle">
+                                <h3 class="fw-bold text-primary">Breakdown of Pot</h3>
+                                <p class="mb-1">
+                                    <span class="fw-semibold text-dark">From Existing Savings:</span> <span id="fv_pot_display">--</span>
+                                </p>
+                                <p class="mb-1">
+                                    <span class="fw-semibold text-dark">From Future Contributions:</span> <span id="fv_contributions_display">--</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-danger d-none mt-4" id="error-message"></div>
+
+                        <div class="text-xs text-muted pt-4 mt-4 border-top border-primary-subtle">
+                            <p class="mb-0 small">
+                                Disclaimer: This calculation is an estimate based on the inputs and constant growth/contribution assumptions. Actual returns will vary significantly based on market performance and inflation.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Helper function to format currency
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(value);
+    };
+
+    // Helper function to display errors
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none');
+        errorDiv.textContent = message;
+        document.getElementById('results-summary').classList.add('d-none');
+        document.getElementById('years_to_retirement_display').textContent = '-- Years';
+    }
+
+    // Helper function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Core Calculation Logic (Equivalent to React's useMemo) ---
+
+    function calculatePensionForecast() {
+        clearError();
+
+        // 1. Get Inputs
+        const currentAge = parseFloat(document.getElementById('current_age').value);
+        const retirementAge = parseFloat(document.getElementById('retirement_age').value);
+        const currentPot = parseFloat(document.getElementById('current_pot').value);
+        const monthlyContribution = parseFloat(document.getElementById('monthly_contribution').value);
+        const annualGrowthRate = parseFloat(document.getElementById('annual_growth_rate').value);
+        const annuityRate = parseFloat(document.getElementById('annuity_rate').value);
+
+        // 2. Validate Inputs
+        if (isNaN(currentAge) || isNaN(retirementAge) || isNaN(currentPot) || isNaN(monthlyContribution) || isNaN(annualGrowthRate) || isNaN(annuityRate)) {
+            displayError("Please ensure all fields are filled with valid numbers.");
+            return;
+        }
+
+        if (currentAge >= retirementAge) {
+            displayError("Retirement Age must be greater than Current Age.");
+            document.getElementById('years_to_retirement_display').textContent = 'Error';
+            return;
+        }
+
+        // 3. Prepare Variables
+        const yearsToRetirement = retirementAge - currentAge;
+        const r = annualGrowthRate / 100; // Annual rate (decimal)
+        const i = r / 12; // Monthly rate (decimal)
+        const N = yearsToRetirement * 12; // Total months
+
+        // 4. Core Calculations
+
+        // FV_P = CurrentPot * (1 + r)^Years
+        const futureValuePot = currentPot * Math.pow((1 + r), yearsToRetirement);
+
+        // FV_A = PMT * [((1 + i)^N - 1) / i]
+        let futureValueContributions = 0;
+        if (monthlyContribution > 0) {
+            const growthFactor = (Math.pow((1 + i), N) - 1) / i;
+            futureValueContributions = monthlyContribution * growthFactor;
+        }
+
+        // Total Retirement Pot
+        const totalPot = futureValuePot + futureValueContributions;
+
+        // Estimated Annual/Monthly Income (using Annuity Rate / Safe Withdrawal Rate)
+        const annualIncome = totalPot * (annuityRate / 100);
+        const monthlyIncome = annualIncome / 12;
+
+        // 5. Update Results Display
+        document.getElementById('years_to_retirement_display').textContent = `${yearsToRetirement} Years`;
+        document.getElementById('total_pot_display').textContent = formatCurrency(totalPot);
+        document.getElementById('annual_income_display').textContent = formatCurrency(annualIncome);
+        document.getElementById('monthly_income_display').textContent = formatCurrency(monthlyIncome);
+        document.getElementById('fv_pot_display').textContent = formatCurrency(futureValuePot);
+        document.getElementById('fv_contributions_display').textContent = formatCurrency(futureValueContributions);
+        
+        // Update dynamic description
+        document.getElementById('annual_income_desc').textContent = `Based on a ${annuityRate.toFixed(1)}% annual withdrawal/annuity rate.`;
+
+        // Show results
+        document.getElementById('results-summary').classList.remove('d-none');
+    }
+
+    // --- Event Listeners ---
+    document.getElementById('pension-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        calculatePensionForecast();
+    });
+
+    // Run calculation on page load (with initial placeholder values)
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set initial placeholder values for a fresh form
+        document.getElementById('current_age').value = '';
+        document.getElementById('retirement_age').value = '';
+        document.getElementById('current_pot').value = '';
+        document.getElementById('monthly_contribution').value = '';
+        document.getElementById('annual_growth_rate').value = '';
+        document.getElementById('annuity_rate').value = '';
+        
+        // You might want to run a calculation with reasonable defaults here, 
+        // but since the form is set to be fresh (empty), we won't.
+        // The submit button will trigger the first calculation.
+    });
+
+</script>
+{% endblock %}
