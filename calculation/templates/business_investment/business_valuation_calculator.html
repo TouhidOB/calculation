@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Business Valuation Calculator (Multiples){% endblock %}
+
+{% block meta_description %}Estimate business value using the Multiples Method based on Revenue or EBITDA and an industry-appropriate valuation multiple.{% endblock %}
+
+{% block meta_keywords %}business valuation, EBITDA multiple, revenue multiple, valuation, financial analysis, multiples method, calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance */
+    .calc-wrapper {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
+    }
+
+    .section-title {
+        font-weight: 600;
+        margin-top: 25px;
+        color: var(--bs-info); /* Bootstrap Info Blue/Teal */
+    }
+
+    .result-card {
+        text-align: center;
+        border-radius: 12px;
+        transition: transform 0.2s;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Main result style for the final valuation number */
+    .main-result { 
+        color: var(--bs-info); 
+        font-weight: bold; 
+        font-size: 3rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    .input-group-text.multiple {
+        font-weight: bold;
+        color: var(--bs-info); 
+        background-color: var(--bs-info-bg-subtle); 
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-info"><i class="bi bi-currency-dollar me-2"></i> Business Valuation (Multiples Method)</h1>
+        <p class="lead text-muted">Estimate the **Enterprise Value** of a business using the **Comparable Company Analysis (CCA)** method based on either **Revenue** or **EBITDA** and an industry multiple.</p>
+        
+        <div class="alert alert-info-subtle border-info py-2 my-4">
+            <p class="mb-1 fw-bold text-info">Valuation Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{Estimated Valuation} = \text{Financial Metric} \times \text{Valuation Multiple}$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="bi bi-sliders me-2"></i> Valuation Inputs</h4>
+                </div>
+                <div class="card-body">
+                    <form id="valuation-form">
+                        
+                        <h5 class="section-title">1. Select Calculation Metric</h5>
+                        <div class="btn-group w-100 mb-4" role="group" aria-label="Valuation Metric">
+                            <input type="radio" class="btn-check" name="metric_type" id="metric_revenue" value="Revenue" autocomplete="off" checked>
+                            <label class="btn btn-outline-info fw-bold p-3" for="metric_revenue"><i class="bi bi-graph-up me-1"></i> Revenue</label>
+
+                            <input type="radio" class="btn-check" name="metric_type" id="metric_ebitda" value="EBITDA" autocomplete="off">
+                            <label class="btn btn-outline-info fw-bold p-3" for="metric_ebitda"><i class="bi bi-wallet me-1"></i> EBITDA</label>
+                        </div>
+
+
+                        <h5 class="section-title mt-4">2. Financial Data</h5>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold" id="financial_label">Revenue Value ($)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-secondary text-white">$</span>
+                                <input type="number" class="form-control" id="financial_value" placeholder="e.g., 1,000,000" step="0.01" required>
+                            </div>
+                            <p class="small text-muted mt-1" id="financial_description">Annual revenue (sales) for the last 12 months (LTM).</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Valuation Multiple (x)</label>
+                            <div class="input-group input-group-lg">
+                                <input type="number" class="form-control" id="valuation_multiple" placeholder="e.g., 5.0" min="0" step="0.1" required>
+                                <span class="input-group-text multiple">x</span>
+                            </div>
+                            <p class="small text-muted mt-1">Industry-standard multiple derived from comparable company transactions (e.g., 5x Revenue or 8x EBITDA).</p>
+                        </div>
+
+
+                        <button class="btn btn-info btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-calculator me-2"></i> Calculate Valuation
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="valuation-summary" class="d-none">
+                <h4 class="text-info border-bottom pb-2 mb-4 mt-5"><i class="bi bi-check-circle-fill me-2"></i> Estimated Value</h4>
+                <div class="card result-card bg-info text-white shadow-lg">
+                    <div class="card-body py-4">
+                        <h6 class="card-title">Estimated Enterprise Value (Based on <span id="used_metric" class="fw-bold">Revenue</span>)</h6>
+                        <p id="business_valuation" class="main-result text-white">$0.00</p>
+                    </div>
+                </div>
+
+                <p class="mt-3 small text-muted text-center" id="valuation_interpretation">The valuation is derived by multiplying the financial metric by the industry multiple. EBITDA multiples are generally preferred as they account for profitability.</p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('valuation-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // Helper function for formatting currency
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+    });
+
+    // --- Metric Toggle Logic ---
+
+    document.querySelectorAll('input[name="metric_type"]').forEach(radio => {
+        radio.addEventListener('change', updateMetricLabels);
+    });
+
+    function updateMetricLabels() {
+        const selectedMetric = document.querySelector('input[name="metric_type"]:checked').value;
+        const financialLabel = document.getElementById('financial_label');
+        const financialDescription = document.getElementById('financial_description');
+        const financialInput = document.getElementById('financial_value');
+
+        if (selectedMetric === 'Revenue') {
+            financialLabel.textContent = 'Revenue Value ($)';
+            financialDescription.innerHTML = 'Annual revenue (sales) for the last 12 months (LTM). **Revenue** must be non-negative.';
+            financialInput.placeholder = 'e.g., 1,000,000';
+        } else {
+            financialLabel.textContent = 'EBITDA Value ($)';
+            financialDescription.innerHTML = 'Earnings Before Interest, Taxes, Depreciation, and Amortization (LTM). **EBITDA** can be negative.';
+            financialInput.placeholder = 'e.g., 500,000 (or -50,000)';
+        }
+    }
+    
+    // Initialize labels on load
+    document.addEventListener('DOMContentLoaded', updateMetricLabels);
+
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('valuation-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const financialValueStr = document.getElementById('financial_value').value;
+            const valuationMultipleStr = document.getElementById('valuation_multiple').value;
+            const selectedMetric = document.querySelector('input[name="metric_type"]:checked').value;
+
+            // Check for empty fields
+            if (!financialValueStr || !valuationMultipleStr) {
+                displayError("Both Financial Value and Valuation Multiple must be filled with numerical values.");
+                return;
+            }
+
+            // Parse inputs
+            const financialValue = parseFloat(financialValueStr);
+            const valuationMultiple = parseFloat(valuationMultipleStr);
+
+            // Check for NaN after parsing
+            if (isNaN(financialValue) || isNaN(valuationMultiple)) {
+                displayError("Please ensure all inputs are valid numbers.");
+                return;
+            }
+
+            if (valuationMultiple <= 0) {
+                displayError("The Valuation Multiple must be greater than zero.");
+                return;
+            }
+            
+            // Special check for Revenue (must be non-negative)
+            if (selectedMetric === 'Revenue' && financialValue < 0) {
+                displayError("Revenue must be non-negative (zero or greater). Please enter a positive value or switch to EBITDA.");
+                return;
+            }
+            
+            // 2. Core Calculation
+            // Valuation = Financial Metric * Multiple
+            const businessValuation = financialValue * valuationMultiple;
+
+            // 3. Update Summary Totals
+            document.getElementById('used_metric').textContent = selectedMetric;
+            document.getElementById('business_valuation').textContent = formatter.format(businessValuation);
+
+            // 4. Show Results
+            document.getElementById('valuation-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

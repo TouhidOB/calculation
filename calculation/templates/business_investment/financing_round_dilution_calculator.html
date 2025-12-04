@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Financing Round Dilution Calculator{% endblock %}
+
+{% block meta_description %}Calculate post-money ownership and share price after a financing round, using pre-money valuation, investment amount, and current shares.{% endblock %}
+
+{% block meta_keywords %}cap table, capitalization table, dilution, pre-money valuation, post-money valuation, investment, share price, ownership, equity, startup finance{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance */
+    .calc-wrapper {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
+    }
+
+    .section-title {
+        font-weight: 600;
+        margin-top: 25px;
+        color: var(--bs-primary);
+    }
+
+    .result-card {
+        text-align: center;
+        border-radius: 8px;
+        transition: transform 0.2s;
+        height: 100%; /* Ensure uniform height in rows */
+    }
+
+    .result-card:hover {
+        transform: translateY(-3px);
+    }
+
+    /* Main result style for the biggest numbers (e.g., Shares Issued) */
+    .main-result { 
+        font-weight: 700; 
+        font-size: 2.5rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    /* Sub result style (e.g., Valuation, Share Price) */
+    .sub-result {
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: var(--bs-primary);
+    }
+
+    /* For table ownership percentages */
+    .ownership-cell {
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-primary"><i class="bi bi-bar-chart-line-fill me-2"></i> Financing Round Dilution Calculator</h1>
+        <p class="lead text-muted">Determine the **dilution effect** of a new funding round by calculating the new share price, total shares issued, and post-money ownership structure.</p>
+
+        <div class="alert alert-primary-subtle border-primary py-2 my-4">
+            <p class="mb-1 fw-bold text-primary">Core Dilution Formulas:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{New Shares Issued} = \frac{\text{Investment Amount}}{\text{Pre-Money Valuation} / \text{Pre-Money Shares}}$$
+                $$\text{Post-Money Valuation} = \text{Pre-Money Valuation} + \text{Investment Amount}$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-clipboard-data me-2"></i> Financing Round Inputs</h4>
+                </div>
+                <div class="card-body">
+                    <form id="cap-table-form">
+                        
+                        <h5 class="section-title">Valuation & Investment ($)</h5>
+
+                        <div class="mb-4">
+                            <label for="pre_money_val" class="form-label fw-bold">Pre-Money Valuation</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-secondary text-white"><i class="bi bi-cash-stack"></i></span>
+                                <input type="number" class="form-control" id="pre_money_val" placeholder="e.g., 5,000,000" min="0" step="1000" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">Valuation of the company before the new investment.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="investment_amount" class="form-label fw-bold">New Investment Amount</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-secondary text-white"><i class="bi bi-piggy-bank-fill"></i></span>
+                                <input type="number" class="form-control" id="investment_amount" placeholder="e.g., 2,000,000" min="0" step="1000" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">Cash injected by the new investors.</p>
+                        </div>
+
+                        <hr>
+
+                        <h5 class="section-title mt-4">Pre-Money Share Structure (Units)</h5>
+
+                        <div class="mb-4">
+                            <label for="pre_money_shares" class="form-label fw-bold">Total Pre-Money Shares Outstanding</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-secondary text-white"><i class="bi bi-grid-fill"></i></span>
+                                <input type="number" class="form-control" id="pre_money_shares" placeholder="e.g., 10,000,000" min="1" step="1" required>
+                                <span class="input-group-text">#</span>
+                            </div>
+                            <p class="small text-muted mt-1">Total fully diluted shares/units before the new financing.</p>
+                        </div>
+
+                        <button class="btn btn-primary btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-shuffle me-2"></i> Calculate Dilution & Cap Table
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="cap-table-summary" class="d-none">
+                <h4 class="text-primary border-bottom pb-2 mb-4 mt-5"><i class="bi bi-speedometer2 me-2"></i> Round Metrics & Share Count</h4>
+                
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card result-card bg-light border-primary shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted">Post-Money Valuation</h6>
+                                <p id="post_money_val" class="sub-result text-primary">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card result-card bg-light border-success shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted">New Share Price</h6>
+                                <p id="new_share_price" class="sub-result text-success">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card result-card bg-primary text-white shadow">
+                            <div class="card-body">
+                                <h6 class="card-title">New Shares Issued to Investors</h6>
+                                <p id="new_shares_issued" class="main-result text-white">0</p>
+                                <p class="small mb-0">Total Post-Money Shares: <span id="total_post_money_shares" class="fw-bold">0</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h4 class="text-primary border-bottom pb-2 mb-3 mt-5"><i class="bi bi-people-fill me-2"></i> Post-Money Ownership Structure (%)</h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Group</th>
+                                <th>Pre-Money Shares</th>
+                                <th>New Shares Issued</th>
+                                <th>Total Post-Money Shares</th>
+                                <th>Post-Money Ownership</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold">Pre-Money Holders (Founders/Prior Investors)</td>
+                                <td id="table_pre_shares">0</td>
+                                <td>0</td>
+                                <td id="table_pre_post_shares">0</td>
+                                <td id="table_pre_ownership" class="ownership-cell text-danger">0.00% (Diluted)</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">New Investor Group</td>
+                                <td>0</td>
+                                <td id="table_new_shares">0</td>
+                                <td id="table_new_post_shares">0</td>
+                                <td id="table_new_ownership" class="ownership-cell text-success">0.00%</td>
+                            </tr>
+                            <tr class="table-primary fw-bold">
+                                <td>TOTAL</td>
+                                <td id="table_total_pre_shares">0</td>
+                                <td id="table_total_new_shares">0</td>
+                                <td id="table_total_post_shares_total">0</td>
+                                <td id="table_total_ownership" class="ownership-cell">100.00%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="small text-muted text-center"><i class="bi bi-info-circle me-1"></i> **Dilution** occurs because the Pre-Money Holders' shares now represent a smaller fraction of the larger total post-money share count.</p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('cap-table-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // Helper function for formatting numbers
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 4 // Allow up to 4 decimal places for share price accuracy
+    });
+    const shareFormatter = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    });
+
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('cap-table-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const preMoneyValStr = document.getElementById('pre_money_val').value;
+            const investmentAmountStr = document.getElementById('investment_amount').value;
+            const preMoneySharesStr = document.getElementById('pre_money_shares').value;
+
+            // Check for empty fields
+            if (!preMoneyValStr || !investmentAmountStr || !preMoneySharesStr) {
+                displayError("All three input fields must be filled with numerical values.");
+                return;
+            }
+
+            // Parse inputs
+            const preMoneyVal = parseFloat(preMoneyValStr);
+            const investmentAmount = parseFloat(investmentAmountStr);
+            const preMoneyShares = parseFloat(preMoneySharesStr);
+            
+            // Basic Input validation checks
+            if (isNaN(preMoneyVal) || isNaN(investmentAmount) || isNaN(preMoneyShares)) {
+                displayError("Please ensure all inputs are valid numbers.");
+                return;
+            }
+
+            if (preMoneyVal <= 0) {
+                displayError("Pre-Money Valuation must be greater than zero.");
+                return;
+            }
+
+            if (preMoneyShares <= 0) {
+                displayError("Total Pre-Money Shares must be greater than zero.");
+                return;
+            }
+            
+            // 2. Core Calculations
+            
+            // Calculate New Share Price based on Pre-Money Valuation
+            const newSharePrice = preMoneyVal / preMoneyShares;
+
+            // Calculate Post-Money Valuation
+            const postMoneyVal = preMoneyVal + investmentAmount;
+
+            // Calculate New Shares Issued (must be calculated using the determined share price)
+            const newSharesIssued = investmentAmount / newSharePrice;
+            
+            // Calculate Total Shares Post-Money
+            const totalPostMoneyShares = preMoneyShares + newSharesIssued;
+
+            // Calculate Ownership Percentages
+            const newInvestorOwnership = (newSharesIssued / totalPostMoneyShares) * 100;
+            const preMoneyOwnership = (preMoneyShares / totalPostMoneyShares) * 100;
+            const totalOwnership = newInvestorOwnership + preMoneyOwnership;
+
+
+            // 3. Update Summary Totals
+
+            // A. Top Summary Cards
+            document.getElementById('post_money_val').textContent = formatter.format(postMoneyVal);
+            document.getElementById('new_share_price').textContent = formatter.format(newSharePrice); 
+            // Format shares without decimals for clean look
+            document.getElementById('new_shares_issued').textContent = shareFormatter.format(Math.round(newSharesIssued));
+            document.getElementById('total_post_money_shares').textContent = shareFormatter.format(Math.round(totalPostMoneyShares));
+
+
+            // B. Detailed Table
+            // Pre-Money Holders Row
+            document.getElementById('table_pre_shares').textContent = shareFormatter.format(preMoneyShares);
+            document.getElementById('table_pre_post_shares').textContent = shareFormatter.format(preMoneyShares); 
+            document.getElementById('table_pre_ownership').textContent = preMoneyOwnership.toFixed(2) + '% (Diluted)';
+
+            // New Investor Row
+            document.getElementById('table_new_shares').textContent = shareFormatter.format(Math.round(newSharesIssued));
+            document.getElementById('table_new_post_shares').textContent = shareFormatter.format(Math.round(newSharesIssued));
+            document.getElementById('table_new_ownership').textContent = newInvestorOwnership.toFixed(2) + '%';
+            
+            // Total Row
+            document.getElementById('table_total_pre_shares').textContent = shareFormatter.format(preMoneyShares);
+            document.getElementById('table_total_new_shares').textContent = shareFormatter.format(Math.round(newSharesIssued));
+            document.getElementById('table_total_post_shares_total').textContent = shareFormatter.format(Math.round(totalPostMoneyShares));
+            document.getElementById('table_total_ownership').textContent = totalOwnership.toFixed(2) + '%';
+
+
+            // 4. Show Results
+            document.getElementById('cap-table-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Total Return Calculator (with Dividends){% endblock %}
+
+{% block meta_description %}Calculate the total return on a stock investment, including capital gains and reinvested dividends, along with the annualized rate of return (CAGR).{% endblock %}
+
+{% block meta_keywords %}stock return, total return, dividend reinvestment, capital gain, CAGR, annualized return, investment calculator, finance{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance */
+    .calc-wrapper {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
+    }
+
+    .section-title {
+        font-weight: 600;
+        margin-top: 25px;
+        color: var(--bs-warning); /* Bootstrap Yellow/Warning */
+    }
+
+    .result-card {
+        text-align: center;
+        border-radius: 8px;
+        transition: transform 0.2s;
+        height: 100%; /* Ensure uniform height in rows */
+    }
+
+    .main-result { 
+        font-weight: 700; 
+        font-size: 2.5rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    /* Conditional Coloring */
+    .positive-return {
+        color: var(--bs-success); /* Bootstrap Green/Success */
+    }
+
+    .negative-return {
+        color: var(--bs-danger); /* Bootstrap Red/Danger */
+    }
+
+    .sub-result {
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-warning"><i class="bi bi-graph-up-arrow me-2"></i> Stock Total Return Calculator</h1>
+        <p class="lead text-muted">Determine the actual profitability of your investment by calculating the **Total Dollar Gain/Loss** and the **Annualized Return (CAGR)**.</p>
+        
+        <div class="alert alert-warning-subtle border-warning py-2 my-4">
+            <p class="mb-1 fw-bold text-dark">Total Return Components:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{Total Return} = (\text{Capital Gain/Loss}) + (\text{Total Dividends Received})$$
+                $$\text{CAGR} = (\frac{\text{Ending Value}}{\text{Starting Value}})^{\frac{1}{\text{Years}}} - 1$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="bi bi-wallet-fill me-2"></i> Investment Details</h4>
+                </div>
+                <div class="card-body">
+                    <form id="return-form">
+                        
+                        <h5 class="section-title">Investment Pricing</h5>
+
+                        <div class="mb-4">
+                            <label for="purchase_price" class="form-label fw-bold">Initial Purchase Price per Share ($)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-secondary text-white"><i class="bi bi-arrow-down-circle"></i></span>
+                                <input type="number" class="form-control" id="purchase_price" placeholder="e.g., 50.00" min="0.01" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="selling_price" class="form-label fw-bold">Final Selling Price per Share or Current Price ($)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-secondary text-white"><i class="bi bi-arrow-up-circle"></i></span>
+                                <input type="number" class="form-control" id="selling_price" placeholder="e.g., 65.50" min="0" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h5 class="section-title mt-4">Shares & Income</h5>
+
+                        <div class="mb-4">
+                            <label for="num_shares" class="form-label fw-bold">Number of Shares Purchased</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-secondary text-white"><i class="bi bi-grid-3x3-gap-fill"></i></span>
+                                <input type="number" class="form-control" id="num_shares" placeholder="e.g., 100" min="1" step="1" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="total_dividends" class="form-label fw-bold">Total Dividends Received ($)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-secondary text-white"><i class="bi bi-cash"></i></span>
+                                <input type="number" class="form-control" id="total_dividends" placeholder="e.g., 300.00" min="0" step="0.01" required>
+                            </div>
+                            <p class="small text-muted mt-1">Total cash received from dividends over the entire holding period.</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="investment_years" class="form-label fw-bold">Investment Period (Years)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-secondary text-white"><i class="bi bi-clock-fill"></i></span>
+                                <input type="number" class="form-control" id="investment_years" placeholder="e.g., 5.5" min="0.01" step="0.01" required>
+                                <span class="input-group-text">Years</span>
+                            </div>
+                            <p class="small text-muted mt-1">The duration of the investment. Use decimals for partial years (e.g., 18 months = 1.5 years).</p>
+                        </div>
+
+
+                        <button class="btn btn-warning btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-calculator me-2"></i> Calculate Total Return
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="return-summary" class="d-none">
+                <h4 class="text-warning border-bottom pb-2 mb-4 mt-5"><i class="bi bi-award-fill me-2"></i> Key Performance Metrics</h4>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card result-card bg-light border-warning shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted">Total Dollar Gain / (Loss)</h6>
+                                <p id="total_dollar_return" class="main-result text-dark">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card result-card bg-light border-warning shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted">Annualized Return (CAGR)</h6>
+                                <p id="annualized_return" class="main-result text-dark">0.00%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card result-card bg-white border-bottom border-warning shadow-sm">
+                            <div class="card-body py-3">
+                                <h6 class="card-title text-muted sub-result">Initial Investment Value: <span id="initial_investment" class="fw-bold text-dark">$0.00</span></h6>
+                                <h6 class="card-title text-muted sub-result">Total Return Percentage (Holding Period): <span id="total_return_percent" class="fw-bold text-dark">0.00%</span></h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('return-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // Helper function for formatting currency
+    const currencyFormatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+    });
+    
+    // Helper function for formatting percentages
+    const percentFormatter = (value) => {
+        return (value * 100).toFixed(2) + '%';
+    };
+
+    // Helper function to apply color classes based on sign
+    function applyColorClass(element, value) {
+        element.classList.remove('positive-return', 'negative-return', 'text-dark');
+        if (value > 0) {
+            element.classList.add('positive-return');
+        } else if (value < 0) {
+            element.classList.add('negative-return');
+        } else {
+            element.classList.add('text-dark'); // If zero, use default dark color
+        }
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('return-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const purchasePrice = parseFloat(document.getElementById('purchase_price').value);
+            const sellingPrice = parseFloat(document.getElementById('selling_price').value);
+            const numShares = parseFloat(document.getElementById('num_shares').value);
+            const totalDividends = parseFloat(document.getElementById('total_dividends').value);
+            const investmentYears = parseFloat(document.getElementById('investment_years').value);
+
+            // Basic NaN checks
+            if (isNaN(purchasePrice) || isNaN(sellingPrice) || isNaN(numShares) || isNaN(totalDividends) || isNaN(investmentYears)) {
+                displayError("Please ensure all inputs are valid numbers.");
+                return;
+            }
+
+            if (purchasePrice <= 0 || numShares <= 0 || investmentYears <= 0) {
+                displayError("Purchase Price, Number of Shares, and Investment Years must be greater than zero.");
+                return;
+            }
+            if (totalDividends < 0) {
+                displayError("Total Dividends must be non-negative.");
+                return;
+            }
+            
+            // 2. Core Calculations
+            
+            const initialInvestment = purchasePrice * numShares;
+            const finalStockValue = sellingPrice * numShares;
+            const finalValueWithDividends = finalStockValue + totalDividends;
+            
+            // Total Dollar Return
+            const capitalGainLoss = finalStockValue - initialInvestment;
+            const totalDollarReturn = capitalGainLoss + totalDividends;
+
+            // Total Return Percentage
+            const totalReturnPercent = totalDollarReturn / initialInvestment;
+
+            // Annualized Return (CAGR)
+            const cagr = Math.pow(finalValueWithDividends / initialInvestment, (1 / investmentYears)) - 1;
+
+
+            // 3. Update Summary Totals
+
+            // Total Dollar Return (Main Result)
+            const totalDollarElement = document.getElementById('total_dollar_return');
+            totalDollarElement.textContent = currencyFormatter.format(totalDollarReturn);
+            applyColorClass(totalDollarElement, totalDollarReturn);
+
+            // Annualized Return (Main Result)
+            const cagrElement = document.getElementById('annualized_return');
+            cagrElement.textContent = percentFormatter(cagr);
+            applyColorClass(cagrElement, cagr);
+
+            // Sub-Results
+            document.getElementById('initial_investment').textContent = currencyFormatter.format(initialInvestment);
+            document.getElementById('total_return_percent').textContent = percentFormatter(totalReturnPercent);
+
+            
+            // 4. Show Results
+            document.getElementById('return-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

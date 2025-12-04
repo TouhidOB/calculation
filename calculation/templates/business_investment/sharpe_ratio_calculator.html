@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Sharpe Ratio Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Sharpe Ratio, a measure of risk-adjusted return, using portfolio return, risk-free rate, and standard deviation.{% endblock %}
+
+{% block meta_keywords %}Sharpe ratio, risk-adjusted return, standard deviation, volatility, risk-free rate, investment performance, finance calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance */
+    .calc-wrapper {
+        background: var(--bs-light); 
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(253, 126, 20, 0.2); /* Soft shadow with theme color */
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: var(--bs-warning); /* Bootstrap Orange/Warning */
+    }
+
+    .result-card {
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid var(--bs-warning);
+    }
+
+    /* Main result style for the final Sharpe Ratio number */
+    .main-result { 
+        color: var(--bs-warning); 
+        font-weight: bold; 
+        font-size: 3.5rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    .input-group-text.warning-icon {
+        background-color: var(--bs-warning);
+        color: var(--bs-dark); 
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-warning"><i class="bi bi-shield-fill-check me-2"></i> Sharpe Ratio Calculator</h1>
+        <p class="lead text-muted">Determine the **Sharpe Ratio**, which measures the return earned in excess of the risk-free rate for every unit of total risk (volatility) taken.</p>
+        
+        <div class="alert alert-warning-subtle border-warning py-3 my-4">
+            <p class="mb-1 fw-bold text-dark">Sharpe Ratio Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$S_a = \frac{R_a - R_f}{\sigma_a}$$
+                Where: $R_a$ = Portfolio Return, $R_f$ = Risk-Free Rate, $\sigma_a$ = Standard Deviation (Volatility)
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-body">
+                    <form id="sharpe-ratio-form">
+                        
+                        <h5 class="section-title">Investment Metrics (Annualized)</h5>
+
+                        <div class="mb-4">
+                            <label for="portfolio_return" class="form-label fw-bold">Portfolio/Asset Return ($\mathbf{R_a}$)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text warning-icon"><i class="bi bi-graph-up"></i></span>
+                                <input type="number" class="form-control" id="portfolio_return" placeholder="e.g., 10.0" step="0.1" required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <p class="small text-muted mt-1">The average annual return of your investment.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="risk_free_rate" class="form-label fw-bold">Risk-Free Rate ($\mathbf{R_f}$)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text warning-icon"><i class="bi bi-bank"></i></span>
+                                <input type="number" class="form-control" id="risk_free_rate" placeholder="e.g., 3.5" step="0.1" required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <p class="small text-muted mt-1">Return on an investment with virtually zero risk (e.g., short-term government bonds).</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="standard_deviation" class="form-label fw-bold">Standard Deviation ($\mathbf{\sigma_a}$)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text warning-icon"><i class="bi bi-lightning-fill"></i></span>
+                                <input type="number" class="form-control" id="standard_deviation" placeholder="e.g., 15.0" min="0.01" step="0.1" required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <p class="small text-muted mt-1">The measure of the investment's volatility or total risk.</p>
+                        </div>
+
+
+                        <button class="btn btn-warning btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-calculator me-2"></i> Calculate Sharpe Ratio
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="sharpe-summary" class="d-none">
+                <h4 class="text-warning border-bottom pb-2 mb-4 mt-5"><i class="bi bi-check-circle-fill me-2"></i> Calculated Ratio</h4>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="card result-card bg-white shadow-lg">
+                            <div class="card-body py-4">
+                                <h6 class="card-title text-muted fw-bold">Sharpe Ratio (S_a)</h6>
+                                <p id="sharpe_result" class="main-result">0.000</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mt-4 mb-3 text-warning">Interpreting Your Sharpe Ratio:</h6>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex align-items-center"><i class="bi bi-star-fill text-success me-2 fs-5"></i>
+                        <span class="fw-bold text-success">Ratio $\ge$ 2.0</span>: **Very Good.** Excellent risk-adjusted performance.
+                    </li>
+                    <li class="list-group-item d-flex align-items-center"><i class="bi bi-star-half text-primary me-2 fs-5"></i>
+                        <span class="fw-bold text-primary">Ratio $\ge$ 1.0</span>: **Good.** The investment provides adequate excess return for the risk taken.
+                    </li>
+                    <li class="list-group-item d-flex align-items-center"><i class="bi bi-star text-danger me-2 fs-5"></i>
+                        <span class="fw-bold text-danger">Ratio $<$ 1.0</span>: **Suboptimal.** The excess returns may not justify the level of volatility.
+                    </li>
+                </ul>
+                <p class="mt-3 small text-muted text-center">**Higher is always better.** The ratio allows you to compare different investments on a risk-adjusted basis; the one with the higher Sharpe Ratio is the better performer.</p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('sharpe-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('sharpe-ratio-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs (as percentages, e.g., 10.0)
+            const portfolioReturnPercent = parseFloat(document.getElementById('portfolio_return').value);
+            const riskFreeRatePercent = parseFloat(document.getElementById('risk_free_rate').value);
+            const standardDeviationPercent = parseFloat(document.getElementById('standard_deviation').value);
+
+            if (isNaN(portfolioReturnPercent) || isNaN(riskFreeRatePercent) || isNaN(standardDeviationPercent)) {
+                displayError("All fields must be filled with valid percentage numbers (e.g., 10.0 for 10%).");
+                return;
+            }
+
+            // Critical check: Standard Deviation (the denominator) cannot be zero or negative
+            if (standardDeviationPercent <= 0) {
+                displayError("Standard Deviation (Volatility) must be a positive number.");
+                return;
+            }
+            
+            // 2. Convert Inputs to Decimals for Calculation
+            const Ra = portfolioReturnPercent / 100; // Portfolio Return
+            const Rf = riskFreeRatePercent / 100; // Risk-Free Rate
+            const Sigma_a = standardDeviationPercent / 100; // Standard Deviation
+            
+            // 3. Core Calculation
+            // Sharpe Ratio = (Ra - Rf) / Sigma_a
+            const excessReturn = Ra - Rf;
+            const sharpeRatio = excessReturn / Sigma_a;
+
+
+            // 4. Update Summary Totals
+            const sharpeElement = document.getElementById('sharpe_result');
+            
+            sharpeElement.textContent = sharpeRatio.toFixed(3); // Display ratio with 3 decimal places
+
+            // 5. Show Results
+            document.getElementById('sharpe-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

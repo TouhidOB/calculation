@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Earnings Per Share (EPS) Calculator{% endblock %}
+
+{% block meta_description %}Calculate a company's Basic Earnings Per Share (EPS) by adjusting Net Income for preferred dividends and dividing by weighted average shares outstanding.{% endblock %}
+
+{% block meta_keywords %}EPS calculator, earnings per share, net income, preferred dividends, shares outstanding, finance calculator, fundamental analysis{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance */
+    .calc-wrapper {
+        background: var(--bs-light); /* Bootstrap light background for contrast */
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: var(--bs-success); /* Bootstrap Green/Success */
+    }
+
+    .result-card {
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid var(--bs-success);
+    }
+
+    /* Main result style for the final EPS number */
+    .main-result { 
+        color: var(--bs-success); 
+        font-weight: bold; 
+        font-size: 3.5rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    .result-currency {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--bs-success);
+    }
+
+    .input-group-text.success-icon {
+        background-color: var(--bs-success);
+        color: var(--bs-white); 
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-success"><i class="bi bi-wallet2 me-2"></i> Earnings Per Share (EPS) Calculator</h1>
+        <p class="lead text-muted">Calculate the Basic **Earnings Per Share**, the portion of a company's profit allocated to each common stock share. This is a crucial measure of profitability.</p>
+        
+        <div class="alert alert-success-subtle border-success py-3 my-4">
+            <p class="mb-1 fw-bold text-dark">Basic EPS Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{Basic EPS} = \frac{\text{Net Income} - \text{Preferred Dividends}}{\text{Weighted Average Common Shares Outstanding}}$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-body">
+                    <form id="eps-form">
+                        
+                        <h5 class="section-title">Income & Equity Inputs</h5>
+
+                        <div class="mb-4">
+                            <label for="net_income" class="form-label fw-bold">Net Income ($)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text success-icon"><i class="bi bi-currency-dollar"></i></span>
+                                <input type="number" class="form-control" id="net_income" placeholder="e.g., 5,000,000" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">Total profit after all operating expenses, interest, and taxes.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="preferred_dividends" class="form-label fw-bold">Preferred Dividends ($)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text success-icon"><i class="bi bi-dash-circle"></i></span>
+                                <input type="number" class="form-control" id="preferred_dividends" value="0" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">These dividends are subtracted because preferred shareholders have priority over common shareholders for earnings.</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="shares_outstanding" class="form-label fw-bold">Weighted Average Common Shares Outstanding</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text success-icon"><i class="bi bi-people-fill"></i></span>
+                                <input type="number" class="form-control" id="shares_outstanding" placeholder="e.g., 1,000,000" min="1" step="1" required>
+                                <span class="input-group-text"># Shares</span>
+                            </div>
+                            <p class="small text-muted mt-1">The average number of common shares available during the reporting period.</p>
+                        </div>
+
+
+                        <button class="btn btn-success btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-calculator me-2"></i> Calculate EPS
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="eps-summary" class="d-none">
+                <h4 class="text-success border-bottom pb-2 mb-4 mt-5"><i class="bi bi-graph-up-arrow me-2"></i> Calculated Profitability</h4>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="card result-card bg-white shadow-lg">
+                            <div class="card-body py-4">
+                                <h6 class="card-title text-muted fw-bold">Basic Earnings Per Share (EPS)</h6>
+                                <p id="eps_result" class="main-result">
+                                    $0.00 <span class="result-currency">/ Share</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 small text-muted text-center">A higher EPS is generally favorable, indicating that the company is highly profitable relative to its number of shares.</p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('eps-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // Helper function for formatting currency
+    const currencyFormatter = (value) => {
+        const formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+        });
+        return formatter.format(value);
+    };
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('eps-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const netIncome = parseFloat(document.getElementById('net_income').value);
+            // Use 0 as fallback if field is empty, but form requires it, so this is mainly for safety
+            const preferredDividends = parseFloat(document.getElementById('preferred_dividends').value || 0); 
+            const sharesOutstanding = parseFloat(document.getElementById('shares_outstanding').value);
+
+            if (isNaN(netIncome) || isNaN(preferredDividends) || isNaN(sharesOutstanding)) {
+                displayError("All required financial inputs must be filled with valid numbers.");
+                return;
+            }
+
+            if (preferredDividends < 0) {
+                displayError("Preferred Dividends cannot be negative.");
+                return;
+            }
+            
+            // Critical check: Shares Outstanding must be a positive number
+            if (sharesOutstanding <= 0) {
+                displayError("Weighted Average Shares Outstanding must be a positive number greater than zero.");
+                return;
+            }
+            
+            // 2. Core Calculation
+            // Earnings Available to Common Shareholders = Net Income - Preferred Dividends
+            const earningsToCommon = netIncome - preferredDividends;
+
+            // EPS = Earnings Available to Common Shareholders / Shares Outstanding
+            const epsResult = earningsToCommon / sharesOutstanding;
+
+
+            // 3. Update Summary Totals
+            const epsElement = document.getElementById('eps_result');
+            
+            // Format and display the result
+            epsElement.innerHTML = currencyFormatter(epsResult) + ' <span class="result-currency">/ Share</span>';
+
+            // 4. Show Results
+            document.getElementById('eps-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

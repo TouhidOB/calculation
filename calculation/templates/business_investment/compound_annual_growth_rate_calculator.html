@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}CAGR (Compound Annual Growth Rate) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Compound Annual Growth Rate (CAGR), the average annual growth rate of an investment over a specified period longer than one year.{% endblock %}
+
+{% block meta_keywords %}CAGR calculator, compound annual growth rate, investment growth, final value, initial value, investment time, finance calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance */
+    .calc-wrapper {
+        background: var(--bs-light); 
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(32, 201, 151, 0.2); /* Soft shadow with theme color */
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: var(--bs-success); /* Using Bootstrap success (green/teal) */
+    }
+
+    .result-card {
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid var(--bs-success);
+    }
+
+    /* Main result style for the final CAGR percentage */
+    .main-result { 
+        color: var(--bs-success); 
+        font-weight: bold; 
+        font-size: 3.5rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    .input-group-text.success-icon {
+        background-color: var(--bs-success);
+        color: var(--bs-white); 
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-success"><i class="bi bi-rocket-takeoff-fill me-2"></i> CAGR (Compound Annual Growth Rate) Calculator</h1>
+        <p class="lead text-muted">Calculate the **CAGR**, the smoothed, annualized rate of return that provides the best measure of growth over multiple periods.</p>
+        
+        <div class="alert alert-success-subtle border-success py-3 my-4">
+            <p class="mb-1 fw-bold text-dark">CAGR Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{CAGR} = \left(\left(\frac{FV}{PV}\right)^{\frac{1}{n}} - 1\right) \times 100$$
+                Where $\mathbf{FV}$ is Final Value, $\mathbf{PV}$ is Present Value, and $\mathbf{n}$ is the number of years.
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-body">
+                    <form id="cagr-form">
+                        
+                        <h5 class="section-title">Investment Data</h5>
+
+                        <div class="mb-4">
+                            <label for="initial_value" class="form-label fw-bold">Initial Value ($\mathbf{PV}$)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text success-icon"><i class="bi bi-calendar-minus"></i></span>
+                                <input type="number" class="form-control" id="initial_value" placeholder="e.g., 10,000" min="0.01" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">The value of the investment at the start of the period.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="final_value" class="form-label fw-bold">Final Value ($\mathbf{FV}$)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text success-icon"><i class="bi bi-calendar-plus"></i></span>
+                                <input type="number" class="form-control" id="final_value" placeholder="e.g., 15,000" min="0.01" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">The value of the investment at the end of the period.</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="years" class="form-label fw-bold">Number of Years ($\mathbf{n}$)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text success-icon"><i class="bi bi-clock-fill"></i></span>
+                                <input type="number" class="form-control" id="years" placeholder="e.g., 5" min="1" step="0.01" required>
+                                <span class="input-group-text">Years</span>
+                            </div>
+                            <p class="small text-muted mt-1">The time duration between the initial and final values.</p>
+                        </div>
+
+
+                        <button class="btn btn-success btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-arrow-up-right-square-fill me-2"></i> Calculate CAGR
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="cagr-summary" class="d-none">
+                <h4 class="text-success border-bottom pb-2 mb-4 mt-5"><i class="bi bi-bar-chart-line-fill me-2"></i> Calculated Growth Rate</h4>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="card result-card bg-white shadow-lg">
+                            <div class="card-body py-4">
+                                <h6 class="card-title text-muted fw-bold">Compound Annual Growth Rate (CAGR)</h6>
+                                <p id="cagr_result" class="main-result">0.000%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 small text-muted text-center">
+                    The **CAGR** is a hypothetical constant rate. It smooths out the volatile year-to-year returns to give a better comparison for investment performance.
+                </p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('cagr-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // Helper function for formatting percentages
+    const percentFormatter = (value) => {
+        // Handle negative result formatting for clarity
+        const sign = value < 0 ? "-" : "";
+        const absoluteValue = Math.abs(value);
+        return sign + (absoluteValue * 100).toFixed(3) + '%';
+    };
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('cagr-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const initialValue = parseFloat(document.getElementById('initial_value').value);
+            const finalValue = parseFloat(document.getElementById('final_value').value);
+            const years = parseFloat(document.getElementById('years').value);
+
+            if (isNaN(initialValue) || isNaN(finalValue) || isNaN(years)) {
+                displayError("All fields must be filled with valid numbers.");
+                return;
+            }
+
+            // Critical checks
+            if (initialValue <= 0) {
+                displayError("Initial Value (Present Value) must be greater than zero.");
+                return;
+            }
+            if (years <= 0) {
+                displayError("The number of years must be a positive number.");
+                return;
+            }
+            
+            // 2. Core Calculation
+            // CAGR = [(FV / PV)^(1/n) - 1]
+            const ratio = finalValue / initialValue;
+            const exponent = 1 / years;
+            
+            // Math.pow is used for the exponent calculation
+            const cagr = Math.pow(ratio, exponent) - 1;
+
+
+            // 3. Update Summary Totals
+            const cagrElement = document.getElementById('cagr_result');
+            
+            cagrElement.textContent = percentFormatter(cagr);
+            
+            // Adjust text color based on positive or negative CAGR
+            if (cagr < 0) {
+                cagrElement.classList.remove('text-success');
+                cagrElement.classList.add('text-danger');
+            } else {
+                cagrElement.classList.remove('text-danger');
+                cagrElement.classList.add('text-success');
+            }
+
+
+            // 4. Show Results
+            document.getElementById('cagr-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

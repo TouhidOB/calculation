@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block title %}SBA Loan Calculator (7a Fee & Amortization){% endblock %}
+
+{% block meta_description %}Calculate monthly payments, total interest, upfront guarantee fee, and the full amortization schedule for an SBA 7(a) loan.{% endblock %}
+
+{% block meta_keywords %}SBA loan calculator, 7a loan, guarantee fee, monthly payment, total interest, small business administration, amortization{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables for result text */
+    .payment-result { 
+        font-weight: bold; 
+        font-size: 1.8rem; 
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Mapping custom classes to Bootstrap colors */
+    .text-primary-result { color: var(--bs-primary) !important; }
+    .text-warning-result { color: var(--bs-warning) !important; }
+    .text-dark-result { color: var(--bs-dark) !important; }
+    .text-danger-result { color: var(--bs-danger) !important; }
+    .text-info-result { color: var(--bs-info) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">🏛️ SBA Loan Calculator (7(a) Focus)</h1>
+        <p class="lead text-muted">Calculate your **monthly payments**, **total interest**, and the mandatory **Upfront SBA Guarantee Fee** to determine the true cost of your SBA 7(a) loan.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg bg-light">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-bank me-2"></i> Loan & Fee Parameters</h4>
+                </div>
+                <div class="card-body">
+
+                    <form id="sba-loan-form">
+                        
+                        <h5 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-wallet me-2"></i> Loan Details</h5>
+
+                        <div class="mb-3">
+                            <label for="loan_amount" class="form-label fw-bold">Loan Principal ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-secondary text-white"><i class="bi bi-currency-dollar"></i></span>
+                                <input type="number" class="form-control" id="loan_amount" placeholder="e.g., 250000" min="100" step="1" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="annual_rate" class="form-label fw-bold">Annual Interest Rate (%)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger-subtle text-danger"><i class="bi bi-percent"></i></span>
+                                <input type="number" class="form-control" id="annual_rate" placeholder="e.g., 7.5" min="0.01" max="100" step="0.01" required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="loan_term_years" class="form-label fw-bold">Loan Term (Years)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-success-subtle text-success"><i class="bi bi-calendar-event"></i></span>
+                                <input type="number" class="form-control" id="loan_term_years" placeholder="e.g., 10" min="1" max="50" step="1" required>
+                                <span class="input-group-text">Years</span>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h5 class="text-warning border-bottom pb-2 mb-3 mt-4"><i class="bi bi-shield-fill me-2"></i> SBA Fee Details (7(a) Guarantee Fee)</h5>
+
+                        <div class="mb-3">
+                            <label for="guarantee_percent" class="form-label fw-bold">SBA Guaranteed Percentage (%)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-info-subtle text-info"><i class="bi bi-patch-check-fill"></i></span>
+                                <input type="number" class="form-control" id="guarantee_percent" placeholder="e.g., 75" value="75" min="50" max="100" step="1" required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <p class="small text-muted mt-1">Typical range is 75% to 85%.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="fee_rate_percent" class="form-label fw-bold">Upfront Guarantee Fee Rate (%)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-warning-subtle text-warning"><i class="bi bi-coin"></i></span>
+                                <input type="number" class="form-control" id="fee_rate_percent" placeholder="e.g., 3.0" value="3.0" min="0" max="5" step="0.01" required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <p class="small text-muted mt-1">This rate is applied to the **guaranteed portion** of the loan. Rates are subject to change based on SBA policy and loan size.</p>
+                        </div>
+
+                        <button class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" type="submit">
+                            <i class="bi bi-graph-up me-2"></i> Calculate SBA Loan Cost
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="loan-summary" class="mt-5 d-none">
+                <h4 class="text-success border-bottom pb-2 mb-3"><i class="bi bi-clipboard-check-fill me-2"></i> Calculation Summary</h4>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="card result-card bg-primary-subtle border-primary h-100 shadow-sm">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-primary fw-normal">Monthly Payment</h6>
+                                <p id="monthly_payment" class="payment-result text-primary-result">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card result-card bg-warning-subtle border-warning h-100 shadow-sm">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-warning fw-normal">Upfront Guarantee Fee</h6>
+                                <p id="guarantee_fee" class="payment-result text-warning-result">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card result-card bg-light border-dark h-100 shadow-sm">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-dark fw-normal">Total Cost (P + I + Fee)</h6>
+                                <p id="total_cost" class="payment-result text-dark-result">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <div class="card result-card bg-danger-subtle border-danger h-100 shadow-sm">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-danger fw-normal">Total Interest Paid</h6>
+                                <p id="total_interest" class="payment-result text-danger-result">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card result-card bg-info-subtle border-info h-100 shadow-sm">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-info fw-normal">SBA Guaranteed Portion</h6>
+                                <p id="guaranteed_portion" class="payment-result text-info-result">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="amortization-container" class="mt-5 d-none">
+                <h4 class="text-dark border-bottom pb-2 mb-3"><i class="bi bi-table me-2"></i> Amortization Schedule (Payments)</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered small caption-top" id="amortization-table">
+                        <caption>Detailed breakdown of each monthly payment, showing how principal is paid down.</caption>
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Month</th>
+                                <th>Payment</th>
+                                <th class="text-danger">Interest</th>
+                                <th class="text-success">Principal</th>
+                                <th>Remaining Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="amortization-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Helper function to format currency
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+    });
+
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('loan-summary').classList.add('d-none');
+        document.getElementById('amortization-container').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+
+    /**
+     * Calculates the fixed monthly payment for an amortizing loan.
+     * Formula: $P = L \frac{i(1 + i)^n}{(1 + i)^n – 1}$
+     * @param {number} L - Loan Amount (Principal).
+     * @param {number} i - Monthly Interest Rate (Annual Rate / 12).
+     * @param {number} n - Total number of Payments (Years * 12).
+     * @returns {number} Monthly payment amount.
+     */
+    function calculateMonthlyPayment(L, i, n) {
+        // If the rate is 0, payment is simply Principal / Number of Payments
+        if (i === 0) {
+            return L / n;
+        }
+
+        const powerTerm = Math.pow((1 + i), n);
+        const numerator = L * i * powerTerm;
+        const denominator = powerTerm - 1;
+        
+        // Check for edge case division by zero or calculation failure
+        if (denominator === 0 || !isFinite(powerTerm)) {
+            return NaN;
+        }
+
+        return numerator / denominator;
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('sba-loan-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const L = parseFloat(document.getElementById('loan_amount').value); // Loan Amount
+            const annual_rate_percent = parseFloat(document.getElementById('annual_rate').value); // Annual Rate (%)
+            const term_years = parseFloat(document.getElementById('loan_term_years').value); // Term (Years)
+            const guarantee_percent_input = parseFloat(document.getElementById('guarantee_percent').value); // Guaranteed Percentage (%)
+            const fee_rate_percent = parseFloat(document.getElementById('fee_rate_percent').value); // Fee Rate (%)
+
+            if (isNaN(L) || isNaN(annual_rate_percent) || isNaN(term_years) || isNaN(guarantee_percent_input) || isNaN(fee_rate_percent)) {
+                displayError("Please ensure all loan parameters and fee rates are filled with valid numbers.");
+                return;
+            }
+
+            if (L <= 0 || annual_rate_percent < 0 || term_years <= 0 || guarantee_percent_input <= 0 || fee_rate_percent < 0) {
+                displayError("Loan amount, rate (non-negative), term, guaranteed percent, and fee rate must be positive or zero where applicable.");
+                return;
+            }
+
+            // Convert inputs to calculation parameters
+            const annual_rate = annual_rate_percent / 100;
+            const i = annual_rate / 12; // Monthly interest rate (decimal)
+            const n = term_years * 12; // Total number of payments (months)
+            const guarantee_ratio = guarantee_percent_input / 100;
+            const fee_rate_ratio = fee_rate_percent / 100;
+            
+            if (n > 600) { 
+                displayError("The loan term is too long. Please limit the term to 50 years or less to generate the full schedule.");
+                return;
+            }
+
+
+            // 2. Calculate Monthly Payment and Guarantee Fee
+            const monthly_payment = calculateMonthlyPayment(L, i, n);
+
+            if (isNaN(monthly_payment) || !isFinite(monthly_payment)) {
+                displayError("Could not calculate the monthly payment. Check your inputs.");
+                return;
+            }
+            
+            // SBA Fee Calculation: Fee = (Loan Amount * Guarantee %) * Fee Rate %
+            const guaranteed_portion = L * guarantee_ratio;
+            const guarantee_fee = guaranteed_portion * fee_rate_ratio;
+
+            let total_interest = 0;
+            let remaining_balance = L;
+
+            // 3. Build Amortization Schedule
+            const tableBody = document.getElementById('amortization-body');
+            tableBody.innerHTML = '';
+            
+            // Amortization loop
+            for (let month = 1; month <= n; month++) {
+                
+                // Calculate interest paid in this period (Interest = Remaining Balance * Monthly Rate)
+                let interest_paid = remaining_balance * i;
+                
+                // Principal paid in this period (Principal = Payment - Interest)
+                let principal_paid = monthly_payment - interest_paid;
+
+                // Handle final payment rounding issue
+                if (month === n) {
+                    principal_paid = remaining_balance;
+                    interest_paid = monthly_payment - principal_paid;
+                    if (interest_paid < 0) { 
+                        interest_paid = 0;
+                        principal_paid = monthly_payment;
+                    }
+                }
+
+                // Update balances
+                remaining_balance -= principal_paid;
+                total_interest += interest_paid;
+
+                // Rounding for display to ensure final balance is near zero
+                remaining_balance = remaining_balance < 0.01 ? 0 : remaining_balance; 
+
+                // 4. Add row to table
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${month}</td>
+                        <td>${formatter.format(monthly_payment)}</td>
+                        <td class="text-danger">${formatter.format(interest_paid)}</td>
+                        <td class="text-success">${formatter.format(principal_paid)}</td>
+                        <td>${formatter.format(remaining_balance)}</td>
+                    </tr>
+                `;
+            }
+            // Final total interest calculation (for accuracy in summary)
+            total_interest = Math.round((monthly_payment * n - L) * 100) / 100;
+            if (total_interest < 0) { total_interest = 0; } 
+
+
+            // 5. Update Summary Totals
+            const total_cost = L + total_interest + guarantee_fee;
+
+            document.getElementById('monthly_payment').textContent = formatter.format(monthly_payment);
+            document.getElementById('total_interest').textContent = formatter.format(total_interest);
+            document.getElementById('guarantee_fee').textContent = formatter.format(guarantee_fee);
+            document.getElementById('total_cost').textContent = formatter.format(total_cost);
+            document.getElementById('guaranteed_portion').textContent = formatter.format(guaranteed_portion);
+
+
+            // 6. Show Results
+            document.getElementById('loan-summary').classList.remove('d-none');
+            document.getElementById('amortization-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

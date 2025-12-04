@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}Asset Allocation & Rebalancing Calculator{% endblock %}
+
+{% block meta_description %}Calculate your current portfolio allocation and determine the exact dollar amount needed to buy or sell each asset to meet your target allocation percentages.{% endblock %}
+
+{% block meta_keywords %}Asset allocation, portfolio rebalance, target allocation, investment mix, risk management, finance calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance */
+    .calc-wrapper {
+        background: var(--bs-light);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(220, 53, 69, 0.2); /* Soft shadow with theme color (Danger/Red) */
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: var(--bs-danger); /* Bootstrap Danger/Red */
+    }
+
+    .main-result { 
+        color: var(--bs-dark); 
+        font-weight: bold; 
+        font-size: 2.5rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    /* Styles for the rebalancing actions in the results table */
+    .rebalance-buy {
+        color: var(--bs-success); /* Green for buying */
+        font-weight: 700;
+        font-size: 1.1em;
+    }
+    
+    .rebalance-sell {
+        color: var(--bs-danger); /* Red for selling */
+        font-weight: 700;
+        font-size: 1.1em;
+    }
+
+    .result-row td, .result-row th {
+        vertical-align: middle;
+        padding: 0.75rem 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-danger"><i class="bi bi-bar-chart-fill me-2"></i> Asset Allocation Calculator</h1>
+        <p class="lead text-muted">Use this tool to plan your rebalancing strategy. Enter your current holdings and your ideal target percentages to determine the exact cash flow needed (Buy/Sell) for each asset.</p>
+    </div>
+    
+    
+
+[Image of asset allocation pie chart]
+
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-body">
+
+                    <form id="asset-allocation-form">
+                        <h5 class="section-title border-bottom pb-2 mb-3">Portfolio Holdings & Targets</h5>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-danger">
+                                    <tr>
+                                        <th scope="col" style="width: 35%;"><i class="bi bi-tag-fill me-1"></i> Asset Name</th>
+                                        <th scope="col" style="width: 30%;"><i class="bi bi-cash-stack me-1"></i> Current Value ($)</th>
+                                        <th scope="col" style="width: 25%;"><i class="bi bi-percent me-1"></i> Target %</th>
+                                        <th scope="col" style="width: 10%;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="asset-input-body">
+                                    </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4" class="text-end py-3">
+                                            <button type="button" class="btn btn-sm btn-outline-danger" id="add-asset-btn">
+                                                <i class="bi bi-plus-circle-fill me-1"></i> Add Asset Row
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <button class="btn btn-danger btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-arrow-repeat me-2"></i> Calculate Rebalance Strategy
+                        </button>
+                    </form>
+
+                    <div id="allocation-summary" class="d-none">
+                        <h5 class="section-title mt-5 border-bottom pb-2">Rebalancing Strategy</h5>
+                            
+                        <div class="card p-3 mb-4 bg-danger-subtle text-center border-danger">
+                            <h6 class="text-muted mb-1 fw-bold">Total Portfolio Value</h6>
+                            <p id="total_portfolio_value" class="main-result mb-0 text-danger">$0.00</p>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead class="table-secondary">
+                                    <tr>
+                                        <th style="width: 20%;">Asset</th>
+                                        <th style="width: 15%;" class="text-center">Current %</th>
+                                        <th style="width: 15%;" class="text-center">Target %</th>
+                                        <th style="width: 25%;" class="text-end">Action / Amount ($)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rebalance-results-body">
+                                    </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th class="text-end">Totals:</th>
+                                        <th id="current_percent_total" class="text-center">0.00%</th>
+                                        <th id="target_percent_total" class="text-center">0.00%</th>
+                                        <th class="text-end text-muted">Net $0.00</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <p class="small text-muted text-center mt-3">**Positive Action** means **Buy**; **Negative Action** means **Sell**.</p>
+                    </div>
+                </div>
+
+                <div class="alert mt-4 d-none" id="error-message"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="asset-row-template">
+    <tr class="asset-row">
+        <td>
+            <input type="text" class="form-control form-control-sm asset-name" value="" placeholder="e.g., Stocks" required>
+        </td>
+        <td>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                <input type="number" class="form-control form-control-sm asset-value" min="0" step="0.01" value="" placeholder="0.00" required>
+            </div>
+        </td>
+        <td>
+            <div class="input-group input-group-sm">
+                <input type="number" class="form-control form-control-sm asset-target-percent" min="0" max="100" step="0.1" value="" placeholder="0.0" required>
+                <span class="input-group-text">%</span>
+            </div>
+        </td>
+        <td>
+            <button type="button" class="btn btn-sm btn-outline-secondary remove-asset-btn" title="Remove Asset">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong><i class="bi bi-exclamation-triangle-fill me-2"></i> Error:</strong> ${message}`;
+        document.getElementById('allocation-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // Helper function for formatting currency
+    const currencyFormatter = (value) => {
+        const formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+        });
+        return formatter.format(value);
+    };
+
+    // --- Dynamic Asset Row Management ---
+
+    const assetInputBody = document.getElementById('asset-input-body');
+    const assetRowTemplate = document.getElementById('asset-row-template');
+    const addAssetBtn = document.getElementById('add-asset-btn');
+
+    // Add asset row function
+    function addAssetRow(name = '', value = '', targetPercent = '') {
+        const newRow = assetRowTemplate.content.cloneNode(true).querySelector('tr');
+        
+        newRow.querySelector('.asset-name').value = name;
+        newRow.querySelector('.asset-value').value = value;
+        newRow.querySelector('.asset-target-percent').value = targetPercent;
+        
+        newRow.querySelector('.remove-asset-btn').addEventListener('click', function() {
+            if (assetInputBody.querySelectorAll('.asset-row').length > 1) {
+                newRow.remove();
+                clearError();
+            } else {
+                displayError("You must have at least one asset in the portfolio.");
+            }
+        });
+
+        assetInputBody.appendChild(newRow);
+    }
+
+    // Default asset rows - Initialized with values for quick start
+    addAssetRow('Stocks (Equity)', 50000, 60);
+    addAssetRow('Bonds (Fixed Income)', 30000, 30);
+    addAssetRow('Cash/Other', 20000, 10);
+
+
+    addAssetBtn.addEventListener('click', () => addAssetRow());
+    
+    // --- Calculation Logic ---
+
+    document.getElementById('asset-allocation-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Gather and Validate Inputs
+            const assetRows = assetInputBody.querySelectorAll('.asset-row');
+            const portfolioData = [];
+            let totalPortfolioValue = 0;
+            let totalTargetPercent = 0;
+
+            if (assetRows.length === 0) {
+                displayError("Please add at least one asset to calculate allocation.");
+                return;
+            }
+
+            assetRows.forEach((row, index) => {
+                const name = row.querySelector('.asset-name').value.trim();
+                const valueInput = row.querySelector('.asset-value').value;
+                const targetPercentInput = row.querySelector('.asset-target-percent').value;
+
+                // Simple check for required fields before parsing
+                if (!name || valueInput === "" || targetPercentInput === "") {
+                    displayError(`Asset ${index + 1} has missing data.`);
+                    throw new Error("Missing input data");
+                }
+                
+                const value = parseFloat(valueInput);
+                const targetPercent = parseFloat(targetPercentInput);
+
+                if (isNaN(value) || value < 0) {
+                    displayError(`Current Value for "${name}" must be a positive number.`);
+                    throw new Error("Invalid asset value");
+                }
+
+                if (isNaN(targetPercent) || targetPercent < 0 || targetPercent > 100) {
+                    displayError(`Target % for "${name}" must be a number between 0 and 100.`);
+                    throw new Error("Invalid target percent");
+                }
+                
+                totalPortfolioValue += value;
+                totalTargetPercent += targetPercent;
+
+                portfolioData.push({ name, value, targetPercent });
+            });
+
+            // Final validation: Total Target Percentage must be 100%
+            if (Math.abs(totalTargetPercent - 100) > 0.001) { // Use tolerance for float comparison
+                displayError(`Total Target Percentage must equal 100%. Current total: ${totalTargetPercent.toFixed(2)}%`);
+                return;
+            }
+            
+            if (totalPortfolioValue <= 0) {
+                displayError("Total portfolio value must be greater than zero.");
+                return;
+            }
+
+            // 2. Core Calculation and Results Formatting
+            const resultsBody = document.getElementById('rebalance-results-body');
+            resultsBody.innerHTML = ''; // Clear previous results
+
+            let currentPercentTotalCheck = 0; // Check to ensure current % adds to 100
+            
+            portfolioData.forEach(asset => {
+                // Calculate current allocation
+                const currentPercent = (asset.value / totalPortfolioValue) * 100;
+                currentPercentTotalCheck += currentPercent;
+
+                // Calculate target value and rebalance amount
+                const targetValue = totalPortfolioValue * (asset.targetPercent / 100);
+                const rebalanceAmount = targetValue - asset.value;
+
+                // Create the result row
+                const resultRow = document.createElement('tr');
+                resultRow.className = 'result-row';
+                
+                const rebalanceClass = rebalanceAmount > 0 ? 'rebalance-buy' : (rebalanceAmount < 0 ? 'rebalance-sell' : 'text-muted');
+                const actionIcon = rebalanceAmount > 0 ? '<i class="bi bi-arrow-up-right me-1"></i> BUY' : (rebalanceAmount < 0 ? '<i class="bi bi-arrow-down-left me-1"></i> SELL' : '<i class="bi bi-dash"></i>');
+                
+                const rebalanceText = rebalanceAmount !== 0 ? `${actionIcon} ${currencyFormatter(Math.abs(rebalanceAmount))}` : 'No Change';
+
+                resultRow.innerHTML = `
+                    <td>${asset.name}</td>
+                    <td class="text-center">${currentPercent.toFixed(2)}%</td>
+                    <td class="text-center">${asset.targetPercent.toFixed(2)}%</td>
+                    <td class="text-end ${rebalanceClass}">${rebalanceText}</td>
+                `;
+                resultsBody.appendChild(resultRow);
+            });
+
+            // 3. Update Summary Totals and Display
+            
+            document.getElementById('total_portfolio_value').textContent = currencyFormatter(totalPortfolioValue);
+            document.getElementById('current_percent_total').textContent = `${currentPercentTotalCheck.toFixed(2)}%`;
+            document.getElementById('target_percent_total').textContent = `${totalTargetPercent.toFixed(2)}%`;
+            
+            document.getElementById('allocation-summary').classList.remove('d-none');
+
+        } catch (error) {
+            // If it's a validation error, the error is already displayed by displayError()
+            if (!error.message.includes("Missing") && !error.message.includes("Invalid") && !error.message.includes("must")) {
+                console.error("Calculation failed:", error);
+                displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+            }
+        }
+    });
+</script>
+
+{% endblock %}

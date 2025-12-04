@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Churn Rate Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Churn Rate (percentage of customers lost) based on the number of customers at the start and end of a period.{% endblock %}
+
+{% block meta_keywords %}churn rate, customer retention, customer loss, subscription metrics, business metric, calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables for result text */
+    .calc-wrapper {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    }
+    
+    .result-card {
+        text-align: center;
+        transition: transform 0.2s;
+    }
+
+    .result-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .result-value { 
+        font-weight: bold; 
+        font-size: 2.5rem; 
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Mapping custom classes to Bootstrap colors */
+    .text-danger-result { color: var(--bs-danger) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">📉 Churn Rate Calculator</h1>
+        <p class="lead text-muted">Calculate the **Churn Rate**, the percentage of customers or subscribers lost over a given period, which is a key measure of **customer retention health**.</p>
+        
+        <div class="alert alert-info-subtle border-info py-2 my-4">
+            <p class="mb-1 fw-bold text-info">Churn Rate Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{Churn Rate (\%)} = \frac{\text{Customers Lost During Period}}{\text{Customers at Start of Period}} \times 100$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i> Input Customer Data</h4>
+                </div>
+                <div class="card-body">
+                    <form id="churn-form">
+                        
+                        <div class="mb-4">
+                            <label for="start_customers" class="form-label fw-bold">Customers at Start of Period</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-success text-white"><i class="bi bi-person-fill-up"></i></span>
+                                <input type="number" class="form-control form-control-lg" id="start_customers" placeholder="e.g., 1000" min="0" step="1" required>
+                                <span class="input-group-text">customers</span>
+                            </div>
+                            <p class="small text-muted mt-1">Total number of customers at the beginning of the period.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="lost_customers" class="form-label fw-bold">Customers Lost During Period</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-person-fill-down"></i></span>
+                                <input type="number" class="form-control form-control-lg" id="lost_customers" placeholder="e.g., 50" min="0" step="1" required>
+                                <span class="input-group-text">customers</span>
+                            </div>
+                            <p class="small text-muted mt-1">Number of customers who cancelled or churned during the same period.</p>
+                        </div>
+
+                        <button class="btn btn-danger btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-arrow-down-up me-2"></i> Calculate Churn Rate
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="churn-summary" class="d-none">
+                <h4 class="text-danger border-bottom pb-2 mb-3 mt-5"><i class="bi bi-graph-down me-2"></i> Calculation Results</h4>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="card result-card bg-danger-subtle border-danger h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-danger fw-normal">Customer Churn Rate</h6>
+                                <p id="churn_rate" class="result-value text-danger-result">0.00%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 small text-muted text-center">
+                    A **lower churn rate** is crucial for long-term sustainable growth, as it indicates strong customer retention.
+                </p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('churn-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('churn-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            // Use parseInt since customers are discrete units
+            const start_customers = parseInt(document.getElementById('start_customers').value);
+            const lost_customers = parseInt(document.getElementById('lost_customers').value);
+
+            // Check for NaN first
+            if (isNaN(start_customers) || isNaN(lost_customers)) {
+                displayError("Please enter valid numerical values for both customer counts.");
+                return;
+            }
+
+            if (start_customers < 0 || lost_customers < 0) {
+                displayError("Customer counts must be non-negative.");
+                return;
+            }
+
+            if (lost_customers > start_customers) {
+                displayError("The number of customers lost cannot exceed the number of customers at the start of the period.");
+                return;
+            }
+            
+            let churn_rate = 0;
+            let resultMessage = null; // Used for warnings
+
+            // Handle edge case: Division by zero
+            if (start_customers === 0) {
+                if (lost_customers > 0) {
+                    displayError("Cannot calculate Churn Rate: If you started with 0 customers, you shouldn't have lost customers. Please check inputs.");
+                    return;
+                } else {
+                    // 0/0 is 0% churn, but note that the metric is not meaningful.
+                    resultMessage = "You had zero starting customers and zero lost customers. Churn is 0%, but the metric is not statistically meaningful for an inactive period.";
+                    churn_rate = 0;
+                }
+            } else {
+                // 2. Core Calculation
+                // Churn Rate = (Lost Customers / Starting Customers) * 100
+                churn_rate = (lost_customers / start_customers) * 100;
+            }
+
+            // 3. Update Summary Totals
+            document.getElementById('churn_rate').textContent = churn_rate.toFixed(2) + '%';
+
+            // 4. Show Results and Potential Warnings
+            document.getElementById('churn-summary').classList.remove('d-none');
+
+            if (resultMessage) {
+                // Show a warning for the 0/0 case
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.classList.remove('d-none', 'alert-danger');
+                errorDiv.classList.add('alert-warning');
+                errorDiv.innerHTML = `<strong>Warning:</strong> ${resultMessage}`;
+            }
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

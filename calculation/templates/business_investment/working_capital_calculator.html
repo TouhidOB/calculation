@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Working Capital Calculator{% endblock %}
+
+{% block meta_description %}Calculate a company's Working Capital (Current Assets minus Current Liabilities) to assess its short-term liquidity and efficiency.{% endblock %}
+
+{% block meta_keywords %}working capital, current assets, current liabilities, liquidity, financial metric, accounting, efficiency, calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables for result text */
+    .calc-wrapper {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    }
+    
+    .result-card {
+        text-align: center;
+        transition: transform 0.2s;
+    }
+
+    .result-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .result-value { 
+        font-weight: bold; 
+        font-size: 2.5rem; 
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Conditional Result Colors based on Bootstrap classes */
+    .text-positive { color: var(--bs-success) !important; }
+    .text-negative { color: var(--bs-danger) !important; }
+    .text-zero { color: var(--bs-secondary) !important; }
+
+    .border-positive { border-color: var(--bs-success) !important; }
+    .border-negative { border-color: var(--bs-danger) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">💼 Working Capital Calculator</h1>
+        <p class="lead text-muted">Calculate **Working Capital**—the difference between a company's current assets and its current liabilities. This is a key measure of **short-term liquidity**.</p>
+        
+        <div class="alert alert-primary-subtle border-primary py-2 my-4">
+            <p class="mb-1 fw-bold text-primary">Working Capital Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{Working Capital} = \text{Current Assets} - \text{Current Liabilities}$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-file-text-fill me-2"></i> Balance Sheet Inputs (in $)</h4>
+                </div>
+                <div class="card-body">
+                    <form id="wc-form">
+                        
+                        <div class="mb-4">
+                            <label for="current_assets" class="form-label fw-bold">Total Current Assets</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-success text-white"><i class="bi bi-arrow-up-circle-fill"></i></span>
+                                <input type="number" class="form-control" id="current_assets" placeholder="e.g., 250000.00" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">Cash, accounts receivable, inventory, and other assets convertible to cash within one year.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="current_liabilities" class="form-label fw-bold">Total Current Liabilities</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-arrow-down-circle-fill"></i></span>
+                                <input type="number" class="form-control" id="current_liabilities" placeholder="e.g., 150000.00" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">Accounts payable, short-term debt, and other obligations due within one year.</p>
+                        </div>
+
+                        <button class="btn btn-primary btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-calculator me-2"></i> Calculate Working Capital
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="wc-summary" class="d-none">
+                <h4 class="text-primary border-bottom pb-2 mb-3 mt-5"><i class="bi bi-clipboard-data-fill me-2"></i> Calculation Results</h4>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div id="wc-result-card" class="card result-card bg-light h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted fw-normal">Working Capital</h6>
+                                <p id="wc_amount" class="result-value text-primary">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 small text-muted text-center">
+                    A **positive** balance means the company has enough liquid assets to cover its short-term debts. A **negative** balance may indicate a liquidity risk.
+                </p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Helper function to format currency
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+    });
+
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('wc-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // Function to update the result card's color based on the working capital value
+    function updateResultDisplay(working_capital) {
+        const card = document.getElementById('wc-result-card');
+        const text = document.getElementById('wc_amount');
+
+        // Reset classes
+        card.classList.remove('border-positive', 'border-negative');
+        text.classList.remove('text-positive', 'text-negative', 'text-zero');
+
+        // Apply new classes based on value
+        if (working_capital > 0) {
+            card.classList.add('border-positive');
+            text.classList.add('text-positive');
+        } else if (working_capital < 0) {
+            card.classList.add('border-negative');
+            text.classList.add('text-negative');
+        } else {
+            card.classList.add('border-secondary');
+            text.classList.add('text-zero');
+        }
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('wc-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs (Get values as strings first to check for emptiness)
+            const assets_val = document.getElementById('current_assets').value;
+            const liabilities_val = document.getElementById('current_liabilities').value;
+
+            // Check if fields are empty
+            if (!assets_val || !liabilities_val) {
+                displayError("Please enter values for both Total Current Assets and Total Current Liabilities.");
+                return;
+            }
+
+            // Parse inputs
+            const current_assets = parseFloat(assets_val);
+            const current_liabilities = parseFloat(liabilities_val);
+
+            // Check for NaN after parsing
+            if (isNaN(current_assets) || isNaN(current_liabilities)) {
+                displayError("Please ensure both inputs are valid numbers.");
+                return;
+            }
+
+            if (current_assets < 0 || current_liabilities < 0) {
+                displayError("Assets and Liabilities must be non-negative values.");
+                return;
+            }
+
+            // 2. Core Calculation
+            // Working Capital = Current Assets - Current Liabilities
+            const working_capital = current_assets - current_liabilities;
+
+
+            // 3. Update Summary Totals and Conditional Display
+            document.getElementById('wc_amount').textContent = formatter.format(working_capital);
+            updateResultDisplay(working_capital);
+
+            // 4. Show Results
+            document.getElementById('wc-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

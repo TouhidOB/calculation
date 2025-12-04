@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Beta Coefficient Calculator{% endblock %}
+
+{% block meta_description %}Calculate a stock's Beta coefficient by dividing the covariance of the stock's return and the market's return by the variance of the market's return.{% endblock %}
+
+{% block meta_keywords %}Beta coefficient, systematic risk, market volatility, stock risk, covariance, variance, CAPM, finance calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance, using Secondary color for a neutral/statistical look */
+    .calc-wrapper {
+        background: var(--bs-light); 
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: var(--bs-secondary); /* Bootstrap Secondary/Gray */
+    }
+
+    .result-card {
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid var(--bs-secondary);
+    }
+
+    /* Main result style for the final Beta number */
+    .main-result { 
+        color: var(--bs-secondary); 
+        font-weight: bold; 
+        font-size: 3.5rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    .input-group-text.secondary-icon {
+        background-color: var(--bs-secondary);
+        color: var(--bs-white); 
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-secondary"><i class="bi bi-graph-down-arrow me-2"></i> Beta Coefficient ($\beta$) Calculator</h1>
+        <p class="lead text-muted">Calculate the **Beta ($\beta$)** coefficient, which measures a stock's **systematic risk**—how sensitive its returns are to changes in the overall market.</p>
+        
+        <div class="alert alert-secondary-subtle border-secondary py-3 my-4">
+            <p class="mb-1 fw-bold text-dark">Beta Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$\beta = \frac{\text{Covariance}(\text{Stock}, \text{Market})}{\text{Variance}(\text{Market})}$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-body">
+                    <form id="beta-form">
+                        
+                        <h5 class="section-title">Statistical Inputs (from Return History)</h5>
+
+                        <div class="mb-4">
+                            <label for="covariance" class="form-label fw-bold">Covariance ($\text{Stock}, \text{Market}$)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text secondary-icon"><i class="bi bi-shuffle"></i></span>
+                                <input type="number" class="form-control" id="covariance" placeholder="e.g., 0.0055" step="0.0001" required>
+                                <span class="input-group-text">Cov</span>
+                            </div>
+                            <p class="small text-muted mt-1">Measures how the stock's returns move together with the market's returns.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="variance" class="form-label fw-bold">Variance ($\text{Market}$)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text secondary-icon"><i class="bi bi-activity"></i></span>
+                                <input type="number" class="form-control" id="variance" placeholder="e.g., 0.0049" min="0.000001" step="0.0001" required>
+                                <span class="input-group-text">Var</span>
+                            </div>
+                            <p class="small text-muted mt-1">Measures the market's overall volatility. This value **must be positive**.</p>
+                        </div>
+
+
+                        <button class="btn btn-secondary btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-calculator me-2"></i> Calculate Beta
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="beta-summary" class="d-none">
+                <h4 class="text-secondary border-bottom pb-2 mb-4 mt-5"><i class="bi bi-bullseye me-2"></i> Calculated Beta Coefficient</h4>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="card result-card bg-white shadow-lg">
+                            <div class="card-body py-4">
+                                <h6 class="card-title text-muted fw-bold">Stock Beta ($\beta$) Value</h6>
+                                <p id="beta_result" class="main-result">0.0000</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mt-4 mb-3 text-secondary">Interpreting Your Beta ($\beta$):</h6>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex align-items-center"><i class="bi bi-arrow-up-right-circle-fill text-success me-2 fs-5"></i>
+                        <span class="fw-bold text-success">Beta > 1.0</span>: The stock is **more volatile** than the market. It tends to rise and fall by a larger percentage than the market index. (Higher Systematic Risk)
+                    </li>
+                    <li class="list-group-item d-flex align-items-center"><i class="bi bi-arrow-right-circle-fill text-primary me-2 fs-5"></i>
+                        <span class="fw-bold text-primary">Beta $\approx$ 1.0</span>: The stock moves **in line** with the market. If the market rises by 1%, the stock is expected to rise by approximately 1%. (Average Systematic Risk)
+                    </li>
+                    <li class="list-group-item d-flex align-items-center"><i class="bi bi-arrow-down-right-circle-fill text-info me-2 fs-5"></i>
+                        <span class="fw-bold text-info">Beta < 1.0 (but $>$ 0)</span>: The stock is **less volatile** than the market. It offers a defensive position during market downturns. (Lower Systematic Risk)
+                    </li>
+                    <li class="list-group-item d-flex align-items-center"><i class="bi bi-dash-circle-fill text-danger me-2 fs-5"></i>
+                        <span class="fw-bold text-danger">Beta $\leq$ 0</span>: The stock moves **opposite** to the market (or has no correlation). This is rare and highly desirable for diversification.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning', 'alert-secondary');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('beta-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('beta-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const covariance = parseFloat(document.getElementById('covariance').value);
+            const variance = parseFloat(document.getElementById('variance').value);
+
+            if (isNaN(covariance) || isNaN(variance)) {
+                displayError("Both Covariance and Variance must be filled with valid numerical values.");
+                return;
+            }
+
+            // Critical check: Variance (the denominator) cannot be zero or negative
+            if (variance <= 0) {
+                displayError("Market Variance must be a positive number greater than zero for a valid Beta calculation.");
+                return;
+            }
+            
+            // 2. Core Calculation
+            // Beta = Covariance / Variance
+            const betaResult = covariance / variance;
+
+
+            // 3. Update Summary Totals
+            const betaElement = document.getElementById('beta_result');
+            
+            // Display Beta with 4 decimal places for precision
+            betaElement.textContent = betaResult.toFixed(4); 
+
+            // 4. Show Results
+            document.getElementById('beta-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

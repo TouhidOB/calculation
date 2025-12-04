@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Acquisition Cost (CAC) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Customer Acquisition Cost (CAC) by dividing total sales and marketing expenses by the number of new customers acquired.{% endblock %}
+
+{% block meta_keywords %}CAC, Customer Acquisition Cost, marketing cost, sales expense, customer count, financial metric, calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables for result text */
+    .calc-wrapper {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    }
+    
+    .result-card {
+        text-align: center;
+        transition: transform 0.2s;
+    }
+
+    .result-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .result-value { 
+        font-weight: bold; 
+        font-size: 2.5rem; 
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Mapping custom classes to Bootstrap colors */
+    .text-danger-result { color: var(--bs-danger) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">💸 Customer Acquisition Cost (CAC) Calculator</h1>
+        <p class="lead text-muted">Calculate the average cost of acquiring one **new customer**. This metric is vital for determining the return on investment (ROI) of your sales and marketing spend.</p>
+        
+        <div class="alert alert-danger-subtle border-danger py-2 my-4">
+            <p class="mb-1 fw-bold text-danger">CAC Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{CAC} = \frac{\text{Total Sales & Marketing Costs}}{\text{Number of New Customers Acquired}}$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-wallet-fill me-2"></i> Input Sales & Marketing Metrics</h4>
+                </div>
+                <div class="card-body">
+                    <form id="cac-form">
+                        
+                        <div class="mb-4">
+                            <label for="total_cost" class="form-label fw-bold">Total Sales and Marketing Costs ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-graph-up"></i></span>
+                                <input type="number" class="form-control form-control-lg" id="total_cost" placeholder="e.g., 20000.00" min="0" step="0.01" required>
+                            </div>
+                            <p class="small text-muted mt-1">Sum of all spending on sales and marketing (salaries, advertising, software, etc.) over a specific period.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="new_customers" class="form-label fw-bold">Number of New Customers Acquired</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-success text-white"><i class="bi bi-person-fill-add"></i></span>
+                                <input type="number" class="form-control form-control-lg" id="new_customers" placeholder="e.g., 500" min="0" step="1" required>
+                                <span class="input-group-text">customers</span>
+                            </div>
+                            <p class="small text-muted mt-1">The total count of new customers gained in the exact same period.</p>
+                        </div>
+
+                        <button class="btn btn-danger btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-speedometer me-2"></i> Calculate CAC
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="cac-summary" class="d-none">
+                <h4 class="text-danger border-bottom pb-2 mb-3 mt-5"><i class="bi bi-exclamation-triangle-fill me-2"></i> Calculation Results</h4>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="card result-card bg-danger-subtle border-danger h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-danger fw-normal"><i class="bi bi-x-octagon-fill me-1"></i> Customer Acquisition Cost (CAC)</h6>
+                                <p id="cac_amount" class="result-value text-danger-result">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 small text-muted text-center">
+                    CAC is typically compared against Customer Lifetime Value (CLV). A healthy ratio is often considered to be
+                    <span class="fw-bold text-success">CLV > 3 × CAC</span>.
+                </p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Helper function to format currency
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+    });
+
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('cac-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('cac-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const total_cost = parseFloat(document.getElementById('total_cost').value);
+            const new_customers = parseInt(document.getElementById('new_customers').value);
+
+            // Check for NaN first
+            if (isNaN(total_cost) || isNaN(new_customers)) {
+                displayError("Please enter valid numbers for both Costs and New Customers.");
+                return;
+            }
+
+            if (total_cost < 0) {
+                displayError("Total Sales and Marketing Costs must be non-negative.");
+                return;
+            }
+            
+            if (new_customers < 0) {
+                displayError("The number of new customers must be non-negative.");
+                return;
+            }
+
+            let cac = 0;
+            let errorMessage = null;
+
+            // Handle edge cases
+            if (new_customers === 0) {
+                if (total_cost > 0) {
+                    errorMessage = "Cannot calculate CAC: You spent money but acquired zero new customers. The cost per customer is undefined (or infinitely high).";
+                } else {
+                    // Zero cost, zero customers - display as zero CAC
+                    cac = 0;
+                }
+            } else {
+                // 2. Core Calculation
+                cac = total_cost / new_customers;
+            }
+
+            if (errorMessage) {
+                displayError(errorMessage);
+                return;
+            }
+
+            // 3. Update Summary Totals
+            document.getElementById('cac_amount').textContent = formatter.format(cac);
+
+            // 4. Show Results
+            document.getElementById('cac-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory Turnover Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Inventory Turnover Ratio to assess how efficiently a company manages and sells its inventory over a period.{% endblock %}
+
+{% block meta_keywords %}inventory turnover, COGS, cost of goods sold, average inventory, inventory management, efficiency ratio, financial metric, calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables for result text */
+    .calc-wrapper {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    }
+    
+    .result-card {
+        text-align: center;
+        transition: transform 0.2s;
+    }
+
+    .result-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .result-value { 
+        font-weight: bold; 
+        font-size: 2.5rem; 
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Conditional Result Colors based on Bootstrap classes */
+    .text-high-turnover { color: var(--bs-success) !important; }
+    .text-moderate-turnover { color: var(--bs-info) !important; }
+    .text-low-turnover { color: var(--bs-danger) !important; }
+    
+    .border-high-turnover { border-color: var(--bs-success) !important; }
+    .border-moderate-turnover { border-color: var(--bs-info) !important; }
+    .border-low-turnover { border-color: var(--bs-danger) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">🔄 Inventory Turnover Calculator</h1>
+        <p class="lead text-muted">This **efficiency ratio** measures how many times a company sells and replaces its inventory over a given period, reflecting inventory management quality and sales performance.</p>
+        
+        <div class="alert alert-info-subtle border-info py-2 my-4">
+            <p class="mb-1 fw-bold text-info">Inventory Turnover Ratio Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{Turnover} = \frac{\text{Cost of Goods Sold (COGS)}}{\text{Average Inventory}}$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="bi bi-box-seam me-2"></i> Operational Inputs (in $)</h4>
+                </div>
+                <div class="card-body">
+                    <form id="itr-form">
+                        
+                        <h5 class="section-title text-primary">Income Statement Input (Numerator)</h5>
+                        <div class="mb-4">
+                            <label for="cogs" class="form-label fw-bold">Cost of Goods Sold (COGS)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-tag-fill"></i></span>
+                                <input type="number" class="form-control" id="cogs" placeholder="e.g., 800000.00" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">Direct costs to produce the goods sold over the period.</p>
+                        </div>
+
+                        <h5 class="section-title text-primary mt-4">Balance Sheet Inputs (for Average Inventory)</h5>
+
+                        <div class="mb-3">
+                            <label for="beginning_inventory" class="form-label fw-bold">Beginning Inventory</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-success text-white"><i class="bi bi-calendar-check"></i></span>
+                                <input type="number" class="form-control" id="beginning_inventory" placeholder="e.g., 180000.00" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="ending_inventory" class="form-label fw-bold">Ending Inventory</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-success text-white"><i class="bi bi-calendar-x"></i></span>
+                                <input type="number" class="form-control" id="ending_inventory" placeholder="e.g., 220000.00" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-info btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-speedometer2 me-2"></i> Calculate Inventory Turnover
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="itr-summary" class="d-none">
+                <h4 class="text-info border-bottom pb-2 mb-3 mt-5"><i class="bi bi-clipboard-data-fill me-2"></i> Calculation Results</h4>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div id="itr-result-card" class="card result-card bg-light h-100 shadow-sm border-info">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted fw-normal">Inventory Turnover Ratio</h6>
+                                <p id="itr_ratio" class="result-value text-info">0.00 Times</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 small text-muted text-center" id="ratio_interpretation">
+                    A **high ratio** suggests strong sales or tight inventory management; a **low ratio** might indicate weak sales or excess stock. The ideal ratio varies significantly by industry.
+                </p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to update the result card's color based on the turnover value
+    // NOTE: Industry benchmarks vary widely, so we use relative tiers for a generic interpretation.
+    function updateResultDisplay(ratio) {
+        const card = document.getElementById('itr-result-card');
+        const text = document.getElementById('itr_ratio');
+
+        // Reset classes
+        card.classList.remove('border-high-turnover', 'border-moderate-turnover', 'border-low-turnover');
+        text.classList.remove('text-high-turnover', 'text-moderate-turnover', 'text-low-turnover');
+
+        // Handle special values (Infinite or Negative)
+        if (ratio === Infinity) {
+            card.classList.add('border-high-turnover');
+            text.classList.add('text-high-turnover');
+            return;
+        } else if (ratio === 0) {
+            card.classList.add('border-low-turnover');
+            text.classList.add('text-low-turnover');
+            return;
+        }
+
+        // Apply new classes based on relative tiers (generic interpretation)
+        if (ratio >= 5.0) { // High turnover (Efficient/Strong Sales)
+            card.classList.add('border-high-turnover');
+            text.classList.add('text-high-turnover');
+        } else if (ratio >= 2.0) { // Moderate turnover (Acceptable)
+            card.classList.add('border-moderate-turnover');
+            text.classList.add('text-moderate-turnover');
+        } else { // Low turnover (Potential holding costs/obsolescence)
+            card.classList.add('border-low-turnover');
+            text.classList.add('text-low-turnover');
+        }
+    }
+
+    // Function to display error messages (including warnings/infinite ratio)
+    function displayError(message, isWarning = false) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-danger', 'alert-warning');
+        
+        if (isWarning) {
+            errorDiv.classList.add('alert-warning');
+            errorDiv.innerHTML = `<strong>Extreme Ratio:</strong> ${message}`;
+        } else {
+            errorDiv.classList.add('alert-danger');
+            errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        }
+        document.getElementById('itr-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('itr-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs (Get values as strings first to check for emptiness)
+            const cogs_val = document.getElementById('cogs').value;
+            const begin_inv_val = document.getElementById('beginning_inventory').value;
+            const end_inv_val = document.getElementById('ending_inventory').value;
+
+            // Check for empty fields
+            if (!cogs_val || !begin_inv_val || !end_inv_val) {
+                displayError("All three input fields must be filled with numerical values.");
+                return;
+            }
+
+            // Parse inputs
+            const cogs = parseFloat(cogs_val);
+            const beginning_inventory = parseFloat(begin_inv_val);
+            const ending_inventory = parseFloat(end_inv_val);
+
+            // Check for NaN after parsing
+            if (isNaN(cogs) || isNaN(beginning_inventory) || isNaN(ending_inventory)) {
+                displayError("Please ensure all inputs are valid numbers.");
+                return;
+            }
+
+            if (cogs < 0 || beginning_inventory < 0 || ending_inventory < 0) {
+                displayError("All input values must be non-negative.");
+                return;
+            }
+            
+            // 2. Calculate Average Inventory
+            const average_inventory = (beginning_inventory + ending_inventory) / 2;
+
+            let turnover_ratio = 0;
+
+            // Handle edge case: Division by zero (zero average inventory)
+            if (average_inventory === 0) {
+                if (cogs > 0) {
+                    turnover_ratio = Infinity;
+                    const infiniteMessage = "Average Inventory is zero, resulting in an infinitely high ratio. This suggests verification of input data is needed.";
+                    
+                    // Display special warning for infinite ratio
+                    document.getElementById('itr_ratio').textContent = 'Infinite (∞) Times';
+                    updateResultDisplay(turnover_ratio); // This handles the color coding
+                    displayError(infiniteMessage, true); 
+                    document.getElementById('itr-summary').classList.remove('d-none');
+                    return;
+
+                } else {
+                    // 0/0. Use 0.
+                    turnover_ratio = 0;
+                }
+            } else {
+                // 3. Core Calculation
+                turnover_ratio = cogs / average_inventory;
+            }
+
+            // 4. Update Summary Totals and Conditional Display
+            const ratioText = turnover_ratio.toFixed(2) + ' Times';
+            document.getElementById('itr_ratio').textContent = ratioText;
+            updateResultDisplay(turnover_ratio);
+
+            // 5. Show Results
+            document.getElementById('itr-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

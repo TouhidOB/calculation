@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Cash Runway & Net Burn Calculator{% endblock %}
+
+{% block meta_description %}Calculate a company's Cash Runway, the number of months its current cash reserves will last based on its Net Monthly Burn Rate (monthly expenses minus monthly revenue).{% endblock %}
+
+{% block meta_keywords %}cash runway, runway calculation, net monthly burn, cash reserve, startup finance, financial planning, calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for appearance, leveraging Bootstrap colors */
+    .calc-wrapper {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
+    }
+
+    .result-card {
+        text-align: center;
+        border-radius: 8px;
+        transition: transform 0.2s;
+    }
+
+    .result-card:hover {
+        transform: translateY(-3px);
+    }
+
+    /* Burn Rate and Runway results - Base styling */
+    .result-value { 
+        font-weight: 700; 
+        font-size: 2.5rem; 
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Dynamic color classes controlled by JS for Burn Rate */
+    /* Burn is POSITIVE (Losing Cash) */
+    .text-burn-positive {
+        color: var(--bs-danger) !important;
+    }
+
+    /* Burn is NEGATIVE (Generating Cash) */
+    .text-burn-negative {
+        color: var(--bs-success) !important;
+    }
+    
+    /* Burn is ZERO (Breaking Even) */
+    .text-burn-zero {
+        color: var(--bs-warning) !important;
+    }
+    
+    /* Dynamic color classes controlled by JS for Runway */
+    /* Runway is FINITE (Running out of cash) */
+    .text-runway-finite {
+        color: var(--bs-danger) !important;
+    }
+
+    /* Runway is INFINITE (Profitable or breaking even) */
+    .text-runway-infinite {
+        color: var(--bs-success) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-success">🚀 Cash Runway Calculator (Months)</h1>
+        <p class="lead text-muted">Determine the **Cash Runway**—the number of months your current cash reserve will last—based on the difference between your monthly expenses and revenue (**Net Burn Rate**).</p>
+        
+        <div class="alert alert-success-subtle border-success py-2 my-4">
+            <p class="mb-1 fw-bold text-success">Key Formulas:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{Net Burn Rate} = \text{Monthly Expenses} - \text{Monthly Revenue}$$
+                $$\text{Cash Runway} = \frac{\text{Cash Reserve}}{\text{Net Monthly Burn Rate}}$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-rocket-takeoff me-2"></i> Financial Planning Inputs</h4>
+                </div>
+                <div class="card-body">
+                    <form id="runway-form">
+                        
+                        <h5 class="section-title text-primary">Current Cash Reserve ($)</h5>
+
+                        <div class="mb-4">
+                            <label for="cash_reserve" class="form-label fw-bold">Current Cash Balance / Cash Reserve</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-info text-white"><i class="bi bi-wallet2"></i></span>
+                                <input type="number" class="form-control" id="cash_reserve" placeholder="e.g., 250000.00" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">The total cash currently held by the company (The numerator).</p>
+                        </div>
+                        
+                        <hr>
+
+                        <h5 class="section-title text-primary mt-4">Monthly Cash Flow Inputs ($)</h5>
+
+                        <div class="mb-3">
+                            <label for="monthly_expenses" class="form-label fw-bold">Total Monthly Operating Expenses (Cash Out)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-arrow-down-left-square-fill"></i></span>
+                                <input type="number" class="form-control" id="monthly_expenses" placeholder="e.g., 50000.00" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">Salaries, rent, marketing, utilities, etc.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="monthly_revenue" class="form-label fw-bold">Total Monthly Revenue (Cash In)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-success text-white"><i class="bi bi-arrow-up-right-square-fill"></i></span>
+                                <input type="number" class="form-control" id="monthly_revenue" placeholder="e.g., 10000.00" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">Cash collected from sales, services, etc.</p>
+                        </div>
+
+
+                        <button class="btn btn-success btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-calculator me-2"></i> Calculate Runway
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="runway-summary" class="d-none">
+                <h4 class="text-success border-bottom pb-2 mb-3 mt-5"><i class="bi bi-clipboard-data-fill me-2"></i> Calculation Results</h4>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div id="runway-card" class="card result-card bg-light h-100 shadow-sm border-success">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted fw-normal">Estimated Cash Runway</h6>
+                                <p id="runway_months" class="result-value text-success">0.00 Months</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="burn-rate-card" class="card result-card bg-light h-100 shadow-sm border-success">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted fw-normal">Net Monthly Burn Rate</h6>
+                                <p id="net_burn_rate" class="result-value text-success">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 small text-muted text-center" id="runway_interpretation">The monthly burn rate is your cash out minus your cash in. If the burn is positive, your runway is finite. If the burn is negative (meaning you're profitable), your runway is infinite.</p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to update the result card's color and interpretation
+    function updateResultDisplay(net_burn, runway) {
+        const burnRateElement = document.getElementById('net_burn_rate');
+        const runwayElement = document.getElementById('runway_months');
+        const burnCard = document.getElementById('burn-rate-card');
+        const runwayCard = document.getElementById('runway-card');
+        let interpretation = '';
+
+        // Reset dynamic classes
+        burnRateElement.classList.remove('text-burn-negative', 'text-burn-positive', 'text-burn-zero');
+        runwayElement.classList.remove('text-runway-infinite', 'text-runway-finite');
+        burnCard.classList.remove('border-danger', 'border-success', 'border-warning');
+        runwayCard.classList.remove('border-danger', 'border-success', 'border-warning');
+
+
+        if (net_burn > 0) {
+            // Burning cash (Positive Burn Rate)
+            interpretation = `The company is currently **burning cash** at a rate of $${net_burn.toFixed(2)} per month. The cash reserve will last approximately **${runway.toFixed(2)} months**.`;
+            
+            // Set styles for Positive Burn / Finite Runway
+            burnRateElement.classList.add('text-burn-positive'); 
+            runwayElement.classList.add('text-runway-finite');
+            burnCard.classList.add('border-danger');
+            runwayCard.classList.add('border-danger');
+            
+        } else if (net_burn < 0) {
+            // Generating cash (Negative Burn Rate)
+            interpretation = `The company has a **negative burn rate** and is **generating cash** ($${(-net_burn).toFixed(2)} per month). The cash reserve should not run out.`;
+            
+            // Set styles for Negative Burn / Infinite Runway
+            burnRateElement.classList.add('text-burn-negative'); 
+            runwayElement.classList.add('text-runway-infinite');
+            burnCard.classList.add('border-success');
+            runwayCard.classList.add('border-success');
+            
+        } else {
+            // Breaking even (Zero Burn Rate)
+            interpretation = "The company is currently **breaking even** (Net Burn Rate is zero). The cash reserve will remain stable indefinitely.";
+            
+            // Set styles for Zero Burn / Infinite Runway (stable)
+            burnRateElement.classList.add('text-burn-zero'); 
+            runwayElement.classList.add('text-runway-infinite');
+            burnCard.classList.add('border-warning');
+            runwayCard.classList.add('border-warning');
+        }
+
+        document.getElementById('runway_interpretation').innerHTML = interpretation;
+    }
+
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('runway-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('runway-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const reserve_val = document.getElementById('cash_reserve').value;
+            const expenses_val = document.getElementById('monthly_expenses').value;
+            const revenue_val = document.getElementById('monthly_revenue').value;
+
+            // Check for empty fields
+            if (!reserve_val || !expenses_val || !revenue_val) {
+                displayError("All three input fields must be filled with numerical values.");
+                return;
+            }
+
+            // Parse inputs
+            const cash_reserve = parseFloat(reserve_val);
+            const monthly_expenses = parseFloat(expenses_val);
+            const monthly_revenue = parseFloat(revenue_val);
+
+            // Check for NaN after parsing
+            if (isNaN(monthly_expenses) || isNaN(monthly_revenue) || isNaN(cash_reserve)) {
+                displayError("Please ensure all inputs are valid numbers.");
+                return;
+            }
+
+            if (monthly_expenses < 0 || monthly_revenue < 0 || cash_reserve < 0) {
+                displayError("All cash values must be non-negative.");
+                return;
+            }
+            
+            // 2. Core Calculation
+            // Net Burn Rate = Monthly Expenses - Monthly Revenue
+            const net_burn_rate = monthly_expenses - monthly_revenue;
+            let runway_months = 0;
+            
+            if (net_burn_rate > 0) {
+                // Burning cash, calculate finite runway
+                runway_months = cash_reserve / net_burn_rate;
+            } else {
+                // Making cash or breaking even, runway is infinite
+                runway_months = Infinity;
+            }
+
+            // 3. Update Summary Totals and Conditional Display
+            
+            // Display Net Burn Rate (always absolute value for simple display)
+            document.getElementById('net_burn_rate').textContent = '$' + Math.abs(net_burn_rate).toFixed(2);
+            
+            if (runway_months === Infinity) {
+                document.getElementById('runway_months').textContent = 'Infinite (∞)';
+            } else {
+                document.getElementById('runway_months').textContent = runway_months.toFixed(2) + ' Months';
+            }
+
+            updateResultDisplay(net_burn_rate, runway_months);
+
+            // 4. Show Results
+            document.getElementById('runway-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

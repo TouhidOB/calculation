@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Certificate of Deposit (CD) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the future value and total interest earned on a Certificate of Deposit (CD) based on principal, annual interest rate, term, and compounding frequency.{% endblock %}
+
+{% block meta_keywords %}CD calculator, certificate of deposit, compound interest, future value, interest earned, savings calculator, finance tool{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance */
+    .calc-wrapper {
+        background: var(--bs-white);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(40, 167, 69, 0.15); /* Soft shadow with theme color (Success/Green) */
+        border: 1px solid var(--bs-light);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: var(--bs-success); /* Bootstrap Success/Green */
+    }
+
+    .result-card {
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        /* Using Bootstrap Utility Classes for border and background in HTML now */
+    }
+
+    .main-result { 
+        color: var(--bs-success); /* Green for primary result */
+        font-weight: bold; 
+        font-size: 3.5rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    .secondary-result {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--bs-primary); /* Blue for secondary metrics */
+    }
+
+    .interest-result {
+        color: var(--bs-primary); /* Blue for interest earned */
+        font-weight: bold; 
+        font-size: 3.5rem; 
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark"><i class="bi bi-bank me-2 text-success"></i> Certificate of Deposit (CD) Calculator</h1>
+        <p class="lead text-muted">Calculate the **Future Value** and **Total Interest** earned on your CD using the power of compound interest.</p>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="calc-wrapper">
+
+                <div class="mb-4 p-3 border-start border-4 border-success bg-light">
+                    <p class="mb-0 small text-dark fw-bold">
+                        The Future Value (FV) is calculated using the compound interest formula:
+                    </p>
+                    $$FV = P \left(1 + \frac{r}{n}\right)^{nt}$$
+                    Where $P$ is the principal, $r$ is the annual rate, $n$ is the compounding periods per year, and $t$ is the term in years.
+                </div>
+                
+
+[Image of compound interest formula]
+
+
+                <form id="cd-form">
+                    <h5 class="section-title border-bottom pb-2 mb-4"><i class="bi bi-list-check me-1"></i> CD Investment Details</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="principal" class="form-label">Initial Deposit (Principal)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                                <input type="number" class="form-control" id="principal" placeholder="e.g., 10000" min="1" step="0.01" required>
+                            </div>
+                            <div class="form-text">The initial lump-sum amount invested.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="interest_rate" class="form-label">Annual Interest Rate (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="interest_rate" placeholder="e.g., 4.5" min="0" step="0.01" required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <div class="form-text">The nominal annual interest rate (APY).</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="term_years" class="form-label mt-3">Term Length (Years)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="term_years" placeholder="e.g., 5" min="0.1" step="0.1" required>
+                                <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+                            </div>
+                            <div class="form-text">How long the money is deposited (e.g., 0.5 for 6 months).</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="form-label">Compounding Frequency ($n$)</label>
+                        <div class="mt-1">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="compounding_frequency" id="freq_annually" value="1" checked>
+                                <label class="form-check-label" for="freq_annually">Annually</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="compounding_frequency" id="freq_semi" value="2">
+                                <label class="form-check-label" for="freq_semi">Semi-Annually</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="compounding_frequency" id="freq_quarterly" value="4">
+                                <label class="form-check-label" for="freq_quarterly">Quarterly</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="compounding_frequency" id="freq_monthly" value="12">
+                                <label class="form-check-label" for="freq_monthly">Monthly</label>
+                            </div>
+                        </div>
+                        <div class="form-text">Higher frequency means interest compounds more often.</div>
+                    </div>
+
+
+                    <button class="btn btn-success btn-lg mt-5 w-100 shadow" type="submit">
+                        <i class="bi bi-arrow-right-circle-fill me-2"></i> Calculate Maturity Outcome
+                    </button>
+                </form>
+
+                <div id="cd-summary" class="d-none">
+                    <h5 class="section-title mt-5 border-bottom pb-2"><i class="bi bi-check-circle-fill me-1"></i> Maturity Outcome</h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card result-card border-success bg-success-subtle">
+                                <div class="card-body">
+                                    <h6 class="card-title text-success fw-bold">Future Value (Maturity Amount)</h6>
+                                    <p id="future_value" class="main-result"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card result-card border-primary bg-primary-subtle">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary fw-bold">Total Interest Earned</h6>
+                                    <p id="total_interest" class="interest-result"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="text-muted mt-4 mb-3"><i class="bi bi-info-circle me-1"></i> Key Metrics</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="card bg-light border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title text-muted small mb-1">Initial Principal</h6>
+                                    <p id="principal_display" class="secondary-result text-dark mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title text-muted small mb-1">Effective Annual Rate (EAR)</h6>
+                                    <p id="ear_display" class="secondary-result text-dark mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title text-muted small mb-1">Total Compounding Periods</h6>
+                                    <p id="total_periods" class="secondary-result text-dark mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert mt-4 d-none" id="error-message"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong><i class="bi bi-exclamation-triangle-fill me-2"></i> Error:</strong> ${message}`;
+        document.getElementById('cd-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // Helper function for formatting currency
+    const currencyFormatter = (value) => {
+        const formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+        });
+        return formatter.format(value);
+    };
+
+    // Helper function for formatting percentages
+    const percentFormatter = (value) => {
+        return (value * 100).toFixed(4) + '%';
+    };
+
+    // --- Core Calculation Logic ---
+
+    /**
+     * Calculates the Future Value of a CD using the compound interest formula.
+     * FV = P * (1 + r/n)^(n*t)
+     */
+    function calculateFutureValue(P, r, n, t) {
+        // P = Principal
+        // r = Annual Rate (decimal)
+        // n = Compounding periods per year
+        // t = Term in years
+        
+        // Handle zero rate case explicitly
+        if (r === 0) {
+            return P;
+        }
+
+        // Calculate (1 + r/n)
+        const periodicRateFactor = 1 + (r / n);
+        
+        // Calculate (n * t)
+        const totalPeriods = n * t;
+        
+        // Calculate (1 + r/n)^(n*t)
+        const multiplier = Math.pow(periodicRateFactor, totalPeriods);
+        
+        // Calculate Future Value (P * multiplier)
+        return P * multiplier;
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('cd-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const principal = parseFloat(document.getElementById('principal').value);
+            const ratePercent = parseFloat(document.getElementById('interest_rate').value);
+            const termYears = parseFloat(document.getElementById('term_years').value);
+            
+            const frequencyElement = document.querySelector('input[name="compounding_frequency"]:checked');
+            const compoundingPeriods = parseInt(frequencyElement ? frequencyElement.value : '1'); // n
+
+            if (isNaN(principal) || isNaN(ratePercent) || isNaN(termYears)) {
+                displayError("All input fields must be filled with valid numbers.");
+                return;
+            }
+
+            if (principal <= 0) {
+                displayError("The Initial Deposit must be greater than zero.");
+                return;
+            }
+            
+            if (termYears <= 0) {
+                displayError("The Term Length must be greater than zero.");
+                return;
+            }
+
+            // 2. Prepare Variables
+            const rateDecimal = ratePercent / 100; // r
+            const n = compoundingPeriods;
+            const t = termYears;
+            
+            // 3. Core Calculations
+            const futureValue = calculateFutureValue(principal, rateDecimal, n, t);
+            const totalInterest = futureValue - principal;
+            const totalCompoundingPeriods = n * t;
+
+            // Effective Annual Rate (EAR) = (1 + r/n)^n - 1
+            const effectiveAnnualRate = Math.pow(1 + (rateDecimal / n), n) - 1;
+
+
+            // 4. Update Summary Totals
+            
+            document.getElementById('future_value').textContent = currencyFormatter(futureValue);
+            document.getElementById('total_interest').textContent = currencyFormatter(totalInterest);
+            document.getElementById('principal_display').textContent = currencyFormatter(principal);
+            document.getElementById('ear_display').textContent = percentFormatter(effectiveAnnualRate);
+            document.getElementById('total_periods').textContent = totalCompoundingPeriods.toFixed(1);
+
+            // 5. Show Results
+            document.getElementById('cd-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

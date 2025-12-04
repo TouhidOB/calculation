@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}Bond Yield to Maturity (YTM) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the estimated Yield to Maturity (YTM) for a bond using iterative approximation, based on its face value, coupon rate, and current price.{% endblock %}
+
+{% block meta_keywords %}YTM calculator, yield to maturity, bond yield, bond pricing, coupon rate, face value, iterative calculation, finance calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Define a custom purple theme color for the results */
+    :root {
+        --bs-purple: #6f42c1;
+        --bs-purple-rgb: 111, 66, 193;
+        --bs-purple-bg-subtle: #e9e3f6; /* Lighter shade for background */
+    }
+
+    .calc-wrapper {
+        background: var(--bs-white);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--bs-light);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: var(--bs-purple);
+    }
+
+    .result-card {
+        border: 2px solid var(--bs-purple);
+        background-color: var(--bs-purple-bg-subtle);
+    }
+
+    .main-result { 
+        color: var(--bs-purple); 
+        font-weight: bold; 
+        font-size: 3.5rem; /* Slightly larger for emphasis */
+        margin-bottom: 0.5rem;
+    }
+
+    .result-unit {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--bs-purple);
+    }
+
+    /* Styling for the purple-themed submit button */
+    .btn-purple {
+        background-color: var(--bs-purple);
+        border-color: var(--bs-purple);
+        color: white;
+    }
+    .btn-purple:hover {
+        background-color: #5d35a8; /* Slightly darker purple on hover */
+        border-color: #5d35a8;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark"><i class="bi bi-graph-up-arrow me-2" style="color: var(--bs-purple);"></i> Bond Yield to Maturity (YTM) Calculator</h1>
+        <p class="lead text-muted">The **Yield to Maturity (YTM)** is the internal rate of return (IRR) of a bond, assuming the investor holds the bond until maturity and all coupon payments are reinvested at the same rate.</p>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="calc-wrapper">
+
+                <div class="mb-4 p-3 border-start border-4 border-primary bg-light">
+                    <p class="mb-0 small text-dark fw-bold">
+                        YTM is calculated by solving for the discount rate ($YTM$) in the bond pricing formula:
+                    </p>
+                    
+
+[Image of bond pricing formula using yield to maturity]
+
+                    $$\text{Price} = \sum_{t=1}^{n} \frac{\text{Coupon}}{(1 + YTM/k)^t} + \frac{\text{Face Value}}{(1 + YTM/k)^n}$$
+                </div>
+
+
+                <form id="ytm-form">
+                    <h5 class="section-title border-bottom pb-2 mb-4"><i class="bi bi-sliders me-1"></i> Bond Characteristics</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="face_value" class="form-label">Face Value (Par Value)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                                <input type="number" class="form-control" id="face_value" placeholder="e.g., 1000" value="1000" min="1" step="1" required>
+                            </div>
+                            <div class="form-text">Typically $1,000 for a corporate bond.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="coupon_rate" class="form-label">Annual Coupon Rate (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="coupon_rate" placeholder="e.g., 5.0" min="0" step="0.1" required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <div class="form-text">The fixed annual interest rate (e.g., 5 for 5%).</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="market_price" class="form-label mt-3">Current Market Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
+                                <input type="number" class="form-control" id="market_price" placeholder="e.g., 980.00" min="0.01" step="0.01" required>
+                            </div>
+                            <div class="form-text">The price an investor pays today.</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="years_to_maturity" class="form-label mt-3">Years to Maturity</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="years_to_maturity" placeholder="e.g., 10" min="1" step="1" required>
+                                <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+                            </div>
+                            <div class="form-text">The number of years remaining until the bond matures.</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label">Coupon Payment Frequency</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="coupon_frequency" id="freq_annual" value="1" checked>
+                                <label class="form-check-label" for="freq_annual">Annually (1x)</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="coupon_frequency" id="freq_semi" value="2">
+                                <label class="form-check-label" for="freq_semi">Semi-Annually (2x)</label>
+                            </div>
+                        </div>
+                        <div class="form-text">Semi-annual is the most common frequency for corporate bonds.</div>
+                    </div>
+
+                    <button class="btn btn-purple btn-lg mt-5 w-100 shadow" type="submit">
+                        <i class="bi bi-calculator me-2"></i> Calculate YTM
+                    </button>
+                </form>
+
+                <div id="ytm-summary" class="d-none">
+                    <h5 class="section-title mt-5 border-bottom pb-2"><i class="bi bi-award-fill me-1"></i> Calculated Yield to Maturity (YTM)</h5>
+                    <div class="row g-3 justify-content-center">
+                        <div class="col-lg-10">
+                            <div class="card result-card border-purple shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="card-title text-dark">Estimated YTM (Annual %)</h6>
+                                    <p id="ytm_result" class="main-result mb-0">0.00%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-3 border-start border-2 border-secondary bg-light">
+                        <p class="fw-bold mb-1 text-dark">Quick Check: Bond Pricing Rule</p>
+                        <ul class="list-unstyled small mb-0">
+                            <li><i class="bi bi-arrow-right-short"></i> If Price > Face Value (**Premium**), YTM < Coupon Rate.</li>
+                            <li><i class="bi bi-arrow-right-short"></i> If Price < Face Value (**Discount**), YTM > Coupon Rate.</li>
+                            <li><i class="bi bi-arrow-right-short"></i> If Price = Face Value (**Par**), YTM = Coupon Rate.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="alert mt-4 d-none" id="error-message"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong><i class="bi bi-exclamation-triangle-fill me-2"></i> Error:</strong> ${message}`;
+        document.getElementById('ytm-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // Helper function for formatting percentages
+    const percentFormatter = (value) => {
+        return (value * 100).toFixed(4) + '%';
+    };
+
+    /**
+     * Calculates the present value of a bond for a given discount rate.
+     * This function is used to find the YTM via iterative approximation.
+     * @param {number} rate - The periodic discount rate (YTM / k) as a decimal.
+     * @param {number} couponPayment - The dollar amount of the periodic coupon payment.
+     * @param {number} faceValue - The face value of the bond (principal).
+     * @param {number} numPeriods - Total number of remaining coupon payments (Years * k).
+     * @returns {number} The calculated present value (price) of the bond.
+     */
+    function calculateBondPrice(rate, couponPayment, faceValue, numPeriods) {
+        if (rate <= -1) return Infinity; 
+        
+        let presentValue = 0;
+        
+        // Present value of annuity (coupon payments)
+        if (rate === 0) {
+            presentValue += couponPayment * numPeriods;
+        } else {
+            // PV = Coupon * [1 - (1 + rate)^-n] / rate
+            const annuityFactor = (1 - Math.pow(1 + rate, -numPeriods)) / rate;
+            presentValue += couponPayment * annuityFactor;
+        }
+
+        // Present value of principal (face value)
+        presentValue += faceValue / Math.pow(1 + rate, numPeriods);
+
+        return presentValue;
+    }
+
+    /**
+     * Uses the Newton-Raphson method to iteratively approximate the YTM.
+     * @param {number} currentPrice - The actual market price of the bond.
+     * @param {number} couponPayment - The dollar amount of the periodic coupon payment.
+     * @param {number} faceValue - The face value of the bond.
+     * @param {number} numPeriods - Total number of remaining coupon payments.
+     * @param {number} maxIterations - Maximum number of iterations to attempt.
+     * @param {number} tolerance - The maximum acceptable error.
+     * @returns {number} The periodic YTM as a decimal, or NaN if not converged.
+     */
+    function calculateYTM(currentPrice, couponPayment, faceValue, numPeriods, maxIterations = 100, tolerance = 0.000001) {
+        if (numPeriods <= 0) return 0;
+
+        // Initial guess: Use the approximation formula (Coupon / Price) is a good start
+        // A better guess might be the simple yield: (Annual Coupon + (Face Value - Price)/Years) / Avg Price
+        const annualCoupon = couponPayment * (numPeriods / Math.max(1, Math.round(numPeriods))); // Reconstruct annual coupon
+        const annualCapitalGain = (faceValue - currentPrice) / (numPeriods / Math.max(1, Math.round(numPeriods)));
+        const simpleYield = (annualCoupon + annualCapitalGain) / ((faceValue + currentPrice) / 2);
+        let guess = simpleYield / (numPeriods / Math.max(1, Math.round(numPeriods))); // Convert annual simple yield to periodic guess
+
+        // Fallback guess if simple yield is negative or zero
+        if (guess <= 0) {
+             guess = annualCoupon / currentPrice / (numPeriods / Math.max(1, Math.round(numPeriods))); 
+        }
+
+        // Secondary fallback
+        if (isNaN(guess) || guess <= 0) guess = 0.05 / (numPeriods / Math.max(1, Math.round(numPeriods))); 
+
+
+        for (let i = 0; i < maxIterations; i++) {
+            const priceGuess = calculateBondPrice(guess, couponPayment, faceValue, numPeriods);
+            const error = priceGuess - currentPrice;
+
+            if (Math.abs(error) < tolerance) {
+                return guess; // YTM has converged
+            }
+
+            // Calculate the derivative (slope) of the Price function at the current guess
+            // Approximation of the derivative (PVBP calculation)
+            const dRate = 0.0001; // Small change in rate (1 basis point)
+            const pricePlusDRate = calculateBondPrice(guess + dRate, couponPayment, faceValue, numPeriods);
+            const derivative = (pricePlusDRate - priceGuess) / dRate;
+            
+            // Check for near-zero derivative to prevent instability
+            if (Math.abs(derivative) < 1e-6) {
+                // If derivative is too close to zero, break or adjust guess slightly
+                break; 
+            }
+
+            // Newton-Raphson step: next_guess = guess - f(guess) / f'(guess)
+            guess = guess - (error / derivative);
+
+            // Boundary check: ensure the rate remains sensible and positive
+            if (guess < 0) {
+                // Halve the step size and try again if it goes negative
+                guess = guess + 0.5 * (error / derivative);
+                if (guess < 0) guess = 0.0001; // Final safeguard
+            }
+        }
+
+        return NaN; // Did not converge within max iterations
+    }
+
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('ytm-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const faceValue = parseFloat(document.getElementById('face_value').value);
+            const couponRatePercent = parseFloat(document.getElementById('coupon_rate').value);
+            const marketPrice = parseFloat(document.getElementById('market_price').value);
+            const yearsToMaturity = parseFloat(document.getElementById('years_to_maturity').value); // Use float for flexibility
+            
+            const frequencyElement = document.querySelector('input[name="coupon_frequency"]:checked');
+            const k = parseInt(frequencyElement ? frequencyElement.value : '1'); // k = periods per year
+
+            // Consolidated Validation
+            if (isNaN(faceValue) || faceValue <= 0) {
+                displayError("Face Value must be a positive number."); return;
+            }
+            if (isNaN(couponRatePercent) || couponRatePercent < 0) {
+                 displayError("Coupon Rate must be a non-negative number."); return;
+            }
+            if (isNaN(marketPrice) || marketPrice <= 0) {
+                 displayError("Market Price must be a positive number."); return;
+            }
+            if (isNaN(yearsToMaturity) || yearsToMaturity <= 0) {
+                 displayError("Years to Maturity must be 1 or greater."); return;
+            }
+            
+            // 2. Setup Variables for Calculation
+            const couponRateDecimal = couponRatePercent / 100;
+            const totalCouponPeriods = yearsToMaturity * k;
+            
+            // Periodic Coupon Payment = (Face Value * Annual Coupon Rate) / k
+            const periodicCouponPayment = (faceValue * couponRateDecimal) / k;
+
+
+            // 3. Core Calculation (Iterative YTM Solver)
+            const periodicYTM = calculateYTM(
+                marketPrice, 
+                periodicCouponPayment, 
+                faceValue, 
+                totalCouponPeriods
+            );
+
+            if (isNaN(periodicYTM)) {
+                displayError("Could not converge to a Yield to Maturity. The calculation might be unstable for these values.");
+                return;
+            }
+
+            // Convert Periodic YTM back to Annual YTM
+            const annualYTM = periodicYTM * k;
+
+            // 4. Update Summary Totals
+            const ytmElement = document.getElementById('ytm_result');
+            
+            ytmElement.textContent = percentFormatter(annualYTM);
+
+            // 5. Show Results
+            document.getElementById('ytm-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

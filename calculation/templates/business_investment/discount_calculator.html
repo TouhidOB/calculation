@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Discount Calculator{% endblock %}
+
+{% block meta_description %}Calculate the savings amount and final price after applying a percentage discount to the original price.{% endblock %}
+
+{% block meta_keywords %}discount, savings, sale price, retail, percentage calculation, calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables for result text */
+    .calc-wrapper {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    }
+    
+    .result-card {
+        text-align: center;
+        transition: transform 0.2s;
+    }
+
+    .result-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .result-value { 
+        font-weight: bold; 
+        font-size: 2.2rem; 
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Mapping custom classes to Bootstrap colors */
+    .text-danger-result { color: var(--bs-danger) !important; }
+    .text-success-result { color: var(--bs-success) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">🏷️ Discount Calculator</h1>
+        <p class="lead text-muted">Calculate the **Savings Amount** and the **Final Price** you'll pay after applying a percentage discount to the original cost.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-tag-fill me-2"></i> Input Price and Discount</h4>
+                </div>
+                <div class="card-body">
+                    <form id="discount-form">
+                        
+                        <div class="mb-4">
+                            <label for="original_price" class="form-label fw-bold">Original Price ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark text-white"><i class="bi bi-currency-dollar"></i></span>
+                                <input type="number" class="form-control form-control-lg" id="original_price" placeholder="e.g., 125.50" min="0" step="0.01" required>
+                            </div>
+                            <p class="small text-muted mt-1">The price of the item before any discount is applied.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="discount_percent" class="form-label fw-bold">Discount Percentage (%)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-percent"></i></span>
+                                <input type="number" class="form-control form-control-lg" id="discount_percent" placeholder="e.g., 20" min="0" max="100" step="0.01" required>
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <p class="small text-muted mt-1">The percentage reduction offered (0% to 100%).</p>
+
+
+                        <button class="btn btn-primary btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-cart-check-fill me-2"></i> Calculate Discounted Price
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="discount-summary" class="d-none">
+                <h4 class="text-success border-bottom pb-2 mb-3 mt-5"><i class="bi bi-clipboard-check-fill me-2"></i> Calculation Results</h4>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card result-card bg-danger-subtle border-danger h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-danger fw-normal"><i class="bi bi-cash me-1"></i> You Save (Discount Amount)</h6>
+                                <p id="savings_amount" class="result-value text-danger-result">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card result-card bg-success-subtle border-success h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-success fw-normal"><i class="bi bi-cart-fill me-1"></i> Final Price (After Discount)</h6>
+                                <p id="final_price" class="result-value text-success-result">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Helper function to format currency
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+    });
+
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('discount-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('discount-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const original_price = parseFloat(document.getElementById('original_price').value);
+            const discount_percent = parseFloat(document.getElementById('discount_percent').value);
+
+            // Basic NaN check
+            if (isNaN(original_price) || isNaN(discount_percent)) {
+                displayError("Please enter valid numerical values for Price and Discount.");
+                return;
+            }
+
+            if (original_price < 0) {
+                displayError("Original Price must be non-negative.");
+                return;
+            }
+            
+            if (discount_percent < 0 || discount_percent > 100) {
+                displayError("Discount Percentage must be between 0% and 100%.");
+                return;
+            }
+
+            // Convert percentage to ratio
+            const discount_ratio = discount_percent / 100;
+
+            // 2. Core Calculations
+            // Savings Amount = Original Price * Discount Ratio
+            const savings_amount = original_price * discount_ratio;
+            
+            // Final Price = Original Price - Savings Amount
+            const final_price = original_price - savings_amount;
+
+            // 3. Update Summary Totals
+            document.getElementById('savings_amount').textContent = formatter.format(savings_amount);
+            document.getElementById('final_price').textContent = formatter.format(final_price);
+
+            // 4. Show Results
+            document.getElementById('discount-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

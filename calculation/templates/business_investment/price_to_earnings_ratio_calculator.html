@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Price-to-Earnings (P/E) Ratio Calculator{% endblock %}
+
+{% block meta_description %}Calculate a stock's P/E Ratio by dividing the market price per share by the earnings per share (EPS).{% endblock %}
+
+{% block meta_keywords %}P/E ratio, price-to-earnings, stock valuation, earnings per share, EPS, finance calculator, investment analysis{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles for professional appearance */
+    .calc-wrapper {
+        background: var(--bs-light); 
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: var(--bs-primary); /* Bootstrap Blue/Primary */
+    }
+
+    .result-card {
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid var(--bs-primary);
+    }
+
+    /* Main result style for the final ratio number */
+    .main-result { 
+        color: var(--bs-primary); 
+        font-weight: bold; 
+        font-size: 3.5rem; 
+        margin-bottom: 0.5rem;
+    }
+
+    .ratio-unit {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--bs-primary);
+    }
+    
+    .input-group-text.primary-icon {
+        background-color: var(--bs-primary);
+        color: var(--bs-white); 
+        font-weight: bold;
+    }
+    
+    .negative-pe {
+        color: var(--bs-danger); /* Use red for the N/A case */
+        font-size: 2.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-primary"><i class="bi bi-bar-chart-fill me-2"></i> Price-to-Earnings (P/E) Ratio Calculator</h1>
+        <p class="lead text-muted">Calculate the **P/E Ratio**, a fundamental valuation metric used to compare a stock's current price to its earnings.</p>
+        
+        <div class="alert alert-primary-subtle border-primary py-3 my-4">
+            <p class="mb-1 fw-bold text-dark">P/E Ratio Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{P/E Ratio} = \frac{\text{Market Price per Share}}{\text{Earnings per Share (EPS)}}$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-body">
+                    <form id="pe-ratio-form">
+                        
+                        <h5 class="section-title">Stock Inputs</h5>
+
+                        <div class="mb-4">
+                            <label for="market_price" class="form-label fw-bold">Current Market Price per Share ($)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text primary-icon"><i class="bi bi-arrow-up-right-square-fill"></i></span>
+                                <input type="number" class="form-control" id="market_price" placeholder="e.g., 150.00" min="0.01" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">The price at which the stock is currently trading.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="eps" class="form-label fw-bold">Earnings per Share (EPS) ($)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text primary-icon"><i class="bi bi-wallet-fill"></i></span>
+                                <input type="number" class="form-control" id="eps" placeholder="e.g., 5.00 (or -1.50)" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">The company's profit per share (TTM). Can be negative.</p>
+                        </div>
+
+
+                        <button class="btn btn-primary btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-calculator me-2"></i> Calculate P/E Ratio
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="pe-summary" class="d-none">
+                <h4 class="text-primary border-bottom pb-2 mb-4 mt-5"><i class="bi bi-check-circle-fill me-2"></i> Calculated Ratio</h4>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="card result-card bg-white shadow-lg">
+                            <div class="card-body py-4">
+                                <h6 class="card-title text-muted fw-bold">Price-to-Earnings Ratio (x)</h6>
+                                <p id="pe_ratio" class="main-result">0.00 <span class="ratio-unit">x</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 small text-muted text-center">A P/E ratio represents the dollar amount an investor must invest in a company to get one dollar of that company's earnings.</p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('pe-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('pe-ratio-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const marketPrice = parseFloat(document.getElementById('market_price').value);
+            const eps = parseFloat(document.getElementById('eps').value);
+
+            if (isNaN(marketPrice) || isNaN(eps)) {
+                displayError("Both Market Price and Earnings per Share must be filled with valid numbers.");
+                return;
+            }
+
+            if (marketPrice <= 0) {
+                displayError("Market Price per Share must be greater than zero.");
+                return;
+            }
+            
+            // Critical check: EPS cannot be zero for P/E calculation
+            if (eps === 0) {
+                displayError("Earnings per Share (EPS) cannot be zero for a meaningful P/E ratio calculation.");
+                return;
+            }
+            
+            // 2. Core Calculation
+            // P/E Ratio = Market Price / EPS
+            const peRatio = marketPrice / eps;
+
+
+            // 3. Update Summary Totals
+            const peRatioElement = document.getElementById('pe_ratio');
+            
+            // Reset main result styles
+            peRatioElement.classList.remove('negative-pe', 'main-result');
+            peRatioElement.classList.add('main-result');
+
+            if (peRatio < 0) {
+                // Handle negative EPS case
+                peRatioElement.classList.remove('main-result');
+                peRatioElement.classList.add('negative-pe');
+                peRatioElement.innerHTML = 'N/A <span class="ratio-unit">(Negative EPS)</span>';
+            } else {
+                // Handle positive EPS case
+                peRatioElement.innerHTML = peRatio.toFixed(2) + ' <span class="ratio-unit">x</span>';
+            }
+
+            // 4. Show Results
+            document.getElementById('pe-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Lifetime Value (CLV) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the estimated total revenue a business can expect from a single customer account over their entire relationship.{% endblock %}
+
+{% block meta_keywords %}CLV, Customer Lifetime Value, customer retention, average purchase value, purchase frequency, calculator, ACV, Annual Customer Value{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables for result text */
+    .calc-wrapper {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    }
+    
+    .result-card {
+        text-align: center;
+        transition: transform 0.2s;
+    }
+
+    .result-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .result-value { 
+        font-weight: bold; 
+        font-size: 2.2rem; 
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Mapping custom classes to Bootstrap colors */
+    .text-success-result { color: var(--bs-success) !important; }
+    .text-primary-result { color: var(--bs-primary) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-success">🌟 Customer Lifetime Value (CLV) Calculator</h1>
+        <p class="lead text-muted">Estimate the **total revenue** your business can expect from a single customer over the entire duration of your relationship.</p>
+        
+        <div class="alert alert-info py-2 my-4">
+            <p class="mb-1 fw-bold">Formula Used:</p>
+            <p class="mb-0 small">
+                **Annual Customer Value (ACV)** = Avg Purchase Value × Avg Purchase Frequency<br>
+                **Customer Lifetime Value (CLV)** = ACV × Avg Customer Lifespan
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-fill-gear me-2"></i> Input Customer Metrics</h4>
+                </div>
+                <div class="card-body">
+                    <form id="clv-form">
+                        
+                        <div class="mb-4">
+                            <label for="avg_purchase_value" class="form-label fw-bold">Average Purchase Value ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark text-white"><i class="bi bi-cash-coin"></i></span>
+                                <input type="number" class="form-control form-control-lg" id="avg_purchase_value" placeholder="e.g., 50.00" min="0" step="0.01" required>
+                            </div>
+                            <p class="small text-muted mt-1">The average amount a customer spends in one transaction.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="avg_purchase_frequency" class="form-label fw-bold">Average Purchase Frequency (Per Year)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control form-control-lg" id="avg_purchase_frequency" placeholder="e.g., 12" min="0" step="0.1" required>
+                                <span class="input-group-text bg-dark text-white"><i class="bi bi-arrow-repeat"></i> times/year</span>
+                            </div>
+                            <p class="small text-muted mt-1">How many times the customer buys from you, on average, per year.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="customer_lifespan" class="form-label fw-bold">Average Customer Lifespan (Years)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control form-control-lg" id="customer_lifespan" placeholder="e.g., 3" min="0" step="0.1" required>
+                                <span class="input-group-text bg-dark text-white"><i class="bi bi-calendar-check"></i> years</span>
+                            </div>
+                            <p class="small text-muted mt-1">The number of years the customer typically remains active with your business.</p>
+                        </div>
+
+
+                        <button class="btn btn-success btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-graph-up-arrow me-2"></i> Calculate Customer Lifetime Value
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="clv-summary" class="d-none">
+                <h4 class="text-success border-bottom pb-2 mb-3 mt-5"><i class="bi bi-bar-chart-fill me-2"></i> Calculation Results</h4>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card result-card bg-primary-subtle border-primary h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary fw-normal"><i class="bi bi-calendar-event me-1"></i> Annual Customer Value (ACV)</h6>
+                                <p id="annual_customer_value" class="result-value text-primary-result">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card result-card bg-success-subtle border-success h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-success fw-normal"><i class="bi bi-infinity me-1"></i> Customer Lifetime Value (CLV)</h6>
+                                <p id="clv" class="result-value text-success-result">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Helper function to format currency
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+    });
+
+    // Function to display error messages
+    function displayError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-success', 'alert-info', 'alert-warning');
+        errorDiv.classList.add('alert-danger');
+        errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('clv-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('clv-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const avg_purchase_value = parseFloat(document.getElementById('avg_purchase_value').value);
+            const avg_purchase_frequency = parseFloat(document.getElementById('avg_purchase_frequency').value);
+            const customer_lifespan = parseFloat(document.getElementById('customer_lifespan').value);
+
+            // Check for NaN first
+            if (isNaN(avg_purchase_value) || isNaN(avg_purchase_frequency) || isNaN(customer_lifespan)) {
+                displayError("Please enter valid numerical values for all three fields.");
+                return;
+            }
+
+            if (avg_purchase_value < 0 || avg_purchase_frequency < 0 || customer_lifespan < 0) {
+                displayError("All input values (Value, Frequency, Lifespan) must be non-negative (zero or greater).");
+                return;
+            }
+            
+            // 2. Core Calculations
+            // Annual Customer Value (ACV) = Avg Purchase Value * Avg Purchase Frequency
+            const annual_customer_value = avg_purchase_value * avg_purchase_frequency;
+            
+            // Customer Lifetime Value (CLV) = ACV * Customer Lifespan
+            const clv = annual_customer_value * customer_lifespan;
+
+            // 3. Update Summary Totals
+            document.getElementById('annual_customer_value').textContent = formatter.format(annual_customer_value);
+            document.getElementById('clv').textContent = formatter.format(clv);
+
+            // 4. Show Results
+            document.getElementById('clv-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}

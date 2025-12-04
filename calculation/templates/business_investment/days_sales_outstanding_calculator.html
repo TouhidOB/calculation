@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Days Sales Outstanding (DSO) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Days Sales Outstanding (DSO) ratio to measure the average number of days it takes for a company to collect payment after a sale, assessing accounts receivable efficiency and cash flow management.{% endblock %}
+
+{% block meta_keywords %}DSO, Days Sales Outstanding, accounts receivable, credit sales, cash flow, collection period, financial metric, efficiency, calculator{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Custom styles using Bootstrap color variables for result text */
+    .calc-wrapper {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    }
+    
+    .result-card {
+        text-align: center;
+        transition: transform 0.2s;
+    }
+
+    .result-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .result-value { 
+        font-weight: bold; 
+        font-size: 2.5rem; 
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Conditional Result Colors based on Bootstrap classes */
+    .text-low-dso { color: var(--bs-success) !important; }
+    .text-moderate-dso { color: var(--bs-warning) !important; }
+    .text-high-dso { color: var(--bs-danger) !important; }
+    
+    .border-low-dso { border-color: var(--bs-success) !important; }
+    .border-moderate-dso { border-color: var(--bs-warning) !important; }
+    .border-high-dso { border-color: var(--bs-danger) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">💸 Days Sales Outstanding (DSO) Calculator</h1>
+        <p class="lead text-muted">This **Accounts Receivable efficiency ratio** measures the average number of days it takes for a company to collect cash after a credit sale, assessing cash flow management.</p>
+        
+        <div class="alert alert-info-subtle border-info py-2 my-4">
+            <p class="mb-1 fw-bold text-info">DSO Formula:</p>
+            <p class="mb-0 small text-dark">
+                $$\text{DSO} = \left(\frac{\text{Average Accounts Receivable}}{\text{Net Credit Sales}}\right) \times \text{Days in Period}$$
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg calc-wrapper border-0">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="bi bi-calendar-range me-2"></i> Collection Period Inputs</h4>
+                </div>
+                <div class="card-body">
+                    <form id="dso-form">
+                        
+                        <h5 class="section-title text-primary">Income Statement Inputs ($)</h5>
+                        <div class="mb-4">
+                            <label for="net_credit_sales" class="form-label fw-bold">Net Credit Sales (for the period)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-success text-white"><i class="bi bi-graph-up"></i></span>
+                                <input type="number" class="form-control" id="net_credit_sales" placeholder="e.g., 900000.00" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">Total sales made on credit (Numerator for calculation of Collection Period).</p>
+                        </div>
+
+                        <h5 class="section-title text-primary mt-4">Balance Sheet Inputs ($)</h5>
+                        <div class="mb-4">
+                            <label for="average_ar" class="form-label fw-bold">Average Accounts Receivable (AR)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-warning text-dark"><i class="bi bi-file-earmark-bar-graph"></i></span>
+                                <input type="number" class="form-control" id="average_ar" placeholder="e.g., 75000.00" min="0" step="0.01" required>
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <p class="small text-muted mt-1">Usually: (Beginning AR + Ending AR) / 2.</p>
+                        </div>
+
+                        <h5 class="section-title text-primary mt-4">Time Period</h5>
+                        <div class="mb-4">
+                            <label for="days_in_period" class="form-label fw-bold">Number of Days in the Period</label>
+                            <input type="number" class="form-control form-control-lg" id="days_in_period" placeholder="e.g., 365" min="1" step="1" required>
+                            <p class="small text-muted mt-1">Use 365 for a year, 90/91 for a quarter, etc.</p>
+                        </div>
+
+                        <button class="btn btn-info btn-lg mt-4 w-100 shadow" type="submit">
+                            <i class="bi bi-clock-fill me-2"></i> Calculate DSO
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="dso-summary" class="d-none">
+                <h4 class="text-info border-bottom pb-2 mb-3 mt-5"><i class="bi bi-clipboard-data-fill me-2"></i> Calculation Results</h4>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div id="dso-result-card" class="card result-card bg-light h-100 shadow-sm border-info">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted fw-normal">Days Sales Outstanding (DSO)</h6>
+                                <p id="dso_days" class="result-value text-info">0.00 Days</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 small text-muted text-center" id="dso_interpretation">
+                    A **lower DSO** is better, indicating efficient collection and strong cash flow. Compare this result to the company's stated credit terms (e.g., Net 30 days).
+                </p>
+            </div>
+
+            <div class="alert mt-4 d-none" id="error-message"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to update the result card's color based on the DSO value
+    // We use a hypothetical company credit term of 30 days for generic interpretation
+    function updateResultDisplay(dso) {
+        const card = document.getElementById('dso-result-card');
+        const text = document.getElementById('dso_days');
+        const credit_terms = 30; // Hypothethical industry standard / company terms
+
+        // Reset classes
+        card.classList.remove('border-low-dso', 'border-moderate-dso', 'border-high-dso');
+        text.classList.remove('text-low-dso', 'text-moderate-dso', 'text-high-dso');
+
+        // Handle N/A or special cases
+        if (dso === 0 || isNaN(dso)) {
+            card.classList.add('border-low-dso');
+            text.classList.add('text-low-dso');
+            return;
+        }
+
+        // Apply new classes based on comparison to credit terms
+        if (dso <= credit_terms + 5) { // Collecting near or slightly over terms (Good)
+            card.classList.add('border-low-dso');
+            text.classList.add('text-low-dso');
+        } else if (dso <= credit_terms * 1.5) { // Moderately slow (Acceptable/Warning)
+            card.classList.add('border-moderate-dso');
+            text.classList.add('text-moderate-dso');
+        } else { // Very slow collection (High risk/Poor efficiency)
+            card.classList.add('border-high-dso');
+            text.classList.add('text-high-dso');
+        }
+    }
+
+    // Function to display error messages (including warnings/N/A ratio)
+    function displayError(message, isWarning = false) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.classList.remove('d-none', 'alert-danger', 'alert-warning');
+        
+        if (isWarning) {
+            errorDiv.classList.add('alert-warning');
+            errorDiv.innerHTML = `<strong>Data Issue:</strong> ${message}`;
+        } else {
+            errorDiv.classList.add('alert-danger');
+            errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+        }
+        document.getElementById('dso-summary').classList.add('d-none');
+    }
+
+    // Function to clear errors
+    function clearError() {
+        document.getElementById('error-message').classList.add('d-none');
+    }
+
+    // --- Event Handler and Display Logic ---
+
+    document.getElementById('dso-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearError();
+
+        try {
+            // 1. Get and Validate Inputs
+            const sales_val = document.getElementById('net_credit_sales').value;
+            const ar_val = document.getElementById('average_ar').value;
+            const days_val = document.getElementById('days_in_period').value;
+
+            // Check for empty fields
+            if (!sales_val || !ar_val || !days_val) {
+                displayError("All three input fields must be filled with numerical values.");
+                return;
+            }
+
+            // Parse inputs
+            const net_credit_sales = parseFloat(sales_val);
+            const average_ar = parseFloat(ar_val);
+            const days_in_period = parseInt(days_val, 10); 
+
+            // Check for NaN after parsing
+            if (isNaN(net_credit_sales) || isNaN(average_ar) || isNaN(days_in_period)) {
+                displayError("Please ensure all inputs are valid numbers.");
+                return;
+            }
+
+            if (net_credit_sales < 0 || average_ar < 0) {
+                displayError("Sales and Accounts Receivable must be non-negative values.");
+                return;
+            }
+
+            if (days_in_period <= 0) {
+                displayError("The number of days in the period must be greater than zero.");
+                return;
+            }
+            
+            let dso_days = 0;
+
+            // Handle edge case: Division by zero (zero credit sales)
+            if (net_credit_sales === 0) {
+                if (average_ar > 0) {
+                    const warningMessage = "Net Credit Sales is zero, but Accounts Receivable is positive. This implies outstanding debt with no new credit sales. The DSO is not meaningful in this calculation.";
+                    document.getElementById('dso_days').textContent = 'N/A';
+                    updateResultDisplay(1000); // Use a high proxy value to trigger a 'high risk' display color
+                    displayError(warningMessage, true);
+                    document.getElementById('dso-summary').classList.remove('d-none');
+                    return;
+                } else {
+                    // 0/0. If both are zero, collection is instantaneous.
+                    dso_days = 0;
+                }
+            } else {
+                // 2. Core Calculation
+                dso_days = (average_ar / net_credit_sales) * days_in_period;
+            }
+
+            // 3. Update Summary Totals and Conditional Display
+            const resultText = dso_days.toFixed(2) + ' Days';
+            document.getElementById('dso_days').textContent = resultText;
+            updateResultDisplay(dso_days);
+
+            // 4. Show Results
+            document.getElementById('dso-summary').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation failed:", error);
+            displayError("An unexpected error occurred during calculation. Please ensure all input values are valid.");
+        }
+    });
+</script>
+
+{% endblock %}
