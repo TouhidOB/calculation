@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Workday Start/End Time Calculator{% endblock %}
+
+{% block meta_description %}Calculate the precise end time of a workday by accounting for the start time, the scheduled hours, and the total duration of unpaid breaks.{% endblock %}
+
+{% block meta_keywords %}work schedule, shift calculator, workday end time, time sheet, break duration, payroll tool{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #3f51b5; /* Indigo accent for structure/scheduling theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #e8eaf6; /* Light indigo background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #3f51b5;
+    }
+
+    .result-section h3 {
+        color: #303f9f; 
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .time-display {
+        font-size: 4rem;
+        font-weight: 900;
+        color: #f44336; /* Red contrast for the final time */
+        line-height: 1.2;
+    }
+
+    .info-box {
+        background-color: #f7f9ff;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 5px solid #3f51b5;
+        text-align: left;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">⏱️ Workday Start/End Time Calculator</h1>
+    <p class="small-muted">Calculate the expected end time of your shift, including time taken for breaks.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="workday-form">
+            <h5 class="section-title">Step 1: Shift Time</h5>
+
+            <!-- Start Time -->
+            <div class="form-group mb-3">
+                <label for="start-time" class="form-label">Shift Start Time</label>
+                <input type="time" class="form-control" id="start-time" required>
+            </div>
+
+            <!-- Total Scheduled Hours -->
+            <div class="form-group mb-4">
+                <label for="scheduled-hours" class="form-label">Total Scheduled Hours (e.g., 8)</label>
+                <input type="number" class="form-control" id="scheduled-hours" value="8" min="0.5" step="0.5" required>
+            </div>
+
+            <h5 class="section-title">Step 2: Breaks</h5>
+
+            <!-- Break Duration (Minutes) -->
+            <div class="form-group mb-4">
+                <label for="break-minutes" class="form-label">Total Unpaid Break Duration (Minutes)</label>
+                <input type="number" class="form-control" id="break-minutes" value="30" min="0" required>
+                <small class="form-text text-muted">Total time of lunch or breaks *not* counted as work time.</small>
+            </div>
+
+            <button class="btn btn-primary mt-3 w-100" type="submit" style="background-color: #3f51b5; border-color: #3f51b5;">Calculate End Time</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Expected Clock-Out Time</h3>
+
+                <div class="time-display" id="calculated-end-time">--:--</div>
+
+                <div class="info-box mt-4">
+                    <p>Shift Start: <strong id="start-time-display"></strong></p>
+                    <p>Total Time to Add (Work + Breaks): <strong id="total-shift-duration-display"></strong></p>
+                    <p>Net Working Hours: <strong id="net-working-hours-display"></strong></p>
+                    <p class="small text-muted m-0">This calculation is based on 24-hour time logic.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format time as HH:MM AM/PM
+    function formatTime(date) {
+        return date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    }
+
+
+    function formatDuration(hours, minutes) {
+        let parts = [];
+        if (hours > 0) {
+            parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+        }
+        if (minutes > 0) {
+            parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+        }
+        return parts.join(' and ');
+    }
+
+
+    function calculateEndTime(startTimeStr, scheduledHours, breakMinutes) {
+        // 1. Parse Start Time
+        const [hour, minute] = startTimeStr.split(':').map(Number);
+
+        // We need a specific date reference to use Date object addition, 
+        // but we only care about the time calculation. Use today's date.
+        const today = new Date();
+        const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, 0);
+
+        // 2. Calculate Total Time to Add (Scheduled Work + Unpaid Breaks) in minutes
+        const scheduledMinutes = scheduledHours * 60;
+        const totalMinutesToAdd = scheduledMinutes + breakMinutes;
+
+        // 3. Calculate End Time
+        const endTime = new Date(startDate.getTime());
+        endTime.setMinutes(startDate.getMinutes() + totalMinutesToAdd);
+
+        return { endTime, totalShiftMinutes: totalMinutesToAdd };
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('workday-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const startTimeStr = document.getElementById('start-time').value;
+        const scheduledHours = parseFloat(document.getElementById('scheduled-hours').value);
+        const breakMinutes = parseInt(document.getElementById('break-minutes').value, 10);
+
+        if (!startTimeStr || isNaN(scheduledHours) || isNaN(breakMinutes) || scheduledHours <= 0) {
+            displayStatus("Please ensure a valid start time, positive scheduled hours, and a valid break duration.", true);
+            return;
+        }
+
+        try {
+            // 1. Perform Calculation
+            const { endTime, totalShiftMinutes } = calculateEndTime(startTimeStr, scheduledHours, breakMinutes);
+            
+            // 2. Format Durations for Display
+            const totalShiftHours = Math.floor(totalShiftMinutes / 60);
+            const totalShiftRemainingMinutes = totalShiftMinutes % 60;
+            const totalShiftDurationReadable = formatDuration(totalShiftHours, totalShiftRemainingMinutes);
+
+            // 3. Display Results
+            document.getElementById('calculated-end-time').innerText = formatTime(endTime);
+            document.getElementById('start-time-display').innerText = formatTime(new Date(`2000/01/01 ${startTimeStr}`));
+            document.getElementById('total-shift-duration-display').innerText = totalShiftDurationReadable;
+            document.getElementById('net-working-hours-display').innerText = `${scheduledHours} hours`;
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your inputs.", true);
+        }
+    });
+
+    // Set default values (e.g., 9:00 AM start, 8 hours, 30 min break)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('start-time').value = '09:00';
+        document.getElementById('scheduled-hours').value = 8;
+        document.getElementById('break-minutes').value = 30;
+    });
+</script>
+
+{% endblock %}

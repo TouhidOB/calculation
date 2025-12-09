@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Time and a Half / Double Time Calculator{% endblock %}
+
+{% block meta_description %}Calculate total overtime earnings, including wages earned at time-and-a-half (1.5x) and double time (2x) rates based on the regular hourly rate.{% endblock %}
+
+{% block meta_keywords %}overtime pay, time and a half, double time, payroll calculator, hourly rate, wage calculation{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #009688; /* Teal accent for financial/accuracy theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #e0f2f1; /* Light teal background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #009688;
+    }
+
+    .result-section h3 {
+        color: #00796b; 
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .currency-display {
+        font-size: 4rem;
+        font-weight: 900;
+        color: #cddc39; /* Lime green for total earnings */
+        line-height: 1.2;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .info-box {
+        background-color: #f0fdfd;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 5px solid #009688;
+        text-align: left;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">💵 Overtime Pay Calculator</h1>
+    <p class="small-muted">Calculate your total overtime earnings based on regular, time-and-a-half, and double time hours.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="overtime-form">
+            <h5 class="section-title">Step 1: Hourly Rate</h5>
+
+            <!-- Regular Hourly Rate -->
+            <div class="form-group mb-4">
+                <label for="regular-rate" class="form-label">Regular Hourly Rate ($)</label>
+                <input type="number" class="form-control" id="regular-rate" value="15.00" min="0.01" step="0.01" required>
+            </div>
+
+            <h5 class="section-title">Step 2: Overtime Hours Worked</h5>
+
+            <div class="row g-3">
+                <!-- Time and a Half Hours (1.5x) -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="time-and-a-half-hours" class="form-label">Time & a Half Hours (1.5x)</label>
+                        <input type="number" class="form-control" id="time-and-a-half-hours" value="0" min="0" step="0.01" required>
+                    </div>
+                </div>
+
+                <!-- Double Time Hours (2.0x) -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="double-time-hours" class="form-label">Double Time Hours (2.0x)</label>
+                        <input type="number" class="form-control" id="double-time-hours" value="0" min="0" step="0.01" required>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-info mt-4 w-100" type="submit" style="background-color: #009688; border-color: #009688;">Calculate Overtime Pay</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Total Overtime Earnings</h3>
+
+                <div class="currency-display" id="total-overtime-pay">$0.00</div>
+
+                <div class="info-box mt-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted">1.5x Rate:</small>
+                            <p class="fw-bold m-0" id="rate-1-5-display">$0.00 / hr</p>
+                            <p class="small m-0 text-muted">Earned: <span id="pay-1-5-display">$0.00</span></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted">2.0x Rate:</small>
+                            <p class="fw-bold m-0" id="rate-2-0-display">$0.00 / hr</p>
+                            <p class="small m-0 text-muted">Earned: <span id="pay-2-0-display">$0.00</span></p>
+                        </div>
+                    </div>
+                    <p class="small text-muted m-0 mt-2">Total Overtime Hours: <strong id="total-ot-hours-display">0</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format currency
+    function formatCurrency(amount) {
+        return `$${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    }
+
+
+    function calculateOvertime(rate, hours, multiplier) {
+        const overtimeRate = rate * multiplier;
+        const overtimePay = overtimeRate * hours;
+        return { overtimeRate, overtimePay };
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('overtime-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const regularRate = parseFloat(document.getElementById('regular-rate').value);
+        const hours1_5 = parseFloat(document.getElementById('time-and-a-half-hours').value);
+        const hours2_0 = parseFloat(document.getElementById('double-time-hours').value);
+
+        if (isNaN(regularRate) || regularRate <= 0 || isNaN(hours1_5) || hours1_5 < 0 || isNaN(hours2_0) || hours2_0 < 0) {
+            displayStatus("Please enter a positive Regular Rate and non-negative hours for both overtime types.", true);
+            return;
+        }
+
+        try {
+            // 1. Calculate 1.5x Overtime
+            const result1_5 = calculateOvertime(regularRate, hours1_5, 1.5);
+            
+            // 2. Calculate 2.0x Overtime
+            const result2_0 = calculateOvertime(regularRate, hours2_0, 2.0);
+
+            // 3. Calculate Total Overtime
+            const totalOvertimePay = result1_5.overtimePay + result2_0.overtimePay;
+            const totalOvertimeHours = hours1_5 + hours2_0;
+
+            // 4. Display Results
+            document.getElementById('total-overtime-pay').innerText = formatCurrency(totalOvertimePay);
+
+            // Detailed Breakdown
+            document.getElementById('rate-1-5-display').innerText = formatCurrency(result1_5.overtimeRate) + ' / hr';
+            document.getElementById('pay-1-5-display').innerText = formatCurrency(result1_5.overtimePay);
+            document.getElementById('rate-2-0-display').innerText = formatCurrency(result2_0.overtimeRate) + ' / hr';
+            document.getElementById('pay-2-0-display').innerText = formatCurrency(result2_0.overtimePay);
+            document.getElementById('total-ot-hours-display').innerText = totalOvertimeHours.toFixed(2);
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your inputs.", true);
+        }
+    });
+</script>
+
+{% endblock %}

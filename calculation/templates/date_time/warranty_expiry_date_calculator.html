@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Warranty Expiry Date Calculator{% endblock %}
+
+{% block meta_description %}Calculate the exact expiry date of a product warranty by inputting the purchase date and the warranty term in years, months, or days.{% endblock %}
+
+{% block meta_keywords %}warranty expiry, guarantee date, purchase date, warranty term, product protection, calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #e67e22; /* Orange accent for product/protection theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #fcf4eb; /* Light beige/orange background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #e67e22;
+    }
+
+    .result-section h3 {
+        color: #e67e22;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .date-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #2c3e50; /* Dark contrast color */
+        line-height: 1.2;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🛡️ Warranty Expiry Date Calculator</h1>
+    <p class="small-muted">Determine the exact final day of your product's warranty coverage.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="warranty-form">
+            <h5 class="section-title">Step 1: Purchase Date</h5>
+
+            <!-- Purchase Date -->
+            <div class="form-group mb-4">
+                <label for="purchase-date" class="form-label">Date of Purchase/Warranty Start</label>
+                <input type="date" class="form-control" id="purchase-date" required>
+            </div>
+
+            <h5 class="section-title">Step 2: Warranty Term</h5>
+
+            <div class="row g-3 mb-4">
+                <!-- Term Value -->
+                <div class="col-6">
+                    <label for="term-value" class="form-label">Duration</label>
+                    <input type="number" class="form-control" id="term-value" value="1" min="0" required>
+                </div>
+                <!-- Term Unit -->
+                <div class="col-6">
+                    <label for="term-unit" class="form-label">Unit</label>
+                    <select class="form-select" id="term-unit" required>
+                        <option value="Years">Years</option>
+                        <option value="Months">Months</option>
+                        <option value="Days">Days</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-warning mt-3 w-100" type="submit">Calculate Expiry Date</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Warranty Expiry Date</h3>
+
+                <small class="text-muted">Final Day of Coverage</small>
+                <div class="date-display" id="calculated-expiry-date"></div>
+
+                <p class="text-muted mt-3" id="calculation-summary"></p>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    /**
+     * Calculates the warranty expiry date.
+     * The expiry date is the purchase date + term, minus one day (as coverage ends the day before the renewal date).
+     * @param {string} purchaseDateStr The purchase date string (YYYY-MM-DD).
+     * @param {number} termValue The term length value.
+     * @param {string} termUnit The unit of the term ('Years', 'Months', 'Days').
+     * @returns {Date} The calculated expiry date.
+     */
+    function calculateExpiryDate(purchaseDateStr, termValue, termUnit) {
+        // Create a copy of the purchase date to manipulate
+        const purchaseDate = new Date(purchaseDateStr);
+        // Important: Use the date object's methods to handle month/year rollovers correctly.
+        const effectiveEndDate = new Date(purchaseDate);
+
+        if (termUnit === 'Years') {
+            effectiveEndDate.setFullYear(effectiveEndDate.getFullYear() + termValue);
+        } else if (termUnit === 'Months') {
+            effectiveEndDate.setMonth(effectiveEndDate.getMonth() + termValue);
+        } else if (termUnit === 'Days') {
+            // Add termValue days to the effective end date
+            effectiveEndDate.setDate(effectiveEndDate.getDate() + termValue);
+        }
+
+        // The warranty typically covers the *entire* last day. 
+        // Example: 1-year warranty starting Jan 1st 2025. It should expire Dec 31st 2025.
+        // My previous logic for Lease (start + term months - 1 day) is the most accurate way 
+        // to handle the end of a fixed period where the period is inclusive of the start day.
+        
+        // Therefore, the date we calculated (effectiveEndDate) is the *first day* the warranty is *expired*.
+        // We subtract one day to get the *last day* the warranty is *active*.
+        effectiveEndDate.setDate(effectiveEndDate.getDate() - 1);
+
+        return effectiveEndDate;
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('warranty-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const purchaseDateStr = document.getElementById('purchase-date').value;
+        const termValueStr = document.getElementById('term-value').value;
+        const termUnit = document.getElementById('term-unit').value;
+        
+        const termValue = parseInt(termValueStr, 10);
+
+        if (!purchaseDateStr || isNaN(termValue) || termValue < 0) {
+            displayStatus("Please ensure a valid purchase date and a non-negative warranty term.", true);
+            return;
+        }
+
+        try {
+            // 1. Perform Calculation
+            const expiryDate = calculateExpiryDate(purchaseDateStr, termValue, termUnit);
+
+            // 2. Display Results
+            const dateReadable = formatReadableDate(expiryDate);
+            const purchaseDateReadable = formatReadableDate(new Date(purchaseDateStr));
+
+            document.getElementById('result-title').innerText = `Warranty Expiry Date (${termValue} ${termUnit})`;
+            document.getElementById('calculated-expiry-date').innerText = dateReadable;
+
+            const summaryText = `
+Your warranty, which started on **${purchaseDateReadable}** with a term of **${termValue} ${termUnit}**, 
+provides coverage up to and including **${dateReadable}**. 
+It officially expires at the end of that day.
+            `;
+            document.getElementById('calculation-summary').innerText = summaryText.trim();
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your inputs.", true);
+        }
+    });
+
+    // Set default date to today and default term to 1 Year
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('purchase-date').value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('term-value').value = 1;
+        document.getElementById('term-unit').value = 'Years';
+    });
+</script>
+
+{% endblock %}

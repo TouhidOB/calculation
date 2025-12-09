@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Half-Birthday Calculator{% endblock %}
+
+{% block meta_description %}Calculate the exact date of your next half-birthday by adding six months to your birthday.{% endblock %}
+
+{% block meta_keywords %}half birthday, 6 month birthday, date calculator, special dates{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #fff0f5; /* Lavender Blush (Soft, festive theme) */
+        padding: 35px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(255, 105, 180, 0.3); /* Pink shadow */
+        max-width: 500px;
+        margin: auto;
+    }
+
+    .section-title {
+        font-weight: 800;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        color: #ff69b4; /* Hot Pink accent */
+        border-bottom: 3px solid #ffb6c1; /* Light Pink underline */
+        padding-bottom: 5px;
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        margin-top: 30px;
+        border: 2px dashed #ff69b4;
+    }
+
+    .result-section h3 {
+        color: #4b0082; /* Indigo for contrast */
+        margin-bottom: 10px;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .date-display {
+        font-size: 3rem;
+        font-weight: 900;
+        color: #ff1493; /* Deep Pink */
+        line-height: 1.2;
+        margin-bottom: 10px;
+    }
+
+    .party-emoji {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 15px;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3 text-center">🎂 "Half-Birthday" Calculator</h1>
+    <p class="small-muted text-center">Find the exact date of your next half-birthday—exactly 6 months from your birthday.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="half-birthday-form">
+            <h5 class="section-title">Enter Your Birthday</h5>
+
+            <div class="form-group mb-4">
+                <label for="birthday-date" class="form-label">Birthday Date (Month and Day)</label>
+                <input type="date" class="form-control" id="birthday-date" required>
+                <small class="form-text text-muted">The year is used to calculate the next 6-month period correctly.</small>
+            </div>
+
+            <button class="btn w-100 mt-4" type="submit" style="background-color: #ff69b4; color: white; font-weight: bold; border: none;">Calculate Half-Birthday</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <span class="party-emoji">🎉🎂🎈</span>
+                <h3>Your Next Half-Birthday Is:</h3>
+
+                <div class="date-display" id="half-birthday-date">--/--/----</div>
+                
+                <p class="small text-muted mb-0" id="current-year-note"></p>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+
+    function calculateSixMonthsLater(date) {
+        let sixMonthsLater = new Date(date.getTime());
+        
+        const currentMonth = date.getMonth(); // 0-11
+        const currentDay = date.getDate(); // 1-31
+        
+        // 1. Add 6 months
+        sixMonthsLater.setMonth(currentMonth + 6);
+        
+        // 2. Check for date overflow (e.g., March 31 -> September 31 becomes October 1)
+        // If the month is now 6 months ahead AND the day is different from the original day, 
+        // it means the month rolled over, so we need to set the date back to the last day of the target month.
+        if (sixMonthsLater.getMonth() !== (currentMonth + 6) % 12) {
+            // Set date to the last day of the target month
+            sixMonthsLater = new Date(date.getFullYear(), (currentMonth + 6), 0);
+        } else {
+             // If no overflow, ensure the day is the original day (important for leap years/shorter months)
+             sixMonthsLater.setDate(currentDay);
+        }
+
+        return sixMonthsLater;
+    }
+
+    // Helper to format a Date object into a readable string
+    function formatDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+
+    // --- Event Handler ---
+    document.getElementById('half-birthday-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const birthdayDateStr = document.getElementById('birthday-date').value;
+        
+        if (!birthdayDateStr) {
+            displayStatus("Please select a valid Birthday Date.", true);
+            return;
+        }
+        
+        // We use the input date string and set the year to the current year
+        // to ensure the calculator finds the *next* half-birthday.
+        const [year, month, day] = birthdayDateStr.split('-').map(Number);
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        
+        let birthdayThisYear = new Date(currentYear, month - 1, day);
+        let halfBirthday = calculateSixMonthsLater(birthdayThisYear);
+
+        // If the half-birthday has already passed this year, calculate it for next year.
+        if (halfBirthday.getTime() < today.getTime()) {
+            birthdayThisYear = new Date(currentYear + 1, month - 1, day);
+            halfBirthday = calculateSixMonthsLater(birthdayThisYear);
+            document.getElementById('current-year-note').innerText = `(Calculated for ${currentYear + 1})`;
+        } else {
+            document.getElementById('current-year-note').innerText = `(Calculated for ${currentYear})`;
+        }
+
+
+        try {
+            // 1. Format and Display Results
+            const formattedDate = formatDate(halfBirthday);
+
+            document.getElementById('half-birthday-date').innerText = formattedDate;
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Half-Birthday Calculation Error:", error);
+            displayStatus(`An error occurred during calculation: ${error.message}`, true);
+        }
+    });
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set default date to today for easy input
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        
+        document.getElementById('birthday-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

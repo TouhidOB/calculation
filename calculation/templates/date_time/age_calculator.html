@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Age Calculator (Years, Months, Days){% endblock %}
+
+{% block meta_description %}Calculate your exact age in years, months, and days from your date of birth to today's date. Also see how long until your next birthday.{% endblock %}
+
+{% block meta_keywords %}age calculator, calculate age, next birthday, age in days, time until birthday{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .age-highlight {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #dc3545; /* Bootstrap danger color for prominence */
+        display: block;
+        margin: 5px 0 15px 0;
+    }
+    
+    .form-control[type="date"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🎂 Age Calculator</h1>
+    <p class="small-muted">Find your **exact age** in years, months, and days, and see the countdown to your next birthday.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="age-calculator-form">
+            <h5 class="section-title">Step 1: Enter Date of Birth</h5>
+
+            <!-- Date of Birth Input -->
+            <div class="form-group mb-4">
+                <label for="dob-date" class="form-label">Date of Birth (DOB)</label>
+                <input type="date" class="form-control" id="dob-date" required>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Age</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="age-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Detailed Age Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="age-table">
+            <tbody id="age-body">
+                <!-- Details will be inserted here -->
+            </tbody>
+        </table>
+
+        <h5 class="section-title d-none mt-4" id="next-birthday-title">Countdown to Next Birthday</h5>
+        <div class="alert alert-info d-none" id="next-birthday-result"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+    function calculateYMDDifference(startDate, endDate) {
+        let years = endDate.getFullYear() - startDate.getFullYear();
+        let months = endDate.getMonth() - startDate.getMonth();
+        let days = endDate.getDate() - startDate.getDate();
+
+        // Adjust for negative days
+        if (days < 0) {
+            months--;
+            // Get the number of days in the previous month of the end date
+            const lastMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
+            days += lastMonth.getDate();
+        }
+
+        // Adjust for negative months
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+        
+        // Ensure no negative age (shouldn't happen if DOB < Today, but safety first)
+        if (years < 0) {
+             return { years: 0, months: 0, days: 0 };
+        }
+
+        return { years, months, days };
+    }
+    
+    function displayError(message) {
+        const res = document.getElementById('age-result');
+        res.classList.remove('d-none', 'alert-success', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Input Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('age-table').classList.add('d-none');
+        document.getElementById('next-birthday-title').classList.add('d-none');
+        document.getElementById('next-birthday-result').classList.add('d-none');
+    }
+
+    document.getElementById('age-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const dobStr = document.getElementById('dob-date').value;
+        if (!dobStr) {
+            displayError("Please select a date of birth.");
+            return;
+        }
+
+        // We use UTC date setting to avoid timezone shifts common with date inputs
+        const dobDate = new Date(dobStr);
+        const today = new Date();
+
+        // Standardize both to midnight start of the day for accurate calculation
+        // Get components from input string to create a UTC date
+        const [dobYear, dobMonth, dobDay] = dobStr.split('-').map(Number);
+        const startOfToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+        const startOfDOB = new Date(Date.UTC(dobYear, dobMonth - 1, dobDay));
+        
+        // 2. Validation
+        if (startOfDOB > startOfToday) {
+            displayError("Date of Birth cannot be in the future.");
+            return;
+        }
+
+        // 3. Main Age Calculation (YMD)
+        const ageYMD = calculateYMDDifference(startOfDOB, startOfToday);
+        
+        const ageText = `${ageYMD.years} year${ageYMD.years !== 1 ? 's' : ''}, ${ageYMD.months} month${ageYMD.months !== 1 ? 's' : ''}, and ${ageYMD.days} day${ageYMD.days !== 1 ? 's' : ''}`;
+
+        // 4. Detailed Age Breakdown (Total Days/Hours)
+        const diffTime = startOfToday.getTime() - startOfDOB.getTime();
+        const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const totalHours = totalDays * 24;
+
+
+        // 5. Next Birthday Calculation
+        let nextBirthday = new Date(Date.UTC(startOfToday.getFullYear(), startOfDOB.getUTCMonth(), startOfDOB.getUTCDate()));
+
+        // If this year's birthday has already passed, set it for next year
+        if (nextBirthday < startOfToday) {
+            nextBirthday.setUTCFullYear(nextBirthday.getUTCFullYear() + 1);
+        }
+        
+        const timeUntilBirthday = nextBirthday.getTime() - startOfToday.getTime();
+        const daysUntilBirthday = Math.floor(timeUntilBirthday / (1000 * 60 * 60 * 24));
+        
+        let birthdayCountdown;
+        if (daysUntilBirthday === 0) {
+            birthdayCountdown = "🎊 TODAY IS YOUR BIRTHDAY! Happy Birthday! 🥳";
+        } else {
+            // Re-calculate YMD difference for the countdown
+            const daysRemaining = daysUntilBirthday;
+            let currentTempDate = new Date(startOfToday.getTime()); // Start counting from today
+            let yearsRemaining = 0;
+            let monthsRemaining = 0;
+            let daysR = daysRemaining;
+            
+            // Simple approach: Use YMD difference calculation between startOfToday and nextBirthday
+            const countdownYMD = calculateYMDDifference(startOfToday, nextBirthday);
+
+            const yearsC = countdownYMD.years > 0 ? `${countdownYMD.years} year${countdownYMD.years !== 1 ? 's' : ''}, ` : '';
+            const monthsC = countdownYMD.months > 0 ? `${countdownYMD.months} month${countdownYMD.months !== 1 ? 's' : ''}, ` : '';
+            const daysC = countdownYMD.days > 0 ? `${countdownYMD.days} day${countdownYMD.days !== 1 ? 's' : ''}` : '';
+
+            birthdayCountdown = `Your next birthday is in **${yearsC}${monthsC}${daysC || '0 days'}**. That's ${daysUntilBirthday.toLocaleString()} total days.`;
+        }
+
+        // 6. Update Result Display (Main)
+        const res = document.getElementById('age-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+
+        res.innerHTML = `
+**Your Exact Age is:**
+<span class="age-highlight">${ageText}</span>
+`;
+        
+        // 7. Update Details Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('age-table').classList.remove('d-none');
+        const tableBody = document.getElementById('age-body');
+        
+        tableBody.innerHTML = `
+            <tr><td>Age in Years</td><td>${ageYMD.years} years</td></tr>
+            <tr><td>Age in Months</td><td>${(ageYMD.years * 12) + ageYMD.months} months (approx)</td></tr>
+            <tr><td>**Age in Total Days**</td><td>**${totalDays.toLocaleString()} days**</td></tr>
+            <tr><td>Age in Total Hours</td><td>${totalHours.toLocaleString()} hours (approx)</td></tr>
+        `;
+        
+        // 8. Update Next Birthday Countdown
+        const nextBirthdayRes = document.getElementById('next-birthday-result');
+        nextBirthdayRes.classList.remove('d-none', 'alert-danger');
+        nextBirthdayRes.innerHTML = birthdayCountdown;
+        document.getElementById('next-birthday-title').classList.remove('d-none');
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Date Difference Calculator (Days Between Dates){% endblock %}
+
+{% block meta_description %}Calculate the exact difference in days, months, and years between two dates. Ideal for planning and tracking age.{% endblock %}
+
+{% block meta_keywords %}date difference calculator, days between dates, date duration, time difference, age calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    /* Make input fields slightly more uniform */
+    .form-control[type="date"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">📅 Date Difference Calculator</h1>
+    <p class="small-muted">Calculate the **exact time** (years, months, days, weeks) between any two dates.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="date-diff-form">
+            <h5 class="section-title">Step 1: Select Dates</h5>
+
+            <div class="form-group mb-3">
+                <label for="start-date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="start-date" required>
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="end-date" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="end-date" required>
+            </div>
+
+            <div class="form-check mb-4">
+                <input class="form-check-input" type="checkbox" value="" id="include-end-date">
+                <label class="form-check-label" for="include-end-date">
+                    Include the End Date in the count (Add 1 Day)
+                </label>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Difference</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="date-diff-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Breakdown by Time Unit</h5>
+        <table class="table table-bordered mt-2 d-none" id="date-diff-table">
+            <tbody id="date-diff-body">
+                </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    
+    function calculateYMDDifference(startDate, endDate) {
+        let years = endDate.getFullYear() - startDate.getFullYear();
+        let months = endDate.getMonth() - startDate.getMonth();
+        let days = endDate.getDate() - startDate.getDate();
+
+        // Adjust for negative months/days
+        if (days < 0) {
+            months--;
+            // Get the number of days in the previous month of the end date
+            const lastMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
+            days += lastMonth.getDate();
+        }
+
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+
+        return { years, months, days };
+    }
+
+    function displayError(message) {
+        const res = document.getElementById('date-diff-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('date-diff-table').classList.add('d-none');
+    }
+
+    document.getElementById('date-diff-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const startDateStr = document.getElementById('start-date').value;
+        const endDateStr = document.getElementById('end-date').value;
+        const includeEndDate = document.getElementById('include-end-date').checked;
+
+        const startDate = new Date(startDateStr);
+        const endDate = new Date(endDateStr);
+
+        // 2. Validate Date Order
+        if (startDate > endDate) {
+            displayError("The **Start Date** must be before or the same as the **End Date**.");
+            return;
+        }
+
+        // 3. Main Calculation (in milliseconds)
+        let diffTime = endDate.getTime() - startDate.getTime();
+        
+        // Adjust for "Include End Date"
+        if (includeEndDate) {
+            diffTime += (1000 * 60 * 60 * 24); // Add 1 day (in milliseconds)
+        }
+
+        // 4. Calculate Time Components
+        const oneDay = 1000 * 60 * 60 * 24;
+        const totalDays = Math.round(diffTime / oneDay);
+        const totalWeeks = (totalDays / 7).toFixed(1);
+        const totalHours = totalDays * 24;
+        const totalMinutes = totalHours * 60;
+        
+        // Calculate Years, Months, Days (YMD format)
+        let ymdDiff;
+        if (includeEndDate) {
+            // Need a special handling for YMD when including the end date
+            // Add one day to the end date for the YMD calculation
+            const adjustedEndDate = new Date(endDate.getTime() + oneDay);
+            ymdDiff = calculateYMDDifference(startDate, adjustedEndDate);
+        } else {
+            ymdDiff = calculateYMDDifference(startDate, endDate);
+        }
+
+        // 5. Update Result Display
+        const res = document.getElementById('date-diff-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+        
+        const ymdText = ymdDiff.years > 0 ? `${ymdDiff.years} Year${ymdDiff.years !== 1 ? 's' : ''}, ` : '';
+        const mdText = `${ymdDiff.months} Month${ymdDiff.months !== 1 ? 's' : ''}, and ${ymdDiff.days} Day${ymdDiff.days !== 1 ? 's' : ''}`;
+        
+        res.innerHTML = `
+**Total Duration:** <span style="font-size:1.5rem;">${ymdText}${mdText}</span>
+---
+**Total Days:** ${totalDays.toLocaleString()} days
+`;
+        
+        // 6. Update Table Breakdown
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('date-diff-table').classList.remove('d-none');
+        const tableBody = document.getElementById('date-diff-body');
+        
+        tableBody.innerHTML = `
+            <tr><td>Total Years (approx)</td><td>${(totalDays / 365.25).toFixed(2)} years</td></tr>
+            <tr><td>Total Months (approx)</td><td>${(totalDays / 30.4375).toFixed(2)} months</td></tr>
+            <tr><td>**Total Weeks**</td><td>**${totalWeeks} weeks**</td></tr>
+            <tr><td>**Total Days**</td><td>**${totalDays.toLocaleString()} days**</td></tr>
+            <tr><td>Total Hours</td><td>${totalHours.toLocaleString()} hours</td></tr>
+            <tr><td>Total Minutes</td><td>${totalMinutes.toLocaleString()} minutes</td></tr>
+        `;
+    });
+</script>
+
+{% endblock %}

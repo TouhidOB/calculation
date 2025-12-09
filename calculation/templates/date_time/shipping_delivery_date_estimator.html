@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Shipping Delivery Date Estimator{% endblock %}
+
+{% block meta_description %}Estimate your package delivery date based on the shipping date and chosen shipping speed, excluding weekends (business days only).{% endblock %}
+
+{% block meta_keywords %}delivery date calculator, shipping estimator, business days, transit time, delivery planning{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #f8f8ff; /* Ghost White/Light theme */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #4682b4; /* Steel Blue accent */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #e6e6fa; /* Lavender background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 2px solid #4682b4;
+    }
+
+    .result-section h3 {
+        color: #191970; 
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .date-display {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: #dc143c; /* Crimson Red for the final date */
+        line-height: 1.2;
+    }
+
+    .detail-card {
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px auto;
+        border-left: 5px solid #4682b4;
+        max-width: 400px;
+        text-align: left;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🚚 Shipping Delivery Date Estimator</h1>
+    <p class="small-muted">Calculate the estimated delivery date based on shipping speed (business days only).</p>
+
+    <div class="calc-wrapper">
+
+        <form id="shipping-estimator-form">
+            <h5 class="section-title">Step 1: Order Details</h5>
+
+            <div class="row g-3">
+                <!-- Shipping Date -->
+                <div class="col-md-6">
+                    <label for="shipping-date" class="form-label">Date Shipped/Ordered</label>
+                    <input type="date" class="form-control" id="shipping-date" required>
+                </div>
+
+                <!-- Shipping Speed -->
+                <div class="col-md-6">
+                    <label for="shipping-speed" class="form-label">Shipping Speed</label>
+                    <select class="form-select" id="shipping-speed" required>
+                        <option value="EXPRESS">Express (2 Business Days)</option>
+                        <option value="STANDARD">Standard (5 Business Days)</option>
+                        <option value="ECONOMY">Economy (10 Business Days)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit" style="background-color: #4682b4; border-color: #4682b4;">Calculate Delivery Date</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3>Estimated Delivery Date</h3>
+
+                <div class="date-display" id="estimated-delivery-date">--/--/----</div>
+
+                <div class="detail-card">
+                    <p class="mb-1">Shipped On: <strong id="shipped-on-summary"></strong></p>
+                    <p class="mb-1">Shipping Speed: <strong id="speed-summary"></strong></p>
+                    <p class="mb-0">Total Calendar Days Elapsed: <strong id="total-days-elapsed"></strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Transit times are in BUSINESS DAYS (Mon-Fri)
+    const SHIPPING_TRANSIT_TIMES = {
+        'EXPRESS': 2,
+        'STANDARD': 5,
+        'ECONOMY': 10
+    };
+
+    // Helper to format a Date object into a readable string
+    function formatDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    
+    function calculateDeliveryDate(startDate, businessDays) {
+        let currentDate = new Date(startDate.getTime());
+        let daysToCount = businessDays;
+        let totalCalendarDays = 0;
+
+        // Skip the initial day if it is a weekend, but DON'T count it as a transit day
+        while (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        while (daysToCount > 0) {
+            // Move to the next day
+            currentDate.setDate(currentDate.getDate() + 1);
+            totalCalendarDays++;
+
+            const dayOfWeek = currentDate.getDay(); // 0 (Sunday) to 6 (Saturday)
+
+            // If it's not a weekend (Mon=1 to Fri=5), count it as a business day
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+                daysToCount--;
+            }
+        }
+        
+        // Final check: if the calculated delivery day is a weekend, delivery happens on the next Monday
+        while (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+             currentDate.setDate(currentDate.getDate() + 1);
+             totalCalendarDays++;
+        }
+
+        return {
+            deliveryDate: currentDate,
+            totalCalendarDays: totalCalendarDays
+        };
+    }
+
+
+    // --- Event Handler ---
+    document.getElementById('shipping-estimator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const shippingDateStr = document.getElementById('shipping-date').value;
+        const shippingSpeedKey = document.getElementById('shipping-speed').value;
+        const businessDays = SHIPPING_TRANSIT_TIMES[shippingSpeedKey];
+        const shippingDate = new Date(shippingDateStr);
+
+        if (isNaN(shippingDate.getTime()) || !shippingDateStr) {
+            displayStatus("Please select a valid Shipping/Order Date.", true);
+            return;
+        }
+
+        try {
+            // 1. Calculate Delivery Date
+            const result = calculateDeliveryDate(shippingDate, businessDays);
+            
+            // 2. Format and Display Results
+            const formattedDeliveryDate = formatDate(result.deliveryDate);
+            const speedLabel = document.getElementById('shipping-speed').options[document.getElementById('shipping-speed').selectedIndex].text;
+
+            document.getElementById('estimated-delivery-date').innerText = formattedDeliveryDate;
+            document.getElementById('shipped-on-summary').innerText = formatDate(shippingDate);
+            document.getElementById('speed-summary').innerText = speedLabel;
+            document.getElementById('total-days-elapsed').innerText = result.totalCalendarDays;
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Shipping Calculation Error:", error);
+            displayStatus(`An error occurred during calculation: ${error.message}`, true);
+        }
+    });
+
+    // --- Initialization: Set default ship date to today ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        
+        document.getElementById('shipping-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

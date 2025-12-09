@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}Overtime Hours & Pay Calculator{% endblock %}
+
+{% block meta_description %}Calculate regular hours, overtime hours (based on a weekly threshold, e.g., 40 hours), and total estimated pay using separate regular and overtime hourly rates.{% endblock %}
+
+{% block meta_keywords %}overtime calculator, regular pay, hourly wage, weekly limit, labor law, payroll calculation{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #0dcaf0; /* Bootstrap Cyan accent for compensation/clarity theme */
+    }
+
+    /* Table Styles */
+    .timesheet-table th, .timesheet-table td {
+        vertical-align: middle;
+        padding: 8px;
+    }
+
+    .timesheet-table input[type="time"], .timesheet-table input[type="number"] {
+        width: 100%;
+        min-width: 70px;
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #ccf2ff; /* Light cyan background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .result-section h3 {
+        color: #0b8fa0;
+        margin-bottom: 5px;
+        font-size: 1.2rem;
+    }
+
+    .total-display {
+        display: block;
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    
+    #total-net-hours { color: #0dcaf0; } /* Cyan */
+    #total-regular-pay, #total-overtime-pay, #total-gross-pay { color: #dc3545; } /* Red */
+
+    .summary-text {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: #0b8fa0;
+        white-space: pre-wrap;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🕰️ Overtime Hours & Pay Calculator</h1>
+    <p class="small-muted">Calculate total weekly pay, factoring in regular hours and overtime hours above a specified threshold.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="overtime-form">
+            <h5 class="section-title">Step 1: Overtime Rules & Rates</h5>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label for="weekly-threshold" class="form-label">Weekly OT Threshold (Hours)</label>
+                    <input type="number" class="form-control" id="weekly-threshold" min="1" value="40" required>
+                    <small class="form-text text-muted">Hours worked over this limit are considered OT.</small>
+                </div>
+                <div class="col-md-4">
+                    <label for="regular-wage" class="form-label">Regular Hourly Wage ($)</label>
+                    <input type="number" class="form-control" id="regular-wage" min="0" value="20.00" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="overtime-rate-multiplier" class="form-label">OT Rate Multiplier (e.g., 1.5 for Time-and-a-Half)</label>
+                    <input type="number" class="form-control" id="overtime-rate-multiplier" min="1" step="0.01" value="1.5" required>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: Enter Daily Shifts</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered timesheet-table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th style="width: 120px;">Break (min)</th>
+                            <th>Net Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timesheet-body">
+                        <!-- Rows are populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-sm btn-outline-secondary" type="button" id="add-row-button">
+                    + Add Shift
+                </button>
+                <button class="btn btn-primary mt-3" type="submit">Calculate Weekly Pay</button>
+            </div>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                
+                <h3 class="mb-3">Weekly Summary:</h3>
+
+                <div class="row g-3">
+                    <div class="col-4">
+                        <small>Total Net Hours</small>
+                        <span id="total-net-hours" class="total-display text-info">0:00</span>
+                    </div>
+                    <div class="col-4">
+                        <small>Regular Hours Pay</small>
+                        <span id="total-regular-pay" class="total-display">$0.00</span>
+                    </div>
+                    <div class="col-4">
+                        <small>Overtime Pay</small>
+                        <span id="total-overtime-pay" class="total-display">$0.00</span>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Total Gross Pay:</h3>
+                <span id="total-gross-pay" class="total-display">$0.00</span>
+
+                <p class="summary-text" id="calculation-summary"></p>
+            </div>
+        </div>
+        
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MINUTES_PER_HOUR = 60;
+    const MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR;
+    let shiftCounter = 0;
+    
+    const DEFAULT_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+    // Helper function to convert HH:MM string to total minutes from midnight
+    function timeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return (hours * MINUTES_PER_HOUR) + minutes;
+    }
+
+    // Helper function to format total minutes into H:MM string
+    function formatMinutesToHours(totalMinutes) {
+        if (totalMinutes < 0) return '0:00';
+        const hours = Math.floor(totalMinutes / MINUTES_PER_HOUR);
+        const minutes = totalMinutes % MINUTES_PER_HOUR;
+        const pad = (num) => String(num).padStart(2, '0');
+        return `${hours}:${pad(minutes)}`;
+    }
+
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+    
+    /**
+     * Calculates the net work minutes for a single shift.
+     */
+    function calculateShiftNetMinutes(startStr, endStr, breakMin) {
+        if (!startStr || !endStr) return 0;
+
+        const startMin = timeToMinutes(startStr);
+        const endMin = timeToMinutes(endStr);
+        let grossMin;
+
+        if (endMin < startMin) {
+            // Shift crosses midnight
+            grossMin = (endMin + MINUTES_PER_DAY) - startMin;
+        } else {
+            // Standard shift
+            grossMin = endMin - startMin;
+        }
+
+        const netMin = grossMin - breakMin;
+        return Math.max(0, netMin);
+    }
+    
+    /**
+     * Updates the calculated Net Hours for a specific row.
+     */
+    function updateRowCalculation(rowId) {
+        const row = document.getElementById(rowId);
+        if (!row) return;
+
+        const startTime = row.querySelector('.start-time').value;
+        const endTime = row.querySelector('.end-time').value;
+        const breakTime = parseInt(row.querySelector('.break-minutes').value || 0, 10);
+        const netHoursCell = row.querySelector('.net-hours-cell');
+        
+        const netMinutes = calculateShiftNetMinutes(startTime, endTime, breakTime);
+        const formattedNetHours = formatMinutesToHours(netMinutes);
+        
+        netHoursCell.innerText = formattedNetHours;
+        // The net minutes is stored on the element for easy retrieval when summing the total
+        netHoursCell.dataset.netMinutes = netMinutes; 
+    }
+
+    /**
+     * Creates a new row for the timesheet table.
+     */
+    function createTimesheetRow(dayLabel, defaultStart = '', defaultEnd = '', defaultBreak = 0) {
+        shiftCounter++;
+        const rowId = `shift-row-${shiftCounter}`;
+        const row = document.createElement('tr');
+        row.id = rowId;
+        
+        // Define common update function for all input changes
+        const updateFunc = `updateRowCalculation('${rowId}')`;
+
+        row.innerHTML = `
+            <td>${dayLabel}</td>
+            <td><input type="time" class="form-control form-control-sm start-time" value="${defaultStart}" onchange="${updateFunc}" required></td>
+            <td><input type="time" class="form-control form-control-sm end-time" value="${defaultEnd}" onchange="${updateFunc}" required></td>
+            <td><input type="number" class="form-control form-control-sm break-minutes" min="0" value="${defaultBreak}" onchange="${updateFunc}" required></td>
+            <td class="net-hours-cell" data-net-minutes="0">0:00</td>
+        `;
+        
+        document.getElementById('timesheet-body').appendChild(row);
+        updateRowCalculation(rowId);
+    }
+
+    // --- Main Submission Logic ---
+
+    document.getElementById('overtime-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const thresholdHours = parseInt(document.getElementById('weekly-threshold').value, 10);
+        const regularWage = parseFloat(document.getElementById('regular-wage').value);
+        const multiplier = parseFloat(document.getElementById('overtime-rate-multiplier').value);
+        
+        if (isNaN(thresholdHours) || thresholdHours <= 0 || isNaN(regularWage) || regularWage < 0 || isNaN(multiplier) || multiplier < 1) {
+            displayStatus("Please ensure OT threshold is > 0, Regular Wage is >= 0, and OT Multiplier is >= 1.", true);
+            return;
+        }
+
+        let totalNetMinutes = 0;
+        let totalBreakMinutes = 0;
+        let totalGrossMinutes = 0;
+        let hasInputError = false;
+
+        const allRows = document.querySelectorAll('#timesheet-body tr');
+        
+        // 1. Sum up all net minutes and check for input errors
+        allRows.forEach(row => {
+            const startStr = row.querySelector('.start-time').value;
+            const endStr = row.querySelector('.end-time').value;
+            const breakMinInput = row.querySelector('.break-minutes').value;
+            const breakMin = parseInt(breakMinInput || 0, 10);
+            
+            if (!startStr || !endStr || isNaN(breakMin) || breakMin < 0) {
+                 hasInputError = true;
+            }
+
+            // Recalculate net minutes for accuracy on submission
+            const netMinutes = calculateShiftNetMinutes(startStr, endStr, breakMin);
+            const grossMinutes = calculateShiftNetMinutes(startStr, endStr, 0); 
+            
+            totalNetMinutes += netMinutes;
+            totalBreakMinutes += breakMin;
+            totalGrossMinutes += grossMinutes;
+            
+            // Update the display for the final time
+            row.querySelector('.net-hours-cell').innerText = formatMinutesToHours(netMinutes);
+        });
+
+        if (hasInputError) {
+            displayStatus("Please ensure all fields are correctly filled for every shift.", true);
+            return;
+        }
+
+        // 2. Calculate Regular and Overtime Hours
+        const thresholdMinutes = thresholdHours * MINUTES_PER_HOUR;
+        
+        let regularMinutes = 0;
+        let overtimeMinutes = 0;
+
+        if (totalNetMinutes > thresholdMinutes) {
+            regularMinutes = thresholdMinutes;
+            overtimeMinutes = totalNetMinutes - thresholdMinutes;
+        } else {
+            regularMinutes = totalNetMinutes;
+            overtimeMinutes = 0;
+        }
+        
+        const regularHours = regularMinutes / MINUTES_PER_HOUR;
+        const overtimeHours = overtimeMinutes / MINUTES_PER_HOUR;
+        
+        // 3. Calculate Pay
+        const overtimeWage = regularWage * multiplier;
+        const regularPay = regularHours * regularWage;
+        const overtimePay = overtimeHours * overtimeWage;
+        const totalGrossPay = regularPay + overtimePay;
+
+        // 4. Display Results
+        document.getElementById('total-net-hours').innerText = formatMinutesToHours(totalNetMinutes);
+        document.getElementById('total-regular-pay').innerText = `$${regularPay.toFixed(2)}`;
+        document.getElementById('total-overtime-pay').innerText = `$${overtimePay.toFixed(2)}`;
+        document.getElementById('total-gross-pay').innerText = `$${totalGrossPay.toFixed(2)}`;
+        
+        const summary = `
+Total Net Work Time: ${formatMinutesToHours(totalNetMinutes)}
+Regular Hours: ${regularHours.toFixed(2)} hrs @ $${regularWage.toFixed(2)}/hr
+Overtime Hours: ${overtimeHours.toFixed(2)} hrs @ $${overtimeWage.toFixed(2)}/hr (Total Break: ${totalBreakMinutes} min)
+        `;
+        document.getElementById('calculation-summary').innerText = summary;
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+
+    // --- Initialization and Event Handlers ---
+
+    // Initial population of default rows
+    document.addEventListener('DOMContentLoaded', () => {
+        // Create 5 default rows (e.g., a standard work week)
+        DEFAULT_DAYS.forEach(day => {
+            createTimesheetRow(day, '09:00', '17:00', 30);
+        });
+    });
+
+    // Add row functionality
+    document.getElementById('add-row-button').addEventListener('click', () => {
+        const rowCount = document.getElementById('timesheet-body').children.length;
+        createTimesheetRow(`Shift ${rowCount + 1}`, '', '', 0);
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Subscription Renewal Date Calculator{% endblock %}
+
+{% block meta_description %}Calculate future subscription renewal dates by specifying the start date, renewal frequency (Monthly, Quarterly, Annually), and the number of cycles to project.{% endblock %}
+
+{% block meta_keywords %}subscription renewal, recurring charge, billing cycle, renewal calculator, anniversary date{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #9c27b0; /* Purple accent for luxury/subscription theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #f3e5f5; /* Light purple background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #9c27b0;
+    }
+
+    .result-section h3 {
+        color: #9c27b0;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .date-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #3f51b5; /* Indigo accent for clarity */
+        line-height: 1.2;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">📅 Subscription Renewal Date Calculator</h1>
+    <p class="small-muted">Project your next subscription renewal date based on the start date and billing cycle.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="renewal-form">
+            <h5 class="section-title">Step 1: Subscription Details</h5>
+
+            <!-- Start Date -->
+            <div class="form-group mb-3">
+                <label for="start-date" class="form-label">Subscription Start/Last Renewal Date</label>
+                <input type="date" class="form-control" id="start-date" required>
+            </div>
+
+            <!-- Renewal Frequency -->
+            <div class="form-group mb-4">
+                <label for="renewal-frequency" class="form-label">Billing Cycle / Frequency</label>
+                <select class="form-select" id="renewal-frequency" required>
+                    <option value="1">Monthly</option>
+                    <option value="3">Quarterly (3 Months)</option>
+                    <option value="6">Semi-Annually (6 Months)</option>
+                    <option value="12">Annually (12 Months)</option>
+                </select>
+            </div>
+
+            <h5 class="section-title">Step 2: Projection</h5>
+
+            <!-- Cycles to Project -->
+            <div class="form-group mb-4">
+                <label for="cycles-to-project" class="form-label">Cycles to Project Ahead</label>
+                <input type="number" class="form-control" id="cycles-to-project" value="1" min="1" required>
+                <small class="form-text text-muted">e.g., 1 for the next renewal, 12 for the renewal 12 cycles from now.</small>
+            </div>
+
+            <button class="btn btn-secondary mt-3 w-100" type="submit">Calculate Renewal Date</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Next Renewal Date</h3>
+
+                <small class="text-muted">Projected Renewal Date</small>
+                <div class="date-display" id="calculated-renewal-date"></div>
+
+                <p class="text-muted mt-3" id="calculation-summary"></p>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    /**
+     * Calculates the subscription renewal date.
+     * Handles month-end rollovers (e.g., Jan 31st renews on Feb 28th/29th).
+     * @param {string} startDateStr The start date string (YYYY-MM-DD).
+     * @param {number} monthsPerCycle The number of months in one cycle (e.g., 1 for monthly).
+     * @param {number} cycles The number of cycles to project ahead.
+     * @returns {Date} The calculated renewal date.
+     */
+    function calculateRenewalDate(startDateStr, monthsPerCycle, cycles) {
+        // 1. Create a copy of the start date
+        const startDate = new Date(startDateStr);
+        const startDay = startDate.getDate();
+        const startMonth = startDate.getMonth();
+        
+        // 2. Calculate total months to advance
+        const totalMonths = monthsPerCycle * cycles;
+
+        // 3. Create the renewal date object and set the month
+        const renewalDate = new Date(startDate);
+        renewalDate.setMonth(startMonth + totalMonths);
+        
+        // 4. CRUCIAL LOGIC: Handle month-end overflow (e.g., Jan 31st + 1 month attempts to land on Feb 31st, 
+        // which JavaScript resolves to Mar 3rd, but the actual renewal should be Feb 28th/29th).
+        // If the day in the new month is less than the original day, it means it overflowed.
+        if (renewalDate.getDate() < startDay) {
+            // Setting the day to 0 of the current month effectively sets it to the last day 
+            // of the previous month (the intended renewal month).
+            renewalDate.setDate(0); 
+        }
+
+        return renewalDate;
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('renewal-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const startDateStr = document.getElementById('start-date').value;
+        const monthsPerCycle = parseInt(document.getElementById('renewal-frequency').value, 10);
+        const cycles = parseInt(document.getElementById('cycles-to-project').value, 10);
+
+        if (!startDateStr || isNaN(monthsPerCycle) || isNaN(cycles) || cycles < 1) {
+            displayStatus("Please ensure a valid start date and positive values for cycles.", true);
+            return;
+        }
+
+        try {
+            // 1. Perform Calculation
+            const renewalDate = calculateRenewalDate(startDateStr, monthsPerCycle, cycles);
+
+            // 2. Display Results
+            const dateReadable = formatReadableDate(renewalDate);
+            const frequencyText = document.getElementById('renewal-frequency').options[document.getElementById('renewal-frequency').selectedIndex].text;
+
+            document.getElementById('result-title').innerText = `Renewal Date (After ${cycles} Cycles)`;
+            document.getElementById('calculated-renewal-date').innerText = dateReadable;
+
+            const summaryText = `
+Your subscription, set to renew ${frequencyText}, will renew on **${dateReadable}** after ${cycles} cycle(s). 
+If the renewal date is the 29th, 30th, or 31st, it shifts to the last day of a shorter month (e.g., February).
+            `;
+            document.getElementById('calculation-summary').innerText = summaryText.trim();
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your inputs.", true);
+        }
+    });
+
+    // Set default date to today and default cycles to 1
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('start-date').value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('cycles-to-project').value = 1;
+    });
+</script>
+
+{% endblock %}

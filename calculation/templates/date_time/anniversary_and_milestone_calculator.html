@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Anniversary and Milestone Calculator{% endblock %}
+
+{% block meta_description %}Calculate the time elapsed since a significant date (anniversary) and list upcoming yearly and milestone dates (e.g., 1000 days, 10th anniversary).{% endblock %}
+
+{% block meta_keywords %}anniversary calculator, milestone planner, years elapsed, date difference, relationship counter{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #e83e8c; /* Pink color for romantic theme */
+    }
+
+    .elapsed-time-display {
+        background-color: #ffe5f0;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 500;
+    }
+
+    .time-unit-value {
+        display: block;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #dc3545; /* Red accent */
+        line-height: 1.1;
+    }
+    
+    #milestones-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    #milestones-list li {
+        padding: 10px 0;
+        border-bottom: 1px dashed #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #milestones-list li:last-child {
+        border-bottom: none;
+    }
+
+    .milestone-name {
+        font-weight: bold;
+    }
+
+    .milestone-date {
+        font-style: italic;
+        color: #6c757d;
+    }
+    
+    .form-control[type="date"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">💖 Anniversary & Milestone Calculator</h1>
+    <p class="small-muted">Calculate the exact time elapsed since your special day and see your next upcoming milestones!</p>
+
+    <div class="calc-wrapper">
+
+        <form id="anniversary-form">
+            <h5 class="section-title">Step 1: Enter Your Special Date</h5>
+
+            <!-- Base Date Input -->
+            <div class="form-group mb-4">
+                <label for="start-date" class="form-label">Date of Event (e.g., Wedding, Start of Relationship)</label>
+                <input type="date" class="form-control" id="start-date" required>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Milestones</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            
+            <h5 class="section-title mt-5">Time Elapsed Since <span id="event-date-display"></span>:</h5>
+            <!-- Elapsed Time Display -->
+            <div id="elapsed-time-display" class="elapsed-time-display">
+                <div class="row">
+                    <div class="col-4">
+                        <span class="time-unit-value" id="elapsed-years">0</span>
+                        <small>Years</small>
+                    </div>
+                    <div class="col-4">
+                        <span class="time-unit-value" id="elapsed-months">0</span>
+                        <small>Months</small>
+                    </div>
+                    <div class="col-4">
+                        <span class="time-unit-value" id="elapsed-days">0</span>
+                        <small>Days</small>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="section-title">Upcoming Milestones:</h5>
+            <!-- Milestones List -->
+            <ul id="milestones-list">
+                <!-- Milestones will be dynamically inserted here -->
+            </ul>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
+    const MILESTONE_DAYS = [100, 200, 365, 500, 730, 1000, 1500, 2000, 2500, 3000];
+
+    // Function to format a Date object into YYYY-MM-DD
+    function formatDateString(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    // Function to calculate and display elapsed time (Years, Months, Days)
+    function calculateElapsedTime(startDate, today) {
+        let years = today.getFullYear() - startDate.getFullYear();
+        let months = today.getMonth() - startDate.getMonth();
+        let days = today.getDate() - startDate.getDate();
+
+        // Adjust months and years if necessary
+        if (days < 0) {
+            months--;
+            // Get the number of days in the previous month of today
+            const prevMonthDate = new Date(today.getFullYear(), today.getMonth(), 0);
+            days += prevMonthDate.getDate();
+        }
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+
+        // Display the results
+        document.getElementById('elapsed-years').innerText = years;
+        document.getElementById('elapsed-months').innerText = months;
+        document.getElementById('elapsed-days').innerText = days;
+
+        // Return total days elapsed (simple difference)
+        return Math.floor((today.getTime() - startDate.getTime()) / MILLISECONDS_PER_DAY);
+    }
+
+    // Function to calculate and list upcoming milestones
+    function calculateMilestones(startDate, totalDaysElapsed) {
+        const list = document.getElementById('milestones-list');
+        list.innerHTML = '';
+        
+        const now = new Date();
+        const yearDifference = now.getFullYear() - startDate.getFullYear();
+        
+        const milestoneData = [];
+
+        // 1. Calculate next major Day Milestones (100 days, 1000 days, etc.)
+        MILESTONE_DAYS.forEach(targetDay => {
+            if (targetDay > totalDaysElapsed) {
+                const targetMs = startDate.getTime() + (targetDay * MILLISECONDS_PER_DAY);
+                const targetDate = new Date(targetMs);
+                milestoneData.push({
+                    name: `${targetDay} Days`,
+                    date: targetDate,
+                    timeDifference: targetMs - now.getTime()
+                });
+            }
+        });
+
+        // 2. Calculate next 5 Anniversary Milestones
+        for (let i = 1; i <= 5; i++) {
+            const targetYear = startDate.getFullYear() + yearDifference + i;
+            const targetDate = new Date(startDate.getMonth() === 1 && startDate.getDate() === 29 && !((targetYear % 4 === 0 && targetYear % 100 !== 0) || targetYear % 400 === 0)
+                ? Date.UTC(targetYear, 1, 28) // Handle Feb 29 on non-leap years
+                : Date.UTC(targetYear, startDate.getMonth(), startDate.getDate())
+            );
+            
+            const targetMs = targetDate.getTime();
+
+            // Only add if the date is in the future
+            if (targetMs > now.getTime()) {
+                 milestoneData.push({
+                    name: `${yearDifference + i}${getOrdinalSuffix(yearDifference + i)} Anniversary`,
+                    date: targetDate,
+                    timeDifference: targetMs - now.getTime()
+                });
+            }
+        }
+        
+        // Sort all milestones by date (closest upcoming first)
+        milestoneData.sort((a, b) => a.timeDifference - b.timeDifference);
+
+        // Generate list items
+        if (milestoneData.length === 0) {
+            list.innerHTML = '<li class="text-muted">No upcoming milestones found in the near future.</li>';
+        } else {
+            milestoneData.forEach(m => {
+                const date = new Date(m.date);
+                
+                // Format date for display (e.g., Nov 26, 2025)
+                const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <span class="milestone-name">${m.name}</span>
+                    <span class="milestone-date">${formattedDate}</span>
+                `;
+                list.appendChild(listItem);
+            });
+        }
+    }
+    
+    // Helper function for ordinal suffix (1st, 2nd, 3rd, 4th...)
+    function getOrdinalSuffix(n) {
+        const s = ["th", "st", "nd", "rd"];
+        const v = n % 100;
+        return s[(v - 20) % 10] || s[v] || s[0];
+    }
+
+
+    document.getElementById('anniversary-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const startDateStr = document.getElementById('start-date').value;
+        if (!startDateStr) return;
+        
+        // Use UTC time for the anniversary date to avoid DST/local offset issues on the start day
+        const [y, m, d] = startDateStr.split('-').map(Number);
+        const startDate = new Date(Date.UTC(y, m - 1, d)); // Month is 0-indexed
+
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())); // Today in UTC at midnight
+
+        if (startDate.getTime() >= today.getTime()) {
+            document.getElementById('results-container').classList.add('d-none');
+            // Use status message to display error
+            document.getElementById('status-message').classList.remove('d-none', 'alert-success', 'alert-info');
+            document.getElementById('status-message').classList.add('alert-danger');
+            document.getElementById('status-message').innerHTML = '❌ **Error:** The event date must be in the past.';
+            return;
+        }
+
+        // Hide error message if successful
+        document.getElementById('status-message').classList.add('d-none');
+
+        // 1. Calculate Elapsed Time
+        const totalDaysElapsed = calculateElapsedTime(startDate, today);
+
+        // 2. Calculate Milestones
+        calculateMilestones(startDate, totalDaysElapsed);
+        
+        // 3. Update Title and Show Results
+        document.getElementById('event-date-display').innerText = startDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+        document.getElementById('results-container').classList.remove('d-none');
+
+    });
+    
+    // Set a default date (e.g., 5 years ago)
+    document.addEventListener('DOMContentLoaded', () => {
+        const defaultDate = new Date();
+        defaultDate.setFullYear(defaultDate.getFullYear() - 5);
+        document.getElementById('start-date').value = formatDateString(defaultDate);
+    });
+
+</script>
+
+{% endblock %}

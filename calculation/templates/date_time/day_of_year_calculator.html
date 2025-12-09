@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Day of Year (Ordinal Date) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Day of the Year (Ordinal Date, 1 to 366) for any given calendar date, factoring in leap years. Also calculates remaining days in the year.{% endblock %}
+
+{% block meta_keywords %}day of year, ordinal date, julian date, day number, leap year, date calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #198754; /* Bootstrap Green accent for stability/precision theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #e6fff1; /* Light green background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #198754;
+    }
+
+    .result-section h3 {
+        color: #198754;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .day-display {
+        font-size: 4rem;
+        font-weight: 700;
+        color: #dc3545; /* Red accent for the primary result */
+        line-height: 1.2;
+    }
+
+    .info-box {
+        background-color: #f0fff5;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 5px solid #198754;
+        text-align: left;
+    }
+
+    .info-box p {
+        margin: 5px 0;
+        font-size: 1.1rem;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">📅 Day of Year (Ordinal Date) Calculator</h1>
+    <p class="small-muted">Find the ordinal day number (1 to 366) for any date and determine the total days remaining in the year.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="day-of-year-form">
+            <h5 class="section-title">Step 1: Select Date</h5>
+
+            <!-- Target Date Input -->
+            <div class="form-group mb-4">
+                <label for="target-date" class="form-label">Calendar Date</label>
+                <input type="date" class="form-control" id="target-date" required>
+            </div>
+
+            <button class="btn btn-success mt-3 w-100" type="submit">Calculate Day of Year</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-date-display">Day of Year for ...</h3>
+
+                <small class="text-muted">Ordinal Day Number</small>
+                <div class="day-display" id="day-of-year-value">1</div>
+
+                <div class="info-box">
+                    <p>Total Days in Year: <strong id="total-days">365</strong></p>
+                    <p>Days Remaining: <strong id="days-remaining">364</strong></p>
+                    <p>Year Type: <strong id="year-type">Standard Year</strong></p>
+                </div>
+
+                <p class="text-muted mt-3" id="calculation-summary"></p>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+    
+    /**
+     * Checks if a year is a leap year.
+     * @param {number} year The year number.
+     * @returns {boolean} True if it is a leap year, false otherwise.
+     */
+    function isLeapYear(year) {
+        // A year is a leap year if it is divisible by 4,
+        // except for years divisible by 100 but not by 400.
+        return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    }
+
+    /**
+     * Calculates the Day of the Year (Ordinal Date).
+     * @param {Date} date The input Date object (local time).
+     * @returns {number} The day number (1 to 366).
+     */
+    function calculateDayOfYear(date) {
+        // 1. Create a new Date object for January 1st of the same year
+        const startOfYear = new Date(date.getFullYear(), 0, 1);
+
+        // 2. Calculate the difference in milliseconds
+        // We use Math.floor to ensure we account for any time difference 
+        // within the day itself, calculating based on 00:00 to 00:00 boundaries.
+        const timeDiff = date.getTime() - startOfYear.getTime();
+        
+        // 3. Convert difference to days and add 1 (since the count starts at 1, not 0)
+        const dayCount = Math.floor(timeDiff / (1000 * 60 * 60 * 24)) + 1;
+
+        return dayCount;
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('day-of-year-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const dateStr = document.getElementById('target-date').value;
+
+        if (!dateStr) {
+            displayStatus("Please select a valid calendar date.", true);
+            return;
+        }
+
+        // 1. Prepare Date
+        // Create Date object in local time for display and calculation
+        const targetDate = new Date(dateStr); 
+
+        // 2. Perform Calculation
+        const dayOfYear = calculateDayOfYear(targetDate);
+        const year = targetDate.getFullYear();
+        const isLeap = isLeapYear(year);
+        const totalDaysInYear = isLeap ? 366 : 365;
+        const daysRemaining = totalDaysInYear - dayOfYear;
+        
+        const dateReadable = targetDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+
+        // 3. Display Results
+        document.getElementById('result-date-display').innerText = `Day of Year for ${dateReadable}`;
+        document.getElementById('day-of-year-value').innerText = dayOfYear;
+        
+        document.getElementById('total-days').innerText = totalDaysInYear;
+        document.getElementById('days-remaining').innerText = daysRemaining;
+        document.getElementById('year-type').innerText = isLeap ? "Leap Year" : "Standard Year";
+
+        const summary = `
+The date ${dateReadable} is the ${dayOfYear}th day of the year ${year}.
+There are ${daysRemaining} days remaining until December 31st.
+        `;
+        document.getElementById('calculation-summary').innerText = summary.trim();
+
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+    
+    // Set default date to today
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('target-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

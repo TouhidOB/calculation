@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Lease End Date Calculator{% endblock %}
+
+{% block meta_description %}Calculate the exact end date of a lease or rental agreement by specifying the start date and the total duration in months.{% endblock %}
+
+{% block meta_keywords %}lease end date, rental agreement, contract duration, date calculator, lease renewal{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #ffc107; /* Bootstrap Yellow accent for caution/planning theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #fff8e1; /* Light yellow background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #ffc107;
+    }
+
+    .result-section h3 {
+        color: #ffc107;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .date-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #0d6efd; /* Blue accent for clarity */
+        line-height: 1.2;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🗓️ Lease End Date Calculator</h1>
+    <p class="small-muted">Quickly determine the official end date of your rental or lease agreement.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="lease-end-form">
+            <h5 class="section-title">Step 1: Lease Start & Duration</h5>
+
+            <!-- Lease Start Date -->
+            <div class="form-group mb-3">
+                <label for="start-date" class="form-label">Lease Start Date</label>
+                <input type="date" class="form-control" id="start-date" required>
+            </div>
+
+            <!-- Lease Term in Months -->
+            <div class="form-group mb-4">
+                <label for="lease-months" class="form-label">Lease Term (Months)</label>
+                <input type="number" class="form-control" id="lease-months" value="12" min="1" required>
+                <small class="form-text text-muted">e.g., 12 for a one-year lease, 36 for three years.</small>
+            </div>
+
+            <button class="btn btn-warning mt-3 w-100" type="submit">Calculate End Date</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Lease End Date</h3>
+
+                <small class="text-muted">Calculated End Date</small>
+                <div class="date-display" id="calculated-end-date"></div>
+
+                <p class="text-muted mt-3" id="calculation-summary"></p>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    /**
+     * Calculates the lease end date based on a start date and term in months.
+     * The end date is typically the day before the start date one year later.
+     * e.g., Start: Jan 1st, 2025 (12 months) -> End: Dec 31st, 2025.
+     * @param {string} startDateStr The start date string (YYYY-MM-DD).
+     * @param {number} termMonths The term length in months.
+     * @returns {Date} The calculated lease end date.
+     */
+    function calculateLeaseEndDate(startDateStr, termMonths) {
+        // 1. Parse the start date string (creates a date at 00:00 local time)
+        const startDate = new Date(startDateStr);
+
+        // 2. Lease end is calculated as the last day of the month
+        // that is (termMonths - 1) months after the start month.
+        // E.g., 12-month lease starting Jan 1st. We want the last day of Dec.
+        // Date calculation logic: Lease is 12 months, the agreement usually ends 
+        // the day before the day it started, in the month after the final payment.
+        
+        // Simpler calculation: Move forward 'termMonths' and subtract one day.
+        
+        // Month Index starts at 0. Start month + termMonths.
+        const endMonth = startDate.getMonth() + termMonths;
+        const endYear = startDate.getFullYear() + Math.floor(endMonth / 12);
+        
+        // Set date to the next day after the lease technically ends (to get the exact final day)
+        // If lease starts Jan 1, 2025 (12 months), it runs through Dec 31, 2025.
+        // The day after the lease runs is the start date in the new year.
+        const endDayOfMonth = startDate.getDate();
+        
+        // Create the date that is one day *after* the term is complete.
+        const effectiveEndDate = new Date(endYear, endMonth % 12, endDayOfMonth);
+        
+        // Subtract one day to get the final date of the lease.
+        effectiveEndDate.setDate(effectiveEndDate.getDate() - 1);
+        
+        return effectiveEndDate;
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('lease-end-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const startDateStr = document.getElementById('start-date').value;
+        const termMonthsStr = document.getElementById('lease-months').value;
+        const termMonths = parseInt(termMonthsStr, 10);
+
+        if (!startDateStr || isNaN(termMonths) || termMonths < 1) {
+            displayStatus("Please enter a valid start date and a positive number of months.", true);
+            return;
+        }
+
+        try {
+            // 1. Perform Calculation
+            const endDate = calculateLeaseEndDate(startDateStr, termMonths);
+
+            // 2. Display Results
+            const dateReadable = formatReadableDate(endDate);
+
+            document.getElementById('result-title').innerText = `Lease End Date (Term: ${termMonths} Months)`;
+            document.getElementById('calculated-end-date').innerText = dateReadable;
+
+            const summaryText = `
+Your ${termMonths}-month lease, starting on ${formatReadableDate(new Date(startDateStr))}, officially concludes on **${dateReadable}**.
+This date is one day before the day your lease would start its next cycle.
+            `;
+            document.getElementById('calculation-summary').innerText = summaryText.trim();
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your inputs.", true);
+        }
+    });
+
+    // Set default date to today and default months to 12
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('start-date').value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('lease-months').value = 12;
+    });
+</script>
+
+{% endblock %}

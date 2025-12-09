@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Age Difference Calculator{% endblock %}
+
+{% block meta_description %}Calculate the precise duration (years, months, days) between two dates, such as finding the age difference between two people.{% endblock %}
+
+{% block meta_keywords %}age difference, date difference, duration calculator, birthday difference, time between dates{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #f0f8ff; /* Alice Blue / Light Blue */
+        padding: 35px;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        color: #4682b4; /* Steel Blue accent */
+        border-bottom: 2px solid #4682b4;
+        padding-bottom: 5px;
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 30px;
+        border: 2px solid #4682b4;
+    }
+
+    .result-section h3 {
+        color: #191970; /* Midnight Blue */
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .difference-display {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2e8b57; /* Sea Green for positive result */
+        margin-bottom: 15px;
+    }
+
+    .difference-value {
+        font-size: 3rem;
+        font-weight: 900;
+        display: block;
+        color: #dc143c; /* Crimson Red for main values */
+    }
+
+    .detail-card {
+        background-color: #e9f5ff;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px auto;
+        max-width: 450px;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🧮 Age Difference Calculator</h1>
+    <p class="small-muted">Find the exact duration in years, months, and days between two calendar dates.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="age-difference-form">
+            <h5 class="section-title">Step 1: First Date (Older Date)</h5>
+
+            <div class="form-group mb-4">
+                <label for="date-older" class="form-label">Date 1 (e.g., Older Person's Birthday)</label>
+                <input type="date" class="form-control" id="date-older" required>
+            </div>
+
+            <h5 class="section-title">Step 2: Second Date (Newer Date)</h5>
+
+            <div class="form-group mb-4">
+                <label for="date-newer" class="form-label">Date 2 (e.g., Younger Person's Birthday)</label>
+                <input type="date" class="form-control" id="date-newer" required>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit" style="background-color: #4682b4; border-color: #4682b4;">Calculate Difference</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3>Exact Time Difference</h3>
+
+                <div class="difference-display">
+                    <span id="years-diff" class="difference-value">0</span> years,
+                    <span id="months-diff" class="difference-value">0</span> months, and
+                    <span id="days-diff" class="difference-value">0</span> days
+                </div>
+                
+                <p class="small text-muted mb-0">Total Days between dates: <strong id="total-days"></strong></p>
+
+                <div class="detail-card">
+                    <p class="mb-1">Start Date: <strong id="date-older-summary"></strong></p>
+                    <p class="mb-0">End Date: <strong id="date-newer-summary"></strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+
+    function calculateExactDifference(date1, date2) {
+        let d1 = new Date(date1.getTime());
+        let d2 = new Date(date2.getTime());
+        
+        if (d1 > d2) {
+             // If dates are swapped, swap them back but note the calculation is reversed
+             [d1, d2] = [d2, d1];
+        }
+
+        let years = d2.getFullYear() - d1.getFullYear();
+        let months = d2.getMonth() - d1.getMonth();
+        let days = d2.getDate() - d1.getDate();
+        
+        // Calculate total days for summary
+        const totalDays = Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+
+        // Adjust month and year if days are negative
+        if (days < 0) {
+            // Borrow a month: get the number of days in the previous month of the newer date
+            d2.setMonth(d2.getMonth() - 1);
+            
+            // Days in the previous month (of d2 before adjustment)
+            const daysInPreviousMonth = new Date(d2.getFullYear(), d2.getMonth() + 1, 0).getDate();
+            
+            days += daysInPreviousMonth;
+            months--;
+        }
+
+        // Adjust year if months are negative
+        if (months < 0) {
+            months += 12;
+            years--;
+        }
+
+        return {
+            years: years,
+            months: months,
+            days: days,
+            totalDays: totalDays
+        };
+    }
+    
+    // Helper to format a Date object into a readable string
+    function formatDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+
+    // --- Event Handler ---
+    document.getElementById('age-difference-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const dateOlderStr = document.getElementById('date-older').value;
+        const dateNewerStr = document.getElementById('date-newer').value;
+        
+        // Ensure dates are parsed at the start of the day (UTC midnight) to prevent timezone issues
+        const dateOlder = new Date(dateOlderStr + 'T00:00:00');
+        const dateNewer = new Date(dateNewerStr + 'T00:00:00');
+
+        if (isNaN(dateOlder.getTime()) || isNaN(dateNewer.getTime())) {
+            displayStatus("Please select both valid Start and End Dates.", true);
+            return;
+        }
+
+        if (dateOlder.getTime() === dateNewer.getTime()) {
+             displayStatus("The dates are identical. The difference is 0 days.", false);
+             return;
+        }
+
+        try {
+            // 1. Determine which date is older for consistent calculation
+            const [startDate, endDate] = dateOlder.getTime() <= dateNewer.getTime() ? [dateOlder, dateNewer] : [dateNewer, dateOlder];
+
+            // 2. Calculate the Difference
+            const result = calculateExactDifference(startDate, endDate);
+            
+            // 3. Format and Display Results
+            document.getElementById('years-diff').innerText = result.years;
+            document.getElementById('months-diff').innerText = result.months;
+            document.getElementById('days-diff').innerText = result.days;
+            document.getElementById('total-days').innerText = result.totalDays.toLocaleString();
+
+            document.getElementById('date-older-summary').innerText = formatDate(startDate);
+            document.getElementById('date-newer-summary').innerText = formatDate(endDate);
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+            // Show a note if the user entered the dates in the wrong order
+            if (dateOlder.getTime() > dateNewer.getTime()) {
+                 displayStatus("Note: The dates were internally swapped to calculate the positive duration from the older date to the newer date.", false);
+            }
+
+
+        } catch (error) {
+            console.error("Age Difference Calculation Error:", error);
+            displayStatus(`An error occurred during calculation: ${error.message}`, true);
+        }
+    });
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set default dates for demonstration purposes
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        
+        // Set the older date to 20 years ago
+        const olderDate = new Date();
+        olderDate.setFullYear(yyyy - 20);
+        const yyyyOld = olderDate.getFullYear();
+        const mmOld = String(olderDate.getMonth() + 1).padStart(2, '0');
+        const ddOld = String(olderDate.getDate()).padStart(2, '0');
+
+        document.getElementById('date-older').value = `${yyyyOld}-${mmOld}-${ddOld}`;
+        document.getElementById('date-newer').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

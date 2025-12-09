@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Work Hours & Net Pay Calculator{% endblock %}
+
+{% block meta_description %}Calculate net work hours by subtracting breaks from total duration, and estimate pay based on an hourly wage, including support for shifts crossing midnight.{% endblock %}
+
+{% block meta_keywords %}work hours calculator, time sheet, shift duration, break time, hourly pay, net hours worked{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #20c997; /* Bootstrap Teal/Green accent for growth/efficiency theme */
+    }
+
+    .result-section {
+        background-color: #e6fffa; /* Light teal background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .result-section h3 {
+        color: #1a755d;
+        margin-bottom: 5px;
+        font-size: 1.2rem;
+    }
+
+    #net-hours-display {
+        display: block;
+        font-size: 3rem;
+        font-weight: 700;
+        color: #1a755d;
+        line-height: 1.2;
+    }
+    
+    .summary-text {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: #1a755d;
+        white-space: pre-wrap;
+    }
+    
+    .form-control[type="time"], .form-control[type="number"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🕥 Work Hours Calculator</h1>
+    <p class="small-muted">Calculate your net working hours for a shift by accounting for breaks. Optionally, estimate your earnings based on an hourly rate.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="work-hours-form">
+            <h5 class="section-title">Step 1: Time Inputs</h5>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="start-time" class="form-label">Shift Start Time</label>
+                    <input type="time" class="form-control" id="start-time" value="09:00" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="end-time" class="form-label">Shift End Time</label>
+                    <input type="time" class="form-control" id="end-time" value="17:00" required>
+                    <small class="form-text text-muted">Automatically handles shifts crossing midnight.</small>
+                </div>
+            </div>
+            
+            <h5 class="section-title">Step 2: Break & Pay</h5>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="break-minutes" class="form-label">Total Break Duration (in Minutes)</label>
+                    <input type="number" class="form-control" id="break-minutes" min="0" value="30" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="hourly-wage" class="form-label">Hourly Wage (Optional)</label>
+                    <input type="number" class="form-control" id="hourly-wage" min="0" placeholder="e.g., 20.00">
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-3 w-100" type="submit">Calculate Net Hours</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3>Your Net Work Time:</h3>
+                <span id="net-hours-display">0:00</span>
+                <p class="summary-text" id="calculation-summary"></p>
+                <div id="pay-estimate" class="mt-3">
+                    <!-- Pay estimate inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MINUTES_PER_HOUR = 60;
+    const MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR;
+
+    // Helper function to convert HH:MM string to total minutes from midnight
+    function timeToMinutes(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return (hours * MINUTES_PER_HOUR) + minutes;
+    }
+
+    // Helper function to format total minutes into H:MM string
+    function formatMinutesToHours(totalMinutes) {
+        const hours = Math.floor(totalMinutes / MINUTES_PER_HOUR);
+        const minutes = totalMinutes % MINUTES_PER_HOUR;
+        const pad = (num) => String(num).padStart(2, '0');
+        return `${hours}:${pad(minutes)}`;
+    }
+
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    document.getElementById('work-hours-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const startTimeStr = document.getElementById('start-time').value;
+        const endTimeStr = document.getElementById('end-time').value;
+        const breakMinutes = parseInt(document.getElementById('break-minutes').value, 10);
+        const hourlyWageStr = document.getElementById('hourly-wage').value;
+        const hourlyWage = parseFloat(hourlyWageStr);
+
+        if (!startTimeStr || !endTimeStr || isNaN(breakMinutes) || breakMinutes < 0) {
+            displayStatus("Please ensure both start/end times are set and break time is 0 or a positive number.", true);
+            return;
+        }
+
+        // 1. Convert times to minutes from midnight
+        const startMin = timeToMinutes(startTimeStr);
+        const endMin = timeToMinutes(endTimeStr);
+
+        // 2. Calculate Gross Duration
+        let grossMin;
+        if (endMin < startMin) {
+            // Shift crosses midnight (e.g., 22:00 to 06:00)
+            grossMin = (endMin + MINUTES_PER_DAY) - startMin;
+        } else {
+            // Standard shift within one day
+            grossMin = endMin - startMin;
+        }
+
+        // 3. Calculate Net Duration
+        const netMin = grossMin - breakMinutes;
+
+        if (netMin < 0) {
+            displayStatus("The break duration is longer than the gross shift duration. Please check your inputs.", true);
+            return;
+        }
+        
+        // 4. Format and Display Results
+        const formattedNetHours = formatMinutesToHours(netMin);
+        const formattedGrossHours = formatMinutesToHours(grossMin);
+
+        document.getElementById('net-hours-display').innerText = formattedNetHours;
+        
+        let summary = `Gross Time: ${formattedGrossHours} (${grossMin} minutes)\n`;
+        summary += `Break Time: ${breakMinutes} minutes\n`;
+        summary += `Net Time: ${formattedNetHours} (${netMin} minutes)`;
+        
+        document.getElementById('calculation-summary').innerText = summary;
+        
+        // 5. Calculate Pay Estimate (Optional)
+        const payEstimateDiv = document.getElementById('pay-estimate');
+        payEstimateDiv.innerHTML = '';
+
+        if (!isNaN(hourlyWage) && hourlyWage >= 0) {
+            const netHoursDecimal = netMin / MINUTES_PER_HOUR;
+            const estimatedPay = netHoursDecimal * hourlyWage;
+
+            payEstimateDiv.innerHTML = `
+                <h3 class="mt-3">Estimated Earnings:</h3>
+                <span class="time-unit-value text-success">$${estimatedPay.toFixed(2)}</span>
+                <p class="small text-muted">@ $${hourlyWage.toFixed(2)} per hour</p>
+            `;
+        }
+
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+
+    // Set a default value for hourly wage
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('hourly-wage').value = '25.00';
+    });
+</script>
+
+{% endblock %}

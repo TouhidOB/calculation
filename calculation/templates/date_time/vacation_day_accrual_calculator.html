@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Vacation Day Accrual Calculator{% endblock %}
+
+{% block meta_description %}Calculate current and future vacation or paid time off (PTO) balance based on starting hours, accrual rate, and pay period frequency (e.g., bi-weekly, monthly).{% endblock %}
+
+{% block meta_keywords %}vacation accrual, PTO calculator, paid time off, accrual rate, hourly accrual, time off balance{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #1abc9c; /* Teal/Turquoise accent for relaxation/planning theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #f0fff4; /* Light mint background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #1abc9c;
+    }
+
+    .result-section h3 {
+        color: #1abc9c;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .balance-display {
+        font-size: 4rem;
+        font-weight: 700;
+        color: #2c3e50; /* Dark color for primary balance */
+        line-height: 1.2;
+    }
+
+    .balance-label {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .info-box {
+        background-color: #f7fcfb;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 5px solid #1abc9c;
+        text-align: left;
+    }
+
+    .info-box p {
+        margin: 5px 0;
+        font-size: 1rem;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🏝️ Vacation Day Accrual Calculator</h1>
+    <p class="small-muted">Calculate your current and projected Paid Time Off (PTO) balance.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="accrual-form">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="section-title">Step 1: Current Status</h5>
+
+                    <!-- Starting Balance -->
+                    <div class="form-group mb-3">
+                        <label for="starting-balance" class="form-label">Starting Balance (Hours)</label>
+                        <input type="number" class="form-control" id="starting-balance" value="40" min="0" required>
+                        <small class="form-text text-muted">Hours you currently have available.</small>
+                    </div>
+
+                    <!-- Periods Passed -->
+                    <div class="form-group mb-3">
+                        <label for="periods-passed" class="form-label">Periods Passed Since Balance Check</label>
+                        <input type="number" class="form-control" id="periods-passed" value="0" min="0" required>
+                        <small class="form-text text-muted">Number of pay periods that have passed since the 'Starting Balance' was recorded.</small>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h5 class="section-title">Step 2: Accrual Rate & Rules</h5>
+
+                    <!-- Accrual Rate -->
+                    <div class="form-group mb-3">
+                        <label for="accrual-rate" class="form-label">Accrual Rate (Hours per Period)</label>
+                        <input type="number" class="form-control" id="accrual-rate" value="3.33" step="0.01" min="0" required>
+                        <small class="form-text text-muted">Example: 3.33 hours per bi-weekly period.</small>
+                    </div>
+
+                    <!-- Pay Frequency (for context) -->
+                    <div class="form-group mb-3">
+                        <label for="pay-frequency" class="form-label">Pay Period Frequency</label>
+                        <select class="form-select" id="pay-frequency" required>
+                            <option value="26">Bi-Weekly (26 Periods/Year)</option>
+                            <option value="12">Monthly (12 Periods/Year)</option>
+                            <option value="24">Semi-Monthly (24 Periods/Year)</option>
+                            <option value="52">Weekly (52 Periods/Year)</option>
+                            <option value="1">Annual (1 Period/Year)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="section-title mt-4">Step 3: Future Projection</h5>
+            <div class="form-group mb-4">
+                <label for="future-periods" class="form-label">Project Ahead (Periods)</label>
+                <input type="number" class="form-control" id="future-periods" value="6" min="0" required>
+                <small class="form-text text-muted">How many *additional* periods (e.g., paychecks) you want to project.</small>
+            </div>
+
+            <button class="btn btn-info mt-3 w-100" type="submit">Calculate Balance</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Accrual Calculation Results</h3>
+
+                <div class="row mt-4">
+                    <div class="col-md-6 border-end border-success">
+                        <div class="balance-label">Current Estimated Balance</div>
+                        <div class="balance-display text-success" id="current-balance">0.00</div>
+                        <p class="text-muted small">(Starting Balance + Accrued Hours)</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="balance-label">Projected Future Balance</div>
+                        <div class="balance-display text-primary" id="projected-balance">0.00</div>
+                        <p class="text-muted small">(Current Balance + Future Accrued Hours)</p>
+                    </div>
+                </div>
+
+                <div class="info-box mt-4">
+                    <p>Total Hours Accrued in Past Periods: <strong id="accrued-past">0.00</strong></p>
+                    <p>Total Hours Accrued in Future Periods: <strong id="accrued-future">0.00</strong></p>
+                    <p>Accrual Rate: <strong id="rate-display">0.00</strong> hours per <strong id="frequency-display">period</strong></p>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+
+    function calculateAccrual(startBalance, accrualRate, periodsPassed, futurePeriods) {
+        // Calculate accrued hours since the starting balance was recorded
+        const accruedPast = accrualRate * periodsPassed;
+
+        // Calculate the current estimated balance
+        const currentBalance = startBalance + accruedPast;
+
+        // Calculate hours to be accrued in the future projection
+        const accruedFuture = accrualRate * futurePeriods;
+
+        // Calculate the projected total balance
+        const projectedBalance = currentBalance + accruedFuture;
+
+        return {
+            currentBalance: currentBalance,
+            projectedBalance: projectedBalance,
+            accruedPast: accruedPast,
+            accruedFuture: accruedFuture
+        };
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('accrual-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        // 1. Get Inputs and Validate
+        const startBalance = parseFloat(document.getElementById('starting-balance').value);
+        const periodsPassed = parseInt(document.getElementById('periods-passed').value);
+        const accrualRate = parseFloat(document.getElementById('accrual-rate').value);
+        const futurePeriods = parseInt(document.getElementById('future-periods').value);
+        
+        const frequencySelect = document.getElementById('pay-frequency');
+        const frequencyText = frequencySelect.options[frequencySelect.selectedIndex].text.split('(')[0].trim();
+
+        if (isNaN(startBalance) || isNaN(periodsPassed) || isNaN(accrualRate) || isNaN(futurePeriods)) {
+            displayStatus("Please ensure all input fields are valid numbers.", true);
+            return;
+        }
+
+        // 2. Perform Calculation
+        const { currentBalance, projectedBalance, accruedPast, accruedFuture } = calculateAccrual(
+            startBalance,
+            accrualRate,
+            periodsPassed,
+            futurePeriods
+        );
+
+        // 3. Display Results (Rounded to 2 decimal places for hours)
+        document.getElementById('current-balance').innerText = currentBalance.toFixed(2);
+        document.getElementById('projected-balance').innerText = projectedBalance.toFixed(2);
+        
+        document.getElementById('accrued-past').innerText = accruedPast.toFixed(2);
+        document.getElementById('accrued-future').innerText = accruedFuture.toFixed(2);
+
+        document.getElementById('rate-display').innerText = accrualRate.toFixed(2);
+        document.getElementById('frequency-display').innerText = frequencyText;
+
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+
+    // Set default year to the current year
+    document.addEventListener('DOMContentLoaded', () => {
+        // No default date needed, but ensure input types are respected.
+        document.getElementById('starting-balance').value = 40;
+        document.getElementById('accrual-rate').value = 3.33;
+        document.getElementById('periods-passed').value = 0;
+        document.getElementById('future-periods').value = 6;
+    });
+</script>
+
+{% endblock %}

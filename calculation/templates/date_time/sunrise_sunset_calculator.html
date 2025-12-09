@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}Sunrise & Sunset Calculator{% endblock %}
+
+{% block meta_description %}Calculate the precise sunrise and sunset times for any date and geographical location using latitude and longitude.{% endblock %}
+
+{% block meta_keywords %}sunrise, sunset, calculator, latitude, longitude, solar time, astronomical calculation{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #ffc107; /* Bootstrap Yellow accent for solar theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #fffbe6; /* Light yellow background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #ffc107;
+    }
+
+    .result-section h3 {
+        color: #d88e00;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .time-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #dc3545; /* Red accent for visibility */
+        line-height: 1.2;
+    }
+
+    .time-container {
+        padding: 15px;
+        border-radius: 6px;
+        margin: 10px 0;
+        background-color: #fff8d4;
+    }
+
+    .summary-text {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: #d88e00;
+        white-space: pre-wrap;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🌅 Sunrise & Sunset Calculator</h1>
+    <p class="small-muted">Calculate solar events for a specific location and date. **All times displayed are local to the selected timezone offset.**</p>
+
+    <div class="calc-wrapper">
+
+        <form id="sun-calculator-form">
+            <h5 class="section-title">Step 1: Date & Timezone</h5>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="target-date" class="form-label">Date to Calculate</label>
+                    <input type="date" class="form-control" id="target-date" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="timezone-offset" class="form-label">Timezone Offset (Hours from UTC)</label>
+                    <input type="number" class="form-control" id="timezone-offset" min="-12" max="14" step="0.5" value="6" required>
+                    <small class="form-text text-muted">e.g., -5 for EST, +1 for CET, +6 for Dhaka.</small>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: Location (Coordinates)</h5>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="latitude" class="form-label">Latitude ($\phi$)</label>
+                    <input type="number" class="form-control" id="latitude" min="-90" max="90" step="0.0001" value="23.777176" required>
+                    <small class="form-text text-muted">Range: -90 to +90 (North is positive).</small>
+                </div>
+                <div class="col-md-6">
+                    <label for="longitude" class="form-label">Longitude ($\lambda$)</label>
+                    <input type="number" class="form-control" id="longitude" min="-180" max="180" step="0.0001" value="90.399452" required>
+                    <small class="form-text text-muted">Range: -180 to +180 (East is positive).</small>
+                </div>
+            </div>
+
+            <button class="btn btn-warning text-dark mt-3 w-100" type="submit">Calculate Solar Times</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-date-display">Solar Times for ...</h3>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <small class="text-muted">Sunrise Time</small>
+                        <div class="time-container">
+                            <span id="sunrise-time" class="time-display">0:00 AM</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">Sunset Time</small>
+                        <div class="time-container">
+                            <span id="sunset-time" class="time-display">0:00 PM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="summary-text" id="calculation-summary"></p>
+            </div>
+        </div>
+        
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Constants ---
+    const DAY_IN_MS = 1000 * 60 * 60 * 24;
+    const RAD = Math.PI / 180; // Degrees to Radians
+    const DEG = 180 / Math.PI; // Radians to Degrees
+    const ZENITH_ANGLE = 90.833; // Standard geometric sunrise/sunset with refraction (90° 50')
+
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // --- Astronomical Calculation Core ---
+
+    /**
+     * Converts a Date object to Julian Day (JD) at noon UTC.
+     * Based on FLINN Julian Day Calculation.
+     * @param {Date} date The input date object (should be UTC).
+     * @returns {number} Julian Day number.
+     */
+    function dateToJulianDay(date) {
+        // Calculate JD for 0h UTC (midnight)
+        const year = date.getUTCFullYear();
+        const month = date.getUTCMonth() + 1; // JS month is 0-indexed
+        const day = date.getUTCDate();
+        
+        let A = Math.floor(year / 100);
+        let B = 2 - A + Math.floor(A / 4);
+
+        let JD_0 = Math.floor(365.25 * (year + 4716)) +
+                   Math.floor(30.6001 * (month + 1)) +
+                   day + B - 1524.5;
+                   
+        return JD_0; // This is JD at UTC noon (12:00) on the previous day. For 0h UTC, use JD_0 - 0.5. For 12h UTC, use JD_0. We will use JD_0 for simplicity as we calculate solar noon time below.
+    }
+    
+    /**
+     * Converts Universal Time (UT) decimal hours to HH:MM AM/PM local time string.
+     * @param {number} UT_hours Decimal hours (0 to 24) in UT.
+     * @param {number} offset Local timezone offset in hours.
+     * @returns {string} Formatted local time string.
+     */
+    function formatTime(UT_hours, offset) {
+        let localTime = UT_hours + offset;
+
+        // Ensure time is within 0 to 24 range (handle wrap around)
+        while (localTime < 0) {
+            localTime += 24;
+        }
+        while (localTime >= 24) {
+            localTime -= 24;
+        }
+
+        const hours = Math.floor(localTime);
+        const minutes = Math.round((localTime - hours) * 60);
+
+        // Adjust for minute rounding overflow (e.g., 23:59:60 -> 0:00)
+        let finalMinutes = minutes;
+        let finalHours = hours;
+        if (finalMinutes >= 60) {
+            finalMinutes -= 60;
+            finalHours = (finalHours + 1) % 24;
+        }
+
+        const ampm = finalHours >= 12 ? 'PM' : 'AM';
+        const displayHours = finalHours % 12 || 12;
+
+        return `${displayHours}:${String(finalMinutes).padStart(2, '0')} ${ampm}`;
+    }
+
+
+    function calculateSunTimes(JD, latitude, longitude) {
+        // 1. Calculate the current Julian Century (JC)
+        const JC = (JD - 2451545.0) / 36525.0;
+
+        // 2. Geometric Mean Sun Longitude (L0, in degrees)
+        const L0 = (280.46646 + 36000.76983 * JC + 0.0003032 * JC * JC) % 360;
+
+        // 3. Geometric Mean Anomaly (M, in degrees)
+        const M = (357.52911 + 35999.05029 * JC - 0.0001537 * JC * JC) % 360;
+
+        // 4. Equation of Center (C)
+        const C = (1.914602 - 0.004817 * JC - 0.000014 * JC * JC) * Math.sin(M * RAD)
+                + (0.019993 - 0.000101 * JC) * Math.sin(2 * M * RAD)
+                + 0.000289 * Math.sin(3 * M * RAD);
+
+        // 5. Sun's True Longitude (Ls)
+        const Ls = L0 + C;
+
+        // 6. Sun's Apparent Longitude (Lp)
+        const Lp = Ls - 0.00569 - 0.00478 * Math.sin((125.04 - 1934.136 * JC) * RAD);
+
+        // 7. Mean Obliquity of the Ecliptic (e)
+        const Epsilon = 23.439291 - 0.0130042 * JC - 0.00000016 * JC * JC + 0.000000504 * JC * JC * JC;
+        
+        // 8. Sun's Declination (delta, in degrees)
+        const delta = Math.asin(Math.sin(Epsilon * RAD) * Math.sin(Lp * RAD)) * DEG;
+
+        // 9. Equation of Time (EQT, in decimal minutes)
+        const Y = Math.tan((Epsilon / 2) * RAD) * Math.tan((Epsilon / 2) * RAD);
+        const RA = Math.atan2(Math.cos(Epsilon * RAD) * Math.sin(Lp * RAD), Math.cos(Lp * RAD)) * DEG;
+        const EQT = 4 * (RA - L0); // Decimal minutes
+        
+        // 10. Solar Noon (UT decimal hours)
+        const solarNoonUT = 12 - (longitude / 15) - (EQT / 60);
+
+        // 11. Calculate Hour Angle (omega)
+        const cosW = (Math.sin(ZENITH_ANGLE * RAD) - Math.sin(latitude * RAD) * Math.sin(delta * RAD)) 
+                     / (Math.cos(latitude * RAD) * Math.cos(delta * RAD));
+
+        let summary = `Latitude: ${latitude}° $\\phi$, Declination: ${delta.toFixed(2)}^\circ$ $\\delta$, EQT: ${EQT.toFixed(2)} min.`;
+        
+        if (cosW > 1.0) {
+            return { sunrise: null, sunset: null, solarNoon: solarNoonUT, summary: summary + "\n**Sun is always below the horizon (Polar Night).**" };
+        } else if (cosW < -1.0) {
+            return { sunrise: null, sunset: null, solarNoon: solarNoonUT, summary: summary + "\n**Sun is always above the horizon (Midnight Sun).**" };
+        }
+
+        const W = Math.acos(cosW) * DEG; // Hour Angle in degrees
+        
+        // 12. Calculate Sunrise and Sunset UT
+        // Time in UT decimal hours for solar events
+        const T_rise = solarNoonUT - (W / 15);
+        const T_set = solarNoonUT + (W / 15);
+
+        return { 
+            sunrise: T_rise, 
+            sunset: T_set, 
+            solarNoon: solarNoonUT, 
+            summary: summary + `\nHour Angle ($\omega$): ${W.toFixed(2)}^\circ$`
+        };
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('sun-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const dateStr = document.getElementById('target-date').value;
+        const latitude = parseFloat(document.getElementById('latitude').value);
+        const longitude = parseFloat(document.getElementById('longitude').value);
+        const tzOffset = parseFloat(document.getElementById('timezone-offset').value);
+
+        if (!dateStr || isNaN(latitude) || isNaN(longitude) || isNaN(tzOffset)) {
+            displayStatus("Please ensure all date, coordinate, and timezone fields are valid numbers.", true);
+            return;
+        }
+        
+        // Ensure coordinates are within valid range
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+             displayStatus("Latitude must be between -90 and 90. Longitude must be between -180 and 180.", true);
+            return;
+        }
+
+        // 1. Prepare Date (Use UTC parsing for JD consistency)
+        const [y, m, d] = dateStr.split('-').map(Number);
+        // Create Date object for UTC midnight of the target day
+        const targetDateUTC = new Date(Date.UTC(y, m - 1, d)); 
+
+        // 2. Calculate Julian Day (JD) at noon UTC
+        const JD = dateToJulianDay(targetDateUTC);
+
+        // 3. Perform Astronomical Calculation
+        const { sunrise, sunset, solarNoon, summary } = calculateSunTimes(JD, latitude, longitude);
+
+        // 4. Display Results
+        const resultDateDisplay = document.getElementById('result-date-display');
+        const sunriseTimeDisplay = document.getElementById('sunrise-time');
+        const sunsetTimeDisplay = document.getElementById('sunset-time');
+        const summaryDisplay = document.getElementById('calculation-summary');
+        
+        const dateReadable = targetDateUTC.toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
+        resultDateDisplay.innerText = `Solar Times for ${dateReadable}`;
+
+        if (sunrise === null && sunset === null) {
+            // Polar night or midnight sun case
+            sunriseTimeDisplay.innerText = 'N/A';
+            sunsetTimeDisplay.innerText = 'N/A';
+        } else {
+            // Standard case
+            sunriseTimeDisplay.innerText = formatTime(sunrise, tzOffset);
+            sunsetTimeDisplay.innerText = formatTime(sunset, tzOffset);
+        }
+
+        // Display additional solar information
+        const solarNoonLocal = formatTime(solarNoon, tzOffset);
+        summaryDisplay.innerText = summary + `\nLocal Solar Noon: ${solarNoonLocal}`;
+
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+    
+    // Set default date to today
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('target-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

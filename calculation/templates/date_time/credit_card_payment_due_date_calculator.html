@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Credit Card Payment Due Date Calculator{% endblock %}
+
+{% block meta_description %}Calculate your credit card's payment due date by inputting the Statement Closing Date and the standard grace period (usually 21 or 25 days).{% endblock %}
+
+{% block meta_keywords %}credit card due date, payment date, grace period, statement closing date, financial calculator, billing cycle{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #2980b9; /* Blue accent for finance/credit theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #e8f7fd; /* Light blue background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #3498db;
+    }
+
+    .result-section h3 {
+        color: #2980b9; 
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .date-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #e74c3c; /* Red for high importance/due date */
+        line-height: 1.2;
+    }
+
+    .info-box {
+        background-color: #f7fcff;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 5px solid #3498db;
+        text-align: left;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">💳 Credit Card Payment Due Date Calculator</h1>
+    <p class="small-muted">Find out the exact payment due date based on your statement closing date and grace period.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="due-date-form">
+            <h5 class="section-title">Step 1: Statement Details</h5>
+
+            <!-- Statement Closing Date -->
+            <div class="form-group mb-3">
+                <label for="closing-date" class="form-label">Statement Closing Date</label>
+                <input type="date" class="form-control" id="closing-date" required>
+                <small class="form-text text-muted">The date the billing cycle ends and your statement is generated.</small>
+            </div>
+
+            <!-- Grace Period (Days) -->
+            <div class="form-group mb-4">
+                <label for="grace-period" class="form-label">Grace Period (Days)</label>
+                <input type="number" class="form-control" id="grace-period" value="21" min="15" max="30" required>
+                <small class="form-text text-muted">Typically 21 to 25 days. Check your card agreement.</small>
+            </div>
+
+            <button class="btn btn-info mt-3 w-100" type="submit" style="background-color: #3498db; border-color: #3498db;">Calculate Due Date</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Payment Due Date</h3>
+
+                <small class="text-muted">The last day to pay without penalty:</small>
+                <div class="date-display" id="calculated-due-date"></div>
+
+                <div class="info-box mt-4">
+                    <p>Statement Closing Date: <strong id="closing-date-display"></strong></p>
+                    <p>Applied Grace Period: <strong id="grace-period-display">0 days</strong></p>
+                    <p class="small text-muted m-0">The payment is due at the end of the calculated date.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    /**
+     * Calculates the payment due date by adding the grace period to the statement closing date.
+     * @param {string} closingDateStr The statement closing date string (YYYY-MM-DD).
+     * @param {number} gracePeriodDays The number of days in the grace period.
+     * @returns {Date} The calculated payment due date.
+     */
+    function calculateDueDate(closingDateStr, gracePeriodDays) {
+        // Create a copy of the closing date
+        const closingDate = new Date(closingDateStr + 'T00:00:00');
+
+        // Add the grace period to the closing date
+        const dueDate = new Date(closingDate);
+        dueDate.setDate(closingDate.getDate() + gracePeriodDays);
+        
+        return dueDate;
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('due-date-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const closingDateStr = document.getElementById('closing-date').value;
+        const gracePeriodStr = document.getElementById('grace-period').value;
+        const gracePeriodDays = parseInt(gracePeriodStr, 10);
+
+        if (!closingDateStr || isNaN(gracePeriodDays) || gracePeriodDays < 15) {
+            displayStatus("Please enter a valid closing date and a grace period of 15 days or more.", true);
+            return;
+        }
+
+        try {
+            // 1. Perform Calculation
+            const dueDate = calculateDueDate(closingDateStr, gracePeriodDays);
+
+            // 2. Display Results
+            const dateReadable = formatReadableDate(dueDate);
+            const closingDateReadable = formatReadableDate(new Date(closingDateStr + 'T00:00:00'));
+
+            document.getElementById('result-title').innerText = `Payment Due Date`;
+            document.getElementById('calculated-due-date').innerText = dateReadable;
+            document.getElementById('closing-date-display').innerText = closingDateReadable;
+            document.getElementById('grace-period-display').innerText = `${gracePeriodDays} days`;
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your inputs.", true);
+        }
+    });
+
+    // Set default date to today and default grace period
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('closing-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

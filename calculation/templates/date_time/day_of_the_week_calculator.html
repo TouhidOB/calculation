@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Day of the Week Calculator{% endblock %}
+
+{% block meta_description %}Find the exact day of the week (e.g., Monday, Sunday) for any date in history or the future.{% endblock %}
+
+{% block meta_keywords %}day of week finder, date day lookup, calendar day calculator, weekday calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+
+    .result-day {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #0d6efd; /* Bootstrap primary color */
+        display: block;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .form-control[type="date"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">📅 Day of the Week Calculator</h1>
+    <p class="small-muted">Instantly find the **day of the week** for any past or future date you select.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="day-of-week-form">
+            <h5 class="section-title">Step 1: Select Date</h5>
+
+            <!-- Date Input -->
+            <div class="form-group mb-4">
+                <label for="target-date" class="form-label">Date to Check</label>
+                <input type="date" class="form-control" id="target-date" required>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Find Day of the Week</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="dow-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Date Details</h5>
+        <table class="table table-bordered mt-2 d-none" id="dow-table">
+            <tbody id="dow-body">
+                <!-- Details will be inserted here -->
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayError(message) {
+        const res = document.getElementById('dow-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Input Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('dow-table').classList.add('d-none');
+    }
+
+    document.getElementById('day-of-week-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const dateStr = document.getElementById('target-date').value;
+
+        if (!dateStr) {
+            displayError("Please select a date to calculate the day of the week.");
+            return;
+        }
+
+        // 2. Create Date Object
+        // Using Date.UTC to prevent local timezone from shifting the day
+        const [year, month, day] = dateStr.split('-').map(Number);
+        
+        // Note: Months in Date object are 0-indexed (0=Jan, 11=Dec), so subtract 1 from the input month.
+        const targetDate = new Date(Date.UTC(year, month - 1, day));
+        
+        // Check for invalid date resulting from split/parse failure
+        if (isNaN(targetDate.getTime())) {
+            displayError("The entered date is invalid. Please check the format.");
+            return;
+        }
+
+        // 3. Calculation & Formatting
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        
+        // getUTCDay() returns 0 for Sunday, 1 for Monday, etc.
+        const dayIndex = targetDate.getUTCDay(); 
+        const dayOfWeek = daysOfWeek[dayIndex];
+        
+        // For display table: format the date nicely
+        const formattedDate = targetDate.toLocaleDateString('en-US', {
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            timeZone: 'UTC' // Important for consistency
+        });
+
+        // 4. Update Result Display
+        const res = document.getElementById('dow-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+
+        res.innerHTML = `
+**The Day of the Week is:** <span class="result-day">${dayOfWeek}</span>
+`;
+        
+        // 5. Update Details Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('dow-table').classList.remove('d-none');
+        const tableBody = document.getElementById('dow-body');
+        
+        tableBody.innerHTML = `
+            <tr><td>Selected Date</td><td>${formattedDate}</td></tr>
+            <tr><td>Calculated Day</td><td>${dayOfWeek}</td></tr>
+            <tr><td>Day Index (0=Sun)</td><td>${dayIndex}</td></tr>
+        `;
+    });
+</script>
+
+{% endblock %}

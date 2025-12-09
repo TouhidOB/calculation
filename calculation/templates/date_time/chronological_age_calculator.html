@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Chronological Age Calculator{% endblock %}
+
+{% block meta_description %}Calculate a person's precise chronological age in years, months, and days based on their Date of Birth and the calculation date.{% endblock %}
+
+{% block meta_keywords %}age calculator, chronological age, years months days, date of birth, life span, time calculation{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #e91e63; /* Pink accent for celebration/personal theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #fce4ec; /* Light pink background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #e91e63;
+    }
+
+    .result-section h3 {
+        color: #c2185b; 
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .age-display {
+        font-size: 3rem;
+        font-weight: 900;
+        color: #4a148c; /* Dark purple for strong contrast */
+        line-height: 1.2;
+    }
+
+    .age-breakdown {
+        margin-top: 20px;
+    }
+    .age-breakdown span {
+        display: inline-block;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0 10px;
+        padding: 5px 10px;
+        border-radius: 5px;
+        background-color: #f8bbd0;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🎂 Chronological Age Calculator</h1>
+    <p class="small-muted">Calculate the precise age in Years, Months, and Days.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="age-calculator-form">
+            <h5 class="section-title">Step 1: Dates</h5>
+
+            <div class="row g-3">
+                <!-- Date of Birth -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="dob" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="dob" required>
+                    </div>
+                </div>
+
+                <!-- Calculation Date -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="calc-date" class="form-label">Date of Calculation</label>
+                        <input type="date" class="form-control" id="calc-date" required>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-danger mt-4 w-100" type="submit" style="background-color: #e91e63; border-color: #e91e63;">Calculate Age</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Chronological Age</h3>
+
+                <div class="age-display" id="age-summary"></div>
+                
+                <div class="age-breakdown">
+                    <span id="age-years">0 Years</span>
+                    <span id="age-months">0 Months</span>
+                    <span id="age-days">0 Days</span>
+                </div>
+
+                <div class="info-box mt-4">
+                    <p class="small m-0">DOB: <strong id="dob-display"></strong> | Calculation Date: <strong id="calc-date-display"></strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper to get the number of days in a given month/year
+    function daysInMonth(month, year) {
+        // month is 1-based (1 for January, 12 for December)
+        return new Date(year, month, 0).getDate();
+    }
+
+    // Helper to format date strings for display
+    function formatReadableDate(dateStr) {
+        const date = new Date(dateStr + 'T00:00:00');
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+
+    function calculateChronologicalAge(dobStr, calcDateStr) {
+        const dob = new Date(dobStr + 'T00:00:00');
+        const calcDate = new Date(calcDateStr + 'T00:00:00');
+
+        if (dob > calcDate) {
+            throw new Error("Date of Birth cannot be later than the Calculation Date.");
+        }
+
+        let ageY = calcDate.getFullYear() - dob.getFullYear();
+        let ageM = calcDate.getMonth() - dob.getMonth();
+        let ageD = calcDate.getDate() - dob.getDate();
+
+        // 1. Adjust Days
+        if (ageD < 0) {
+            ageM--;
+            // Find the number of days in the month *before* the current calculation date month
+            // Note: getMonth() returns 0-11. We pass the month number to daysInMonth function, 
+            // which handles the year change if calcDate.getMonth() is 0 (January).
+            const daysLastMonth = daysInMonth(calcDate.getMonth(), calcDate.getFullYear());
+            ageD += daysLastMonth;
+        }
+
+        // 2. Adjust Months
+        if (ageM < 0) {
+            ageY--;
+            ageM += 12;
+        }
+
+        return { years: ageY, months: ageM, days: ageD };
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('age-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const dobStr = document.getElementById('dob').value;
+        const calcDateStr = document.getElementById('calc-date').value;
+
+        if (!dobStr || !calcDateStr) {
+            displayStatus("Please select both the Date of Birth and the Calculation Date.", true);
+            return;
+        }
+
+        try {
+            // 1. Perform Calculation
+            const age = calculateChronologicalAge(dobStr, calcDateStr);
+
+            // 2. Display Results
+            const totalYearsStr = `${age.years} year${age.years !== 1 ? 's' : ''}`;
+            const totalMonthsStr = `${age.months} month${age.months !== 1 ? 's' : ''}`;
+            const totalDaysStr = `${age.days} day${age.days !== 1 ? 's' : ''}`;
+            
+            document.getElementById('age-summary').innerText = totalYearsStr;
+            document.getElementById('age-years').innerText = totalYearsStr;
+            document.getElementById('age-months').innerText = totalMonthsStr;
+            document.getElementById('age-days').innerText = totalDaysStr;
+
+            document.getElementById('dob-display').innerText = formatReadableDate(dobStr);
+            document.getElementById('calc-date-display').innerText = formatReadableDate(calcDateStr);
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus(error.message, true);
+        }
+    });
+
+    // Set default dates
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        
+        // Default Calculation Date to Today
+        document.getElementById('calc-date').value = todayStr;
+
+        // Default DOB to 30 years ago (a reasonable default)
+        const defaultDOB = new Date();
+        defaultDOB.setFullYear(today.getFullYear() - 30);
+        const dobY = defaultDOB.getFullYear();
+        const dobM = String(defaultDOB.getMonth() + 1).padStart(2, '0');
+        const dobD = String(defaultDOB.getDate()).padStart(2, '0');
+        document.getElementById('dob').value = `${dobY}-${dobM}-${dobD}`;
+    });
+</script>
+
+{% endblock %}

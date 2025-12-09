@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Interest Accrual Date Calculator{% endblock %}
+
+{% block meta_description %}Calculate the next date interest will be compounded or applied to a loan, savings, or investment account based on the last payment and compounding frequency (daily, monthly, annually).{% endblock %}
+
+{% block meta_keywords %}interest accrual date, compounding frequency, interest payment date, loan calculator, savings interest{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #27ae60; /* Green accent for financial/stability theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #e8f8f2; /* Light green background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #2ecc71;
+    }
+
+    .result-section h3 {
+        color: #27ae60; 
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .date-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #f39c12; /* Orange for emphasis */
+        line-height: 1.2;
+    }
+
+    .info-box {
+        background-color: #f7fff7;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 5px solid #2ecc71;
+        text-align: left;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">💰 Interest Accrual Date Calculator</h1>
+    <p class="small-muted">Determine the next date interest will be applied or compounded on your financial instrument.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="accrual-form">
+            <h5 class="section-title">Step 1: Last Accrual & Frequency</h5>
+
+            <!-- Last Accrual Date -->
+            <div class="form-group mb-3">
+                <label for="last-accrual-date" class="form-label">Last Interest Calculation Date</label>
+                <input type="date" class="form-control" id="last-accrual-date" required>
+                <small class="form-text text-muted">The date interest was last compounded or paid.</small>
+            </div>
+
+            <!-- Compounding Frequency -->
+            <div class="form-group mb-4">
+                <label for="compounding-frequency" class="form-label">Compounding/Accrual Frequency</label>
+                <select class="form-select" id="compounding-frequency" required>
+                    <option value="1">Daily</option>
+                    <option value="7">Weekly (7 Days)</option>
+                    <option value="14">Bi-Weekly (14 Days)</option>
+                    <option value="30">Monthly (Approx. 30 Days)</option>
+                    <option value="90">Quarterly (Approx. 90 Days)</option>
+                    <option value="180">Semi-Annually (Approx. 180 Days)</option>
+                    <option value="365">Annually (Approx. 365 Days)</option>
+                </select>
+                <small class="form-text text-muted">Select how often the interest is applied/compounded.</small>
+            </div>
+
+            <h5 class="section-title">Step 2: Custom Term (Optional)</h5>
+
+            <!-- Custom Days Override -->
+            <div class="form-group mb-4">
+                <label for="custom-days" class="form-label">Custom Accrual Period (Days)</label>
+                <input type="number" class="form-control" id="custom-days" min="1" placeholder="Leave blank to use frequency above">
+                <small class="form-text text-muted">If your accrual period is a custom number of days, enter it here.</small>
+            </div>
+
+            <button class="btn btn-success mt-3 w-100" type="submit">Calculate Next Accrual Date</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Next Interest Accrual Date</h3>
+
+                <small class="text-muted">The date interest will next be applied:</small>
+                <div class="date-display" id="calculated-accrual-date"></div>
+
+                <div class="info-box mt-4">
+                    <p>Last Accrual Date: <strong id="last-date-display"></strong></p>
+                    <p>Accrual Period Used: <strong id="accrual-period-display">0 days</strong></p>
+                    <p class="small text-muted m-0">The next day, the calculated balance (principal + interest) begins earning interest.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    /**
+     * Calculates the next interest accrual date by adding the period to the last accrual date.
+     * @param {string} lastAccrualDateStr The date interest was last applied (YYYY-MM-DD).
+     * @param {number} daysToAdd The number of days in the compounding period.
+     * @returns {Date} The calculated next accrual date.
+     */
+    function calculateAccrualDate(lastAccrualDateStr, daysToAdd) {
+        // Create a copy of the last accrual date
+        const lastAccrualDate = new Date(lastAccrualDateStr + 'T00:00:00');
+
+        // Add the daysToAdd to the last accrual date
+        const nextAccrualDate = new Date(lastAccrualDate);
+        nextAccrualDate.setDate(lastAccrualDate.getDate() + daysToAdd);
+        
+        return nextAccrualDate;
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('accrual-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const lastAccrualDateStr = document.getElementById('last-accrual-date').value;
+        const customDaysInput = document.getElementById('custom-days').value;
+        const frequencyValue = document.getElementById('compounding-frequency').value;
+
+        if (!lastAccrualDateStr) {
+            displayStatus("Please select the Last Interest Calculation Date.", true);
+            return;
+        }
+
+        let daysToAdd;
+        let periodName;
+
+        if (customDaysInput && !isNaN(parseInt(customDaysInput, 10)) && parseInt(customDaysInput, 10) > 0) {
+            daysToAdd = parseInt(customDaysInput, 10);
+            periodName = `${daysToAdd} days (Custom)`;
+        } else {
+            daysToAdd = parseInt(frequencyValue, 10);
+            periodName = document.getElementById('compounding-frequency').options[document.getElementById('compounding-frequency').selectedIndex].text;
+        }
+
+        if (isNaN(daysToAdd) || daysToAdd <= 0) {
+            displayStatus("The accrual period must be a positive number of days.", true);
+            return;
+        }
+
+        try {
+            // 1. Perform Calculation
+            const nextAccrualDate = calculateAccrualDate(lastAccrualDateStr, daysToAdd);
+
+            // 2. Display Results
+            const dateReadable = formatReadableDate(nextAccrualDate);
+            const lastDateReadable = formatReadableDate(new Date(lastAccrualDateStr + 'T00:00:00'));
+
+            document.getElementById('result-title').innerText = `Next Accrual Date (in ${periodName})`;
+            document.getElementById('calculated-accrual-date').innerText = dateReadable;
+            document.getElementById('last-date-display').innerText = lastDateReadable;
+            document.getElementById('accrual-period-display').innerText = `${daysToAdd} days (${periodName})`;
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your inputs.", true);
+        }
+    });
+
+    // Set default date to today
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('last-accrual-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

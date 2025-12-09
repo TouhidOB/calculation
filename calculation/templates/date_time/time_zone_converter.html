@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Time Zone Converter{% endblock %}
+
+{% block meta_description %}Convert a specific date and time from one time zone to another, accurately handling daylight saving time (DST).{% endblock %}
+
+{% block meta_keywords %}time zone converter, time shift calculator, DST adjustment, global time converter{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .converted-time-highlight {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #fd7e14; /* Bootstrap orange color for prominence */
+        display: block;
+        margin: 5px 0 15px 0;
+    }
+    
+    .form-control[type="date"], .form-control[type="time"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🌎 Time Zone Converter</h1>
+    <p class="small-muted">Find out what time an event is in another part of the world, correctly adjusting for **Daylight Saving Time (DST)**.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="timezone-converter-form">
+            <h5 class="section-title">Step 1: Source Time</h5>
+
+            <!-- Source Date, Time, and Time Zone -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label for="source-date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="source-date" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="source-time" class="form-label">Time (24-Hour)</label>
+                    <input type="time" class="form-control" id="source-time" value="09:00" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="source-timezone" class="form-label">Source Time Zone</label>
+                    <select class="form-select" id="source-timezone" required></select>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: Target Time Zone</h5>
+            
+            <!-- Target Time Zone -->
+            <div class="form-group mb-4">
+                <label for="target-timezone" class="form-label">Target Time Zone</label>
+                <select class="form-select" id="target-timezone" required></select>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Convert Time</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="conversion-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Conversion Details</h5>
+        <table class="table table-bordered mt-2 d-none" id="conversion-table">
+            <tbody id="conversion-body">
+                <!-- Details will be inserted here -->
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const TIME_ZONES = [
+        { label: "America/New York (EST/EDT)", value: "America/New_York" },
+        { label: "America/Los Angeles (PST/PDT)", value: "America/Los_Angeles" },
+        { label: "Europe/London (GMT/BST)", value: "Europe/London" },
+        { label: "Europe/Paris (CET/CEST)", value: "Europe/Paris" },
+        { label: "Asia/Dubai (GST)", value: "Asia/Dubai" },
+        { label: "Asia/Tokyo (JST)", value: "Asia/Tokyo" },
+        { label: "Asia/Shanghai (CST)", value: "Asia/Shanghai" },
+        { label: "Asia/Kolkata (IST)", value: "Asia/Kolkata" },
+        { label: "Asia/Dhaka (BST)", value: "Asia/Dhaka" },
+        { label: "Australia/Sydney (AEST/AEDT)", value: "Australia/Sydney" },
+        { label: "Pacific/Auckland (NZST/NZDT)", value: "Pacific/Auckland" },
+        { label: "UTC (Coordinated Universal Time)", value: "UTC" },
+    ];
+    
+    // Get the user's current local time zone for default selection
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    // Function to populate select dropdowns
+    function populateTimeZones() {
+        const sourceSelect = document.getElementById('source-timezone');
+        const targetSelect = document.getElementById('target-timezone');
+
+        TIME_ZONES.forEach(tz => {
+            const optionSource = new Option(tz.label, tz.value);
+            const optionTarget = new Option(tz.label, tz.value);
+            
+            // Set default selection
+            if (tz.value === userTimeZone) {
+                optionSource.selected = true;
+            } else if (tz.value === 'Europe/London') {
+                 // Fallback if local time zone isn't in the curated list
+                optionTarget.selected = true;
+            }
+
+            sourceSelect.add(optionSource);
+            targetSelect.add(optionTarget);
+        });
+    }
+
+    // Initialize dropdowns on load
+    document.addEventListener('DOMContentLoaded', () => {
+        populateTimeZones();
+        // Set today's date as default
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('source-date').value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('end-date').value = `${yyyy}-${mm}-${dd}`; // Set for Time Duration Calculator, though not used here
+
+    });
+
+
+    function displayError(message) {
+        const res = document.getElementById('conversion-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Conversion Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('conversion-table').classList.add('d-none');
+    }
+
+    document.getElementById('timezone-converter-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const sourceDateStr = document.getElementById('source-date').value;
+        const sourceTimeStr = document.getElementById('source-time').value;
+        const sourceTimeZone = document.getElementById('source-timezone').value;
+        const targetTimeZone = document.getElementById('target-timezone').value;
+
+        if (sourceTimeZone === targetTimeZone) {
+            displayError("Source and Target Time Zones are the same. Please select two different zones.");
+            return;
+        }
+
+        // 2. Create a Date object representing the time in the SOURCE zone
+        // This relies on the browser correctly interpreting the date/time string combined with the
+        // `timeZone` option during formatting, effectively converting it to the UTC timestamp first.
+        
+        // This approach is tricky because the standard Date object always uses the user's local time zone
+        // when constructed from a string like "YYYY-MM-DDTHH:MM".
+        
+        // The most robust way is to trick the Date object into thinking it is already in the source timezone
+        // when calculating the UTC timestamp.
+        
+        const sourceDateTimeStr = `${sourceDateStr}T${sourceTimeStr}:00`;
+
+        // We use a specific function/approach to get the UTC milliseconds for the selected source time zone.
+        // This uses the Intl API to find out how many milliseconds off the selected date/time is from UTC
+        // when interpreted as if it were happening in the source time zone.
+        
+        const dateAtSourceZone = new Date(sourceDateTimeStr);
+        
+        const options = {
+            year: 'numeric', month: 'numeric', day: 'numeric',
+            hour: 'numeric', minute: 'numeric', second: 'numeric',
+            timeZone: sourceTimeZone,
+            timeZoneName: 'short'
+        };
+
+        // We format the date string based on the source timezone to extract the components.
+        const sourceFormatter = new Intl.DateTimeFormat('en-US', options);
+        
+        // When we instantiate a new Date with the local string + target timezone, we get the true UTC time.
+        // The trick: We create a date string that represents the exact local time in the source zone,
+        // and then let the browser's Date object convert it to the internal UTC timestamp.
+        // E.g., if Source is NY and time is 9:00 AM, we want the UTC timestamp for 9:00 AM NY time.
+        
+        // Use a hidden element to ensure the date is parsed correctly relative to the chosen time zone.
+        const utcMs = Date.parse(sourceDateTimeStr + 'Z'); // Using 'Z' is for UTC, not what we want.
+        
+        // Best approach: Use Intl API to format the intended moment in time as UTC.
+        // 1. Get the UTC time for the date object created in the local browser zone.
+        // 2. Adjust it using the timezone offset difference.
+        
+        // Simpler, more reliable approach: Use Intl.DateTimeFormat() directly on the Date object
+        // that was created in the browser's local time, but specify the *target* time zone for formatting.
+        
+        // We create a Date object that is *intended* to be the chosen time in the source zone.
+        const initialDate = new Date(sourceDateTimeStr); 
+        
+        // Now, we format this initialDate using the TARGET time zone.
+        const targetFormatter = new Intl.DateTimeFormat('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: 'numeric', minute: 'numeric', second: 'numeric',
+            timeZone: targetTimeZone,
+            timeZoneName: 'short'
+        });
+        
+        const formattedTargetTime = targetFormatter.format(initialDate);
+        
+        // We need to show the source time as it was interpreted:
+        const sourceFormatterForDisplay = new Intl.DateTimeFormat('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: 'numeric', minute: 'numeric', second: 'numeric',
+            timeZone: sourceTimeZone,
+            timeZoneName: 'short'
+        });
+
+        // The input date string is interpreted based on the browser's local zone. 
+        // We need to manually calculate the UTC timestamp of the *intended* event time in the source zone.
+        
+        // Get the local date object for the selected time in the browser's zone:
+        const selectedLocalTime = new Date(sourceDateTimeStr);
+        
+        // Get the UTC timestamp for this local time:
+        const utcTimestamp = selectedLocalTime.getTime();
+        
+        // Now, we create a new Date object based on this UTC timestamp, but we display it using
+        // the targetFormatter, which correctly applies the target timezone's rules.
+        const targetDate = new Date(utcTimestamp);
+        const finalConvertedTime = targetFormatter.format(targetDate);
+        
+        // Let's get the full source and target labels for the table
+        const sourceLabel = TIME_ZONES.find(tz => tz.value === sourceTimeZone).label;
+        const targetLabel = TIME_ZONES.find(tz => tz.value === targetTimeZone).label;
+        
+        // We need to display the user's input time formatted based on the SOURCE timezone itself.
+        // We can't use the simple selectedLocalTime directly because it carries the local browser offset.
+        // We must use the string inputs and format them via Intl API for the summary table.
+        const sourceTimeForTable = sourceFormatterForDisplay.format(selectedLocalTime);
+
+
+        // 4. Update Result Display (Main)
+        const res = document.getElementById('conversion-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+
+        res.innerHTML = `
+**If the time in ${sourceTimeZone} is:** <span style="font-size:1.2rem; font-weight:700;">${sourceTimeForTable}</span>
+---
+**The Converted Time in ${targetTimeZone} is:**
+<span class="converted-time-highlight">${finalConvertedTime}</span>
+`;
+        
+        // 5. Update Summary Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('conversion-table').classList.remove('d-none');
+        const tableBody = document.getElementById('conversion-body');
+        
+        tableBody.innerHTML = `
+            <tr><td>Source Zone</td><td>${sourceLabel}</td></tr>
+            <tr><td>Target Zone</td><td>${targetLabel}</td></tr>
+            <tr><td>Source Time Entered</td><td>${sourceTimeForTable}</td></tr>
+            <tr><td>**Converted Time**</td><td style="font-weight: bold; color: #fd7e14;">${finalConvertedTime}</td></tr>
+        `;
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Statute of Limitations Calculator{% endblock %}
+
+{% block meta_description %}Calculate the final deadline for the Statute of Limitations based on the discovery date and the legal duration in years, months, or days.{% endblock %}
+
+{% block meta_keywords %}statute of limitations, SOL calculator, legal deadline, tort law, contract deadline{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #fafafa; /* Light gray background */
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        color: #007bff; /* Primary Blue accent */
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 5px;
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #e9f5ff; /* Pale blue background */
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 30px;
+        border: 2px solid #007bff;
+    }
+
+    .result-section h3 {
+        color: #0056b3; 
+        margin-bottom: 20px;
+        font-size: 1.6rem;
+        font-weight: 700;
+    }
+
+    .date-display {
+        font-size: 3rem;
+        font-weight: 900;
+        color: #ff4500; /* Orange-Red for the critical date */
+        line-height: 1.2;
+    }
+
+    .holiday-info {
+        max-height: 100px;
+        overflow-y: auto;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">⚖️ Statute of Limitations Calculator</h1>
+    <p class="small-muted">Determine the final legal deadline for filing a claim based on the date of discovery and the applicable statutory period.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="sol-calculator-form">
+            <h5 class="section-title">Step 1: Incident & Rule Details</h5>
+
+            <div class="row g-3">
+                <!-- Discovery Date -->
+                <div class="col-md-6">
+                    <label for="discovery-date" class="form-label">Date of Discovery/Accrual</label>
+                    <input type="date" class="form-control" id="discovery-date" required>
+                </div>
+
+                <!-- SOL Duration -->
+                <div class="col-md-3">
+                    <label for="sol-duration" class="form-label">Duration</label>
+                    <input type="number" class="form-control" id="sol-duration" value="2" min="1" required>
+                </div>
+
+                <!-- SOL Unit -->
+                <div class="col-md-3">
+                    <label for="sol-unit" class="form-label">Unit</label>
+                    <select class="form-select" id="sol-unit" required>
+                        <option value="years">Years</option>
+                        <option value="months">Months</option>
+                        <option value="days">Days</option>
+                    </select>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: Business Day Rules</h5>
+            <p class="small text-muted mb-2">The deadline will be rolled forward to the next business day if it falls on a weekend or one of the listed U.S. Federal Holidays (2025 dates).</p>
+            
+            <div class="holiday-info small" id="holiday-info">
+                <!-- Holiday List Populated by JS -->
+            </div>
+
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Deadline</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3>Final Statute of Limitations Date</h3>
+
+                <div class="date-display" id="final-sol-date">--/--/----</div>
+                <p class="text-danger fw-bold mt-3" id="sol-notes"></p>
+
+                <div class="alert alert-light mt-4" role="alert">
+                    <p class="mb-1">Discovery Date: <strong id="discovery-date-summary"></strong></p>
+                    <p class="mb-0">Statutory Period: <strong id="sol-period-summary"></strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // --- U.S. Federal Holidays for 2025 (YYYY-MM-DD format) ---
+    // Note: This fixed list is used for the non-business day check.
+    const HOLIDAYS = [
+        { date: '2025-01-01', name: 'New Year\'s Day' },
+        { date: '2025-01-20', name: 'M.L. King, Jr.\'s Birthday' },
+        { date: '2025-02-17', name: 'Washington\'s Birthday' },
+        { date: '2025-05-26', name: 'Memorial Day' },
+        { date: '2025-06-19', name: 'Juneteenth' },
+        { date: '2025-07-04', name: 'Independence Day' },
+        { date: '2025-09-01', name: 'Labor Day' },
+        { date: '2025-10-13', name: 'Columbus Day' },
+        { date: '2025-11-11', name: 'Veterans Day' },
+        { date: '2025-11-27', name: 'Thanksgiving Day' },
+        { date: '2025-12-25', name: 'Christmas Day' },
+    ];
+
+
+    function isNonBusinessDay(date) {
+        const dayOfWeek = date.getDay(); // 0 (Sunday) to 6 (Saturday)
+        
+        // 1. Check for Weekend
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            return true;
+        }
+
+        // 2. Check for Holiday
+        const dateString = date.toISOString().slice(0, 10); // YYYY-MM-DD
+        const isHoliday = HOLIDAYS.some(holiday => holiday.date === dateString);
+        
+        return isHoliday;
+    }
+
+
+    function calculateSOL(startDate, duration, unit) {
+        // SOL period typically ends on the same numerical date of the period's end.
+        let deadlineDate = new Date(startDate.getTime());
+        deadlineDate.setDate(deadlineDate.getDate() - 1); // Start with one day before to ensure correct calculation for end date rule
+
+        switch (unit) {
+            case 'years':
+                deadlineDate.setFullYear(deadlineDate.getFullYear() + duration);
+                break;
+            case 'months':
+                deadlineDate.setMonth(deadlineDate.getMonth() + duration);
+                break;
+            case 'days':
+                // Note: The day count starts the day *after* the triggering event.
+                // Since we backed up one day, adding the full duration correctly lands on the final day.
+                deadlineDate.setDate(deadlineDate.getDate() + duration);
+                break;
+        }
+        
+        // The final day is the day before the same numerical date (e.g., 2 years from May 1, 2025, is April 30, 2027)
+        // Adjust for the standard rule: SOL expires *on* the anniversary date.
+        // We add 1 day back to land on the actual anniversary date.
+        deadlineDate.setDate(deadlineDate.getDate() + 1); 
+
+        let rollForwardNote = '';
+
+        // 2. Final Roll-Forward Check: If the calculated deadline is a non-business day, roll forward.
+        if (isNonBusinessDay(deadlineDate)) {
+            let rolledDays = 0;
+            while (isNonBusinessDay(deadlineDate)) {
+                deadlineDate.setDate(deadlineDate.getDate() + 1);
+                rolledDays++;
+            }
+            if (rolledDays > 0) {
+                rollForwardNote = `The deadline fell on a non-business day and was rolled forward ${rolledDays} day${rolledDays > 1 ? 's' : ''} to the next business day.`;
+            }
+        }
+
+        return {
+            deadlineDate: deadlineDate,
+            rollForwardNote: rollForwardNote
+        };
+    }
+
+    // Helper to format a Date object into a readable string
+    function formatDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    // --- Initialization and Setup ---
+    function initialize() {
+        // Set default date to a past date for realistic SOL calculation (e.g., last year)
+        const pastDate = new Date();
+        pastDate.setFullYear(pastDate.getFullYear() - 1);
+        const yyyy = pastDate.getFullYear();
+        const mm = String(pastDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(pastDate.getDate()).padStart(2, '0');
+        
+        document.getElementById('discovery-date').value = `${yyyy}-${mm}-${dd}`;
+        
+        // Populate holiday info
+        const holidayDiv = document.getElementById('holiday-info');
+        holidayDiv.innerHTML = '<strong>Holidays:</strong> ' + HOLIDAYS.map(h => 
+            `${h.name} (${new Date(h.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`
+        ).join(' | ');
+    }
+
+
+    // --- Event Handler ---
+    document.getElementById('sol-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const discoveryDateStr = document.getElementById('discovery-date').value;
+        const durationStr = document.getElementById('sol-duration').value;
+        const unit = document.getElementById('sol-unit').value;
+        
+        const discoveryDate = new Date(discoveryDateStr);
+        const duration = parseInt(durationStr, 10);
+
+        if (isNaN(discoveryDate.getTime()) || !discoveryDateStr) {
+            displayStatus("Please select a valid Date of Discovery/Accrual.", true);
+            return;
+        }
+        if (isNaN(duration) || duration < 1) {
+            displayStatus("Please enter a valid duration (1 or more).", true);
+            return;
+        }
+
+        try {
+            // 1. Calculate the Deadline
+            const result = calculateSOL(discoveryDate, duration, unit);
+            
+            // 2. Format and Display Results
+            const formattedDeadlineDate = formatDate(result.deadlineDate);
+            const solPeriod = `${duration} ${unit}`;
+
+            document.getElementById('final-sol-date').innerText = formattedDeadlineDate;
+            document.getElementById('discovery-date-summary').innerText = formatDate(discoveryDate);
+            document.getElementById('sol-period-summary').innerText = solPeriod;
+            
+            document.getElementById('sol-notes').innerText = result.rollForwardNote || "Deadline falls on a standard business day.";
+            document.getElementById('sol-notes').classList.toggle('text-danger', !!result.rollForwardNote);
+            document.getElementById('sol-notes').classList.toggle('text-success', !result.rollForwardNote);
+
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("SOL Calculation Error:", error);
+            displayStatus(`An error occurred during calculation: ${error.message}`, true);
+        }
+    });
+
+    // Run initialization
+    document.addEventListener('DOMContentLoaded', initialize);
+</script>
+
+{% endblock %}

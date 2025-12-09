@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Moon Phase Calendar Calculator{% endblock %}
+
+{% block meta_description %}Calculate the moon phase, age, and illumination percentage for any date, and see when the next Full Moon or New Moon occurs.{% endblock %}
+
+{% block meta_keywords %}moon phase, lunar cycle, illumination, new moon, full moon, quarter moon, astronomical calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #0d6efd; /* Bootstrap Blue accent for celestial theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #eaf5ff; /* Light blue background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #0d6efd;
+    }
+
+    .result-section h3 {
+        color: #0d6efd;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .phase-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #0dcaf0; /* Cyan accent for moonlight */
+        line-height: 1.2;
+    }
+
+    .illumination-display {
+        font-size: 1.5rem;
+        color: #6f42c1; /* Purple accent */
+    }
+
+    .date-projection-section {
+        margin-top: 25px;
+        border-top: 1px dashed #ccc;
+        padding-top: 15px;
+        text-align: left;
+    }
+
+    .date-projection-section h4 {
+        font-size: 1.1rem;
+        color: #0d6efd;
+        margin-bottom: 10px;
+    }
+    
+    .date-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 5px;
+    }
+
+    .date-list li {
+        padding: 4px 0;
+        border-bottom: 1px dotted #ddd;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🌕 Moon Phase Calendar Calculator</h1>
+    <p class="small-muted">Calculate the precise moon phase, age, and illumination for any given date.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="moon-phase-form">
+            <h5 class="section-title">Step 1: Select Date</h5>
+
+            <!-- Target Date Input -->
+            <div class="form-group mb-4">
+                <label for="target-date" class="form-label">Date to Calculate Moon Phase</label>
+                <input type="date" class="form-control" id="target-date" required>
+            </div>
+            
+            <button class="btn btn-primary mt-3 w-100" type="submit">Calculate Moon Phase</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-date-display">Moon Phase for...</h3>
+                
+                <p class="illumination-display mb-2">Illumination: <span id="illumination-value">0%</span></p>
+                <p class="phase-display" id="current-phase">New Moon</p>
+                <p class="text-muted">Moon Age: <span id="moon-age-days">0</span> days</p>
+
+                <div class="date-projection-section">
+                    <h4>Upcoming Major Phases (Next 3):</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Full Moon Dates</h5>
+                            <ul class="date-list" id="full-moon-list"></ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>New Moon Dates</h5>
+                            <ul class="date-list" id="new-moon-list"></ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="summary-text mt-3" id="calculation-summary"></p>
+                
+                <!-- Diagram for Moon Phases -->
+                <p class="mt-4">[Image of the eight major moon phases]</p>
+
+            </div>
+        </div>
+        
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Constants ---
+    const SYNODIC_MONTH = 29.530588853; // Average length of a lunation (in days)
+    const JULIAN_DAY_2000 = 2451549.5; // Julian Day of a known New Moon (Jan 6, 2000, 18:14 UT)
+    const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
+
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    function dateToJulianDay(date) {
+        // Convert local date to milliseconds since Epoch, accounting for local timezone offset
+        // We calculate JD at 00:00 UT on the target day.
+        const timeInMs = date.getTime() - date.getTimezoneOffset() * 60000;
+        
+        // Days since JD Epoch (Jan 1, 4713 BC) at noon.
+        // Convert to JD at 00:00 UT
+        return (timeInMs / MILLISECONDS_PER_DAY) + 2440587.5;
+    }
+
+
+    function calculateMoonPhase(JD) {
+        // 1. Calculate the number of days since the known New Moon (JD_2000)
+        const daysSince2000 = JD - JULIAN_DAY_2000;
+        
+        // 2. Calculate the number of full lunation cycles passed (N)
+        const N = daysSince2000 / SYNODIC_MONTH;
+        
+        // 3. Calculate the fraction of the current cycle (F)
+        const F = N - Math.floor(N);
+        
+        // 4. Moon Age in days (0 to ~29.53)
+        const moonAge = F * SYNODIC_MONTH;
+        
+        // 5. Calculate Illumination (Approximation based on cosine of phase angle)
+        const phaseAngle = 2 * Math.PI * F;
+        const illumination = ((1 - Math.cos(phaseAngle)) / 2) * 100;
+
+        // 6. Determine Phase Name based on age (in days)
+        let phaseName;
+        if (moonAge < 1.84) {
+            phaseName = 'New Moon';
+        } else if (moonAge < 5.53) {
+            phaseName = 'Waxing Crescent';
+        } else if (moonAge < 9.23) {
+            phaseName = 'First Quarter';
+        } else if (moonAge < 12.93) {
+            phaseName = 'Waxing Gibbous';
+        } else if (moonAge < 16.63) {
+            phaseName = 'Full Moon';
+        } else if (moonAge < 20.33) {
+            phaseName = 'Waning Gibbous';
+        } else if (moonAge < 24.03) {
+            phaseName = 'Last Quarter';
+        } else if (moonAge < 27.73) {
+            phaseName = 'Waning Crescent';
+        } else {
+            phaseName = 'New Moon';
+        }
+
+        return {
+            age: moonAge,
+            illumination: Math.round(illumination * 10) / 10, // Round to one decimal place
+            phaseName: phaseName
+        };
+    }
+    
+    /**
+     * Calculates the date of the next major moon phase (New or Full).
+     * @param {number} JD - Starting Julian Day.
+     * @param {string} targetPhase - 'New' (age 0) or 'Full' (age 14.76).
+     * @param {number} count - Number of future dates to find.
+     * @returns {Array<Date>} Array of target phase dates.
+     */
+    function calculateNextMajorPhaseDates(JD, targetPhase, count) {
+        const dates = [];
+        let currentJD = JD;
+        let targetFraction; // Target fraction of the cycle (0 for New, 0.5 for Full)
+
+        switch (targetPhase) {
+            case 'New':
+                targetFraction = 0.0;
+                break;
+            case 'Full':
+                targetFraction = 0.5;
+                break;
+            default:
+                return [];
+        }
+
+        // Calculate current fractional position in the cycle
+        let N = (currentJD - JULIAN_DAY_2000) / SYNODIC_MONTH;
+        let F = N - Math.floor(N);
+
+        // Calculate the days remaining until the target fraction is reached.
+        let daysUntilTarget;
+        if (targetFraction >= F) {
+            // Target is later in the current cycle
+            daysUntilTarget = (targetFraction - F) * SYNODIC_MONTH;
+        } else {
+            // Target is in the next cycle
+            daysUntilTarget = (1 + targetFraction - F) * SYNODIC_MONTH;
+        }
+        
+        currentJD += daysUntilTarget;
+
+        for (let i = 0; i < count; i++) {
+            // Convert Julian Day (UT) back to a local Date object (at 00:00 local time)
+            // JD at 00:00 UT = days since 2440587.5.
+            const dateInMs = (currentJD - 2440587.5) * MILLISECONDS_PER_DAY;
+            
+            // Create a Date object in the local timezone
+            const nextDate = new Date(dateInMs);
+            
+            dates.push(nextDate);
+            
+            // Advance to the next cycle
+            currentJD += SYNODIC_MONTH;
+        }
+        
+        return dates;
+    }
+
+
+    // --- Event Handler ---
+
+    document.getElementById('moon-phase-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const dateStr = document.getElementById('target-date').value;
+
+        if (!dateStr) {
+            displayStatus("Please select a valid date.", true);
+            return;
+        }
+
+        // 1. Prepare Date
+        const [y, m, d] = dateStr.split('-').map(Number);
+        // Date object in local time for display purposes
+        const targetDate = new Date(y, m - 1, d); 
+
+        // 2. Convert to Julian Day (JD at 00:00 UT)
+        const JD = dateToJulianDay(targetDate);
+        
+        // 3. Perform Moon Phase Calculation
+        const { age, illumination, phaseName } = calculateMoonPhase(JD);
+        
+        // 4. Project Future Phases
+        const nextFullMoons = calculateNextMajorPhaseDates(JD, 'Full', 3);
+        const nextNewMoons = calculateNextMajorPhaseDates(JD, 'New', 3);
+
+        // 5. Display Results
+        document.getElementById('result-date-display').innerText = `Moon Phase for ${formatReadableDate(targetDate)}`;
+        document.getElementById('illumination-value').innerText = `${illumination}%`;
+        document.getElementById('current-phase').innerText = phaseName;
+        document.getElementById('moon-age-days').innerText = `${age.toFixed(2)}`;
+        
+        // Populate Full Moon List
+        const fullMoonList = document.getElementById('full-moon-list');
+        fullMoonList.innerHTML = nextFullMoons.map(date => `<li>${formatReadableDate(date)}</li>`).join('');
+
+        // Populate New Moon List
+        const newMoonList = document.getElementById('new-moon-list');
+        newMoonList.innerHTML = nextNewMoons.map(date => `<li>${formatReadableDate(date)}</li>`).join('');
+
+        const summary = `
+The moon's age is approximately ${age.toFixed(2)} days into the ${SYNODIC_MONTH.toFixed(4)}-day synodic cycle.
+Illumination: ${illumination}% of the Moon's face visible from Earth.
+        `;
+        document.getElementById('calculation-summary').innerText = summary;
+
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+    
+    // Set default date to today
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('target-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

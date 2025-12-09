@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}World Clock Meeting Planner{% endblock %}
+
+{% block meta_description %}Find the optimal overlap of working hours across multiple international time zones to schedule meetings efficiently, correctly adjusting for DST.{% endblock %}
+
+{% block meta_keywords %}meeting planner, time zone overlap, world clock, global scheduling, international meetings{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    #timezone-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .tz-tag {
+        background-color: #e9ecef;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.2s;
+    }
+
+    .tz-tag:hover {
+        background-color: #ffcccc;
+    }
+
+    .tz-tag button {
+        background: none;
+        border: none;
+        color: #dc3545;
+        font-weight: bold;
+        margin-left: 5px;
+        padding: 0;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .table-responsive {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .overlap-time {
+        background-color: #d1e7dd; /* Bootstrap success light */
+        font-weight: bold;
+    }
+    
+    .time-slot-header {
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa; /* Light gray sticky header */
+        z-index: 10;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🤝 World Clock Meeting Planner</h1>
+    <p class="small-muted">Find the **best time to meet** by identifying hours where everyone is within their core working day (9 AM - 5 PM).</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="meeting-planner-form">
+            <h5 class="section-title">Step 1: Select Date and Time Zones</h5>
+
+            <!-- Base Date (for DST calculation) -->
+            <div class="form-group mb-3">
+                <label for="base-date" class="form-label">Base Date for Calculation (Affects DST)</label>
+                <input type="date" class="form-control" id="base-date" required>
+            </div>
+
+            <!-- Time Zone Picker -->
+            <div class="row g-3 mb-4 align-items-end">
+                <div class="col-md-8">
+                    <label for="timezone-select" class="form-label">Add a Time Zone</label>
+                    <select class="form-select" id="timezone-select">
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-secondary w-100" id="add-tz-button">Add Zone</button>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: Selected Time Zones</h5>
+            <div id="timezone-list">
+                <p id="no-tz-message" class="text-muted small">Add 2 or more time zones above.</p>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Find Overlap Times</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="mp-result"></div>
+
+        <h5 class="section-title d-none mt-4" id="table-title">Optimal Meeting Slots (9 AM - 5 PM Overlap)</h5>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped mt-2 d-none" id="mp-table">
+                <thead id="mp-table-head">
+                    <!-- Headers (Time Slots) will be inserted here -->
+                </thead>
+                <tbody id="mp-table-body">
+                    <!-- Time Zone Data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Curated list of major time zones (same as previous calculator)
+    const TIME_ZONES = [
+        { label: "America/New York (EST/EDT)", value: "America/New_York" },
+        { label: "America/Los Angeles (PST/PDT)", value: "America/Los_Angeles" },
+        { label: "Europe/London (GMT/BST)", value: "Europe/London" },
+        { label: "Europe/Paris (CET/CEST)", value: "Europe/Paris" },
+        { label: "Asia/Dubai (GST)", value: "Asia/Dubai" },
+        { label: "Asia/Tokyo (JST)", value: "Asia/Tokyo" },
+        { label: "Asia/Shanghai (CST)", value: "Asia/Shanghai" },
+        { label: "Asia/Kolkata (IST)", value: "Asia/Kolkata" },
+        { label: "Asia/Dhaka (BST)", value: "Asia/Dhaka" },
+        { label: "Australia/Sydney (AEST/AEDT)", value: "Australia/Sydney" },
+        { label: "Pacific/Auckland (NZST/NZDT)", value: "Pacific/Auckland" },
+        { label: "UTC (Coordinated Universal Time)", value: "UTC" },
+    ];
+
+    let selectedTimeZones = [];
+
+    // --- Time Zone Management ---
+
+    function updateTimeZoneList() {
+        const listDiv = document.getElementById('timezone-list');
+        listDiv.innerHTML = '';
+
+        if (selectedTimeZones.length === 0) {
+            document.getElementById('no-tz-message').classList.remove('d-none');
+            listDiv.appendChild(document.getElementById('no-tz-message'));
+        } else {
+            document.getElementById('no-tz-message').classList.add('d-none');
+            selectedTimeZones.forEach(tz => {
+                const label = TIME_ZONES.find(item => item.value === tz).label;
+                const tag = document.createElement('div');
+                tag.className = 'tz-tag';
+                tag.innerHTML = `
+                    ${label}
+                    <button type="button" data-tz="${tz}">&times;</button>
+                `;
+                listDiv.appendChild(tag);
+            });
+        }
+    }
+
+    document.getElementById('add-tz-button').addEventListener('click', () => {
+        const select = document.getElementById('timezone-select');
+        const value = select.value;
+
+        if (value && !selectedTimeZones.includes(value)) {
+            selectedTimeZones.push(value);
+            updateTimeZoneList();
+        }
+    });
+
+    document.getElementById('timezone-list').addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            const tzToRemove = e.target.getAttribute('data-tz');
+            selectedTimeZones = selectedTimeZones.filter(tz => tz !== tzToRemove);
+            updateTimeZoneList();
+        }
+    });
+
+    // Initialize dropdowns and default date
+    document.addEventListener('DOMContentLoaded', () => {
+        const select = document.getElementById('timezone-select');
+        TIME_ZONES.forEach(tz => {
+            select.add(new Option(tz.label, tz.value));
+        });
+
+        // Set today's date as default
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('base-date').value = `${yyyy}-${mm}-${dd}`;
+        
+        // Add two default time zones for easy start
+        selectedTimeZones.push('America/New_York');
+        selectedTimeZones.push('Europe/London');
+        updateTimeZoneList();
+    });
+
+    // --- Conversion Logic ---
+
+    /**
+     * Finds the local time in a target timezone for a given UTC timestamp.
+     * @param {number} utcTimestamp - Milliseconds since epoch (UTC).
+     * @param {string} targetTz - The IANA timezone string (e.g., 'Europe/London').
+     * @returns {string} - Formatted time string (e.g., "1:00 PM").
+     */
+    function formatTimeInTimeZone(utcTimestamp, targetTz) {
+        const targetDate = new Date(utcTimestamp);
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: targetTz
+        });
+        return formatter.format(targetDate);
+    }
+
+    /**
+     * Gets the hour of the day (0-23) for a given UTC timestamp in the target timezone.
+     * @param {number} utcTimestamp - Milliseconds since epoch (UTC).
+     * @param {string} targetTz - The IANA timezone string.
+     * @returns {number} - Hour (0-23).
+     */
+    function getHourInTimeZone(utcTimestamp, targetTz) {
+        const targetDate = new Date(utcTimestamp);
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            hour: '2-digit',
+            hourCycle: 'h23',
+            timeZone: targetTz
+        });
+        // The Intl.DateTimeFormat is locale-sensitive, so we parse the resulting string.
+        const hourString = formatter.format(targetDate).split(':')[0];
+        return parseInt(hourString, 10);
+    }
+    
+    // --- Main Calculation ---
+
+    document.getElementById('meeting-planner-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (selectedTimeZones.length < 2) {
+            displayError("Please select at least two time zones to find a meeting overlap.");
+            return;
+        }
+        
+        const baseDateStr = document.getElementById('base-date').value;
+        if (!baseDateStr) {
+            displayError("Please select a base date for DST calculation.");
+            return;
+        }
+
+        const [year, month, day] = baseDateStr.split('-').map(Number);
+        
+        // Use a list of 9 AM to 5 PM hours in a reference zone (e.g., UTC) to check against all others.
+        // We will test 1-hour slots from 00:00 UTC to 23:00 UTC.
+        
+        // 1. Generate the 24 base UTC timestamps (start of the hour on the selected base date)
+        const baseUTCHours = [];
+        for (let hour = 0; hour < 24; hour++) {
+            // Create a Date object set to the start of the hour in UTC
+            // Note: Month is 0-indexed, so month - 1
+            const date = new Date(Date.UTC(year, month - 1, day, hour, 0, 0));
+            baseUTCHours.push({ 
+                utcMs: date.getTime(), 
+                utcHour: hour,
+                utcTimeDisplay: formatTimeInTimeZone(date.getTime(), 'UTC')
+            });
+        }
+        
+        const timeZoneLabels = selectedTimeZones.map(tz => TIME_ZONES.find(item => item.value === tz).label);
+        
+        // 2. Build the result structure: An array of rows (one row per time zone)
+        let results = [];
+        
+        selectedTimeZones.forEach((tz, index) => {
+            let row = {
+                label: timeZoneLabels[index],
+                slots: [] // 24 slots corresponding to the 24 baseUTCHours
+            };
+
+            baseUTCHours.forEach(baseHour => {
+                const localHour = getHourInTimeZone(baseHour.utcMs, tz);
+                const localTimeDisplay = formatTimeInTimeZone(baseHour.utcMs, tz);
+                
+                // Working hours check: Is the time between 9 AM (9) and 5 PM (17) inclusive?
+                const isWorkingHour = localHour >= 9 && localHour <= 17;
+
+                row.slots.push({
+                    time: localTimeDisplay,
+                    isWorking: isWorkingHour
+                });
+            });
+            results.push(row);
+        });
+
+        // 3. Determine Overlap Hours (which base UTC hours are working for ALL zones)
+        const overlapHoursIndex = [];
+        
+        baseUTCHours.forEach((baseHour, colIndex) => {
+            const isOverlap = results.every(row => row.slots[colIndex].isWorking);
+            if (isOverlap) {
+                overlapHoursIndex.push(colIndex);
+            }
+        });
+        
+        // 4. Update UI
+
+        document.getElementById('mp-result').classList.add('d-none');
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('mp-table').classList.remove('d-none');
+        const tableHead = document.getElementById('mp-table-head');
+        const tableBody = document.getElementById('mp-table-body');
+        
+        // Clear previous results
+        tableHead.innerHTML = '';
+        tableBody.innerHTML = '';
+
+        // Generate Header (Base UTC times)
+        let headRow = '<tr><th class="time-slot-header">Time Zone</th>';
+        baseUTCHours.forEach(baseHour => {
+            // Check if this hour is part of an overlap to style the header
+            const isOverlap = overlapHoursIndex.includes(baseHour.utcHour);
+            const headerClass = isOverlap ? 'overlap-time' : '';
+            headRow += `<th class="text-center ${headerClass}">${baseHour.utcTimeDisplay}</th>`;
+        });
+        headRow += '</tr>';
+        tableHead.innerHTML = headRow;
+
+        // Generate Body (Time zone data)
+        results.forEach(row => {
+            let bodyRow = `<tr><td class="time-slot-header">${row.label}</td>`;
+            row.slots.forEach((slot, colIndex) => {
+                const isOverlap = overlapHoursIndex.includes(baseUTCHours[colIndex].utcHour);
+                let cellClass = '';
+                
+                if (isOverlap) {
+                    cellClass = 'overlap-time';
+                } else if (slot.isWorking) {
+                    // Still working in this zone, but not an overall overlap
+                    cellClass = 'bg-light';
+                } else {
+                    // Not working (off-hours)
+                    cellClass = 'bg-danger-subtle text-muted';
+                }
+
+                bodyRow += `<td class="text-center ${cellClass}">${slot.time}</td>`;
+            });
+            bodyRow += '</tr>';
+            tableBody.innerHTML += bodyRow;
+        });
+
+        // 5. Display Overlap Summary
+        const summaryRes = document.getElementById('mp-result');
+        summaryRes.classList.remove('d-none', 'alert-danger');
+        summaryRes.classList.add('alert-info');
+        
+        if (overlapHoursIndex.length === 0) {
+            summaryRes.innerHTML = "**No working hour overlap found** (9 AM to 5 PM) for the selected time zones.";
+        } else {
+            const overlapTimesInUTC = overlapHoursIndex.map(index => baseUTCHours[index].utcTimeDisplay).join(', ');
+            summaryRes.innerHTML = `**Optimal Overlap Times (in UTC):** ${overlapTimesInUTC}. <br>The highlighted columns indicate the best time slots for your meeting.`;
+        }
+    });
+</script>
+
+{% endblock %}

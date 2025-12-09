@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Date Addition and Subtraction Calculator{% endblock %}
+
+{% block meta_description %}Add or subtract a specific number of days, weeks, months, or years from a starting date to find the resulting date.{% endblock %}
+
+{% block meta_keywords %}date adder, date subtractor, add days to date, subtract months from date, future date calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+
+    /* Group styling for operation and unit selectors */
+    .input-group-radio {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .form-control[type="date"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🗓️ Date Addition/Subtraction Calculator</h1>
+    <p class="small-muted">Determine a **future or past date** by adding or subtracting a duration (days, weeks, months, or years) from a selected starting date.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="date-math-form">
+            <h5 class="section-title">Step 1: Start Date</h5>
+
+            <!-- Start Date Input -->
+            <div class="form-group mb-4">
+                <label for="start-date" class="form-label">Starting Date</label>
+                <input type="date" class="form-control" id="start-date" required>
+            </div>
+
+            <h5 class="section-title">Step 2: Duration and Operation</h5>
+
+            <!-- Operation (Add/Subtract) -->
+            <label class="form-label d-block">Operation</label>
+            <div class="input-group-radio">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="operation" id="opAdd" value="add" checked>
+                    <label class="form-check-label" for="opAdd">Add</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="operation" id="opSubtract" value="subtract">
+                    <label class="form-check-label" for="opSubtract">Subtract</label>
+                </div>
+            </div>
+
+            <!-- Value and Unit -->
+            <div class="row g-2">
+                <div class="col-8">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="value-input" placeholder="Enter number (e.g., 90)" min="1" required>
+                        <span class="input-group-text">Duration</span>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <select class="form-select" id="unit-select" required>
+                        <option value="day">Days</option>
+                        <option value="week">Weeks</option>
+                        <option value="month">Months</option>
+                        <option value="year">Years</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-4" type="submit">Calculate Result Date</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="date-math-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="date-math-table">
+            <tbody id="date-math-body">
+                <!-- Summary will be inserted here -->
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayError(message) {
+        const res = document.getElementById('date-math-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('date-math-table').classList.add('d-none');
+    }
+
+    document.getElementById('date-math-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const startDateStr = document.getElementById('start-date').value;
+        const operation = document.querySelector('input[name="operation"]:checked').value;
+        const value = parseInt(document.getElementById('value-input').value, 10);
+        const unit = document.getElementById('unit-select').value;
+
+        // Ensure value is positive for calculation
+        if (value <= 0 || isNaN(value)) {
+            displayError("Duration value must be a positive number.");
+            return;
+        }
+
+        // Use a mutable copy of the start date
+        let currentDate = new Date(startDateStr);
+
+        // Convert start date string to a proper Date object, setting time to midnight UTC to avoid timezone issues with date inputs
+        const startYear = currentDate.getUTCFullYear();
+        const startMonth = currentDate.getUTCMonth();
+        const startDay = currentDate.getUTCDate();
+        
+        let resultDate = new Date(Date.UTC(startYear, startMonth, startDay));
+        const originalDate = new Date(resultDate.getTime()); // Keep original for display summary
+
+        // Determine multiplier (1 for Add, -1 for Subtract)
+        const multiplier = operation === 'add' ? 1 : -1;
+        const calculatedValue = value * multiplier;
+        let totalDaysCalculated = 0;
+        
+        // 2. Perform Calculation
+        try {
+            switch (unit) {
+                case 'day':
+                    resultDate.setUTCDate(resultDate.getUTCDate() + calculatedValue);
+                    totalDaysCalculated = Math.abs(calculatedValue);
+                    break;
+                case 'week':
+                    // 7 days in a week
+                    resultDate.setUTCDate(resultDate.getUTCDate() + (calculatedValue * 7));
+                    totalDaysCalculated = Math.abs(calculatedValue * 7);
+                    break;
+                case 'month':
+                    // setUTCMonth handles month/year rollovers correctly
+                    resultDate.setUTCMonth(resultDate.getUTCMonth() + calculatedValue);
+                    break;
+                case 'year':
+                    // setUTCFullYear handles rollovers correctly
+                    resultDate.setUTCFullYear(resultDate.getUTCFullYear() + calculatedValue);
+                    break;
+            }
+        } catch (e) {
+            console.error("Date calculation error:", e);
+            displayError("An unexpected error occurred during date calculation.");
+            return;
+        }
+
+        // 3. Format Result Date
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedResultDate = resultDate.toLocaleDateString('en-US', options);
+        const formattedStart = originalDate.toLocaleDateString('en-US', options);
+        
+        // Calculate Total Days (only if unit wasn't day/week, or to confirm accuracy)
+        if (unit === 'month' || unit === 'year') {
+            const diffTime = Math.abs(resultDate.getTime() - originalDate.getTime());
+            totalDaysCalculated = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        // 4. Update Result Display
+        const res = document.getElementById('date-math-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+        
+        const operationText = operation === 'add' ? 'Added' : 'Subtracted';
+
+        res.innerHTML = `
+**Starting Date:** ${formattedStart}
+**Operation:** ${operationText} ${value} ${unit}${value !== 1 ? 's' : ''}
+---
+**Resulting Date:** <span style="font-size:1.5rem; color:#0d6efd;">${formattedResultDate}</span>
+`;
+        
+        // 5. Update Summary Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('date-math-table').classList.remove('d-none');
+        const tableBody = document.getElementById('date-math-body');
+        
+        tableBody.innerHTML = `
+            <tr><td>Start Date</td><td>${formattedStart}</td></tr>
+            <tr><td>Duration</td><td>${value} ${unit}${value !== 1 ? 's' : ''}</td></tr>
+            <tr><td>Operation Performed</td><td>${operationText}</td></tr>
+            <tr><td>Total Days Elapsed/Reversed</td><td>${totalDaysCalculated.toLocaleString()} days</td></tr>
+            <tr><td>**Final Date**</td><td>**${formattedResultDate}**</td></tr>
+        `;
+    });
+</script>
+
+{% endblock %}

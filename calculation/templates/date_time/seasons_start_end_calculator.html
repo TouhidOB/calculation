@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Seasons Start/End Calculator{% endblock %}
+
+{% block meta_description %}Calculate the approximate dates for the four astronomical seasons (equinoxes and solstices) for a given year.{% endblock %}
+
+{% block meta_keywords %}equinox, solstice, seasons calculator, astronomical calendar, spring, summer, autumn, winter{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #fdf6e3; /* Light, paper-like background */
+        padding: 35px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        color: #3b82f6; /* Blue accent */
+        border-bottom: 2px solid #a5b4fc;
+        padding-bottom: 5px;
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 30px;
+        border: 2px solid #3b82f6;
+    }
+
+    .result-section h3 {
+        color: #1e3a8a; /* Dark Blue */
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .season-card {
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        background-color: #eff6ff; /* Very light blue */
+        text-align: left;
+    }
+
+    .season-card .name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #3b82f6;
+    }
+
+    .season-card .date {
+        font-weight: 900;
+        font-size: 1.5rem;
+        color: #dc2626; /* Red for emphasis */
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3 text-center">🌎 Seasons Start/End Calculator</h1>
+    <p class="small-muted text-center">Calculates the approximate dates for the four astronomical events (Equinoxes/Solstices) for any given year.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="seasons-calculator-form">
+            <h5 class="section-title">Select Year and Hemisphere</h5>
+
+            <div class="row g-3">
+                <!-- Year Selector -->
+                <div class="col-md-6">
+                    <label for="target-year" class="form-label">Year to Calculate</label>
+                    <input type="number" class="form-control" id="target-year" min="1900" max="2100" required>
+                    <small class="form-text text-muted">A range from 1900 to 2100 is supported for accuracy.</small>
+                </div>
+
+                <!-- Hemisphere Selector -->
+                <div class="col-md-6">
+                    <label for="hemisphere" class="form-label">Hemisphere</label>
+                    <select class="form-select" id="hemisphere" required>
+                        <option value="Northern">Northern Hemisphere</option>
+                        <option value="Southern">Southern Hemisphere</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Seasons</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3>Astronomical Season Start Dates (<span id="summary-hemisphere"></span>)</h3>
+
+                <div id="seasons-list">
+                    <!-- Cards will be injected here -->
+                </div>
+                
+                <p class="small text-muted mt-3">These dates are approximations based on common astronomical patterns and local time zones.</p>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper to format a Date object into a readable string
+    function formatDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    
+    function calculateNorthernHemisphereDates(year) {
+        const isLeap = new Date(year, 1, 29).getMonth() === 1;
+
+        // Note on Logic: The 'Vernal Equinox' and 'Winter Solstice' are the most variable.
+        // We use common date ranges and simple adjustments to find the most probable date.
+        
+        // 1. Vernal Equinox (Spring) - Mar 20 or 21
+        let springDate = 20;
+        if (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) {
+            // After a leap year, the event tends to occur on the 20th
+            springDate = 20;
+        } else if (year % 4 === 1 && year > 2000) {
+            // In the year following a leap year, sometimes shifts to the 21st in the modern era
+            springDate = 20; // Sticking to 20 for simplicity as it's the dominant date (e.g., 2025 is 20th)
+        }
+        // Simplified default: assume March 20th unless historically unusual (which we skip for simplicity)
+        const vernalEquinox = new Date(year, 2, 20); // March is month 2
+
+        // 2. Summer Solstice (Summer) - June 20 or 21
+        // Tends to be the 21st, but can be the 20th (e.g., 2024 was 20th)
+        let summerDate = 21;
+        if (year % 4 === 0 && year < 2100) { // Often shifts early during a leap year
+            summerDate = 20;
+        }
+        const summerSolstice = new Date(year, 5, summerDate); // June is month 5
+
+        // 3. Autumnal Equinox (Autumn) - Sep 22 or 23
+        // Tends to be 22nd or 23rd
+        let autumnDate = 23;
+        if (year % 4 === 0 || year % 4 === 3) {
+            autumnDate = 22; // Often the 22nd in or near leap years
+        }
+        const autumnalEquinox = new Date(year, 8, autumnDate); // September is month 8
+
+        // 4. Winter Solstice (Winter) - Dec 21 or 22
+        // Tends to be 21st or 22nd
+        let winterDate = 21;
+        if (year % 4 === 2 || year % 4 === 3) {
+             winterDate = 22;
+        } else if (year % 4 === 0 && year > 2000) {
+             winterDate = 21;
+        }
+        const winterSolstice = new Date(year, 11, winterDate); // December is month 11
+
+        return {
+            vernalEquinox: vernalEquinox,
+            summerSolstice: summerSolstice,
+            autumnalEquinox: autumnalEquinox,
+            winterSolstice: winterSolstice
+        };
+    }
+    
+    /**
+     * Main calculation handler, applying the hemisphere flip if needed.
+     */
+    function calculateSeasons(year, hemisphere) {
+        let dates = calculateNorthernHemisphereDates(year);
+
+        if (hemisphere === 'Northern') {
+            return [
+                { name: 'Spring Equinox (Start of Spring)', date: dates.vernalEquinox, season: 'Spring' },
+                { name: 'Summer Solstice (Start of Summer)', date: dates.summerSolstice, season: 'Summer' },
+                { name: 'Autumnal Equinox (Start of Autumn)', date: dates.autumnalEquinox, season: 'Autumn' },
+                { name: 'Winter Solstice (Start of Winter)', date: dates.winterSolstice, season: 'Winter' },
+            ];
+        } else {
+             // Southern Hemisphere seasons are opposite
+            return [
+                { name: 'Vernal Equinox (Start of Autumn)', date: dates.vernalEquinox, season: 'Autumn' },
+                { name: 'Summer Solstice (Start of Winter)', date: dates.summerSolstice, season: 'Winter' },
+                { name: 'Autumnal Equinox (Start of Spring)', date: dates.autumnalEquinox, season: 'Spring' },
+                { name: 'Winter Solstice (Start of Summer)', date: dates.winterSolstice, season: 'Summer' },
+            ];
+        }
+    }
+
+
+    // --- Event Handler ---
+    document.getElementById('seasons-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const targetYearStr = document.getElementById('target-year').value;
+        const hemisphere = document.getElementById('hemisphere').value;
+        const targetYear = parseInt(targetYearStr, 10);
+
+        if (isNaN(targetYear) || targetYear < 1900 || targetYear > 2100) {
+            displayStatus("Please enter a valid year between 1900 and 2100.", true);
+            return;
+        }
+
+        try {
+            // 1. Calculate the Dates
+            const results = calculateSeasons(targetYear, hemisphere);
+            
+            // 2. Display Results
+            const seasonsListDiv = document.getElementById('seasons-list');
+            seasonsListDiv.innerHTML = ''; // Clear previous results
+            
+            results.forEach(result => {
+                const card = document.createElement('div');
+                card.classList.add('season-card');
+                
+                let icon = '';
+                if (result.season === 'Spring') icon = '🌸';
+                else if (result.season === 'Summer') icon = '☀️';
+                else if (result.season === 'Autumn') icon = '🍂';
+                else if (result.season === 'Winter') icon = '❄️';
+
+                card.innerHTML = `
+                    <div class="name">${icon} ${result.name}</div>
+                    <div class="date">${formatDate(result.date)}</div>
+                `;
+                seasonsListDiv.appendChild(card);
+            });
+
+            document.getElementById('summary-hemisphere').innerText = hemisphere;
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Seasons Calculation Error:", error);
+            displayStatus(`An error occurred during calculation: ${error.message}`, true);
+        }
+    });
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentYear = new Date().getFullYear();
+        document.getElementById('target-year').value = currentYear;
+    });
+</script>
+
+{% endblock %}

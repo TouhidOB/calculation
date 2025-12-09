@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Pregnancy Week Calculator{% endblock %}
+
+{% block meta_description %}Calculate the current week of pregnancy, estimated due date (EDC), and trimester based on the date of the last menstrual period (LMP).{% endblock %}
+
+{% block meta_keywords %}pregnancy calculator, due date calculator, EDC, LMP, pregnancy week, trimester calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #f48fb1; /* Pink accent for health/pregnancy theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #fce4ec; /* Light pink background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #f48fb1;
+    }
+
+    .result-section h3 {
+        color: #d81b60; /* Darker pink for emphasis */
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .date-display {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #4a148c; /* Purple contrast */
+        line-height: 1.2;
+    }
+
+    .current-week-display {
+        font-size: 4rem;
+        font-weight: 900;
+        color: #00897b; /* Teal for high visibility */
+    }
+
+    .info-box {
+        background-color: #fff9e6;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 5px solid #ffd54f; /* Yellow accent */
+        text-align: left;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🤰 Pregnancy Week Calculator</h1>
+    <p class="small-muted">Calculate your estimated due date and current pregnancy stage based on your Last Menstrual Period (LMP).</p>
+
+    <div class="calc-wrapper">
+
+        <form id="pregnancy-form">
+            <h5 class="section-title">Step 1: Start Date</h5>
+
+            <!-- Last Menstrual Period Date (LMP) -->
+            <div class="form-group mb-4">
+                <label for="lmp-date" class="form-label">Date of Last Menstrual Period (LMP)</label>
+                <input type="date" class="form-control" id="lmp-date" required>
+                <small class="form-text text-muted">The first day of your last period.</small>
+            </div>
+
+            <h5 class="section-title">Step 2: Today's Date</h5>
+            
+            <!-- Current Date -->
+            <div class="form-group mb-4">
+                <label for="current-date" class="form-label">Date of Calculation (Today)</label>
+                <input type="date" class="form-control" id="current-date" required>
+                <small class="form-text text-muted">Used to determine current week of progress.</small>
+            </div>
+
+            <button class="btn btn-primary mt-3 w-100" type="submit" style="background-color: #f48fb1; border-color: #f48fb1;">Calculate Pregnancy Stage</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 class="mb-4">Current Pregnancy Status</h3>
+
+                <div class="row">
+                    <div class="col-md-6 border-end">
+                        <small class="text-muted">Estimated Due Date (EDC)</small>
+                        <div class="date-display mb-3" id="calculated-edc"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">Current Trimester</small>
+                        <div class="date-display mb-3" id="current-trimester"></div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <small class="text-muted">You are currently in week:</small>
+                    <div class="current-week-display" id="current-week">0W + 0D</div>
+                </div>
+
+                <div class="info-box mt-4">
+                    <p>Total Duration: <strong id="total-duration">40 Weeks</strong></p>
+                    <p>Calculation Method: <strong id="calculation-method">Naegele's Rule</strong></p>
+                    <p>Days Remaining until EDC: <strong id="days-remaining">0</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+    
+    // Convert date string (YYYY-MM-DD) to Date object at midnight UTC
+    function parseDate(dateStr) {
+        if (!dateStr) return null;
+        // Using Date.parse() to avoid local time zone issues when creating date from YYYY-MM-DD string
+        const date = new Date(dateStr); 
+        return new Date(date.getTime() + date.getTimezoneOffset() * 60000); // Normalize to midnight local time without time offset issues
+    }
+    
+    // Calculates the difference in days between two dates
+    function dateDiffInDays(dateA, dateB) {
+        const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+        // Discard the time and time-zone information.
+        const utc1 = Date.UTC(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+        const utc2 = Date.UTC(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+
+        return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+    }
+
+    /**
+     * Calculates the Estimated Due Date (EDC) using Naegele's Rule (LMP + 280 days).
+     * @param {Date} lmpDate The date of the Last Menstrual Period.
+     * @returns {Date} The calculated EDC.
+     */
+    function calculateEDC(lmpDate) {
+        // Naegele's Rule: Add 280 days (40 weeks) to the LMP.
+        // Using setDate to handle month/year rollovers automatically.
+        const edc = new Date(lmpDate);
+        edc.setDate(edc.getDate() + 280); 
+        return edc;
+    }
+    
+    /**
+     * Determines the trimester from the current week.
+     * @param {number} totalWeeks The total weeks of gestation.
+     * @returns {string} The trimester name.
+     */
+    function getTrimester(totalWeeks) {
+        if (totalWeeks >= 0 && totalWeeks <= 13) {
+            return "First Trimester";
+        } else if (totalWeeks >= 14 && totalWeeks <= 27) {
+            return "Second Trimester";
+        } else if (totalWeeks >= 28 && totalWeeks <= 40) {
+            return "Third Trimester";
+        }
+        return "Post-Term / Not Started";
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('pregnancy-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const lmpDateStr = document.getElementById('lmp-date').value;
+        const currentDateStr = document.getElementById('current-date').value;
+
+        if (!lmpDateStr || !currentDateStr) {
+            displayStatus("Please select both the LMP date and the date of calculation.", true);
+            return;
+        }
+
+        const lmpDate = new Date(lmpDateStr + 'T00:00:00');
+        const currentDate = new Date(currentDateStr + 'T00:00:00');
+        
+        // Validation: LMP should be before or same as Current Date
+        if (lmpDate > currentDate) {
+            displayStatus("The LMP date cannot be after the current date.", true);
+            return;
+        }
+
+        try {
+            // 1. Calculate EDC (Due Date)
+            const edcDate = calculateEDC(lmpDate);
+
+            // 2. Calculate Gestational Age (Days passed since LMP)
+            const daysPassed = dateDiffInDays(lmpDate, currentDate);
+            
+            // 3. Convert days passed to Weeks + Days format (W + D)
+            const weeks = Math.floor(daysPassed / 7);
+            const days = daysPassed % 7;
+            const currentWeekDisplay = `${weeks}W + ${days}D`;
+            
+            // 4. Calculate Days Remaining
+            const daysRemaining = dateDiffInDays(currentDate, edcDate);
+
+            // 5. Determine Trimester
+            const trimester = getTrimester(weeks);
+
+            // 6. Display Results
+            document.getElementById('calculated-edc').innerText = formatReadableDate(edcDate);
+            document.getElementById('current-week').innerText = currentWeekDisplay;
+            document.getElementById('current-trimester').innerText = trimester;
+            document.getElementById('days-remaining').innerText = daysRemaining > 0 ? daysRemaining : 0;
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your date formats.", true);
+        }
+    });
+
+    // Set default dates
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        
+        // Default Current Date to Today
+        document.getElementById('current-date').value = `${yyyy}-${mm}-${dd}`;
+        
+        // Default LMP Date to roughly 12 weeks ago
+        const defaultLMP = new Date(today);
+        defaultLMP.setDate(today.getDate() - (12 * 7)); // Subtract 12 weeks (84 days)
+        const lmpYyyy = defaultLMP.getFullYear();
+        const lmpMm = String(defaultLMP.getMonth() + 1).padStart(2, '0');
+        const lmpDd = String(defaultLMP.getDate()).padStart(2, '0');
+
+        document.getElementById('lmp-date').value = `${lmpYyyy}-${lmpMm}-${lmpDd}`;
+    });
+</script>
+
+{% endblock %}

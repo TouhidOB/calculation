@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Historical Period Duration Calculator{% endblock %}
+
+{% block meta_description %}Calculate the total duration of a historical period in years, accurately handling the transition between BCE (Before Common Era) and CE (Common Era) by accounting for the missing year zero.{% endblock %}
+
+{% block meta_keywords %}historical duration, BCE CE calculator, year zero, time period, history tool, calendar calculation{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #fff8e1; /* Light sepia tone background */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #8b4513; /* Brown/Sepia accent for history theme */
+    }
+
+    .era-select {
+        background-color: #fcfcfc;
+        border-radius: 5px;
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #e6e0d3; /* Darker sepia background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #a0522d;
+    }
+
+    .result-section h3 {
+        color: #4e342e; /* Dark brown for title */
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .duration-display {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #d4af37; /* Gold accent */
+        line-height: 1.2;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🏛️ Historical Period Duration Calculator</h1>
+    <p class="small-muted">Calculate the total number of years between two dates, correctly accounting for the missing year zero.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="historical-duration-form">
+            <h5 class="section-title">Step 1: Period Start</h5>
+
+            <div class="row g-3 mb-4">
+                <!-- Start Year -->
+                <div class="col-6">
+                    <label for="start-year" class="form-label">Start Year (e.g., 44)</label>
+                    <input type="number" class="form-control" id="start-year" value="500" min="1" required>
+                </div>
+                <!-- Start Era -->
+                <div class="col-6">
+                    <label for="start-era" class="form-label">Era</label>
+                    <select class="form-select era-select" id="start-era" required>
+                        <option value="BCE">BCE (Before Common Era)</option>
+                        <option value="CE">CE (Common Era)</option>
+                    </select>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: Period End</h5>
+
+            <div class="row g-3 mb-4">
+                <!-- End Year -->
+                <div class="col-6">
+                    <label for="end-year" class="form-label">End Year (e.g., 476)</label>
+                    <input type="number" class="form-control" id="end-year" value="1453" min="1" required>
+                </div>
+                <!-- End Era -->
+                <div class="col-6">
+                    <label for="end-era" class="form-label">Era</label>
+                    <select class="form-select era-select" id="end-era" required>
+                        <option value="CE">CE (Common Era)</option>
+                        <option value="BCE">BCE (Before Common Era)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-warning mt-3 w-100" type="submit" style="background-color: #a0522d; border-color: #a0522d;">Calculate Duration</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Total Duration</h3>
+
+                <small class="text-muted">The period lasted for:</small>
+                <div class="duration-display" id="calculated-duration">0</div>
+                <small class="text-muted">Years</small>
+
+                <div class="info-box mt-4">
+                    <p>Start Date: <strong id="start-date-display"></strong></p>
+                    <p>End Date: <strong id="end-date-display"></strong></p>
+                    <p class="small text-muted m-0" id="calculation-note"></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    function calculateDuration(startYear, startEra, endYear, endEra) {
+        let duration = 0;
+        let note = "";
+
+        // Standardize the order: Start must be chronologically BEFORE End
+        let isStartBCE = startEra === 'BCE';
+        let isEndBCE = endEra === 'BCE';
+
+        // Check for chronological order (Start must be <= End)
+        if (isStartBCE && !isEndBCE) {
+            // Case 1: BCE -> CE (Valid chronological order)
+            // Duration = BCE Years + CE Years - 1 (for the missing year zero)
+            duration = startYear + endYear - 1;
+            note = "Calculation: Start Year (BCE) + End Year (CE) - 1 (Missing Year Zero).";
+        
+        } else if (!isStartBCE && !isEndBCE) {
+            // Case 2: CE -> CE
+            if (endYear < startYear) {
+                 return { duration: 0, note: "Error: End Year (CE) must be >= Start Year (CE)." };
+            }
+            duration = endYear - startYear;
+            note = "Calculation: End Year (CE) - Start Year (CE).";
+        
+        } else if (isStartBCE && isEndBCE) {
+            // Case 3: BCE -> BCE
+            if (endYear > startYear) {
+                return { duration: 0, note: "Error: End Year (BCE) must be <= Start Year (BCE) for forward chronology." };
+            }
+            duration = startYear - endYear;
+            note = "Calculation: Start Year (BCE) - End Year (BCE).";
+        
+        } else if (!isStartBCE && isEndBCE) {
+            // Case 4: CE -> BCE (Invalid chronological order)
+            return { duration: 0, note: "Error: Chronological order is reversed (CE cannot precede BCE)." };
+        }
+        
+        return { duration, note };
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('historical-duration-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const startYear = parseInt(document.getElementById('start-year').value, 10);
+        const startEra = document.getElementById('start-era').value;
+        const endYear = parseInt(document.getElementById('end-year').value, 10);
+        const endEra = document.getElementById('end-era').value;
+
+        if (isNaN(startYear) || isNaN(endYear) || startYear < 1 || endYear < 1) {
+            displayStatus("Years must be positive integers (1 or greater).", true);
+            return;
+        }
+
+        try {
+            // 1. Perform Calculation
+            const { duration, note } = calculateDuration(startYear, startEra, endYear, endEra);
+
+            if (duration < 0) {
+                 // Should be caught by the internal checks, but good safeguard
+                displayStatus("The chronological order is invalid. Please check your start and end dates.", true);
+                return;
+            } else if (duration === 0 && note.includes("Error")) {
+                displayStatus(note.replace("Error: ", ""), true);
+                return;
+            }
+
+            // 2. Display Results
+            document.getElementById('calculated-duration').innerText = duration.toLocaleString();
+            document.getElementById('start-date-display').innerText = `${startYear} ${startEra}`;
+            document.getElementById('end-date-display').innerText = `${endYear} ${endEra}`;
+            document.getElementById('calculation-note').innerText = note;
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your inputs.", true);
+        }
+    });
+
+    // Set default era for better UX on load (BCE -> CE default)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('start-era').value = 'BCE';
+        document.getElementById('end-era').value = 'CE';
+        document.getElementById('start-year').value = 500;
+        document.getElementById('end-year').value = 1453;
+    });
+</script>
+
+{% endblock %}

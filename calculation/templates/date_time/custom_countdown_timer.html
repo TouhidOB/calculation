@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Custom Countdown Timer{% endblock %}
+
+{% block meta_description %}Set a custom target date and time to display a live countdown timer showing the remaining days, hours, minutes, and seconds.{% endblock %}
+
+{% block meta_keywords %}countdown timer, time remaining, date countdown, event timer, live clock{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+    
+    .result-alert {
+        white-space: pre-wrap;
+    }
+
+    #timer-display {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        padding: 20px 0;
+    }
+
+    .time-unit {
+        background: #0d6efd;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        min-width: 90px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .time-unit span {
+        display: block;
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .time-unit small {
+        display: block;
+        margin-top: 5px;
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+    
+    /* Responsive adjustment for small screens */
+    @media (max-width: 576px) {
+        #timer-display {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .time-unit {
+            min-width: 70px;
+            padding: 10px;
+        }
+        .time-unit span {
+            font-size: 1.8rem;
+        }
+    }
+    
+    .form-control[type="date"], .form-control[type="time"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">⏱️ Custom Countdown Timer</h1>
+    <p class="small-muted">Set a specific date and time to start a **live, updating countdown** to your event!</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="countdown-form">
+            <h5 class="section-title">Step 1: Set Target Date and Time</h5>
+
+            <!-- Target Date and Time Inputs -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="target-date" class="form-label">Target Date</label>
+                    <input type="date" class="form-control" id="target-date" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="target-time" class="form-label">Target Time (Local)</label>
+                    <input type="time" class="form-control" id="target-time" value="00:00" required>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit" id="start-button">Start Countdown</button>
+            <button class="btn btn-danger mt-3 d-none" type="button" id="stop-button">Stop Countdown</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="status-message"></div>
+
+        <h5 class="section-title d-none mt-4" id="timer-title">Time Remaining:</h5>
+        
+        <div id="timer-display" class="d-none">
+            <div class="time-unit">
+                <span id="days">00</span>
+                <small>Days</small>
+            </div>
+            <div class="time-unit">
+                <span id="hours">00</span>
+                <small>Hours</small>
+            </div>
+            <div class="time-unit">
+                <span id="minutes">00</span>
+                <small>Minutes</small>
+            </div>
+            <div class="time-unit">
+                <span id="seconds">00</span>
+                <small>Seconds</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MS_PER_SECOND = 1000;
+    const MS_PER_MINUTE = 60 * MS_PER_SECOND;
+    const MS_PER_HOUR = 60 * MS_PER_MINUTE;
+    const MS_PER_DAY = 24 * MS_PER_HOUR;
+    
+    let countdownInterval;
+
+    function displayError(message) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-info');
+        statusDiv.classList.add('alert-danger');
+        statusDiv.innerHTML = `**Error:** ${message}`;
+        document.getElementById('timer-display').classList.add('d-none');
+        document.getElementById('timer-title').classList.add('d-none');
+    }
+
+    function updateTimer(targetTime) {
+        const now = new Date().getTime();
+        const distance = targetTime - now;
+        
+        const statusDiv = document.getElementById('status-message');
+        const timerDisplay = document.getElementById('timer-display');
+
+        if (distance < 0) {
+            clearInterval(countdownInterval);
+            
+            // Display final 00:00:00
+            document.getElementById('days').innerText = '00';
+            document.getElementById('hours').innerText = '00';
+            document.getElementById('minutes').innerText = '00';
+            document.getElementById('seconds').innerText = '00';
+            
+            // Show completion message
+            statusDiv.classList.remove('d-none', 'alert-danger', 'alert-info');
+            statusDiv.classList.add('alert-success');
+            statusDiv.innerHTML = '🎉 **COUNTDOWN COMPLETE!** The target time has been reached.';
+
+            document.getElementById('start-button').classList.remove('d-none');
+            document.getElementById('stop-button').classList.add('d-none');
+            return;
+        }
+
+        // Calculation time units
+        const days = Math.floor(distance / MS_PER_DAY);
+        const hours = Math.floor((distance % MS_PER_DAY) / MS_PER_HOUR);
+        const minutes = Math.floor((distance % MS_PER_HOUR) / MS_PER_MINUTE);
+        const seconds = Math.floor((distance % MS_PER_MINUTE) / MS_PER_SECOND);
+
+        // Display results
+        const pad = (num) => String(num).padStart(2, '0');
+        document.getElementById('days').innerText = pad(days);
+        document.getElementById('hours').innerText = pad(hours);
+        document.getElementById('minutes').innerText = pad(minutes);
+        document.getElementById('seconds').innerText = pad(seconds);
+        
+        timerDisplay.classList.remove('d-none');
+        document.getElementById('timer-title').classList.remove('d-none');
+        statusDiv.classList.add('d-none');
+    }
+
+    function startCountdown() {
+        // Clear any existing interval
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+        
+        const dateStr = document.getElementById('target-date').value;
+        const timeStr = document.getElementById('target-time').value;
+
+        if (!dateStr || !timeStr) {
+            displayError("Please set both a target date and time.");
+            return;
+        }
+
+        // Create the target timestamp in milliseconds (local time)
+        const targetDateTime = new Date(`${dateStr}T${timeStr}:00`);
+        const targetTime = targetDateTime.getTime();
+
+        if (isNaN(targetTime)) {
+             displayError("Invalid date or time format.");
+            return;
+        }
+
+        const now = new Date().getTime();
+        if (targetTime <= now) {
+            displayError("The target time must be in the future.");
+            return;
+        }
+        
+        // Initial update
+        updateTimer(targetTime);
+        
+        // Start the continuous update
+        countdownInterval = setInterval(() => updateTimer(targetTime), 1000);
+
+        // Update button visibility
+        document.getElementById('start-button').classList.add('d-none');
+        document.getElementById('stop-button').classList.remove('d-none');
+    }
+    
+    function stopCountdown() {
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+        
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger');
+        statusDiv.classList.add('alert-info');
+        statusDiv.innerHTML = '⏸️ **Countdown Paused.** Click Start Countdown to resume.';
+        
+        document.getElementById('start-button').classList.remove('d-none');
+        document.getElementById('stop-button').classList.add('d-none');
+    }
+
+    // Attach event listeners
+    document.getElementById('countdown-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        startCountdown();
+    });
+    
+    document.getElementById('stop-button').addEventListener('click', stopCountdown);
+    
+    // Set today's date + 1 day as default
+    document.addEventListener('DOMContentLoaded', () => {
+        const now = new Date();
+        now.setDate(now.getDate() + 1); // Tomorrow
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        document.getElementById('target-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+
+</script>
+
+{% endblock %}

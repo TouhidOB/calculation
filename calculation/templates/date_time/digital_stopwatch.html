@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Digital Stopwatch (Start, Stop, Lap){% endblock %}
+
+{% block meta_description %}A simple, accurate digital stopwatch with start, pause, reset, and lap-time recording functionality.{% endblock %}
+
+{% block meta_keywords %}stopwatch, digital timer, lap timer, elapsed time, time measurement{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .stopwatch-display {
+        font-family: 'Inter', monospace;
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #1a202c;
+    }
+
+    .milliseconds {
+        font-size: 2.5rem;
+        color: #6366f1; /* Tailwind Indigo */
+        margin-left: 5px;
+        font-weight: 400;
+    }
+
+    .controls button {
+        margin: 5px;
+        min-width: 120px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        border-radius: 50px;
+        transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .controls button:active {
+        transform: scale(0.98);
+    }
+
+    #lap-times-container {
+        margin-top: 30px;
+        max-height: 250px;
+        overflow-y: auto;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 10px;
+        text-align: left;
+    }
+
+    .lap-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border-bottom: 1px dashed #f1f1f1;
+        font-family: monospace;
+    }
+
+    .lap-item:last-child {
+        border-bottom: none;
+        font-weight: bold;
+        background-color: #f7f9fc;
+    }
+    
+    .lap-number {
+        font-weight: bold;
+        color: #4a5568;
+        min-width: 60px;
+    }
+
+    .lap-time {
+        color: #38a169; /* Tailwind Green */
+        min-width: 120px;
+        text-align: right;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">⏱️ Digital Stopwatch</h1>
+    <p class="small-muted">Measure elapsed time with precision. Features include Start, Pause, Lap, and Reset.</p>
+
+    <div class="calc-wrapper">
+
+        <!-- Stopwatch Display -->
+        <div class="stopwatch-display">
+            <span id="display-min">00</span>:
+            <span id="display-sec">00</span>.
+            <span id="display-ms" class="milliseconds">000</span>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls mb-4">
+            <button class="btn btn-success" id="start-button">Start</button>
+            <button class="btn btn-warning d-none" id="pause-button">Pause</button>
+            <button class="btn btn-info" id="lap-button" disabled>Lap</button>
+            <button class="btn btn-danger" id="reset-button" disabled>Reset</button>
+        </div>
+
+        <!-- Lap Times -->
+        <h5 class="section-title">Lap Times</h5>
+        <div id="lap-times-container">
+            <p id="no-laps-message" class="text-muted small">No laps recorded yet.</p>
+            <div id="lap-list">
+                <!-- Lap items inserted here -->
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // State variables
+    let startTime; 
+    let elapsedTime = 0;
+    let timerInterval;
+    let isRunning = false;
+    let lapCounter = 0;
+    let lastLapTime = 0; // The total time of the previous lap measurement
+    
+    // DOM references
+    const displayMin = document.getElementById('display-min');
+    const displaySec = document.getElementById('display-sec');
+    const displayMs = document.getElementById('display-ms');
+    const startButton = document.getElementById('start-button');
+    const pauseButton = document.getElementById('pause-button');
+    const lapButton = document.getElementById('lap-button');
+    const resetButton = document.getElementById('reset-button');
+    const lapList = document.getElementById('lap-list');
+    const noLapsMessage = document.getElementById('no-laps-message');
+
+    // Constants
+    const MS_PER_SEC = 1000;
+    const MS_PER_MIN = 60 * MS_PER_SEC;
+
+    /**
+     * Converts milliseconds into formatted time string (MM:SS.MS).
+     * @param {number} ms - Total milliseconds elapsed.
+     * @returns {string} Formatted time string.
+     * @returns {object} Object with formatted components.
+     */
+    function formatTime(ms) {
+        const totalSeconds = Math.floor(ms / MS_PER_SEC);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const milliseconds = ms % MS_PER_SEC;
+
+        const pad = (num, length = 2) => String(num).padStart(length, '0');
+
+        return {
+            minutes: pad(minutes),
+            seconds: pad(seconds),
+            milliseconds: pad(milliseconds, 3)
+        };
+    }
+
+    /**
+     * Updates the stopwatch display and handles continuous counting.
+     */
+    function updateDisplay() {
+        elapsedTime = Date.now() - startTime;
+        const time = formatTime(elapsedTime);
+        
+        displayMin.textContent = time.minutes;
+        displaySec.textContent = time.seconds;
+        displayMs.textContent = time.milliseconds;
+    }
+
+    // --- Control Functions ---
+
+    function startStopwatch() {
+        if (!isRunning) {
+            // Adjust startTime by subtracting the previous elapsedTime, so it continues from where it paused.
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(updateDisplay, 10); // Update every 10ms for smooth milliseconds
+
+            isRunning = true;
+            
+            // Update buttons
+            startButton.classList.add('d-none');
+            pauseButton.classList.remove('d-none');
+            lapButton.disabled = false;
+            resetButton.disabled = false;
+        }
+    }
+
+    function pauseStopwatch() {
+        if (isRunning) {
+            clearInterval(timerInterval);
+            isRunning = false;
+            
+            // Update buttons
+            pauseButton.classList.add('d-none');
+            startButton.classList.remove('d-none');
+            // Allow lap to be pressed if the user wants to record the final time
+            lapButton.disabled = false; 
+        }
+    }
+
+    function resetStopwatch() {
+        clearInterval(timerInterval);
+        isRunning = false;
+        elapsedTime = 0;
+        lapCounter = 0;
+        lastLapTime = 0;
+        
+        // Reset display
+        displayMin.textContent = '00';
+        displaySec.textContent = '00';
+        displayMs.textContent = '000';
+        
+        // Clear laps
+        lapList.innerHTML = '';
+        noLapsMessage.classList.remove('d-none');
+
+        // Update buttons
+        startButton.classList.remove('d-none');
+        pauseButton.classList.add('d-none');
+        lapButton.disabled = true;
+        resetButton.disabled = true;
+    }
+
+    function recordLap() {
+        if (elapsedTime === 0) return; // Don't record lap if stopped at zero
+        
+        lapCounter++;
+        const currentLapTime = elapsedTime - lastLapTime;
+        lastLapTime = elapsedTime; // Update reference for the next lap
+
+        const totalFormatted = formatTime(elapsedTime);
+        const lapFormatted = formatTime(currentLapTime);
+
+        // Build the lap time string (MM:SS.MS)
+        const totalTimeStr = `${totalFormatted.minutes}:${totalFormatted.seconds}.${totalFormatted.milliseconds}`;
+        const lapTimeStr = `${lapFormatted.minutes}:${lapFormatted.seconds}.${lapFormatted.milliseconds}`;
+
+        const lapItem = document.createElement('div');
+        lapItem.className = 'lap-item';
+        
+        // Insert the new lap at the top of the list (most recent first)
+        lapItem.innerHTML = `
+            <span class="lap-number">Lap ${lapCounter}</span>
+            <span class="lap-total">${totalTimeStr}</span>
+            <span class="lap-time">${lapTimeStr}</span>
+        `;
+        
+        // Prepend the new lap
+        lapList.prepend(lapItem);
+        noLapsMessage.classList.add('d-none');
+    }
+    
+    // --- Event Listeners ---
+    
+    startButton.addEventListener('click', startStopwatch);
+    pauseButton.addEventListener('click', pauseStopwatch);
+    lapButton.addEventListener('click', recordLap);
+    resetButton.addEventListener('click', resetStopwatch);
+
+</script>
+
+{% endblock %}

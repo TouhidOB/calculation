@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Retirement Date Calculator{% endblock %}
+
+{% block meta_description %}Estimate your future retirement date and the exact time remaining based on your current age, target retirement age, and the date of calculation.{% endblock %}
+
+{% block meta_keywords %}retirement age, retirement date, financial planning, age calculator, retirement goal{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #4CAF50; /* Green accent for financial/growth theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #e8f5e9; /* Light green background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #4CAF50;
+    }
+
+    .result-section h3 {
+        color: #388E3C; /* Darker green */
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .date-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #1976D2; /* Blue for high visibility */
+        line-height: 1.2;
+    }
+
+    .time-remaining-display {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #F44336; /* Red for emphasis/countdown */
+        margin-top: 10px;
+    }
+
+    .info-box {
+        background-color: #f7fff7;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 5px solid #81c784;
+        text-align: left;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🏖️ Retirement Date Calculator</h1>
+    <p class="small-muted">Project the exact date you will reach your target retirement age and the time remaining.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="retirement-form">
+            <h5 class="section-title">Step 1: Your Age & Goals</h5>
+
+            <div class="row g-3">
+                <!-- Current Age -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="current-age" class="form-label">Current Age (Years)</label>
+                        <input type="number" class="form-control" id="current-age" value="35" min="18" required>
+                    </div>
+                </div>
+
+                <!-- Target Age -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="target-age" class="form-label">Target Retirement Age (Years)</label>
+                        <input type="number" class="form-control" id="target-age" value="65" min="18" required>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: Date of Calculation</h5>
+            
+            <!-- Current Date -->
+            <div class="form-group mb-4">
+                <label for="current-date" class="form-label">Date of Calculation (Today)</label>
+                <input type="date" class="form-control" id="current-date" required>
+                <small class="form-text text-muted">The date from which the countdown begins.</small>
+            </div>
+
+            <button class="btn btn-success mt-3 w-100" type="submit">Calculate Retirement Date</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Estimated Retirement Date</h3>
+
+                <small class="text-muted">You will be ${document.getElementById('target-age').value} years old on:</small>
+                <div class="date-display" id="calculated-retirement-date"></div>
+
+                <div class="time-remaining-display" id="time-remaining"></div>
+
+                <div class="info-box mt-4">
+                    <p>Years to Work: <strong id="years-to-work">0</strong></p>
+                    <p>Target Year: <strong id="target-year">0000</strong></p>
+                    <p class="small text-muted m-0">This calculation assumes your birthday is today for simplicity in projecting the exact date.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+    
+    function calculateTimeDifference(date1, date2) {
+        let years = date2.getFullYear() - date1.getFullYear();
+        let months = date2.getMonth() - date1.getMonth();
+        let days = date2.getDate() - date1.getDate();
+
+        if (days < 0) {
+            months--;
+            // Get the number of days in the previous month of date2
+            const daysInLastMonth = new Date(date2.getFullYear(), date2.getMonth(), 0).getDate();
+            days += daysInLastMonth;
+        }
+
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+
+        return `${years} years, ${months} months, and ${days} days`;
+    }
+
+
+    function calculateRetirementDate(currentAge, targetAge, currentDateStr) {
+        const yearsToWork = targetAge - currentAge;
+
+        if (yearsToWork <= 0) {
+            return { 
+                retirementDate: new Date(currentDateStr), 
+                yearsToWork: 0, 
+                timeRemainingStr: "0 years, 0 months, and 0 days (You are already at your target age!)" 
+            };
+        }
+
+        // 1. Create the base date (Current Date)
+        const currentDate = new Date(currentDateStr + 'T00:00:00');
+
+        // 2. Calculate the target retirement date by adding yearsToWork to the current date.
+        // This assumes the user hits their target age on the same month and day as the calculation date.
+        const retirementDate = new Date(currentDate);
+        retirementDate.setFullYear(currentDate.getFullYear() + yearsToWork);
+        
+        // 3. Calculate time remaining (difference between current date and target date)
+        const timeRemainingStr = calculateTimeDifference(currentDate, retirementDate);
+
+        return { retirementDate, yearsToWork, timeRemainingStr };
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('retirement-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const currentAge = parseInt(document.getElementById('current-age').value, 10);
+        const targetAge = parseInt(document.getElementById('target-age').value, 10);
+        const currentDateStr = document.getElementById('current-date').value;
+
+        if (isNaN(currentAge) || isNaN(targetAge) || !currentDateStr) {
+            displayStatus("Please ensure all fields are correctly filled.", true);
+            return;
+        }
+        
+        if (targetAge < currentAge) {
+            displayStatus(`Your target age (${targetAge}) must be greater than or equal to your current age (${currentAge}).`, true);
+            return;
+        }
+
+
+        try {
+            // 1. Perform Calculation
+            const { retirementDate, yearsToWork, timeRemainingStr } = calculateRetirementDate(
+                currentAge,
+                targetAge,
+                currentDateStr
+            );
+
+            // 2. Display Results
+            const dateReadable = formatReadableDate(retirementDate);
+            const targetYear = retirementDate.getFullYear();
+
+            document.getElementById('calculated-retirement-date').innerText = dateReadable;
+            document.getElementById('time-remaining').innerText = timeRemainingStr;
+            document.getElementById('years-to-work').innerText = yearsToWork;
+            document.getElementById('target-year').innerText = targetYear;
+
+            document.getElementById('result-title').innerText = `Estimated Retirement Date (Age ${targetAge})`;
+            
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your inputs.", true);
+        }
+    });
+
+    // Set default date to today and default ages
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('current-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

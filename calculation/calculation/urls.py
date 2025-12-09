@@ -23,6 +23,7 @@ urlpatterns = [
     path('finance/', include('finance.urls')),
     path('health/', include('health.urls')),
     path('business/', include('business_investment.urls')),
+    path('date_time/', include('date_time.urls')),
 ]
 
 

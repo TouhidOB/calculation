@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'finance',
     'health',
     'business_investment',
+    'date_time',
 ]
 
 MIDDLEWARE = [

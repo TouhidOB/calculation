@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}International Phone Call Time Planner{% endblock %}
+
+{% block meta_description %}Convert a local time to a destination time zone for planning international phone calls, accurately handling Daylight Saving Time (DST).{% endblock %}
+
+{% block meta_keywords %}international call planner, time zone converter, DST calculator, call time utility, IANA time zones{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #e6e6fa; /* Lavender background */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #6a5acd; /* Slate Blue accent */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #f0f8ff; /* Alice Blue background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 2px solid #6a5acd;
+    }
+
+    .result-section h3 {
+        color: #483d8b; 
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .time-display {
+        font-size: 3rem;
+        font-weight: 900;
+        color: #ff6347; /* Tomato Red for visibility */
+        line-height: 1.2;
+    }
+
+    .detail-card {
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px auto;
+        border-left: 5px solid #6a5acd;
+        max-width: 400px;
+        text-align: left;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">📞 International Phone Call Time Planner</h1>
+    <p class="small-muted">Find out the best time for your call by converting your local time to a remote time zone.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="call-planner-form">
+            <h5 class="section-title">Step 1: Your Location & Time</h5>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="origin-timezone" class="form-label">Your Time Zone</label>
+                    <select class="form-select" id="origin-timezone" required></select>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="origin-time" class="form-label">Call Start Time (In Your Time Zone)</label>
+                    <input type="datetime-local" class="form-control" id="origin-time" required>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: Destination Location</h5>
+
+            <div class="form-group mb-4">
+                <label for="destination-timezone" class="form-label">Destination Time Zone</label>
+                <select class="form-select" id="destination-timezone" required></select>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit" style="background-color: #6a5acd; border-color: #6a5acd;">Calculate Call Time</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Scheduled Call Time at Destination</h3>
+
+                <div class="time-display" id="destination-time-display">--:--</div>
+                
+                <p class="text-muted mb-4" id="destination-city-display"></p>
+
+                <div class="detail-card">
+                    <p class="mb-1">Your Call Time: <strong id="origin-summary"></strong></p>
+                    <p class="mb-0">Destination Time Zone: <strong id="destination-summary"></strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // --- IANA Time Zone Data (Illustrative Subset) ---
+    const TIMEZONE_CITIES = {
+        'Your Current Time Zone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+        'New York (EST/EDT)': 'America/New_York',
+        'London (GMT/BST)': 'Europe/London',
+        'Paris (CET/CEST)': 'Europe/Paris',
+        'Dubai (GST)': 'Asia/Dubai',
+        'Tokyo (JST)': 'Asia/Tokyo',
+        'Sydney (AEST/AEDT)': 'Australia/Sydney',
+        'Dhaka (BST)': 'Asia/Dhaka', // Including the current location's timezone for relevance
+        'Los Angeles (PST/PDT)': 'America/Los_Angeles',
+        'Mumbai (IST)': 'Asia/Kolkata',
+    };
+    
+    // Helper to populate the dropdowns
+    function populateTimezoneDropdowns() {
+        const originSelect = document.getElementById('origin-timezone');
+        const destinationSelect = document.getElementById('destination-timezone');
+        
+        // Clear existing options
+        originSelect.innerHTML = '';
+        destinationSelect.innerHTML = '';
+        
+        for (const [cityLabel, ianaZone] of Object.entries(TIMEZONE_CITIES)) {
+            const option = document.createElement('option');
+            option.value = ianaZone;
+            option.textContent = `${cityLabel} (${ianaZone})`;
+            
+            // Clone the option for the destination dropdown
+            const optionClone = option.cloneNode(true);
+
+            originSelect.appendChild(option);
+            destinationSelect.appendChild(optionClone);
+        }
+        
+        // Set the user's local timezone as the default for the origin
+        originSelect.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        
+        // Set a different default for destination for better UX
+        destinationSelect.value = TIMEZONE_CITIES['New York (EST/EDT)'];
+    }
+
+    function convertTimezone(dateTimeStr, originZone, destinationZone) {
+        // 1. Create a UTC Date object from the input string, interpreting it as if it were in the Origin Zone.
+        // We append the origin zone to the string to force the Date constructor to parse it correctly.
+        // Note: The Date constructor might be finicky. Using an intermediate ISO string is safer.
+        
+        // Use the browser's date formatting capabilities (Intl.DateTimeFormat) for robust conversion.
+        
+        // First, get the timestamp (milliseconds since epoch) of the input time in the origin timezone.
+        const originDate = new Date(dateTimeStr); 
+        
+        // 2. Format the timestamp into the Destination Zone
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: destinationZone,
+            timeZoneName: 'short'
+        });
+        
+        const destinationTimeFormatted = formatter.format(originDate);
+
+        // 3. Create Summaries
+        const originFormatter = new Intl.DateTimeFormat('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: originZone,
+            timeZoneName: 'long'
+        });
+        const destFormatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: destinationZone,
+            timeZoneName: 'long'
+        });
+        
+        const originSummary = `${originDate.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})} (${originFormatter.format(originDate).split(', ')[1] || originZone})`;
+        const destinationSummary = `${destinationZone} (${destFormatter.format(originDate).split(', ')[1] || destinationZone})`;
+
+
+        return { 
+            destinationTime: destinationTimeFormatted,
+            originSummary: originSummary,
+            destinationSummary: destinationSummary
+        };
+    }
+
+    // --- Event Handler ---
+    document.getElementById('call-planner-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const originZone = document.getElementById('origin-timezone').value;
+        const destinationZone = document.getElementById('destination-timezone').value;
+        const originDateTimeStr = document.getElementById('origin-time').value;
+
+        if (!originDateTimeStr) {
+            displayStatus("Please select a date and time for the call.", true);
+            return;
+        }
+        
+        if (originZone === destinationZone) {
+            displayStatus("Origin and Destination time zones are the same. No conversion needed!", false);
+            return;
+        }
+
+        try {
+            // 1. Perform Conversion
+            const result = convertTimezone(originDateTimeStr, originZone, destinationZone);
+            
+            // 2. Extract city label for display
+            const destinationCityLabel = Object.keys(TIMEZONE_CITIES).find(key => TIMEZONE_CITIES[key] === destinationZone);
+            
+            // 3. Display Results
+            document.getElementById('destination-time-display').innerText = result.destinationTime.split(', ')[1].split(' ')[0] + ' ' + result.destinationTime.split(', ')[2]; // Extract HH:MM:SS AM/PM
+
+            document.getElementById('destination-city-display').innerText = `in ${destinationCityLabel || destinationZone}`;
+            document.getElementById('origin-summary').innerText = result.originSummary;
+            document.getElementById('destination-summary').innerText = result.destinationSummary;
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Time Conversion Error:", error);
+            displayStatus(`Failed to calculate call time. Error: ${error.message}. Please ensure your browser supports IANA time zones.`, true);
+        }
+    });
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        populateTimezoneDropdowns();
+
+        // Set default date/time to now for convenience
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        
+        document.getElementById('origin-time').value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+    });
+</script>
+
+{% endblock %}

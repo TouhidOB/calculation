@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Pay Period Date Calculator{% endblock %}
+
+{% block meta_description %}Calculate and project upcoming pay dates based on your last pay date and payment frequency (weekly, bi-weekly, semi-monthly, or monthly).{% endblock %}
+
+{% block meta_keywords %}pay period calculator, next pay date, payroll schedule, bi-weekly pay, semi-monthly pay, monthly pay{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #6f42c1; /* Bootstrap Purple accent for finance/planning theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #f3e9ff; /* Light purple background */
+        padding: 25px;
+        border-radius: 8px;
+        margin-top: 30px;
+        border: 1px solid #6f42c1;
+    }
+
+    .result-section h3 {
+        color: #6f42c1;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .pay-date-list {
+        list-style: none;
+        padding: 0;
+        text-align: center;
+    }
+
+    .pay-date-list li {
+        font-size: 1.1rem;
+        padding: 8px 0;
+        border-bottom: 1px dashed #ccc;
+    }
+
+    .pay-date-list li:first-child {
+        font-weight: bold;
+        font-size: 1.5rem;
+        color: #dc3545; /* Red accent for the very next date */
+    }
+
+    .pay-date-list li:last-child {
+        border-bottom: none;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">💸 Pay Period Calculator</h1>
+    <p class="small-muted">Project your upcoming pay dates by entering the last payment received and your payment frequency.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="pay-period-form">
+            <h5 class="section-title">Step 1: Last Pay Date</h5>
+
+            <!-- Last Pay Date Input -->
+            <div class="form-group mb-4">
+                <label for="last-pay-date" class="form-label">Date of Last Payment Received</label>
+                <input type="date" class="form-control" id="last-pay-date" required>
+            </div>
+            
+            <h5 class="section-title">Step 2: Payment Frequency</h5>
+
+            <!-- Frequency Dropdown -->
+            <div class="form-group mb-4">
+                <label for="pay-frequency" class="form-label">Select Pay Frequency</label>
+                <select class="form-select" id="pay-frequency" required>
+                    <option value="weekly">Weekly (Every 7 days)</option>
+                    <option value="bi-weekly">Bi-Weekly (Every 14 days)</option>
+                    <option value="semi-monthly">Semi-Monthly (Twice a month - 1st & 15th)</option>
+                    <option value="monthly">Monthly (Same day each month)</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary mt-3 w-100" type="submit">Calculate Upcoming Pay Dates</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3>Upcoming Pay Dates:</h3>
+                <ul class="pay-date-list" id="pay-dates-list">
+                    <!-- Pay dates will be injected here -->
+                </ul>
+            </div>
+        </div>
+        
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    /**
+     * Calculates the next N pay dates based on the last pay date and frequency.
+     * Uses Date.UTC methods for reliable date arithmetic.
+     * @param {Date} lastPayDate - The date of the last payment (UTC midnight).
+     * @param {string} frequency - weekly, bi-weekly, semi-monthly, or monthly.
+     * @param {number} count - The number of future dates to calculate.
+     * @returns {Array<Date>} An array of the next pay dates.
+     */
+    function calculateNextPayDates(lastPayDate, frequency, count) {
+        let dates = [];
+        let currentDate = new Date(lastPayDate.getTime());
+        const targetDay = lastPayDate.getUTCDate(); // Used for monthly pay
+
+        // Helper to move to the next day
+        const getNextDay = (date) => new Date(date.getTime() + MILLISECONDS_PER_DAY);
+
+        for (let i = 0; i < count; i++) {
+            let nextDate;
+            
+            switch (frequency) {
+                case 'weekly':
+                    // Add 7 days
+                    currentDate.setTime(currentDate.getTime() + (7 * MILLISECONDS_PER_DAY));
+                    nextDate = new Date(currentDate.getTime());
+                    break;
+
+                case 'bi-weekly':
+                    // Add 14 days
+                    currentDate.setTime(currentDate.getTime() + (14 * MILLISECONDS_PER_DAY));
+                    nextDate = new Date(currentDate.getTime());
+                    break;
+                
+                case 'monthly':
+                    // Add one month, maintaining the day of the month
+                    let currentMonth = currentDate.getUTCMonth();
+                    currentDate.setUTCMonth(currentMonth + 1);
+                    // Handle cases where the target day doesn't exist in the next month (e.g., Mar 31 -> Apr 30)
+                    if (currentDate.getUTCDate() !== targetDay) {
+                        currentDate.setUTCDate(0); // Move to the last day of the current month
+                    }
+                    nextDate = new Date(currentDate.getTime());
+                    break;
+
+                case 'semi-monthly':
+                    // Paydays are the 1st and the 15th of the month.
+                    let currentDay = currentDate.getUTCDate();
+                    let currentMonthSM = currentDate.getUTCMonth();
+                    let currentYearSM = currentDate.getUTCFullYear();
+                    
+                    if (currentDay < 15) {
+                        // If it's before the 15th, the next payday is the 15th of the current month
+                        currentDate.setUTCDate(15);
+                    } else {
+                        // If it's on or after the 15th, the next payday is the 1st of the next month
+                        currentDate.setUTCMonth(currentMonthSM + 1);
+                        currentDate.setUTCDate(1);
+                    }
+                    nextDate = new Date(currentDate.getTime());
+                    break;
+
+                default:
+                    // Should not happen if select is correctly constrained
+                    return dates;
+            }
+            
+            // For Semi-Monthly, we must ensure the calculated date is *after* the last known date.
+            // All other frequencies naturally result in a later date.
+            if (frequency === 'semi-monthly' && nextDate.getTime() <= lastPayDate.getTime() && dates.length === 0) {
+                // If the first calculated semi-monthly date is not later than the anchor,
+                // we calculate again (effectively skipping the first payday of the cycle).
+                i--; // Decrement counter to repeat calculation for the *next* date
+                currentDate = new Date(nextDate.getTime()); // Use this date as the new start for the next iteration
+                continue;
+            }
+            
+            dates.push(nextDate);
+            // Set currentDate for the next loop iteration (except for semi-monthly where it's handled above)
+            if (frequency !== 'semi-monthly') {
+                 currentDate = nextDate;
+            } else {
+                 // For semi-monthly, use the calculated next date as the start for the *following* date calculation
+                 lastPayDate = nextDate;
+                 currentDate = nextDate;
+            }
+        }
+        
+        return dates;
+    }
+
+
+    document.getElementById('pay-period-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const lastPayDateStr = document.getElementById('last-pay-date').value;
+        const payFrequency = document.getElementById('pay-frequency').value;
+
+        if (!lastPayDateStr || !payFrequency) {
+            displayStatus("Please enter the Last Pay Date and select a Pay Frequency.", true);
+            return;
+        }
+
+        // Parse date using UTC to ensure calculations are consistently based on date/day boundaries
+        const [y, m, d] = lastPayDateStr.split('-').map(Number);
+        const lastPayDate = new Date(Date.UTC(y, m - 1, d)); // Month is 0-indexed
+
+        const today = new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
+        
+        if (lastPayDate.getTime() >= today.getTime()) {
+            displayStatus("The Last Pay Date must be a date in the past.", true);
+            return;
+        }
+
+        // 1. Calculate the next 5 pay dates
+        const upcomingDates = calculateNextPayDates(lastPayDate, payFrequency, 5);
+
+        // 2. Display Results
+        const resultsList = document.getElementById('pay-dates-list');
+        resultsList.innerHTML = '';
+        
+        upcomingDates.forEach(date => {
+            const listItem = document.createElement('li');
+            listItem.innerText = formatReadableDate(date);
+            resultsList.appendChild(listItem);
+        });
+        
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+    
+    // Set a default last pay date (e.g., last Friday)
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        // Go back until Friday (day 5, UTC day is used later, so just set a recent date)
+        let lastFriday = new Date(today);
+        while (lastFriday.getDay() !== 5) { // 5 is Friday
+            lastFriday.setDate(lastFriday.getDate() - 1);
+        }
+
+        const yyyy = lastFriday.getFullYear();
+        const mm = String(lastFriday.getMonth() + 1).padStart(2, '0');
+        const dd = String(lastFriday.getDate()).padStart(2, '0');
+        
+        document.getElementById('last-pay-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Weekly Timesheet & Pay Calculator{% endblock %}
+
+{% block meta_description %}Calculate weekly gross work hours, net hours, total breaks, and estimated pay by tracking multiple daily shifts with start times, end times, and breaks.{% endblock %}
+
+{% block meta_keywords %}timesheet calculator, weekly hours, time tracking, payroll estimate, work log, hourly pay calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #fd7e14; /* Bootstrap Orange accent for energy/production theme */
+    }
+
+    /* Table Styles */
+    .timesheet-table th, .timesheet-table td {
+        vertical-align: middle;
+        padding: 8px;
+    }
+
+    .timesheet-table input[type="time"], .timesheet-table input[type="number"] {
+        width: 100%;
+        min-width: 70px;
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #fff4e6; /* Light orange background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .result-section h3 {
+        color: #e88d1d;
+        margin-bottom: 5px;
+        font-size: 1.2rem;
+    }
+
+    .total-display {
+        display: block;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #dc3545; /* Red accent for totals */
+        line-height: 1.2;
+    }
+    
+    .summary-text {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: #e88d1d;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">📈 Weekly Timesheet Calculator</h1>
+    <p class="small-muted">Log daily shifts, breaks, and calculate total weekly hours and estimated pay.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="timesheet-form">
+            <h5 class="section-title">Step 1: Hourly Wage</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="hourly-wage" class="form-label">Hourly Wage ($)</label>
+                    <input type="number" class="form-control" id="hourly-wage" min="0" value="25.00" required>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: Enter Daily Shifts</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered timesheet-table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th style="width: 120px;">Break (min)</th>
+                            <th>Net Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timesheet-body">
+                        <!-- Rows are populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-sm btn-outline-secondary" type="button" id="add-row-button">
+                    + Add Shift
+                </button>
+                <button class="btn btn-primary mt-3" type="submit">Calculate Weekly Totals</button>
+            </div>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                
+                <h3 class="mb-3">Weekly Summary:</h3>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <small>Total Net Hours</small>
+                        <span id="total-net-hours" class="total-display text-success">0:00</span>
+                    </div>
+                    <div class="col-md-6">
+                        <small>Total Estimated Pay</small>
+                        <span id="total-pay" class="total-display text-danger">$0.00</span>
+                    </div>
+                </div>
+                
+                <p class="summary-text" id="calculation-summary"></p>
+            </div>
+        </div>
+        
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MINUTES_PER_HOUR = 60;
+    const MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR;
+    let shiftCounter = 0;
+    
+    // Default days of the week for initial rows
+    const DEFAULT_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+    // Helper function to convert HH:MM string to total minutes from midnight
+    function timeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return (hours * MINUTES_PER_HOUR) + minutes;
+    }
+
+    // Helper function to format total minutes into H:MM string
+    function formatMinutesToHours(totalMinutes) {
+        if (totalMinutes < 0) return '0:00';
+        const hours = Math.floor(totalMinutes / MINUTES_PER_HOUR);
+        const minutes = totalMinutes % MINUTES_PER_HOUR;
+        const pad = (num) => String(num).padStart(2, '0');
+        return `${hours}:${pad(minutes)}`;
+    }
+
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+    
+    /**
+     * Calculates the net work minutes for a single shift.
+     * @param {string} startStr - HH:MM start time.
+     * @param {string} endStr - HH:MM end time.
+     * @param {number} breakMin - Break in minutes.
+     * @returns {number} Net work minutes.
+     */
+    function calculateShiftNetMinutes(startStr, endStr, breakMin) {
+        if (!startStr || !endStr) return 0;
+
+        const startMin = timeToMinutes(startStr);
+        const endMin = timeToMinutes(endStr);
+        let grossMin;
+
+        if (endMin < startMin) {
+            // Shift crosses midnight
+            grossMin = (endMin + MINUTES_PER_DAY) - startMin;
+        } else {
+            // Standard shift
+            grossMin = endMin - startMin;
+        }
+
+        const netMin = grossMin - breakMin;
+        return Math.max(0, netMin);
+    }
+    
+    /**
+     * Updates the calculated Net Hours for a specific row.
+     * @param {string} rowId - The unique ID of the row.
+     */
+    function updateRowCalculation(rowId) {
+        const row = document.getElementById(rowId);
+        if (!row) return;
+
+        const startTime = row.querySelector('.start-time').value;
+        const endTime = row.querySelector('.end-time').value;
+        const breakTime = parseInt(row.querySelector('.break-minutes').value || 0, 10);
+        const netHoursCell = row.querySelector('.net-hours-cell');
+        
+        const netMinutes = calculateShiftNetMinutes(startTime, endTime, breakTime);
+        const formattedNetHours = formatMinutesToHours(netMinutes);
+        
+        netHoursCell.innerText = formattedNetHours;
+        netHoursCell.dataset.netMinutes = netMinutes; // Store minutes for easy totaling
+    }
+
+    /**
+     * Creates a new row for the timesheet table.
+     * @param {string} dayLabel - The label for the day column.
+     * @param {string} defaultStart - Default start time.
+     * @param {string} defaultEnd - Default end time.
+     * @param {number} defaultBreak - Default break minutes.
+     */
+    function createTimesheetRow(dayLabel, defaultStart = '', defaultEnd = '', defaultBreak = 0) {
+        shiftCounter++;
+        const rowId = `shift-row-${shiftCounter}`;
+        const row = document.createElement('tr');
+        row.id = rowId;
+        
+        row.innerHTML = `
+            <td>${dayLabel}</td>
+            <td><input type="time" class="form-control form-control-sm start-time" value="${defaultStart}" required onchange="updateRowCalculation('${rowId}')"></td>
+            <td><input type="time" class="form-control form-control-sm end-time" value="${defaultEnd}" required onchange="updateRowCalculation('${rowId}')"></td>
+            <td><input type="number" class="form-control form-control-sm break-minutes" min="0" value="${defaultBreak}" required onchange="updateRowCalculation('${rowId}')"></td>
+            <td class="net-hours-cell" data-net-minutes="0">0:00</td>
+        `;
+        
+        document.getElementById('timesheet-body').appendChild(row);
+        
+        // Initial calculation update for default values
+        updateRowCalculation(rowId);
+    }
+
+    // --- Main Submission Logic ---
+
+    document.getElementById('timesheet-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const hourlyWage = parseFloat(document.getElementById('hourly-wage').value);
+        if (isNaN(hourlyWage) || hourlyWage < 0) {
+            displayStatus("Please enter a valid hourly wage (0 or greater).", true);
+            return;
+        }
+
+        let totalNetMinutes = 0;
+        let totalBreakMinutes = 0;
+        let totalGrossMinutes = 0;
+        let hasError = false;
+
+        const allRows = document.querySelectorAll('#timesheet-body tr');
+        
+        // 1. Recalculate and sum all times
+        allRows.forEach(row => {
+            const startStr = row.querySelector('.start-time').value;
+            const endStr = row.querySelector('.end-time').value;
+            const breakMinInput = row.querySelector('.break-minutes').value;
+            const breakMin = parseInt(breakMinInput || 0, 10);
+            
+            // Check for empty required fields
+            if (!startStr || !endStr || isNaN(breakMin) || breakMin < 0) {
+                 hasError = true;
+            }
+
+            const netMinutes = calculateShiftNetMinutes(startStr, endStr, breakMin);
+            const grossMinutes = calculateShiftNetMinutes(startStr, endStr, 0); // Calculate gross separately
+            
+            totalNetMinutes += netMinutes;
+            totalBreakMinutes += breakMin;
+            totalGrossMinutes += grossMinutes;
+            
+            // Update row display after final summing
+            row.querySelector('.net-hours-cell').innerText = formatMinutesToHours(netMinutes);
+        });
+
+        if (hasError) {
+            displayStatus("Please ensure all Start Time, End Time, and Break fields are correctly filled for every shift.", true);
+            return;
+        }
+
+        // 2. Calculate Final Totals
+        const totalNetHours = totalNetMinutes / MINUTES_PER_HOUR;
+        const estimatedPay = totalNetHours * hourlyWage;
+
+        // 3. Display Results
+        document.getElementById('total-net-hours').innerText = formatMinutesToHours(totalNetMinutes);
+        document.getElementById('total-pay').innerText = `$${estimatedPay.toFixed(2)}`;
+        
+        const summary = `
+Total Gross Time: ${formatMinutesToHours(totalGrossMinutes)}
+Total Break Time: ${totalBreakMinutes} minutes
+Hourly Rate: $${hourlyWage.toFixed(2)}
+        `;
+        document.getElementById('calculation-summary').innerText = summary;
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+
+    // --- Initialization and Event Handlers ---
+
+    // Initial population of default rows
+    document.addEventListener('DOMContentLoaded', () => {
+        DEFAULT_DAYS.forEach(day => {
+            createTimesheetRow(day, '09:00', '17:00', 30);
+        });
+    });
+
+    // Add row functionality
+    document.getElementById('add-row-button').addEventListener('click', () => {
+        const rowCount = document.getElementById('timesheet-body').children.length;
+        createTimesheetRow(`Shift ${rowCount + 1}`, '', '', 0);
+    });
+
+</script>
+
+{% endblock %}

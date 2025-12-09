@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Animal Age Calculator (Dog/Human Years){% endblock %}
+
+{% block meta_description %}Convert age between Dog Years and Human Years using the modern, non-linear logarithmic formula for a more accurate estimate.{% endblock %}
+
+{% block meta_keywords %}dog age calculator, human years to dog years, pet age converter, dog years formula, animal age{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #fdf6e3; /* Light, comforting color */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        color: #333;
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #ff9800; /* Orange/Gold accent for warmth */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #fffaf0; /* Off-white for clarity */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 2px dashed #ff9800; /* Playful border */
+    }
+
+    .result-section h3 {
+        color: #e65100; 
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .age-display {
+        font-size: 4rem;
+        font-weight: 900;
+        color: #4caf50; /* Green contrast for the final number */
+        line-height: 1.2;
+    }
+    
+    .age-label {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e65100;
+    }
+
+    .info-box {
+        background-color: #fff3e0;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 5px solid #ff9800;
+        text-align: left;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🐾 Animal Age Converter</h1>
+    <p class="small-muted">Find out your dog's age in human years, and vice-versa, using the non-linear formula.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="age-converter-form">
+            <h5 class="section-title">Step 1: Set Conversion & Input Age</h5>
+
+            <div class="row g-3">
+                <!-- Conversion Type -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="conversion-type" class="form-label">Conversion Direction</label>
+                        <select class="form-select" id="conversion-type" required>
+                            <option value="D2H">Dog Years → Human Years</option>
+                            <option value="H2D">Human Years → Dog Years</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Input Age -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="input-age" class="form-label" id="input-label">Age in Dog Years</label>
+                        <input type="number" class="form-control" id="input-age" value="1" min="0.1" step="0.1" required>
+                        <small class="form-text text-muted" id="formula-note"></small>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-warning mt-4 w-100" type="submit" style="background-color: #ff9800; border-color: #ff9800;">Calculate Equivalent Age</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Equivalent Age Result</h3>
+
+                <div class="age-display" id="converted-age">0.0</div>
+                <div class="age-label" id="converted-age-label">Human Years</div>
+
+                <div class="info-box mt-4">
+                    <p class="small m-0">
+                        <strong id="input-summary"></strong>
+                    </p>
+                    <p class="small text-muted m-0 mt-2">
+                        *Calculation based on the UC San Diego logarithmic formula: Human Age = 16 * ln(Dog Age) + 31.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    /**
+     * Calculates the age based on the selected conversion formula.
+     * @param {number} inputAge The age provided by the user.
+     * @param {string} type The conversion type ('D2H' or 'H2D').
+     * @returns {number} The calculated equivalent age.
+     */
+    function calculateAge(inputAge, type) {
+        if (type === 'D2H') {
+            // Dog Years to Human Years (D2H)
+            // Human Age = 16 * ln(Dog Age) + 31
+            return (16 * Math.log(inputAge)) + 31;
+        } else if (type === 'H2D') {
+            // Human Years to Dog Years (H2D)
+            // Dog Age = e^((Human Age - 31) / 16)
+            return Math.exp((inputAge - 31) / 16);
+        }
+        return 0; // Should not happen
+    }
+
+    // --- Event Handler for Type Change ---
+    document.getElementById('conversion-type').addEventListener('change', function () {
+        const type = this.value;
+        const inputLabel = document.getElementById('input-label');
+        const inputField = document.getElementById('input-age');
+        const formulaNote = document.getElementById('formula-note');
+
+        if (type === 'D2H') {
+            inputLabel.innerText = "Age in Dog Years";
+            inputField.min = "0.1";
+            inputField.value = "1";
+            formulaNote.innerText = "Note: Formula requires at least 0.1 dog years for calculation.";
+        } else {
+            inputLabel.innerText = "Age in Human Years";
+            inputField.min = "1";
+            inputField.value = "30";
+            formulaNote.innerText = "Note: Formula works best for Human Ages > 7.";
+        }
+    });
+
+
+    // --- Event Handler for Form Submission ---
+    document.getElementById('age-converter-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const inputAgeStr = document.getElementById('input-age').value;
+        const conversionType = document.getElementById('conversion-type').value;
+        const inputAge = parseFloat(inputAgeStr);
+
+        if (isNaN(inputAge) || inputAge <= 0) {
+            displayStatus("Please enter a valid age greater than zero.", true);
+            return;
+        }
+        
+        // Handle constraint for D2H conversion (Math.log(0) is -Infinity)
+        if (conversionType === 'D2H' && inputAge <= 0) {
+            displayStatus("For Dog Years to Human Years, the age must be greater than 0.", true);
+            return;
+        }
+
+        try {
+            // 1. Perform Calculation
+            const convertedAge = calculateAge(inputAge, conversionType);
+            
+            // 2. Determine Labels
+            const sourceUnit = conversionType === 'D2H' ? 'Dog' : 'Human';
+            const targetUnit = conversionType === 'D2H' ? 'Human' : 'Dog';
+
+            // 3. Display Results
+            document.getElementById('converted-age').innerText = convertedAge.toFixed(2);
+            document.getElementById('converted-age-label').innerText = `${targetUnit} Years`;
+            document.getElementById('input-summary').innerText = 
+                `${inputAge.toFixed(2)} ${sourceUnit} Years is approximately ${convertedAge.toFixed(2)} ${targetUnit} Years.`;
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayStatus("An error occurred during calculation. Please check your inputs.", true);
+        }
+    });
+
+    // Run the initial change logic on load
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize with default D2H values
+        document.getElementById('conversion-type').dispatchEvent(new Event('change'));
+    });
+</script>
+
+{% endblock %}

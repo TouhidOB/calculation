@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Seconds to Time Converter{% endblock %}
+
+{% block meta_description %}Convert a total number of seconds into its equivalent duration in Days, Hours, Minutes, and remaining Seconds (DD:HH:MM:SS format).{% endblock %}
+
+{% block meta_keywords %}seconds converter, time calculator, D H M S converter, duration calculation, time utility{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #e74c3c; /* Red accent for urgency/time theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #fcebeb; /* Light red background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #e74c3c;
+    }
+
+    .result-section h3 {
+        color: #c0392b; 
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .duration-display {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #2c3e50; /* Dark contrast color */
+        line-height: 1.2;
+        font-family: monospace;
+    }
+    
+    .breakdown-table {
+        margin-top: 20px;
+        width: 100%;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .breakdown-table th {
+        background-color: #e74c3c;
+        color: white;
+        text-align: center;
+    }
+    .breakdown-table td {
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">⏳ Seconds to Time Converter</h1>
+    <p class="small-muted">Convert a large number of seconds into days, hours, minutes, and seconds (DD:HH:MM:SS).</p>
+
+    <div class="calc-wrapper">
+
+        <form id="seconds-converter-form">
+            <h5 class="section-title">Step 1: Input Seconds</h5>
+
+            <!-- Total Seconds Input -->
+            <div class="form-group mb-4">
+                <label for="total-seconds" class="form-label">Total Seconds to Convert</label>
+                <input type="number" class="form-control" id="total-seconds" value="3661" min="0" required>
+                <small class="form-text text-muted">e.g., 3661 seconds is 1 hour, 1 minute, 1 second.</small>
+            </div>
+
+            <button class="btn btn-danger mt-3 w-100" type="submit">Convert Time</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Converted Duration</h3>
+
+                <small class="text-muted">DD:HH:MM:SS Format</small>
+                <div class="duration-display" id="converted-time-dhm">00:00:00:00</div>
+
+                <div class="breakdown-table table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Days</th>
+                                <th>Hours</th>
+                                <th>Minutes</th>
+                                <th>Seconds</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="breakdown-days">0</td>
+                                <td id="breakdown-hours">0</td>
+                                <td id="breakdown-minutes">0</td>
+                                <td id="breakdown-seconds">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="text-muted mt-3">Total seconds input: <strong id="total-seconds-display">0</strong></p>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to pad numbers with a leading zero (e.g., 5 -> 05)
+    function pad(num) {
+        return num.toString().padStart(2, '0');
+    }
+
+
+    function convertSeconds(totalSeconds) {
+        // Constants for conversion
+        const SECONDS_IN_MINUTE = 60;
+        const SECONDS_IN_HOUR = 60 * SECONDS_IN_MINUTE; // 3600
+        const SECONDS_IN_DAY = 24 * SECONDS_IN_HOUR;    // 86400
+
+        // Calculate components
+        let remainingSeconds = totalSeconds;
+
+        const days = Math.floor(remainingSeconds / SECONDS_IN_DAY);
+        remainingSeconds %= SECONDS_IN_DAY;
+
+        const hours = Math.floor(remainingSeconds / SECONDS_IN_HOUR);
+        remainingSeconds %= SECONDS_IN_HOUR;
+
+        const minutes = Math.floor(remainingSeconds / SECONDS_IN_MINUTE);
+        remainingSeconds %= SECONDS_IN_MINUTE;
+
+        const seconds = remainingSeconds;
+
+        return { days, hours, minutes, seconds };
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('seconds-converter-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const totalSecondsStr = document.getElementById('total-seconds').value;
+        const totalSeconds = parseInt(totalSecondsStr, 10);
+
+        if (isNaN(totalSeconds) || totalSeconds < 0) {
+            displayStatus("Please enter a non-negative number for total seconds.", true);
+            return;
+        }
+
+        try {
+            // 1. Perform Conversion
+            const { days, hours, minutes, seconds } = convertSeconds(totalSeconds);
+
+            // 2. Format and Display Results
+            const formattedTime = `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+
+            document.getElementById('converted-time-dhm').innerText = formattedTime;
+            
+            // Breakdown table update
+            document.getElementById('breakdown-days').innerText = days;
+            document.getElementById('breakdown-hours').innerText = hours;
+            document.getElementById('breakdown-minutes').innerText = minutes;
+            document.getElementById('breakdown-seconds').innerText = seconds;
+            
+            document.getElementById('total-seconds-display').innerText = totalSeconds.toLocaleString();
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Conversion Error:", error);
+            displayStatus("An error occurred during conversion. Please check your input.", true);
+        }
+    });
+</script>
+
+{% endblock %}

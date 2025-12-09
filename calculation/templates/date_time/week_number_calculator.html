@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Week Number Calculator (ISO 8601){% endblock %}
+
+{% block meta_description %}Calculate the ISO 8601 week number (1-53) for any given date. The ISO week starts on Monday and Week 1 contains the first Thursday of the year.{% endblock %}
+
+{% block meta_keywords %}week number, ISO 8601, week date, calendar, date calculator, week of year{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #0d6efd; /* Bootstrap Blue accent for international standard theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #eaf5ff; /* Light blue background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #0d6efd;
+    }
+
+    .result-section h3 {
+        color: #0d6efd;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .week-display {
+        font-size: 5rem;
+        font-weight: 900;
+        color: #dc3545; /* Red accent for the primary result */
+        line-height: 1.2;
+    }
+
+    .info-box {
+        background-color: #f0f8ff;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+        border-left: 5px solid #0d6efd;
+        text-align: left;
+    }
+
+    .info-box p {
+        margin: 5px 0;
+        font-size: 1.1rem;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🗓️ ISO Week Number Calculator</h1>
+    <p class="small-muted">Find the official ISO 8601 week number and ISO Year for any date. (The week containing January 4th is always Week 1).</p>
+
+    <div class="calc-wrapper">
+
+        <form id="week-number-form">
+            <h5 class="section-title">Step 1: Select Date</h5>
+
+            <!-- Target Date Input -->
+            <div class="form-group mb-4">
+                <label for="target-date" class="form-label">Calendar Date</label>
+                <input type="date" class="form-control" id="target-date" required>
+            </div>
+
+            <button class="btn btn-primary mt-3 w-100" type="submit">Calculate ISO Week</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-date-display">ISO Week for ...</h3>
+
+                <small class="text-muted">ISO Week Number</small>
+                <div class="week-display" id="week-number-value">01</div>
+
+                <div class="info-box">
+                    <p>ISO Year: <strong id="iso-year">YYYY</strong></p>
+                    <p>ISO Week Format: <strong id="iso-string">YYYY-WXX</strong></p>
+                </div>
+
+                <p class="text-muted mt-3" id="calculation-summary"></p>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+
+    function getISOWeekDate(date) {
+        // 1. Create a copy of the date object
+        const d = new Date(date.valueOf());
+        
+        // 2. Set the date to the nearest Thursday. 
+        // This Thursday's year will be the ISO year.
+        
+        // d.getDay() returns 0 for Sunday, 1 for Monday... 6 for Saturday.
+        // Convert Sunday (0) to 7 for easier week calculation (Monday=1...Sunday=7)
+        let dayNum = d.getDay(); 
+        if (dayNum === 0) dayNum = 7; 
+        
+        // Move the date to the Thursday of the current week (dayNum 4)
+        // d.getDate() + (4 - dayNum) calculates the offset to Thursday
+        d.setDate(d.getDate() + (4 - dayNum));
+
+        // 3. Get the ISO Year (the year of the Thursday)
+        const isoYear = d.getFullYear();
+
+        // 4. Calculate the start of the ISO year (Jan 1st of the ISO Year)
+        const yearStart = new Date(isoYear, 0, 1);
+        
+        // 5. Calculate the difference in days between the Thursday and the start of the year
+        // Add 1 to include the starting day itself.
+        const days = Math.floor((d.getTime() - yearStart.getTime()) / MS_PER_DAY) + 1;
+
+        // 6. Calculate the week number (1-53)
+        // Math.ceil((days / 7)) gives the correct week number (Week 1 = days 1-7)
+        const weekNo = Math.ceil(days / 7);
+
+        return { week: weekNo, year: isoYear };
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('week-number-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const dateStr = document.getElementById('target-date').value;
+
+        if (!dateStr) {
+            displayStatus("Please select a valid calendar date.", true);
+            return;
+        }
+
+        // 1. Prepare Date
+        const targetDate = new Date(dateStr); 
+        
+        // Date formatting for display
+        const dateReadable = targetDate.toLocaleDateString('en-US', { 
+            weekday: 'long',
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+
+        // 2. Perform Calculation
+        const { week, year } = getISOWeekDate(targetDate);
+        
+        // Format week number to two digits (e.g., 05 instead of 5)
+        const formattedWeek = String(week).padStart(2, '0');
+        const isoString = `${year}-W${formattedWeek}`;
+
+        // 3. Display Results
+        document.getElementById('result-date-display').innerText = `ISO Week for ${dateReadable}`;
+        document.getElementById('week-number-value').innerText = formattedWeek;
+        document.getElementById('iso-year').innerText = year;
+        document.getElementById('iso-string').innerText = isoString;
+
+        const summary = `
+The date ${dateReadable} falls in **ISO Week ${formattedWeek}** of the **ISO Year ${year}**.
+The ISO 8601 standard defines the week as starting on Monday.
+        `;
+        document.getElementById('calculation-summary').innerText = summary.trim();
+
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+    
+    // Set default date to today
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('target-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

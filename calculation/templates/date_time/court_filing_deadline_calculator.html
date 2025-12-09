@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Court Filing Deadline Calculator{% endblock %}
+
+{% block meta_description %}Calculate court filing deadlines based on a trigger date and required number of business days, excluding weekends and U.S. Federal Holidays (2025).{% endblock %}
+
+{% block meta_keywords %}court deadline calculator, legal filing dates, business day calculator, federal holiday rules, civil procedure{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #fdf5e6; /* Old Lace / Light Parchment */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #8b4513; /* Saddle Brown accent (legal/parchment theme) */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #fff8dc; /* Cornsilk background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 2px solid #8b4513;
+    }
+
+    .result-section h3 {
+        color: #483d8b; 
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .date-display {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: #dc143c; /* Crimson Red for the critical date */
+        line-height: 1.2;
+    }
+
+    .holiday-list-container {
+        max-height: 150px;
+        overflow-y: auto;
+        padding: 10px;
+        background-color: #fff;
+        border: 1px dashed #ccc;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">⚖️ Court Filing Deadline Calculator</h1>
+    <p class="small-muted">Calculate filing deadlines based on Civil Procedure Rules, counting only business days and skipping weekends/holidays.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="deadline-calculator-form">
+            <h5 class="section-title">Step 1: Define the Event</h5>
+
+            <div class="row g-3">
+                <!-- Trigger Date -->
+                <div class="col-md-6">
+                    <label for="trigger-date" class="form-label">Trigger Date (e.g., Date of Service)</label>
+                    <input type="date" class="form-control" id="trigger-date" required>
+                </div>
+
+                <!-- Days Rule -->
+                <div class="col-md-6">
+                    <label for="rule-days" class="form-label">Rule Days (Business Days After)</label>
+                    <input type="number" class="form-control" id="rule-days" value="14" min="1" required>
+                    <small class="form-text text-muted">e.g., 7, 14, 21, or 30 days.</small>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: Non-Business Days (Holidays)</h5>
+            <p class="small text-muted mb-2">The calculator skips weekends (Sat/Sun) and the following U.S. Federal Holidays (2025 dates). You may edit the `HOLIDAYS` list in the code.</p>
+
+            <div class="holiday-list-container small" id="holiday-list">
+                <!-- Holidays will be populated here by JavaScript -->
+            </div>
+
+            <button class="btn btn-warning mt-4 w-100" type="submit" style="background-color: #8b4513; border-color: #8b4513;">Calculate Deadline</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3>Final Filing Deadline</h3>
+
+                <div class="date-display" id="final-deadline-date">--/--/----</div>
+                <p class="small fw-bold text-muted mt-3" id="deadline-notes"></p>
+
+                <div class="alert alert-info mt-4" role="alert">
+                    <p class="mb-1 fw-bold">Summary:</p>
+                    <p class="small mb-1">Trigger Date: <strong id="trigger-date-summary"></strong></p>
+                    <p class="small mb-0">Rule: <strong id="rule-days-summary"></strong> Business Days</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // --- Federal Holidays for 2025 (YYYY-MM-DD format) ---
+    // NOTE: These must be manually updated for future years.
+    const HOLIDAYS = [
+        { date: '2025-01-01', name: 'New Year\'s Day' },
+        { date: '2025-01-20', name: 'M.L. King, Jr.\'s Birthday' },
+        { date: '2025-02-17', name: 'Washington\'s Birthday' },
+        { date: '2025-05-26', name: 'Memorial Day' },
+        { date: '2025-06-19', name: 'Juneteenth' },
+        { date: '2025-07-04', name: 'Independence Day' },
+        { date: '2025-09-01', name: 'Labor Day' },
+        { date: '2025-10-13', name: 'Columbus Day' },
+        { date: '2025-11-11', name: 'Veterans Day' },
+        { date: '2025-11-27', name: 'Thanksgiving Day' },
+        { date: '2025-12-25', name: 'Christmas Day' },
+    ];
+
+    /**
+     * Checks if a given Date object falls on a weekend or a defined holiday.
+     * @param {Date} date The date to check.
+     * @returns {boolean} True if the date is a non-business day.
+     */
+    function isNonBusinessDay(date) {
+        const dayOfWeek = date.getDay(); // 0 (Sunday) to 6 (Saturday)
+        
+        // 1. Check for Weekend
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            return true; // Sunday or Saturday
+        }
+
+        // 2. Check for Holiday
+        const dateString = date.toISOString().slice(0, 10); // YYYY-MM-DD
+        const isHoliday = HOLIDAYS.some(holiday => holiday.date === dateString);
+        
+        return isHoliday;
+    }
+
+
+    function calculateDeadline(startDate, businessDays) {
+        let currentDate = new Date(startDate.getTime());
+        let daysToCount = businessDays;
+        let rollForwardNote = '';
+        
+        // Advance to the day *after* the trigger date to begin counting
+        currentDate.setDate(currentDate.getDate()); 
+
+        while (daysToCount > 0) {
+            currentDate.setDate(currentDate.getDate() + 1); // Move to the next calendar day
+            
+            // Skip the current day if it's a non-business day, but don't count it down
+            if (!isNonBusinessDay(currentDate)) {
+                daysToCount--; // Only decrement if it's a business day
+            }
+        }
+        
+        // 3. Final Roll-Forward Check: If the calculated deadline is a non-business day, roll forward.
+        if (isNonBusinessDay(currentDate)) {
+            rollForwardNote = 'The calculated deadline initially fell on a non-business day. It has been rolled forward to the next business day.';
+            let rolledDays = 0;
+            while (isNonBusinessDay(currentDate)) {
+                currentDate.setDate(currentDate.getDate() + 1);
+                rolledDays++;
+            }
+            if (rolledDays > 0) {
+                rollForwardNote = `(Rolled forward ${rolledDays} day${rolledDays > 1 ? 's' : ''} to the next business day)`;
+            }
+        }
+
+        return {
+            deadlineDate: currentDate,
+            rollForwardNote: rollForwardNote
+        };
+    }
+
+    // Helper to format a Date object into a readable string
+    function formatDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    // --- Initialization and Setup ---
+    function initialize() {
+        // Set default trigger date to today
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        
+        document.getElementById('trigger-date').value = `${yyyy}-${mm}-${dd}`;
+        
+        // Populate holiday list
+        const holidayListDiv = document.getElementById('holiday-list');
+        holidayListDiv.innerHTML = HOLIDAYS.map(h => 
+            `<li><strong>${h.name}</strong>: ${new Date(h.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</li>`
+        ).join('');
+    }
+
+
+    // --- Event Handler ---
+    document.getElementById('deadline-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const triggerDateStr = document.getElementById('trigger-date').value;
+        const ruleDaysStr = document.getElementById('rule-days').value;
+        
+        const triggerDate = new Date(triggerDateStr);
+        const ruleDays = parseInt(ruleDaysStr, 10);
+
+        if (isNaN(triggerDate.getTime()) || !triggerDateStr) {
+            displayStatus("Please select a valid Trigger Date.", true);
+            return;
+        }
+        if (isNaN(ruleDays) || ruleDays < 1) {
+            displayStatus("Please enter a valid number of Rule Days (must be 1 or more).", true);
+            return;
+        }
+
+        try {
+            // 1. Calculate the Deadline
+            const result = calculateDeadline(triggerDate, ruleDays);
+            
+            // 2. Format and Display Results
+            const formattedDeadlineDate = formatDate(result.deadlineDate);
+
+            document.getElementById('final-deadline-date').innerText = formattedDeadlineDate;
+            document.getElementById('trigger-date-summary').innerText = formatDate(triggerDate);
+            document.getElementById('rule-days-summary').innerText = ruleDays;
+            
+            const notesElement = document.getElementById('deadline-notes');
+            notesElement.innerText = result.rollForwardNote || "Filing date falls on a standard business day.";
+            notesElement.style.color = result.rollForwardNote ? '#dc143c' : '#555';
+
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Deadline Calculation Error:", error);
+            displayStatus(`An error occurred during calculation: ${error.message}`, true);
+        }
+    });
+
+    // Run initialization
+    document.addEventListener('DOMContentLoaded', initialize);
+</script>
+
+{% endblock %}

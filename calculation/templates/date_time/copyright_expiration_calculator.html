@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Copyright Expiration Calculator{% endblock %}
+
+{% block meta_description %}Calculate the U.S. copyright expiration date based on the type of work (Author's life or Work for Hire) and the relevant dates (death, publication, creation).{% endblock %}
+
+{% block meta_keywords %}copyright term, public domain, copyright expiration date, life plus 70, work for hire, copyright law{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #fffafa; /* Snow White background */
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        color: #800000; /* Maroon accent (authoritative/legal) */
+        border-bottom: 2px solid #800000;
+        padding-bottom: 5px;
+    }
+
+    /* Input & Control Group Styling */
+    .year-input-group {
+        display: none; /* Hidden by default, shown based on selection */
+        margin-top: 15px;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #f0fff0; /* Honeydew background */
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 30px;
+        border: 2px solid #800000;
+    }
+
+    .result-section h3 {
+        color: #4b0082; /* Indigo */
+        margin-bottom: 15px;
+        font-size: 1.6rem;
+        font-weight: 700;
+    }
+
+    .date-display {
+        font-size: 3rem;
+        font-weight: 900;
+        color: #ff4500; /* Orange-Red for the critical date */
+        line-height: 1.2;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">📜 Copyright Expiration Calculator</h1>
+    <p class="small-muted">Estimate when a post-1978 U.S. copyright term will expire (always December 31st of the final year).</p>
+
+    <div class="calc-wrapper">
+
+        <form id="copyright-calculator-form">
+            <h5 class="section-title">Step 1: Select Work Type</h5>
+
+            <!-- Work Type Selector -->
+            <div class="form-group mb-4">
+                <label for="work-type" class="form-label">Type of Copyrighted Work</label>
+                <select class="form-select" id="work-type" required onchange="toggleInputGroups()">
+                    <option value="" disabled selected>Select a Copyright Rule</option>
+                    <option value="life_plus_70">Individual Author (Life + 70 Years)</option>
+                    <option value="work_for_hire">Corporate / Anonymous (Shorter of 95/120 Years)</option>
+                </select>
+            </div>
+
+            <!-- 1. Life + 70 Years Group -->
+            <div id="group-life-plus-70" class="year-input-group">
+                <p class="fw-bold text-success mb-2">Rule: Life of Author + 70 Years</p>
+                <div class="form-group">
+                    <label for="death-year" class="form-label">Year of Author's Death</label>
+                    <input type="number" class="form-control" id="death-year" min="1978" max="{{ current_year }}" placeholder="e.g., 2005">
+                </div>
+            </div>
+
+            <!-- 2. Work for Hire Group -->
+            <div id="group-work-for-hire" class="year-input-group">
+                <p class="fw-bold text-primary mb-2">Rule: Shorter of 95 years (publication) or 120 years (creation)</p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="publication-year" class="form-label">Year of First Publication</label>
+                        <input type="number" class="form-control" id="publication-year" min="1978" max="{{ current_year }}" placeholder="e.g., 1998">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="creation-year" class="form-label">Year of Creation</label>
+                        <input type="number" class="form-control" id="creation-year" min="1978" max="{{ current_year }}" placeholder="e.g., 1997">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-dark mt-4 w-100" type="submit" style="background-color: #800000; border-color: #800000;">Calculate Expiration Date</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3>Estimated Public Domain Entry Date</h3>
+
+                <p class="small text-muted">The copyright term expires on:</p>
+                <div class="date-display" id="final-expiration-date">--/--/----</div>
+                <p class="small text-muted fw-bold" id="expiration-year-summary"></p>
+
+                <div class="alert alert-warning mt-4" role="alert">
+                    <p class="mb-1">Based on Rule: <strong id="rule-used-summary"></strong></p>
+                    <p class="mb-0">Final Calculated Year: <strong id="final-year-summary"></strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    /**
+     * Toggles the visibility of the relevant input groups based on the selected rule.
+     */
+    function toggleInputGroups() {
+        const workType = document.getElementById('work-type').value;
+        const groupLife = document.getElementById('group-life-plus-70');
+        const groupWork = document.getElementById('group-work-for-hire');
+
+        // Hide all first
+        groupLife.style.display = 'none';
+        groupWork.style.display = 'none';
+
+        // Set input fields to not required when hidden
+        document.getElementById('death-year').required = false;
+        document.getElementById('publication-year').required = false;
+        document.getElementById('creation-year').required = false;
+
+        // Show and set required for the selected group
+        if (workType === 'life_plus_70') {
+            groupLife.style.display = 'block';
+            document.getElementById('death-year').required = true;
+        } else if (workType === 'work_for_hire') {
+            groupWork.style.display = 'block';
+            document.getElementById('publication-year').required = true;
+            document.getElementById('creation-year').required = true;
+        }
+    }
+
+    // --- Core Calculation Logic ---
+    document.getElementById('copyright-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const workType = document.getElementById('work-type').value;
+        let finalExpirationYear = null;
+        let ruleSummary = '';
+        let calculationDetail = '';
+
+        if (!workType) {
+            displayStatus("Please select a Type of Copyrighted Work.", true);
+            return;
+        }
+
+        try {
+            if (workType === 'life_plus_70') {
+                const deathYear = parseInt(document.getElementById('death-year').value, 10);
+                if (isNaN(deathYear)) {
+                    throw new Error("Please enter a valid Year of Author's Death.");
+                }
+
+                finalExpirationYear = deathYear + 70;
+                ruleSummary = "Individual Author (Life + 70 Years)";
+                calculationDetail = `${deathYear} + 70 = ${finalExpirationYear}`;
+
+            } else if (workType === 'work_for_hire') {
+                const pubYear = parseInt(document.getElementById('publication-year').value, 10);
+                const creationYear = parseInt(document.getElementById('creation-year').value, 10);
+
+                if (isNaN(pubYear) || isNaN(creationYear)) {
+                    throw new Error("Please enter valid years for both Publication and Creation.");
+                }
+
+                // Rule 1: 95 years from publication
+                const yearPub95 = pubYear + 95;
+                const detailPub = `${pubYear} + 95 = ${yearPub95}`;
+
+                // Rule 2: 120 years from creation
+                const yearCreate120 = creationYear + 120;
+                const detailCreate = `${creationYear} + 120 = ${yearCreate120}`;
+                
+                // Work for Hire uses the shorter of the two terms
+                finalExpirationYear = Math.min(yearPub95, yearCreate120);
+                ruleSummary = "Corporate / Anonymous (Shorter of 95/120 Years)";
+                calculationDetail = `Shorter of (${detailPub}) and (${detailCreate}) = ${finalExpirationYear}`;
+
+            }
+
+            if (finalExpirationYear === null) {
+                throw new Error("Calculation failed. Check all input fields.");
+            }
+
+            // 1. Calculate Expiration Date (always December 31st of the final year)
+            // Use local time zone (YYYY, M-1, D)
+            const expirationDate = new Date(finalExpirationYear, 11, 31); // Month 11 is December
+
+            // 2. Format and Display Results
+            const formattedDate = expirationDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            document.getElementById('final-expiration-date').innerText = formattedDate;
+            document.getElementById('expiration-year-summary').innerText = `The work enters the Public Domain on January 1, ${finalExpirationYear + 1}`;
+            document.getElementById('rule-used-summary').innerText = ruleSummary;
+            document.getElementById('final-year-summary').innerText = `${finalExpirationYear} (Calculated from: ${calculationDetail})`;
+            
+
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Copyright Calculation Error:", error);
+            displayStatus(`Calculation error: ${error.message}. Please check your inputs.`, true);
+        }
+    });
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set maximum year to the current year
+        const currentYear = new Date().getFullYear();
+        document.getElementById('death-year').max = currentYear;
+        document.getElementById('publication-year').max = currentYear;
+        document.getElementById('creation-year').max = currentYear;
+        
+        // Initial setup for input groups
+        toggleInputGroups();
+    });
+</script>
+
+{% endblock %}

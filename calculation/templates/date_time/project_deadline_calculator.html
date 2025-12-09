@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Project Deadline Calculator{% endblock %}
+
+{% block meta_description %}Calculate a project's exact completion deadline by adding a specified number of business days (Monday-Friday) to a start date.{% endblock %}
+
+{% block meta_keywords %}project deadline, business day calculator, workdays, working days, date calculator, project management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #6366f1; /* Tailwind Indigo accent for professional theme */
+    }
+
+    .result-section {
+        background-color: #e0e7ff; /* Light indigo background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .result-section h3 {
+        color: #4338ca;
+        margin-bottom: 5px;
+        font-size: 1.2rem;
+    }
+
+    #final-deadline-date {
+        display: block;
+        font-size: 3rem;
+        font-weight: 700;
+        color: #4338ca;
+        line-height: 1.2;
+    }
+    
+    .summary-text {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: #4338ca;
+    }
+    
+    .form-control[type="date"], .form-control[type="number"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">📅 Project Deadline Calculator</h1>
+    <p class="small-muted">Calculate your project's final deadline by adding a specified number of **business days** (excluding weekends) to your start date.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="deadline-calculator-form">
+            <h5 class="section-title">Step 1: Project Start Date</h5>
+
+            <!-- Start Date Input -->
+            <div class="form-group mb-4">
+                <label for="start-date" class="form-label">Project Start Date</label>
+                <input type="date" class="form-control" id="start-date" required>
+            </div>
+            
+            <h5 class="section-title">Step 2: Required Business Days</h5>
+
+            <!-- Duration Input -->
+            <div class="form-group mb-4">
+                <label for="duration-value" class="form-label">Required Business Days (e.g., 20 days for a one-month project)</label>
+                <input type="number" class="form-control" id="duration-value" min="1" value="10" required>
+                <small class="form-text text-muted">A business day is defined as Monday through Friday.</small>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Deadline</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3>Your Project Deadline is:</h3>
+                <span id="final-deadline-date">...</span>
+                <p class="summary-text" id="calculation-summary"></p>
+            </div>
+        </div>
+        
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
+    const START_DAY_INDEX = 0; // We count the start date as business day 1
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    /**
+     * Calculates the future date by adding a specified number of business days.
+     * @param {Date} startDate - The date to start counting from (parsed as UTC midnight).
+     * @param {number} businessDays - The number of business days to add (inclusive of start day).
+     * @returns {Date} The calculated deadline date (UTC midnight).
+     */
+    function calculateDeadline(startDate, businessDays) {
+        let currentDate = new Date(startDate.getTime());
+        let daysAdded = 0;
+
+        // Iterate until we have added the required number of business days.
+        while (daysAdded < businessDays) {
+            
+            // Get day of the week (0=Sunday, 1=Monday, ..., 6=Saturday) using UTC day
+            const dayOfWeek = currentDate.getUTCDay();
+
+            // Check if it's a business day (Monday=1 to Friday=5)
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+                // If this is the starting day, we count it as the first business day.
+                // If it's a subsequent day, we count it as the next business day.
+                daysAdded++;
+            }
+            
+            // If we have reached the required number of days, the current date is the deadline.
+            if (daysAdded === businessDays) {
+                return currentDate;
+            }
+
+            // Move to the next day
+            currentDate.setTime(currentDate.getTime() + MILLISECONDS_PER_DAY);
+        }
+        
+        // This should only happen if businessDays is 0 or less, but we check for completeness.
+        return currentDate;
+    }
+
+    document.getElementById('deadline-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const startDateStr = document.getElementById('start-date').value;
+        const durationValueStr = document.getElementById('duration-value').value;
+        const businessDays = parseInt(durationValueStr, 10);
+
+        if (!startDateStr || isNaN(businessDays) || businessDays <= 0) {
+            displayStatus("Please ensure a start date is selected and the required business days is a positive number.", true);
+            return;
+        }
+
+        // 1. Prepare Start Date (Use UTC parsing for date arithmetic consistency)
+        const [y, m, d] = startDateStr.split('-').map(Number);
+        const startDate = new Date(Date.UTC(y, m - 1, d)); // Month is 0-indexed (m-1)
+
+        // 2. Calculate the Deadline
+        const deadlineDate = calculateDeadline(startDate, businessDays);
+
+        // 3. Display Results
+        const formattedStartDate = formatReadableDate(startDate);
+        const formattedDeadlineDate = formatReadableDate(deadlineDate);
+
+        document.getElementById('final-deadline-date').innerText = formattedDeadlineDate;
+        document.getElementById('calculation-summary').innerHTML = `Project starts on ${formattedStartDate}, and the deadline is **${formattedDeadlineDate}** after ${businessDays} business days.`;
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+    
+    // Set a default start date (e.g., tomorrow)
+    document.addEventListener('DOMContentLoaded', () => {
+        const defaultDate = new Date();
+        // Set to UTC midnight for consistent calculation base
+        const start = new Date(Date.UTC(defaultDate.getFullYear(), defaultDate.getMonth(), defaultDate.getDate() + 1));
+        
+        const yyyy = start.getFullYear();
+        const mm = String(start.getMonth() + 1).padStart(2, '0');
+        const dd = String(start.getDate()).padStart(2, '0');
+        
+        document.getElementById('start-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

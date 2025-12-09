@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Business Days Calculator (Excludes Weekends & Holidays){% endblock %}
+
+{% block meta_description %}Calculate the number of working days between two dates, automatically excluding Saturdays, Sundays, and user-defined holidays.{% endblock %}
+
+{% block meta_keywords %}business days calculator, working days, excludes weekends, holiday exclusion, date difference{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .days-highlight {
+        font-size: 2.0rem;
+        font-weight: 700;
+        color: #198754; /* Bootstrap success color for prominence */
+        display: block;
+        margin: 5px 0 15px 0;
+    }
+    
+    .form-control[type="date"], textarea {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💼 Business Days Calculator</h1>
+    <p class="small-muted">Calculate the number of **working days** between two dates, automatically excluding weekends (Saturday/Sunday) and any custom holidays you define.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="business-days-form">
+            <h5 class="section-title">Step 1: Define Date Range</h5>
+
+            <!-- Start Date Input -->
+            <div class="form-group mb-3">
+                <label for="start-date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="start-date" required>
+            </div>
+
+            <!-- End Date Input -->
+            <div class="form-group mb-4">
+                <label for="end-date" class="form-label">End Date (Inclusive)</label>
+                <input type="date" class="form-control" id="end-date" required>
+            </div>
+
+            <h5 class="section-title">Step 2: Define Holidays (Optional)</h5>
+            <p class="small-muted">Enter any national/local holidays, one date per line, in **YYYY-MM-DD** format.</p>
+
+            <!-- Holidays Input -->
+            <div class="form-group mb-4">
+                <label for="holidays-input" class="form-label">List of Holiday Dates</label>
+                <textarea class="form-control" id="holidays-input" rows="4" placeholder="e.g. 2024-07-04&#10;2024-12-25"></textarea>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Business Days</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="bd-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="bd-table">
+            <tbody id="bd-body">
+                <!-- Details will be inserted here -->
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ONE_DAY_MS = 1000 * 60 * 60 * 24;
+
+    function displayError(message) {
+        const res = document.getElementById('bd-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('bd-table').classList.add('d-none');
+    }
+
+    function parseHolidays(holidayText) {
+        const holidaySet = new Set();
+        const lines = holidayText.split('\n');
+
+        lines.forEach(line => {
+            const dateStr = line.trim();
+            if (dateStr) {
+                // Check format YYYY-MM-DD (or similar)
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                    // Create a Date object to validate if it's a real date
+                    const date = new Date(dateStr);
+                    // Check if date object is valid and the date components match the string (for strict validation)
+                    if (!isNaN(date.getTime())) {
+                        holidaySet.add(dateStr);
+                    }
+                }
+            }
+        });
+        return holidaySet;
+    }
+
+    document.getElementById('business-days-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const startDateStr = document.getElementById('start-date').value;
+        const endDateStr = document.getElementById('end-date').value;
+        const holidayText = document.getElementById('holidays-input').value;
+
+        // Standardize dates to start of day UTC to avoid local timezone issues
+        const start = new Date(startDateStr);
+        const end = new Date(endDateStr);
+        
+        const startDate = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()));
+        const endDate = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()));
+
+        // 2. Validation
+        if (startDate.getTime() > endDate.getTime()) {
+            displayError("The **Start Date** must be before or the same as the **End Date**.");
+            return;
+        }
+
+        // 3. Process Holidays
+        const holidaySet = parseHolidays(holidayText);
+        
+        let businessDays = 0;
+        let weekendDays = 0;
+        let holidayDays = 0;
+        let totalDays = 0;
+
+        // 4. Iterate through dates (inclusive of end date)
+        let currentDate = new Date(startDate.getTime());
+
+        while (currentDate.getTime() <= endDate.getTime()) {
+            totalDays++;
+            const dayOfWeek = currentDate.getUTCDay(); // 0 = Sunday, 6 = Saturday
+            
+            // Format current date for holiday lookup (YYYY-MM-DD)
+            const currentYear = currentDate.getUTCFullYear();
+            const currentMonth = String(currentDate.getUTCMonth() + 1).padStart(2, '0');
+            const currentDay = String(currentDate.getUTCDate()).padStart(2, '0');
+            const currentDateStr = `${currentYear}-${currentMonth}-${currentDay}`;
+            
+            const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+            const isHoliday = holidaySet.has(currentDateStr);
+
+            if (isWeekend) {
+                weekendDays++;
+            } else if (isHoliday) {
+                holidayDays++;
+            } else {
+                businessDays++;
+            }
+
+            // Move to the next day
+            currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+        }
+
+        // 5. Update Result Display (Main)
+        const res = document.getElementById('bd-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+
+        res.innerHTML = `
+**Total Calculated Business Days:**
+<span class="days-highlight">${businessDays.toLocaleString()} days</span>
+`;
+        
+        // 6. Update Summary Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('bd-table').classList.remove('d-none');
+        const tableBody = document.getElementById('bd-body');
+        
+        tableBody.innerHTML = `
+            <tr><td>Start Date</td><td>${startDateStr}</td></tr>
+            <tr><td>End Date</td><td>${endDateStr}</td></tr>
+            <tr><td>Total Days in Range</td><td>${totalDays.toLocaleString()} days</td></tr>
+            <tr><td style="font-weight: bold;">Business Days (M-F, not holiday)</td><td style="font-weight: bold; color: #198754;">${businessDays.toLocaleString()} days</td></tr>
+            <tr><td>Weekend Days Excluded</td><td>${weekendDays.toLocaleString()} days</td></tr>
+            <tr><td>Holiday Days Excluded</td><td>${holidayDays.toLocaleString()} days</td></tr>
+        `;
+    });
+</script>
+
+{% endblock %}

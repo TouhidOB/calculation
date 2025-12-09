@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Floating Holiday Date Calculator{% endblock %}
+
+{% block meta_description %}Calculate the precise date for floating holidays like Easter, US Thanksgiving, Memorial Day, and Labor Day for any given year.{% endblock %}
+
+{% block meta_keywords %}holiday date calculator, when is easter, thanksgiving date, floating holiday, calendar calculation{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #dc3545; /* Bootstrap Red accent for holiday theme */
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #ffebe6; /* Light red/pink background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #dc3545;
+    }
+
+    .result-section h3 {
+        color: #dc3545;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .date-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #198754; /* Green accent */
+        line-height: 1.2;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">🗓️ Holiday Date Calculator</h1>
+    <p class="small-muted">Find the date of floating holidays for a specific year. **(Easter calculation is highly precise).**</p>
+
+    <div class="calc-wrapper">
+
+        <form id="holiday-form">
+            <h5 class="section-title">Step 1: Select Year</h5>
+
+            <div class="form-group mb-4">
+                <label for="target-year" class="form-label">Year of Calculation</label>
+                <input type="number" class="form-control" id="target-year" min="1583" value="2026" required>
+                <small class="form-text text-muted">Use Gregorian Calendar years (1583 onwards).</small>
+            </div>
+
+            <h5 class="section-title">Step 2: Choose Holiday</h5>
+
+            <div class="form-group mb-4">
+                <label for="holiday-name" class="form-label">Holiday</label>
+                <select class="form-select" id="holiday-name" required>
+                    <option value="Easter">Easter Sunday (Floating)</option>
+                    <option value="Thanksgiving">US Thanksgiving (4th Thursday in Nov)</option>
+                    <option value="Memorial Day">US Memorial Day (Last Monday in May)</option>
+                    <option value="Labor Day">US Labor Day (1st Monday in Sep)</option>
+                </select>
+            </div>
+
+            <button class="btn btn-danger mt-3 w-100" type="submit">Calculate Holiday Date</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-holiday-display"></h3>
+                
+                <small class="text-muted">Date</small>
+                <div class="date-display" id="calculated-date"></div>
+
+                <p class="text-muted mt-3" id="calculation-summary"></p>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    /**
+     * Calculates the date of Easter Sunday using the Meeus/Butcher's algorithm.
+     * @param {number} Y The year (Gregorian Calendar).
+     * @returns {Date} Date object for Easter Sunday at midnight local time.
+     */
+    function calculateEaster(Y) {
+        // Meeus/Butcher's Algorithm for Gregorian Calendar
+        const a = Y % 19;
+        const b = Y % 4;
+        const c = Y % 7;
+        const k = Math.floor(Y / 100);
+        const p = Math.floor((13 + 8 * k) / 25);
+        const q = Math.floor(k / 4);
+        
+        // Lunar Correction (M)
+        const M = (15 - p + k - q) % 30;
+        
+        // Solar Correction (N)
+        const N = (4 + k - q) % 7;
+        
+        const d = (19 * a + M) % 30;
+        const e = (2 * b + 4 * c + 6 * d + N) % 7;
+        
+        // The day of the month (March 22 to April 25)
+        const dayOfMonth = 22 + d + e;
+        
+        let month;
+        let day;
+        
+        if (dayOfMonth > 31) {
+            // Falls in April
+            month = 3; // April (0-indexed month)
+            day = dayOfMonth - 31;
+        } else {
+            // Falls in March
+            month = 2; // March (0-indexed month)
+            day = dayOfMonth;
+        }
+
+        // Return Date object (local time)
+        return new Date(Y, month, day);
+    }
+
+    /**
+     * Finds the Nth day of the week (DOW) in a specific month of a year.
+     * @param {number} Y Year.
+     * @param {number} M Month (0-11).
+     * @param {number} DOW Target Day of Week (0=Sun, 1=Mon... 6=Sat).
+     * @param {number} N Which occurrence (1st, 2nd, 3rd, 4th, or -1 for Last).
+     * @returns {Date} Date object.
+     */
+    function findNthWeekday(Y, M, DOW, N) {
+        const firstOfMonth = new Date(Y, M, 1);
+        let currentDay = new Date(firstOfMonth);
+
+        if (N === -1) {
+            // Find Last Weekday: Start at the 1st of the next month and go back one day, then search backward.
+            const lastOfMonth = new Date(Y, M + 1, 0); // Day 0 of M+1 is the last day of M
+            currentDay = lastOfMonth;
+            
+            while (currentDay.getDay() !== DOW) {
+                currentDay.setDate(currentDay.getDate() - 1);
+            }
+            return currentDay;
+        } else {
+            // Find Nth Weekday: Search forward
+            let count = 0;
+            
+            while (currentDay.getMonth() === M) {
+                if (currentDay.getDay() === DOW) {
+                    count++;
+                    if (count === N) {
+                        return currentDay;
+                    }
+                }
+                currentDay.setDate(currentDay.getDate() + 1);
+            }
+        }
+        return null; // Should not happen for standard Nth weekdays
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('holiday-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const yearStr = document.getElementById('target-year').value;
+        const holidayName = document.getElementById('holiday-name').value;
+        const Y = parseInt(yearStr, 10);
+
+        if (isNaN(Y) || Y < 1583) {
+            displayStatus("Please enter a valid year (1583 or later for Gregorian Calendar accuracy).", true);
+            return;
+        }
+
+        let calculatedDate = null;
+        let summaryText = "";
+
+        switch (holidayName) {
+            case 'Easter':
+                calculatedDate = calculateEaster(Y);
+                summaryText = "Calculated using the Meeus/Butcher's Algorithm, which determines the date based on the Paschal Full Moon.";
+                break;
+            
+            case 'Thanksgiving':
+                // 4th Thursday (DOW 4) in November (Month 10)
+                calculatedDate = findNthWeekday(Y, 10, 4, 4);
+                summaryText = "US Thanksgiving is observed on the **fourth Thursday** of November.";
+                break;
+                
+            case 'Memorial Day':
+                // Last Monday (DOW 1) in May (Month 4)
+                calculatedDate = findNthWeekday(Y, 4, 1, -1); // -1 signifies the last occurrence
+                summaryText = "US Memorial Day is observed on the **last Monday** of May.";
+                break;
+                
+            case 'Labor Day':
+                // 1st Monday (DOW 1) in September (Month 8)
+                calculatedDate = findNthWeekday(Y, 8, 1, 1);
+                summaryText = "US Labor Day is observed on the **first Monday** of September.";
+                break;
+        }
+
+        if (calculatedDate) {
+            const dateReadable = formatReadableDate(calculatedDate);
+
+            document.getElementById('result-holiday-display').innerText = `${holidayName} ${Y}`;
+            document.getElementById('calculated-date').innerText = dateReadable;
+            document.getElementById('calculation-summary').innerText = summaryText;
+            document.getElementById('results-container').classList.remove('d-none');
+        } else {
+            displayStatus(`Could not calculate the date for ${holidayName} in ${Y}.`, true);
+        }
+    });
+
+    // Set default year to next year (2026)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('target-year').value = new Date().getFullYear() + 1;
+    });
+</script>
+
+{% endblock %}

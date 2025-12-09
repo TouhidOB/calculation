@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Semester/Quarter End Date Calculator{% endblock %}
+
+{% block meta_description %}Calculate the precise end date of any academic term (semester, quarter, or course) based on a start date and duration in weeks or days.{% endblock %}
+
+{% block meta_keywords %}semester calculator, term end date, academic schedule, quarter duration, date arithmetic{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #198754; /* Bootstrap Green accent for academic/growth theme */
+    }
+
+    .result-section {
+        background-color: #d1e7dd; /* Light green success background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .result-section h3 {
+        color: #0f5132;
+        margin-bottom: 5px;
+        font-size: 1.2rem;
+    }
+
+    #final-end-date {
+        display: block;
+        font-size: 3rem;
+        font-weight: 700;
+        color: #0f5132;
+        line-height: 1.2;
+    }
+    
+    .summary-text {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: #0f5132;
+    }
+    
+    .form-control[type="date"], .form-control[type="number"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">📅 Academic Term End Date Calculator</h1>
+    <p class="small-muted">Determine the exact end date of your semester, quarter, or course by providing the start date and duration.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="term-calculator-form">
+            <h5 class="section-title">Step 1: Term Start Date</h5>
+
+            <!-- Start Date Input -->
+            <div class="form-group mb-4">
+                <label for="start-date" class="form-label">Course or Term Start Date</label>
+                <input type="date" class="form-control" id="start-date" required>
+            </div>
+            
+            <h5 class="section-title">Step 2: Term Duration</h5>
+
+            <!-- Duration Type and Value -->
+            <div class="row g-3 mb-4 align-items-end">
+                <div class="col-md-4">
+                    <label for="duration-type" class="form-label">Unit</label>
+                    <select class="form-select" id="duration-type">
+                        <option value="weeks">Weeks</option>
+                        <option value="days">Days</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label for="duration-value" class="form-label">Duration Value (e.g., 15 for a 15-week semester)</label>
+                    <input type="number" class="form-control" id="duration-value" min="1" value="15" required>
+                </div>
+            </div>
+
+            <button class="btn btn-success mt-3" type="submit">Calculate End Date</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3>The calculated end date for your term is:</h3>
+                <span id="final-end-date">...</span>
+                <p class="summary-text" id="calculation-summary"></p>
+            </div>
+        </div>
+        
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
+    const DAYS_PER_WEEK = 7;
+
+    // Helper function to format a Date object into a readable string
+    function formatReadableDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    document.getElementById('term-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const startDateStr = document.getElementById('start-date').value;
+        const durationType = document.getElementById('duration-type').value;
+        const durationValueStr = document.getElementById('duration-value').value;
+        const durationValue = parseInt(durationValueStr, 10);
+
+        if (!startDateStr || isNaN(durationValue) || durationValue <= 0) {
+            displayStatus("Please ensure all fields are filled correctly and the duration is a positive number.", true);
+            return;
+        }
+
+        // 1. Calculate Total Days to Add
+        let daysToAdd = 0;
+        let summaryText = "";
+        
+        if (durationType === 'weeks') {
+            daysToAdd = durationValue * DAYS_PER_WEEK;
+            summaryText = `Based on a **${durationValue}-week** duration, which is equal to **${daysToAdd} days**.`;
+        } else { // 'days'
+            daysToAdd = durationValue;
+            summaryText = `Based on a **${durationValue}-day** duration.`;
+        }
+
+        // 2. Determine the End Date
+        // We parse the date string. It's crucial to treat the input date as the start day.
+        // We use UTC parsing to prevent local timezone offsets from shifting the day boundary.
+        const [y, m, d] = startDateStr.split('-').map(Number);
+        const startDate = new Date(Date.UTC(y, m - 1, d)); // Month is 0-indexed (m-1)
+
+        // The term *ends* after the duration has passed.
+        // If a term starts on Day 1 and lasts for 7 days, it ends on Day 7.
+        // If a term starts today, and lasts for 1 day, it ends today.
+        // We add daysToAdd - 1 to get the last day of the term (inclusive).
+        
+        const endDayOffset = daysToAdd > 0 ? daysToAdd - 1 : 0;
+        
+        // Calculate the milliseconds for the end date
+        const endDateMs = startDate.getTime() + (endDayOffset * MILLISECONDS_PER_DAY);
+        const endDate = new Date(endDateMs);
+
+        // 3. Display Results
+        document.getElementById('final-end-date').innerText = formatReadableDate(endDate);
+        document.getElementById('calculation-summary').innerHTML = `Your term starts on ${formatReadableDate(startDate)}, and ends after ${daysToAdd} day(s). ${summaryText}`;
+        document.getElementById('results-container').classList.remove('d-none');
+    });
+    
+    // Set a default start date (e.g., today)
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('start-date').value = `${yyyy}-${mm}-${dd}`;
+    });
+</script>
+
+{% endblock %}

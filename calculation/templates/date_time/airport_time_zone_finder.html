@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Airport Time Zone Finder{% endblock %}
+
+{% block meta_description %}Find the time zone and current local time for major international airports using their IATA codes (LHR, JFK, DXB, etc.).{% endblock %}
+
+{% block meta_keywords %}airport timezone, IATA code, local time finder, UTC offset, flight planning{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: #f0fff4; /* Mint green/light theme */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #008080; /* Teal accent */
+    }
+
+    /* Input Styling */
+    .form-control {
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #e0ffff; /* Light cyan background */
+        padding: 25px;
+        border-radius: 8px;
+        margin-top: 30px;
+        border: 1px solid #008080;
+    }
+
+    .result-section h3 {
+        color: #005656; 
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .time-display {
+        font-size: 3rem;
+        font-weight: 900;
+        color: #3cb371; /* Medium sea green for current time */
+        line-height: 1.2;
+    }
+
+    .detail-card {
+        background-color: #f0ffff;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 10px 0;
+        border-left: 5px solid #008080;
+        text-align: left;
+    }
+    
+    .d-none { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3">✈️ Airport Time Zone Finder</h1>
+    <p class="small-muted">Find the time zone and estimated local time for a major airport (e.g., LHR, JFK, DXB).</p>
+
+    <div class="calc-wrapper">
+
+        <form id="airport-finder-form">
+            <h5 class="section-title">Step 1: Enter IATA Airport Code</h5>
+
+            <div class="form-group mb-4">
+                <label for="iata-code" class="form-label">IATA Code (e.g., JFK, LHR, DXB)</label>
+                <input type="text" class="form-control" id="iata-code" placeholder="LHR" maxlength="3" required>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit" style="background-color: #008080; border-color: #008080;">Find Time Zone</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Time Zone Details for <span id="airport-name-display"></span></h3>
+
+                <p class="small text-muted mb-3" id="airport-location-display"></p>
+
+                <div class="detail-card">
+                    <p class="fw-bold mb-1" id="airport-timezone-display">Time Zone: </p>
+                    <p class="fw-bold mb-0" id="airport-offset-display">UTC Offset: </p>
+                </div>
+
+                <h4 class="mt-4 mb-2" style="color:#005656;">Current Local Time:</h4>
+                <div class="time-display" id="local-airport-time"></div>
+            </div>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // --- Illustrative Time Zone Database (Limited for client-side functionality) ---
+    // NOTE: Daylight Saving Time (DST) is complex and changes annually. For simplicity
+    // in this client-side demo, we use the standard, fixed IANA time zone identifier.
+    // The browser's Date object will handle the DST offset calculation for the given IANA name.
+    const AIRPORT_TIMEZONES = {
+        'LHR': { name: 'Heathrow', city: 'London, UK', timezone: 'Europe/London' },
+        'JFK': { name: 'J.F. Kennedy Intl', city: 'New York, USA', timezone: 'America/New_York' },
+        'DXB': { name: 'Dubai Intl', city: 'Dubai, UAE', timezone: 'Asia/Dubai' },
+        'SIN': { name: 'Changi Intl', city: 'Singapore, Singapore', timezone: 'Asia/Singapore' },
+        'SYD': { name: 'Sydney Airport', city: 'Sydney, Australia', timezone: 'Australia/Sydney' },
+        'HND': { name: 'Haneda Airport', city: 'Tokyo, Japan', timezone: 'Asia/Tokyo' },
+        'CDG': { name: 'Charles de Gaulle', city: 'Paris, France', timezone: 'Europe/Paris' },
+        'PEK': { name: 'Beijing Capital', city: 'Beijing, China', timezone: 'Asia/Shanghai' },
+        'MEX': { name: 'Mexico City Intl', city: 'Mexico City, Mexico', timezone: 'America/Mexico_City' }
+    };
+
+    let timeUpdateInterval;
+
+    /**
+     * Updates the current time display for the target airport every second.
+     * @param {string} timezone The IANA time zone identifier (e.g., 'America/New_York').
+     */
+    function updateAirportTime(timezone) {
+        const timeDisplay = document.getElementById('local-airport-time');
+        const offsetDisplay = document.getElementById('airport-offset-display');
+
+        // Use Intl.DateTimeFormat to get the current time and offset for the specific timezone
+        const now = new Date();
+        
+        const localTime = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+            timeZone: timezone 
+        });
+
+        // Try to estimate the current UTC offset string (including DST if applicable)
+        // This is complex, but we can display the ZST name which implies the offset.
+        const offsetString = now.toLocaleTimeString('en-US', {
+            timeZone: timezone,
+            timeZoneName: 'short'
+        });
+
+        // Extract the actual timezone abbreviation/offset text (e.g., 'EST' or '+04')
+        const offsetMatch = offsetString.match(/[A-Z]{3,}|[+-]\d{1,2}/i);
+        const actualOffsetDisplay = offsetMatch ? offsetMatch[0] : timezone;
+
+        timeDisplay.innerText = localTime;
+        offsetDisplay.innerText = `Current Time Zone Abbreviation: ${actualOffsetDisplay}`;
+    }
+
+    // --- Event Handler for Form Submission ---
+    document.getElementById('airport-finder-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Clear existing interval and reset display
+        if (timeUpdateInterval) {
+            clearInterval(timeUpdateInterval);
+        }
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const iataCode = document.getElementById('iata-code').value.toUpperCase();
+
+        const airportData = AIRPORT_TIMEZONES[iataCode];
+
+        if (!airportData) {
+            displayStatus(`Airport code "${iataCode}" not found in the local database. Try: LHR, JFK, DXB, SIN, SYD, HND, CDG, MEX.`, true);
+            return;
+        }
+
+        try {
+            // 1. Prepare Results Display
+            document.getElementById('airport-name-display').innerText = `${airportData.name} (${iataCode})`;
+            document.getElementById('airport-location-display').innerText = airportData.city;
+            document.getElementById('airport-timezone-display').innerText = `Time Zone Name: ${airportData.timezone}`;
+            
+            document.getElementById('results-container').classList.remove('d-none');
+
+            // 2. Start Live Time Update
+            // Run once immediately
+            updateAirportTime(airportData.timezone);
+            // Set up the interval to run every second (1000ms)
+            timeUpdateInterval = setInterval(() => updateAirportTime(airportData.timezone), 1000);
+
+        } catch (error) {
+            console.error("Time Zone Calculation Error:", error);
+            displayStatus(`Failed to display time zone details. Error: ${error.message}`, true);
+        }
+    });
+
+    // Clean up interval when the user navigates away or clears
+    window.addEventListener('beforeunload', () => {
+        if (timeUpdateInterval) {
+            clearInterval(timeUpdateInterval);
+        }
+    });
+</script>
+
+{% endblock %}

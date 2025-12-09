@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Galactic Time Converter (Fun){% endblock %}
+
+{% block meta_description %}Convert standard Earth time (Days, Hours, Minutes, Seconds) into a hypothetical Galactic Time system (Galactic Cycles, Stellar Cycles, Galactic Days, Hours, Minutes, Seconds).{% endblock %}
+
+{% block meta_keywords %}galactic time, time conversion, fun calculator, stellar cycles, hypothetical time, earth to galactic{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-section {
+        background-color: #fce4ec; /* Light pink background */
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #e91e63;
+    }
+
+    .form-text {
+        color: #7f8c8d !important;
+    }
+
+    /* Result Section Styles */
+    .result-section {
+        background-color: #34495e; 
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 30px;
+        border: 1px solid #3498db;
+    }
+
+    .result-section h3 {
+        color: #3498db; 
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .time-display {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f1c40f; /* Yellow/Gold for visibility */
+        line-height: 1.2;
+        font-family: monospace;
+    }
+
+    .breakdown-table th {
+        background-color: #1abc9c; /* Teal for contrast */
+        color: #2c3e50;
+        text-align: center;
+    }
+    .breakdown-table td {
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #ecf0f1;
+    }
+    
+    .d-none { display: none; }
+
+    /* Rules explanation */
+    .rules-list {
+        list-style-type: none;
+        padding-left: 0;
+        text-align: left;
+        margin-top: 20px;
+        font-size: 0.9rem;
+        color: #95a5a6;
+    }
+    .rules-list li {
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-3 text-white">🚀 Galactic Time Converter</h1>
+    <p class="small-muted" style="color:#bdc3c7;">Convert a duration from Earth standard time to the hypothetical Galactic Time standard.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="galactic-converter-form">
+            <h5 class="text-bold display-6 text-primary">Step 1: Earth Time Duration</h5>
+
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <label for="earth-days" class="form-label">Earth Days</label>
+                    <input type="number" class="form-control" id="earth-days" value="0" min="0" required>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label for="earth-hours" class="form-label">Earth Hours</label>
+                    <input type="number" class="form-control" id="earth-hours" value="1" min="0" max="23" required>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label for="earth-minutes" class="form-label">Earth Minutes</label>
+                    <input type="number" class="form-control" id="earth-minutes" value="0" min="0" max="59" required>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label for="earth-seconds" class="form-label">Earth Seconds</label>
+                    <input type="number" class="form-control" id="earth-seconds" value="0" min="0" max="59" required>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-4 w-100" type="submit" style="background-color: #3498db; border-color: #3498db;">Engage Hyperdrive (Convert)</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="result-section">
+                <h3 id="result-title">Galactic Time Equivalent</h3>
+
+                <small class="text-muted" style="color:#bdc3c7;">GC:SC:GD - GH:GM:GS</small>
+                <div class="time-display" id="converted-galactic-time">00:00:00 - 00:00:00</div>
+
+                <div class="breakdown-table table-responsive mt-3">
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>G-Cycle (GC)</th>
+                                <th>Stellar Cycle (SC)</th>
+                                <th>G-Day (GD)</th>
+                                <th>G-Hour (GH)</th>
+                                <th>G-Minute (GM)</th>
+                                <th>G-Second (GS)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="breakdown-gc">0</td>
+                                <td id="breakdown-sc">0</td>
+                                <td id="breakdown-gd">0</td>
+                                <td id="breakdown-gh">0</td>
+                                <td id="breakdown-gm">0</td>
+                                <td id="breakdown-gs">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="rules-list">
+            <h5 class="text-bold display-6 text-primary mt-4">Galactic Time Rules:</h5>
+            <li>1 Galactic Cycle (GC) = 600 Galactic Days</li>
+            <li>1 Stellar Cycle (SC) = 30 Galactic Days</li>
+            <li>1 Galactic Day (GD) = 30 Earth Hours (108,000 Earth Seconds)</li>
+            <li>1 Galactic Hour (GH) = 100 Galactic Minutes</li>
+            <li>1 Galactic Minute (GM) = 100 Galactic Seconds</li>
+        </div>
+
+        <div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function displayStatus(message, isError) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        statusDiv.classList.add(isError ? 'alert-danger' : 'alert-info');
+        statusDiv.innerHTML = isError ? `❌ **Error:** ${message}` : `ℹ️ ${message}`;
+    }
+
+    // Helper function to pad numbers with a leading zero (base 100 system)
+    function pad(num) {
+        return num.toString().padStart(2, '0');
+    }
+
+    /**
+     * Converts Earth Time components into a total number of Earth Seconds.
+     */
+    function totalEarthSeconds(days, hours, minutes, seconds) {
+        return (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
+    }
+
+
+
+    function convertToGalacticTime(totalEarthSeconds) {
+        // --- Galactic Constants ---
+        const SECONDS_PER_GD = 30 * 3600; // 108,000 Earth Seconds
+        const DAYS_PER_SC = 30;
+        const DAYS_PER_GC = 600;
+
+        let remainingEarthSeconds = totalEarthSeconds;
+
+        // --- 1. Calculate Galactic Days (Total) ---
+        const totalGalacticDays = remainingEarthSeconds / SECONDS_PER_GD;
+        
+        // Use floor for integer days, and the remainder for the sub-day units
+        const galacticDaysInteger = Math.floor(totalGalacticDays);
+        const subDayFraction = totalGalacticDays - galacticDaysInteger;
+        
+        let remainingGD = galacticDaysInteger;
+
+        // --- 2. Calculate GC, SC, and GD ---
+        const gc = Math.floor(remainingGD / DAYS_PER_GC);
+        remainingGD %= DAYS_PER_GC;
+
+        const sc = Math.floor(remainingGD / DAYS_PER_SC);
+        const gd = remainingGD % DAYS_PER_SC;
+        
+        // --- 3. Calculate Galactic Hours, Minutes, Seconds (Base 100 system) ---
+        // 1 Galactic Day = 1,000,000 Galactic Seconds (GS)
+        // Galactic Sub-Day Seconds (Total Galactic Seconds in the fraction)
+        const totalGalacticSubDaySeconds = Math.floor(subDayFraction * 1000000); 
+
+        let gsRemaining = totalGalacticSubDaySeconds;
+
+        const gh = Math.floor(gsRemaining / 10000); // 100 GH * 100 GM = 10,000 GS per GH
+        gsRemaining %= 10000;
+
+        const gm = Math.floor(gsRemaining / 100); // 100 GS per GM
+        const gs = gsRemaining % 100;
+        
+        return { gc, sc, gd, gh, gm, gs };
+    }
+
+    // --- Event Handler ---
+
+    document.getElementById('galactic-converter-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.getElementById('results-container').classList.add('d-none');
+        document.getElementById('status-message').classList.add('d-none');
+
+        const earthDays = parseInt(document.getElementById('earth-days').value, 10);
+        const earthHours = parseInt(document.getElementById('earth-hours').value, 10);
+        const earthMinutes = parseInt(document.getElementById('earth-minutes').value, 10);
+        const earthSeconds = parseInt(document.getElementById('earth-seconds').value, 10);
+
+        if (isNaN(earthDays) || isNaN(earthHours) || isNaN(earthMinutes) || isNaN(earthSeconds) || 
+            earthDays < 0 || earthHours < 0 || earthMinutes < 0 || earthSeconds < 0) {
+            displayStatus("Please enter valid, non-negative numbers for all Earth time fields.", true);
+            return;
+        }
+
+        try {
+            // 1. Calculate Total Earth Seconds
+            const totalSec = totalEarthSeconds(earthDays, earthHours, earthMinutes, earthSeconds);
+
+            // 2. Perform Galactic Conversion
+            const galacticTime = convertToGalacticTime(totalSec);
+
+            // 3. Format and Display Results
+            
+            // Format 1: GC:SC:GD - GH:GM:GS
+            const formattedTime = `${pad(galacticTime.gc)}:${pad(galacticTime.sc)}:${pad(galacticTime.gd)} - ${pad(galacticTime.gh)}:${pad(galacticTime.gm)}:${pad(galacticTime.gs)}`;
+
+            document.getElementById('converted-galactic-time').innerText = formattedTime;
+            
+            // Breakdown table update
+            document.getElementById('breakdown-gc').innerText = galacticTime.gc.toLocaleString();
+            document.getElementById('breakdown-sc').innerText = galacticTime.sc.toLocaleString();
+            document.getElementById('breakdown-gd').innerText = galacticTime.gd.toLocaleString();
+            document.getElementById('breakdown-gh').innerText = galacticTime.gh.toLocaleString();
+            document.getElementById('breakdown-gm').innerText = galacticTime.gm.toLocaleString();
+            document.getElementById('breakdown-gs').innerText = galacticTime.gs.toLocaleString();
+            
+            document.getElementById('results-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Galactic Conversion Error:", error);
+            displayStatus("An error occurred during galactic conversion. Please check your input.", true);
+        }
+    });
+</script>
+
+{% endblock %}

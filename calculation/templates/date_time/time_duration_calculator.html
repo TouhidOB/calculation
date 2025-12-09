@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Time Duration Calculator (Hours Between Times){% endblock %}
+
+{% block meta_description %}Calculate the exact duration (hours, minutes, seconds) between a start date/time and an end date/time across multiple days or within the same day.{% endblock %}
+
+{% block meta_keywords %}time duration calculator, hours between times, time difference, time calculator, elapsed time{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+    }
+    
+    .duration-highlight {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #6f42c1; /* Bootstrap purple color for prominence */
+        display: block;
+        margin: 5px 0 15px 0;
+    }
+    
+    .form-control[type="date"], .form-control[type="time"] {
+        padding: .375rem .75rem;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">⏰ Time Duration Calculator</h1>
+    <p class="small-muted">Calculate the **exact elapsed time** in hours, minutes, and seconds between two points in time (which can span multiple days).</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="time-duration-form">
+            <h5 class="section-title">Step 1: Start Time</h5>
+
+            <!-- Start Date and Time Inputs -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="start-date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="start-date" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="start-time" class="form-label">Time (24-Hour)</label>
+                    <input type="time" class="form-control" id="start-time" value="09:00" required>
+                </div>
+            </div>
+
+            <h5 class="section-title">Step 2: End Time</h5>
+
+            <!-- End Date and Time Inputs -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="end-date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="end-date" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="end-time" class="form-label">Time (24-Hour)</label>
+                    <input type="time" class="form-control" id="end-time" value="17:00" required>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-3" type="submit">Calculate Duration</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="duration-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Duration Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="duration-table">
+            <tbody id="duration-body">
+                <!-- Details will be inserted here -->
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MS_PER_SECOND = 1000;
+    const SECONDS_PER_MINUTE = 60;
+    const MINUTES_PER_HOUR = 60;
+    const HOURS_PER_DAY = 24;
+
+    function displayError(message) {
+        const res = document.getElementById('duration-result');
+        res.classList.remove('d-none', 'alert-success');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('duration-table').classList.add('d-none');
+    }
+
+
+    function createDateTime(dateStr, timeStr) {
+        // Example: "2024-11-26 09:00:00"
+        return new Date(`${dateStr}T${timeStr}:00`);
+    }
+
+
+    function formatDuration(totalSeconds) {
+        const absSeconds = Math.abs(totalSeconds);
+
+        const days = Math.floor(absSeconds / (HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE));
+        let remainder = absSeconds % (HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE);
+
+        const hours = Math.floor(remainder / (MINUTES_PER_HOUR * SECONDS_PER_MINUTE));
+        remainder %= (MINUTES_PER_HOUR * SECONDS_PER_MINUTE);
+
+        const minutes = Math.floor(remainder / SECONDS_PER_MINUTE);
+        const seconds = remainder % SECONDS_PER_MINUTE;
+
+        const pad = (num) => String(num).padStart(2, '0');
+        
+        // Format the hours:minutes:seconds part
+        const hmsString = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+
+        return { days, hours, minutes, seconds, hmsString };
+    }
+
+
+    document.getElementById('time-duration-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const startDateStr = document.getElementById('start-date').value;
+        const startTimeStr = document.getElementById('start-time').value;
+        const endDateStr = document.getElementById('end-date').value;
+        const endTimeStr = document.getElementById('end-time').value;
+
+        // 2. Create Combined Date/Time Objects
+        const startDateTime = createDateTime(startDateStr, startTimeStr);
+        const endDateTime = createDateTime(endDateStr, endTimeStr);
+
+        // 3. Validation
+        if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+            displayError("One or both date/time inputs are invalid. Please check your selections.");
+            return;
+        }
+
+        if (startDateTime.getTime() >= endDateTime.getTime()) {
+            displayError("The **End Date/Time** must be later than the **Start Date/Time**.");
+            return;
+        }
+
+        // 4. Main Calculation (Difference in milliseconds)
+        const diffMs = endDateTime.getTime() - startDateTime.getTime();
+        const diffSeconds = Math.floor(diffMs / MS_PER_SECOND);
+        
+        // 5. Format Duration
+        const duration = formatDuration(diffSeconds);
+        
+        let durationText = duration.hmsString;
+        if (duration.days > 0) {
+            durationText = `${duration.days} day${duration.days !== 1 ? 's' : ''}, ${duration.hmsString}`;
+        }
+        
+        // Total minutes and hours for table
+        const totalMinutes = Math.floor(diffSeconds / SECONDS_PER_MINUTE);
+        const totalHours = (diffMs / (MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MS_PER_SECOND)).toFixed(2);
+
+
+        // 6. Update Result Display (Main)
+        const res = document.getElementById('duration-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-success');
+
+        res.innerHTML = `
+**Total Elapsed Time:**
+<span class="duration-highlight">${durationText}</span>
+`;
+        
+        // 7. Update Summary Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('duration-table').classList.remove('d-none');
+        const tableBody = document.getElementById('duration-body');
+        
+        tableBody.innerHTML = `
+            <tr><td>Start Time</td><td>${startDateTime.toLocaleString()}</td></tr>
+            <tr><td>End Time</td><td>${endDateTime.toLocaleString()}</td></tr>
+            <tr><td>**Formatted Duration**</td><td>**${durationText}**</td></tr>
+            <tr><td>Total Hours</td><td>${totalHours} hours</td></tr>
+            <tr><td>Total Minutes</td><td>${totalMinutes.toLocaleString()} minutes</td></tr>
+            <tr><td>Total Seconds</td><td>${diffSeconds.toLocaleString()} seconds</td></tr>
+        `;
+    });
+</script>
+
+{% endblock %}
