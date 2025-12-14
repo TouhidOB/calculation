@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'health',
     'business_investment',
     'date_time',
+    'garments_calculator',
 ]
 
 MIDDLEWARE = [

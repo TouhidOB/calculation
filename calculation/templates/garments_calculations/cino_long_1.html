@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Cino Long 5 Pockets Pant Consumption{% endblock %}
+
+{% block extra_head %}
+    <style>
+        .form-container {
+            padding: 30px;
+            background-color: #f8f9fa; /* Light gray background */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>{% endblock extra_head %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-dark">Cino Long 5 PKT Pant Fabric Consumption</h1>
+        <p class="lead text-muted">Enter the fabric and garment specifications below to calculate the estimated fabric length consumption per piece.</p>
+    </div>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 form-container"> 
+                <h2 class="mb-4 text-center text-primary">Garment & Fabric Specifications</h2>
+                
+                
+
+
+                <form action="{% url 'cino_long_1' %}" method="POST"> 
+                    {% csrf_token %}
+
+                    <h4 class="mb-3 border-bottom pb-2">Fabric Specs</h4>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="shrinkageLength" class="form-label">Shrinkage Length (%)</label>
+                            <input type="number" class="form-control" id="shrinkageLength" name="shrinkage_length" placeholder="e.g., 3.0" step="0.01" required value="{{ form_data.shrinkage_length }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="shrinkageWidth" class="form-label">Shrinkage Width (%)</label>
+                            <input type="number" class="form-control" id="shrinkageWidth" name="shrinkage_width" placeholder="e.g., 2.5" step="0.01" required value="{{ form_data.shrinkage_width }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="fabricWidth" class="form-label">Fabric Width (cm)</label>
+                            <input type="number" class="form-control" id="fabricWidth" name="fabric_width" placeholder="e.g., 150" step="0.01" required value="{{ form_data.fabric_width }}">
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3 border-bottom pb-2">Garments Size (in cm)</h4>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="waistRelaxed" class="form-label">Waist (RELAXED)</label>
+                            <input type="number" class="form-control" id="waistRelaxed" name="waist_relaxed" placeholder="e.g., 80" step="0.01" required value="{{ form_data.waist_relaxed }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="waistbandHeight" class="form-label">Waistband height</label>
+                            <input type="number" class="form-control" id="waistbandHeight" name="waistband_height" placeholder="e.g., 4.5" step="0.01" required value="{{ form_data.waistband_height }}">
+                        </div>
+                    </div>
+                    
+                    {# ... ALL other input fields follow the same pattern, adding the 'value="{{ form_data.field_name }}"' attribute ... #}
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="hip" class="form-label">Hip (15 cm below WB seam, WB excluded)</label>
+                            <input type="number" class="form-control" id="hip" name="hip_measurement" placeholder="e.g., 98" step="0.01" required value="{{ form_data.hip_measurement }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="thigh" class="form-label">Thigh at crotch level (2.5cm down)</label>
+                            <input type="number" class="form-control" id="thigh" name="thigh_crotch_level" placeholder="e.g., 55" step="0.01" required value="{{ form_data.thigh_crotch_level }}">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="kneeWidth" class="form-label">Knee width</label>
+                            <input type="number" class="form-control" id="kneeWidth" name="knee_width" placeholder="e.g., 20" step="0.01" required value="{{ form_data.knee_width }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="legOpening" class="form-label">Leg opening (hem)</label>
+                            <input type="number" class="form-control" id="legOpening" name="leg_opening_hem" placeholder="e.g., 17" step="0.01" required value="{{ form_data.leg_opening_hem }}">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="inseam" class="form-label">Inseam</label>
+                            <input type="number" class="form-control" id="inseam" name="inseam" placeholder="e.g., 78" step="0.01" required value="{{ form_data.inseam }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="frontRise" class="form-label">Front rise, WB excluded</label>
+                            <input type="number" class="form-control" id="frontRise" name="front_rise_excl_wb" placeholder="e.g., 24" step="0.01" required value="{{ form_data.front_rise_excl_wb }}">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="backRise" class="form-label">Back rise, WB excluded</label>
+                            <input type="number" class="form-control" id="backRise" name="back_rise_excl_wb" placeholder="e.g., 34" step="0.01" required value="{{ form_data.back_rise_excl_wb }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="hemHeight" class="form-label">Hem Height</label>
+                            <input type="number" class="form-control" id="hemHeight" name="hem_height" placeholder="e.g., 2.5" step="0.01" required value="{{ form_data.hem_height }}">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="backPocketTopWidth" class="form-label">Back pocket top width</label>
+                            <input type="number" class="form-control" id="backPocketTopWidth" name="back_pocket_top_width" placeholder="e.g., 14" step="0.01" required value="{{ form_data.back_pocket_top_width }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="backPocketHeight" class="form-label">Back pocket height at center</label>
+                            <input type="number" class="form-control" id="backPocketHeight" name="back_pocket_height_center" placeholder="e.g., 16" step="0.01" required value="{{ form_data.back_pocket_height_center }}">
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success btn-lg">Calculate Consumption</button>
+                    </div>
+                </form>
+            </div>
+
+            
+
+        </div>
+
+
+        {% if calculated_results %}
+            <div class="alert alert-info shadow mb-4 mt-4">
+                <h4 class="alert-heading text-center">✅ Consumption Result</h4>
+                <hr>
+                <div class="row text-center fs-5">
+                    <div class="col-md-6 mb-3">
+                        <strong>Estimated Consumption:</strong>
+                        <p class="fw-bold text-success mb-0">{{ calculated_results.consumption_length_meters }} %</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Efficiency:</strong>
+                        <p class="fw-bold text-success mb-0">{{ calculated_results.consumption_length_cm }} Yards</p>
+                    </div>
+                </div>
+                <p class="text-center mt-3 mb-0"><small class="text-muted">{{ calculated_results.notes }}</small></p>
+            </div>
+            {% endif %}
+
+            {% if error_message %}
+            <div class="alert alert-danger mb-4 text-center">
+                <strong>Error:</strong> {{ error_message }}
+            </div>
+        {% endif %}
+
+            
+    </div>
+
+{% endblock %}
