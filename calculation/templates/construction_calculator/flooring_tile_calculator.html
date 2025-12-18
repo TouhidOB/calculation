@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Flooring & Tile Calculator | Square Footage Estimate{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    :root {
+        --floor-brown: #5d4037;
+        --floor-accent: #ff9800;
+        --floor-bg: #fdfaf8;
+    }
+    body { background-color: #f4f1ee; }
+
+    .calc-card {
+        border: none;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .card-header-main {
+        background: var(--floor-brown);
+        color: white;
+        padding: 2.5rem 1.5rem;
+    }
+
+    .section-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--floor-brown);
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #e0e0e0;
+        margin-left: 1rem;
+    }
+
+    .result-container {
+        background: #fff;
+        border: 2px solid var(--floor-accent);
+        border-radius: 1rem;
+        display: none;
+    }
+
+    .primary-stat {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--floor-brown);
+        line-height: 1;
+    }
+
+    .tile-config-box {
+        background: #fff8f0;
+        border-radius: 0.75rem;
+        border: 1px solid #ffe0b2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            
+            <div class="card calc-card">
+                <div class="card-header-main text-center">
+                    <h1 class="h2 mb-2"><i class="bi bi-rulers me-2"></i>Flooring Calculator</h1>
+                    <p class="mb-0 opacity-75">Calculate materials for hardwood, laminate, or tile projects.</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form id="flooring-form">
+                        
+                        <div class="section-title">1. Room Measurements</div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" name="length" class="form-control" id="length" placeholder="20" step="0.1" required>
+                                    <label for="length">Room Length (ft)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" name="width" class="form-control" id="width" placeholder="15" step="0.1" required>
+                                    <label for="width">Room Width (ft)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">2. Material & Waste</div>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">WASTE ALLOWANCE (%)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-recycle text-success"></i></span>
+                                    <input type="number" name="wastePercent" class="form-control" id="waste" value="10" min="0" max="50">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <div class="form-text mt-2">
+                                    <i class="bi bi-info-circle me-1"></i> 
+                                    Use 5% for standard, 10% for staggered, or 15% for diagonal patterns.
+                                </div>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-center">
+                                <div class="form-check form-switch p-3 border rounded w-100">
+                                    <input class="form-check-input ms-0 me-3" type="checkbox" id="enable-tile-calc">
+                                    <label class="form-check-label fw-bold" for="enable-tile-calc">Enable Tile/Plank Count</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tile-dimensions" class="tile-config-box p-4 mb-4 d-none animate__animated animate__fadeIn">
+                            <div class="fw-bold mb-3 text-uppercase small text-orange"><i class="bi bi-grid-3x3 me-2"></i>Unit Dimensions</div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Unit Length</span>
+                                        <input type="number" name="tileLength" class="form-control" placeholder="12" step="0.1">
+                                        <span class="input-group-text">in</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Unit Width</span>
+                                        <input type="number" name="tileWidth" class="form-control" placeholder="12" step="0.1">
+                                        <span class="input-group-text">in</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning btn-lg w-100 py-3 fw-bold shadow-sm text-uppercase">
+                            Calculate Flooring Needs <i class="bi bi-arrow-right-short ms-2"></i>
+                        </button>
+                    </form>
+
+                    <div id="results-panel" class="result-container mt-5 p-4 animate__animated animate__fadeIn">
+                        <div class="text-center mb-4">
+                            <span class="text-muted text-uppercase small fw-bold">Total Material to Buy</span>
+                            <div class="primary-stat mt-2"><span id="res-total-sqft">0</span> <small class="fs-4">sq ft</small></div>
+                            <div id="tile-result-text" class="h4 text-success mt-2 fw-bold d-none">
+                                <i class="bi bi-boxes me-2"></i><span id="res-tile-count">0</span> Individual Units
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td class="text-muted py-2">Net Room Area</td>
+                                        <td class="text-end fw-bold py-2"><span id="res-room-area">0</span> sq ft</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted py-2">Waste Material (<span id="res-waste-label">0</span>%)</td>
+                                        <td class="text-end fw-bold py-2 text-danger">+ <span id="res-waste-sqft">0</span> sq ft</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="error-alert" class="alert alert-danger mt-4 d-none">
+                        <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                        <span>Please enter valid positive measurements.</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="mt-4 text-center text-muted small">
+                <strong>Pro Tip:</strong> Always keep one extra box of flooring for future repairs or board replacements.
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const tileToggle = document.getElementById('enable-tile-calc');
+    const tileGroup = document.getElementById('tile-dimensions');
+    const resultsPanel = document.getElementById('results-panel');
+    const errorAlert = document.getElementById('error-alert');
+
+    // Toggle logic for Tile Inputs
+    tileToggle.addEventListener('change', function() {
+        const inputs = tileGroup.querySelectorAll('input');
+        if (this.checked) {
+            tileGroup.classList.remove('d-none');
+            inputs.forEach(i => i.setAttribute('required', 'required'));
+        } else {
+            tileGroup.classList.add('d-none');
+            inputs.forEach(i => i.removeAttribute('required'));
+        }
+        resultsPanel.style.display = 'none';
+    });
+
+    document.getElementById('flooring-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const L = parseFloat(this.elements.length.value);
+        const W = parseFloat(this.elements.width.value);
+        const wastePct = parseFloat(this.elements.wastePercent.value) || 0;
+        
+        if (L > 0 && W > 0) {
+            const roomArea = L * W;
+            const wasteFactor = 1 + (wastePct / 100);
+            const totalSqFt = roomArea * wasteFactor;
+            
+            // Basic Display
+            document.getElementById('res-total-sqft').innerText = totalSqFt.toLocaleString(undefined, {maximumFractionDigits: 2});
+            document.getElementById('res-room-area').innerText = roomArea.toLocaleString(undefined, {maximumFractionDigits: 2});
+            document.getElementById('res-waste-label').innerText = wastePct;
+            document.getElementById('res-waste-sqft').innerText = (totalSqFt - roomArea).toFixed(2);
+
+            // Tile Calculation
+            const tileResText = document.getElementById('tile-result-text');
+            if (tileToggle.checked) {
+                const tL = parseFloat(this.elements.tileLength.value);
+                const tW = parseFloat(this.elements.tileWidth.value);
+                
+                if (tL > 0 && tW > 0) {
+                    const tileAreaSqFt = (tL * tW) / 144;
+                    const tileCount = Math.ceil(totalSqFt / tileAreaSqFt);
+                    document.getElementById('res-tile-count').innerText = tileCount.toLocaleString();
+                    tileResText.classList.remove('d-none');
+                }
+            } else {
+                tileResText.classList.add('d-none');
+            }
+
+            resultsPanel.style.display = 'block';
+            errorAlert.classList.add('d-none');
+            resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            resultsPanel.style.display = 'none';
+            errorAlert.classList.remove('d-none');
+        }
+    });
+</script>
+{% endblock %}

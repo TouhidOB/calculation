@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Concrete Slab Calculator | Estimate Cubic Yards & Feet{% endblock %}
+
+{% block meta_description %}Quickly calculate the exact volume of concrete needed for your project. Enter length, width, and depth to get totals in cubic yards and cubic feet.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    :root {
+        --construction-blue: #0d6efd;
+        --concrete-grey: #f8f9fa;
+        --border-color: #dee2e6;
+    }
+
+    body { background-color: #f1f3f5; }
+
+    .calc-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        background: var(--construction-blue);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .input-section {
+        background: white;
+        padding: 2rem;
+    }
+
+    .input-group-text {
+        background-color: var(--concrete-grey);
+        font-weight: 600;
+        color: #495057;
+        min-width: 45px;
+        justify-content: center;
+    }
+
+    .form-label {
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        color: #6c757d;
+    }
+
+    /* Result Styling */
+    .result-panel {
+        background: #e7f1ff;
+        border-radius: 0.75rem;
+        border: 2px dashed var(--construction-blue);
+    }
+
+    .yard-badge {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--construction-blue);
+        line-height: 1;
+    }
+
+    .unit-subtext {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .order-warning {
+        font-size: 0.8rem;
+        background: #fff3cd;
+        color: #856404;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #ffeeba;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            
+            <div class="card calc-card">
+                <div class="card-header-custom">
+                    <h2 class="mb-0"><i class="bi bi-truck me-2"></i>Concrete Slab Calculator</h2>
+                    <p class="mb-0 opacity-75">Estimate volume for patios, driveways, and footings</p>
+                </div>
+
+                <div class="input-section">
+                    
+                    <form id="slab-form" class="needs-validation" novalidate>
+                        
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="length" class="form-label">Slab Length</label>
+                                <div class="input-group">
+                                    <input type="number" id="length" class="form-control form-control-lg" placeholder="0.0" step="0.1" min="0.1" required>
+                                    <span class="input-group-text">ft</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="width" class="form-label">Slab Width</label>
+                                <div class="input-group">
+                                    <input type="number" id="width" class="form-control form-control-lg" placeholder="0.0" step="0.1" min="0.1" required>
+                                    <span class="input-group-text">ft</span>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="thickness" class="form-label">Slab Thickness (Depth)</label>
+                                <div class="input-group shadow-sm">
+                                    <span class="input-group-text bg-primary text-white"><i class="bi bi-layers-half"></i></span>
+                                    <input type="number" id="thickness" class="form-control form-control-lg" placeholder="Standard is 4" step="0.1" min="0.1" required>
+                                    <span class="input-group-text">inches</span>
+                                </div>
+                                <div class="unit-subtext ms-1">Note: Concrete thickness is entered in **inches**.</div>
+                            </div>
+
+                            <div class="col-12 pt-2">
+                                <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-bold shadow">
+                                    Calculate Volume <i class="bi bi-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div id="result-area" class="d-none mt-5 animate__animated animate__fadeIn">
+                        <div class="result-panel p-4 text-center mb-4">
+                            <span class="text-uppercase fw-bold small text-primary d-block mb-2">Total Volume Required</span>
+                            <div class="yard-badge" id="res-yards">0.000</div>
+                            <div class="fw-bold text-dark">Cubic Yards</div>
+                            
+                            <hr class="my-3 mx-auto w-25">
+                            
+                            <div class="text-secondary small">
+                                Equivalent to <strong id="res-feet" class="text-dark">0.00</strong> Cubic Feet
+                            </div>
+                        </div>
+
+                        <div class="order-warning">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Pro Tip:</strong> Most contractors recommend ordering <strong>10% extra</strong> to account for spillage, subgrade unevenness, or form movement.
+                        </div>
+                    </div>
+
+                    <div id="error-alert" class="alert alert-danger d-none mt-4" role="alert">
+                        <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                        Please enter valid positive numbers for all fields.
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <p class="text-muted small">Standard Thickness Reference: Sidewalks (4"), Driveways (5-6"), Heavy Loads (6"+)</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('slab-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        
+        const L = parseFloat(document.getElementById('length').value);
+        const W = parseFloat(document.getElementById('width').value);
+        const Tin = parseFloat(document.getElementById('thickness').value);
+        
+        const resArea = document.getElementById('result-area');
+        const errAlert = document.getElementById('error-alert');
+
+        if (L > 0 && W > 0 && Tin > 0) {
+            // 1. Convert thickness inches to feet
+            const Tft = Tin / 12;
+
+            // 2. Calculate Cubic Feet
+            const cuFt = L * W * Tft;
+
+            // 3. Calculate Cubic Yards (27 cu ft = 1 cu yd)
+            const cuYd = cuFt / 27;
+
+            // Update UI
+            document.getElementById('res-yards').innerText = cuYd.toFixed(3);
+            document.getElementById('res-feet').innerText = cuFt.toFixed(2);
+
+            resArea.classList.remove('d-none');
+            errAlert.classList.add('d-none');
+            
+            // Scroll to result
+            resArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            resArea.classList.add('d-none');
+            errAlert.classList.remove('d-none');
+        }
+    });
+</script>
+{% endblock %}

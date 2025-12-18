@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Area Calculator (Square Footage) - Professional Geometry Tool{% endblock %}
+
+{% block meta_description %}Calculate square footage for construction, real estate, or home improvement. Supports rectangles, triangles, and circles with instant unit conversion.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    :root {
+        --primary-indigo: #4e73df;
+        --success-emerald: #1cc88a;
+    }
+
+    body { background-color: #f8f9fc; }
+
+    .calc-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+    .shape-tab {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        border-radius: 0.75rem !important;
+        margin: 0 5px;
+    }
+
+    .shape-tab.active {
+        background-color: var(--primary-indigo) !important;
+        color: white !important;
+        border-color: var(--primary-indigo);
+    }
+
+    .input-icon-wrap {
+        background-color: #f1f3f9;
+        border-right: none;
+        color: var(--primary-indigo);
+    }
+
+    .formula-badge {
+        background-color: #eaecf4;
+        color: #4e73df;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        padding: 5px 12px;
+        border-radius: 20px;
+    }
+
+    .result-display {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        border-radius: 1rem;
+    }
+
+    .conversion-card {
+        border-left: 4px solid var(--primary-indigo);
+        background: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-dark"><i class="bi bi-rulers text-primary me-2"></i>Area Calculator</h1>
+        <p class="lead text-secondary">Calculate precision square footage for flooring, landscaping, and construction.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card calc-card p-4 p-md-5">
+                
+                <form id="area-form">
+                    <div class="mb-5">
+                        <label class="form-label fw-bold text-uppercase small text-muted mb-3">Step 1: Select Geometric Shape</label>
+                        <div class="d-flex flex-wrap justify-content-center border-0" id="shape-selection">
+                            <input type="radio" class="btn-check" name="shape" id="shape-rect" value="rectangle" checked autocomplete="off">
+                            <label class="btn btn-outline-primary shape-tab py-3 px-4 mb-2" for="shape-rect">
+                                <i class="bi bi-square me-2"></i>Rectangle
+                            </label>
+
+                            <input type="radio" class="btn-check" name="shape" id="shape-tri" value="triangle" autocomplete="off">
+                            <label class="btn btn-outline-primary shape-tab py-3 px-4 mb-2" for="shape-tri">
+                                <i class="bi bi-triangle me-2"></i>Triangle
+                            </label>
+
+                            <input type="radio" class="btn-check" name="shape" id="shape-circ" value="circle" autocomplete="off">
+                            <label class="btn btn-outline-primary shape-tab py-3 px-4 mb-2" for="shape-circ">
+                                <i class="bi bi-circle me-2"></i>Circle
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-uppercase small text-muted mb-3">Step 2: Dimensions (Feet)</label>
+                        
+                        <div class="shape-input-group row g-3 animate__animated animate__fadeIn" id="input-rectangle">
+                            <div class="col-12 text-center mb-3">
+                                
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Length (ft)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text input-icon-wrap"><i class="bi bi-arrows-expand"></i></span>
+                                    <input type="number" class="form-control form-control-lg" name="length" placeholder="0.00" min="0.01" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Width (ft)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text input-icon-wrap"><i class="bi bi-arrows-left-right"></i></span>
+                                    <input type="number" class="form-control form-control-lg" name="width" placeholder="0.00" min="0.01" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="shape-input-group row g-3 d-none animate__animated animate__fadeIn" id="input-triangle">
+                            <div class="col-12 text-center mb-3">
+                                
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Base (ft)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text input-icon-wrap"><i class="bi bi-bottom-left"></i></span>
+                                    <input type="number" class="form-control form-control-lg" name="base" placeholder="0.00" min="0.01" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Height (ft)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text input-icon-wrap"><i class="bi bi-arrow-up"></i></span>
+                                    <input type="number" class="form-control form-control-lg" name="height" placeholder="0.00" min="0.01" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="shape-input-group row g-3 d-none animate__animated animate__fadeIn" id="input-circle">
+                            <div class="col-12 text-center mb-3">
+                                
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold">Radius (ft)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text input-icon-wrap"><i class="bi bi-radius"></i></span>
+                                    <input type="number" class="form-control form-control-lg" name="radius" placeholder="0.00" min="0.01" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg w-100 shadow-sm fw-bold py-3" type="submit">
+                        <i class="bi bi-calculator me-2"></i>Calculate Area
+                    </button>
+                </form>
+
+                <div id="result-container" class="mt-5 d-none">
+                    <div class="result-display p-4 text-center mb-4 shadow">
+                        <p class="mb-1 text-uppercase small opacity-75">Total Surface Area</p>
+                        <h2 class="display-4 fw-bold mb-2" id="main-result">0.00 <small class="fs-4">sq ft</small></h2>
+                        <div class="formula-wrap mt-3">
+                            <span class="formula-badge" id="formula-text"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="conversion-card p-3 shadow-sm rounded">
+                                <p class="text-muted small mb-1 text-uppercase fw-bold">Square Meters</p>
+                                <h4 class="mb-0" id="result-m2">0.00</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="conversion-card p-3 shadow-sm rounded">
+                                <p class="text-muted small mb-1 text-uppercase fw-bold">Square Yards</p>
+                                <h4 class="mb-0" id="result-yd2">0.00</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger mt-4 d-none" id="error-alert" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span id="error-msg"></span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const SHAPE_MAP = {
+        'rectangle': 'input-rectangle',
+        'triangle': 'input-triangle',
+        'circle': 'input-circle'
+    };
+
+    function toggleShapeInputs() {
+        const selectedShape = document.querySelector('input[name="shape"]:checked').value;
+        
+        Object.keys(SHAPE_MAP).forEach(shape => {
+            const group = document.getElementById(SHAPE_MAP[shape]);
+            const inputs = group.querySelectorAll('input');
+            
+            if (shape === selectedShape) {
+                group.classList.remove('d-none');
+                inputs.forEach(i => i.setAttribute('required', 'required'));
+            } else {
+                group.classList.add('d-none');
+                inputs.forEach(i => i.removeAttribute('required'));
+            }
+        });
+        document.getElementById('result-container').classList.add('d-none');
+        document.getElementById('error-alert').classList.add('d-none');
+    }
+
+    document.querySelectorAll('input[name="shape"]').forEach(input => {
+        input.addEventListener('change', toggleShapeInputs);
+    });
+
+    document.getElementById('area-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        
+        const selectedShape = document.querySelector('input[name="shape"]:checked').value;
+        const currentGroup = document.getElementById(SHAPE_MAP[selectedShape]);
+        const formData = new FormData(e.target);
+        
+        let area_sq_ft = 0;
+        let formula = '';
+
+        try {
+            if (selectedShape === 'rectangle') {
+                const l = parseFloat(formData.get('length'));
+                const w = parseFloat(formData.get('width'));
+                area_sq_ft = l * w;
+                formula = 'Area = L × W';
+            } else if (selectedShape === 'triangle') {
+                const b = parseFloat(formData.get('base'));
+                const h = parseFloat(formData.get('height'));
+                area_sq_ft = 0.5 * b * h;
+                formula = 'Area = ½ × B × H';
+            } else if (selectedShape === 'circle') {
+                const r = parseFloat(formData.get('radius'));
+                area_sq_ft = Math.PI * Math.pow(r, 2);
+                formula = 'Area = π × r²';
+            }
+
+            if (isNaN(area_sq_ft) || area_sq_ft <= 0) throw new Error("Please enter positive values.");
+
+            // Output Results
+            document.getElementById('main-result').innerHTML = `${area_sq_ft.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} <small class="fs-4">sq ft</small>`;
+            document.getElementById('result-m2').innerText = `${(area_sq_ft * 0.092903).toFixed(2)} m²`;
+            document.getElementById('result-yd2').innerText = `${(area_sq_ft / 9).toFixed(2)} yd²`;
+            document.getElementById('formula-text').innerText = formula;
+            
+            document.getElementById('result-container').classList.remove('d-none');
+            document.getElementById('error-alert').classList.add('d-none');
+            
+            // Scroll to result
+            document.getElementById('result-container').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        } catch (err) {
+            document.getElementById('error-msg').innerText = err.message;
+            document.getElementById('error-alert').classList.remove('d-none');
+            document.getElementById('result-container').classList.add('d-none');
+        }
+    });
+
+    window.onload = toggleShapeInputs;
+</script>
+{% endblock %}

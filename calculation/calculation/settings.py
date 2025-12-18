@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'business_investment',
     'date_time',
     'garments_calculator',
+    'construction_calculator',
 ]
 
 MIDDLEWARE = [

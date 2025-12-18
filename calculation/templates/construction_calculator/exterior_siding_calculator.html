@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Exterior Siding Calculator | Estimate Siding Squares{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    :root {
+        --siding-red: #b71c1c;
+        --siding-dark: #212121;
+    }
+    body { background-color: #f8f9fa; }
+
+    .calc-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .card-header-main {
+        background: var(--siding-red);
+        color: white;
+        padding: 2.5rem 1rem;
+    }
+
+    .step-indicator {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--siding-red);
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        margin: 2rem 0 1rem;
+    }
+    .step-indicator::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #dee2e6;
+        margin-left: 1rem;
+    }
+
+    .result-display {
+        background: #fff;
+        border: 2px solid var(--siding-red);
+        border-radius: 1rem;
+        display: none;
+    }
+
+    .square-stat {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--siding-red);
+        line-height: 1;
+    }
+
+    .info-badge {
+        background-color: #fef2f2;
+        border: 1px solid #fee2e2;
+        color: #991b1b;
+        border-radius: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            
+            <div class="card calc-card">
+                <div class="card-header-main text-center">
+                    <h1 class="h2 mb-1"><i class="bi bi-house-gear-fill me-2"></i>Siding Calculator</h1>
+                    <p class="mb-0 opacity-75">Estimate total exterior area and siding squares required</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    
+                    
+
+                    <form id="siding-form">
+                        <div class="step-indicator">1. Structural Dimensions</div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" name="length" class="form-control" id="length" placeholder="40" step="0.1" required>
+                                    <label for="length">Length (ft)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" name="width" class="form-control" id="width" placeholder="30" step="0.1" required>
+                                    <label for="width">Width (ft)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" name="height" class="form-control" id="height" placeholder="10" step="0.1" required>
+                                    <label for="height">Wall Height (ft)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="step-indicator">2. Deductions & Waste</div>
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <label class="form-label small fw-bold text-muted">SUBTRACT OPENINGS (SQ FT)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white text-danger"><i class="bi bi-dash-circle"></i></span>
+                                    <input type="number" name="subtractArea" class="form-control" placeholder="Doors & Windows" value="0" min="0">
+                                    <span class="input-group-text">sq ft</span>
+                                </div>
+                                <div class="form-text">Total area of all windows and doors.</div>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-bold text-muted">WASTE FACTOR (%)</label>
+                                <div class="input-group">
+                                    <input type="number" name="wastePercent" class="form-control" value="10" min="0" max="30">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <div class="form-text">Industry standard: 10%.</div>
+                            </div>
+                        </div>
+
+                        <div class="info-badge p-3 mt-4 d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                            <div class="small">
+                                <strong>Pro Tip:</strong> Siding is sold in <strong>"Squares."</strong> 
+                                One square equals 100 square feet of coverage.
+                            </div>
+                        </div>
+                        
+                        
+
+                        <button type="submit" class="btn btn-danger btn-lg w-100 mt-5 py-3 fw-bold text-uppercase shadow-sm">
+                            Calculate Siding Needed <i class="bi bi-calculator ms-2"></i>
+                        </button>
+                    </form>
+
+                    <div id="results-area" class="result-display mt-5 p-4 text-center animate__animated animate__fadeIn">
+                        <span class="text-uppercase fw-bold text-muted small d-block mb-1">Total Order Estimate</span>
+                        <div class="square-stat" id="res-squares">0.00</div>
+                        <div class="h4 fw-bold text-dark mb-4">Squares Needed</div>
+                        
+                        <div class="row g-2 border-top pt-4">
+                            <div class="col-6">
+                                <div class="p-2">
+                                    <div class="text-muted small">Total Area (Incl. Waste)</div>
+                                    <div class="fw-bold"><span id="res-total-area">0</span> ft²</div>
+                                </div>
+                            </div>
+                            <div class="col-6 border-start">
+                                <div class="p-2">
+                                    <div class="text-muted small">Waste Material</div>
+                                    <div class="fw-bold text-danger">+ <span id="res-waste-sqft">0</span> ft²</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="error-box" class="alert alert-warning mt-4 d-none">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <span>Dimensions must be greater than zero.</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <p class="text-center text-muted small mt-4">
+                $Area = (Perimeter \times Height) - Deductions$ <br>
+                $Squares = (Area \times (1 + Waste\%)) / 100$
+            </p>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('siding-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const L = parseFloat(this.elements.length.value);
+        const W = parseFloat(this.elements.width.value);
+        const H = parseFloat(this.elements.height.value);
+        const sub = parseFloat(this.elements.subtractArea.value) || 0;
+        const wastePct = parseFloat(this.elements.wastePercent.value) || 0;
+
+        const resultsArea = document.getElementById('results-area');
+        const errorBox = document.getElementById('error-box');
+
+        if (L > 0 && W > 0 && H > 0) {
+            // 1. Perimeter and Gross Area
+            const perimeter = 2 * (L + W);
+            const grossArea = perimeter * H;
+
+            // 2. Net Area after Deductions
+            const netArea = Math.max(0, grossArea - sub);
+
+            // 3. Apply Waste
+            const totalAreaWithWaste = netArea * (1 + (wastePct / 100));
+            
+            // 4. Convert to Squares
+            const squares = totalAreaWithWaste / 100;
+
+            // UI Updates
+            document.getElementById('res-squares').innerText = squares.toFixed(2);
+            document.getElementById('res-total-area').innerText = totalAreaWithWaste.toLocaleString(undefined, {maximumFractionDigits: 0});
+            document.getElementById('res-waste-sqft').innerText = (totalAreaWithWaste - netArea).toLocaleString(undefined, {maximumFractionDigits: 0});
+
+            resultsArea.style.display = 'block';
+            errorBox.classList.add('d-none');
+            resultsArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            resultsArea.style.display = 'none';
+            errorBox.classList.remove('d-none');
+        }
+    });
+</script>
+{% endblock %}

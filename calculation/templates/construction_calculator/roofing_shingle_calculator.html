@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Roofing Shingle Calculator | Pro Estimator{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --roof-navy: #1e293b;
+            --roof-red: #dc2626;
+            --roof-gold: #f59e0b;
+        }
+        body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
+        .main-card { border: none; border-radius: 1.25rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        .input-section { background: white; padding: 2.5rem; }
+        .output-section { background: var(--roof-navy); color: white; padding: 2.5rem; min-height: 400px; }
+        .step-badge { width: 30px; height: 30px; background: var(--roof-red); color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+        .pitch-preset { cursor: pointer; border: 2px solid #e2e8f0; transition: 0.2s; }
+        .btn-check:checked + .pitch-preset { border-color: var(--roof-red); background-color: #fef2f2; color: var(--roof-red); }
+        .result-number { font-size: 4.5rem; font-weight: 800; color: var(--roof-gold); line-height: 1; }
+        .receipt-line { border-bottom: 1px dashed rgba(255,255,255,0.2); padding: 0.85rem 0; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card main-card">
+        <div class="row g-0">
+            <div class="col-lg-7 input-section">
+                <div class="mb-4">
+                    <h2 class="h4 fw-bold"><i class="bi bi-calculator me-2 text-danger"></i>Roofing Estimator</h2>
+                    <p class="text-muted">Enter measurements to calculate shingle requirements.</p>
+                </div>
+
+                <form id="roofing-form">
+                    <div class="mb-5">
+                        <label class="form-label fw-bold d-block mb-3"><span class="step-badge">1</span> Roof Footprint</label>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" id="input-length" class="form-control" placeholder="40" step="0.1" required>
+                                    <label for="input-length">Ridge Length (ft)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" id="input-width" class="form-control" placeholder="25" step="0.1" required>
+                                    <label for="input-width">Gable Distance (ft)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label fw-bold d-block mb-3"><span class="step-badge">2</span> Roof Pitch (Slope)</label>
+                        
+                        <div class="row g-2 mb-3 text-center">
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="pitchType" id="pitchLow" value="4">
+                                <label class="btn w-100 pitch-preset p-3" for="pitchLow"><small class="d-block opacity-75">Low</small><strong>4/12</strong></label>
+                            </div>
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="pitchType" id="pitchStd" value="6" checked>
+                                <label class="btn w-100 pitch-preset p-3" for="pitchStd"><small class="d-block opacity-75">Standard</small><strong>6/12</strong></label>
+                            </div>
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="pitchType" id="pitchSteep" value="9">
+                                <label class="btn w-100 pitch-preset p-3" for="pitchSteep"><small class="d-block opacity-75">Steep</small><strong>9/12</strong></label>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">Custom Rise</span>
+                            <input type="number" id="input-pitchRise" class="form-control" value="6" min="0" max="24" step="0.5">
+                            <span class="input-group-text">in 12"</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold d-block mb-3"><span class="step-badge">3</span> Waste Allowance</label>
+                        <select id="input-waste" class="form-select form-select-lg">
+                            <option value="5">5% (Minimal cutting)</option>
+                            <option value="10" selected>10% (Standard Gable)</option>
+                            <option value="15">15% (Hip or Complex)</option>
+                            <option value="20">20% (High Valleys/Dormers)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger btn-lg w-100 py-3 fw-bold">CALCULATE MATERIALS</button>
+                </form>
+            </div>
+
+            <div class="col-lg-5 output-section d-flex flex-column justify-content-center text-center">
+                <div id="results-placeholder">
+                    <i class="bi bi-house-gear display-1 opacity-25"></i>
+                    <h3 class="mt-4 h5">Project Summary</h3>
+                    <p class="opacity-50 px-4">Enter dimensions to see your material breakdown here.</p>
+                </div>
+
+                <div id="results-content" class="d-none fade-in">
+                    <span class="text-uppercase tracking-widest opacity-75 small fw-bold">Order Quantity</span>
+                    <div class="result-number my-2"><span id="res-bundles">0</span></div>
+                    <div class="h4 fw-bold text-uppercase mb-4">Bundles</div>
+                    
+                    <div class="text-start mt-4 px-3">
+                        <div class="receipt-line d-flex justify-content-between">
+                            <span>Total Squares</span>
+                            <span class="fw-bold"><span id="res-squares">0.00</span> sq</span>
+                        </div>
+                        <div class="receipt-line d-flex justify-content-between">
+                            <span>True Roof Area</span>
+                            <span class="fw-bold"><span id="res-slanted">0</span> ft²</span>
+                        </div>
+                        <div class="receipt-line d-flex justify-content-between text-warning">
+                            <span>Waste Included</span>
+                            <span class="fw-bold">+ <span id="res-waste-amt">0</span> ft²</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    const form = document.getElementById('roofing-form');
+    const customPitchInput = document.getElementById('input-pitchRise');
+    const radioPitches = document.querySelectorAll('input[name="pitchType"]');
+
+    // Update custom input when presets are clicked
+    radioPitches.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            customPitchInput.value = e.target.value;
+        });
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Get values using IDs to avoid "length" property collision
+        const L = parseFloat(document.getElementById('input-length').value);
+        const W = parseFloat(document.getElementById('input-width').value);
+        const rise = parseFloat(document.getElementById('input-pitchRise').value);
+        const wastePct = parseFloat(document.getElementById('input-waste').value);
+
+        // 2. Multiplier Calculation (sqrt(r^2 + 12^2) / 12)
+        const multiplier = Math.sqrt(Math.pow(rise, 2) + 144) / 12;
+
+        // 3. Area Logic
+        const footprint = L * W;
+        const actualArea = footprint * multiplier;
+        const totalWithWaste = actualArea * (1 + (wastePct / 100));
+
+        // 4. Units (1 Square = 100sqft | 3 Bundles = 1 Square)
+        const squares = totalWithWaste / 100;
+        const bundles = Math.ceil(squares * 3);
+
+        // UI Logic
+        document.getElementById('results-placeholder').classList.add('d-none');
+        document.getElementById('results-content').classList.remove('d-none');
+
+        // Number Injection
+        document.getElementById('res-bundles').innerText = bundles.toLocaleString();
+        document.getElementById('res-squares').innerText = squares.toFixed(2);
+        document.getElementById('res-slanted').innerText = Math.round(actualArea).toLocaleString();
+        document.getElementById('res-waste-amt').innerText = Math.round(totalWithWaste - actualArea).toLocaleString();
+
+        // Mobile focus scroll
+        if (window.innerWidth < 992) {
+            document.querySelector('.output-section').scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+</script>
+
+{% endblock %}

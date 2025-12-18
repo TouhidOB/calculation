@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Volume Calculator (Cubic Feet & Yards) - 3D Shape Tool{% endblock %}
+
+{% block meta_description %}Calculate the volume of boxes, cylinders, and spheres in cubic feet and yards. Perfect for concrete, landscaping, and storage estimates.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    :root {
+        --volume-red: #dc3545;
+        --volume-dark: #a71d2a;
+        --bg-light: #f8f9fa;
+    }
+
+    body { background-color: #f4f6f9; }
+
+    .calc-card {
+        border: none;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    /* Shape Selector Styling */
+    .shape-selector-box {
+        background: #eee;
+        padding: 0.5rem;
+        border-radius: 0.75rem;
+    }
+
+    .btn-check:checked + .btn-outline-danger {
+        background-color: var(--volume-red);
+        color: white;
+        border-color: var(--volume-red);
+    }
+
+    .shape-btn {
+        border: none;
+        border-radius: 0.5rem !important;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    /* Input Styling */
+    .input-group-text {
+        background-color: white;
+        border-right: none;
+        color: var(--volume-red);
+    }
+    .form-control {
+        border-left: none;
+    }
+    .form-control:focus {
+        border-color: #dee2e6;
+        box-shadow: none;
+    }
+
+    /* Results Styling */
+    .result-display {
+        background: linear-gradient(135deg, var(--volume-red) 0%, var(--volume-dark) 100%);
+        color: white;
+        border-radius: 1rem;
+    }
+
+    .formula-badge {
+        background-color: rgba(255,255,255,0.2);
+        color: white;
+        font-family: 'Courier New', Courier, monospace;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+
+    .conversion-card {
+        border-top: 4px solid var(--volume-red);
+        background: white;
+        transition: transform 0.2s;
+    }
+    .conversion-card:hover { transform: translateY(-3px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-dark"><i class="bi bi-box-seam text-danger me-2"></i>Volume Calculator</h1>
+        <p class="lead text-secondary">Estimate cubic footage and yardage for construction, excavation, and capacity planning.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card calc-card p-4 p-md-5">
+                
+                <form id="volume-form">
+                    <div class="mb-5">
+                        <label class="form-label fw-bold text-uppercase small text-muted mb-3 d-block text-center">Step 1: Select Your Shape</label>
+                        <div class="shape-selector-box d-flex justify-content-between">
+                            <input type="radio" class="btn-check" name="shape" id="shape-prism" value="prism" checked autocomplete="off">
+                            <label class="btn btn-outline-danger shape-btn flex-fill me-1" for="shape-prism">
+                                <i class="bi bi-box me-1"></i>Prism
+                            </label>
+
+                            <input type="radio" class="btn-check" name="shape" id="shape-cyl" value="cylinder" autocomplete="off">
+                            <label class="btn btn-outline-danger shape-btn flex-fill mx-1" for="shape-cyl">
+                                <i class="bi bi-cylinder me-1"></i>Cylinder
+                            </label>
+
+                            <input type="radio" class="btn-check" name="shape" id="shape-sph" value="sphere" autocomplete="off">
+                            <label class="btn btn-outline-danger shape-btn flex-fill ms-1" for="shape-sph">
+                                <i class="bi bi-globe me-1"></i>Sphere
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-uppercase small text-muted mb-3">Step 2: Enter Dimensions (Feet)</label>
+                        
+                        <div class="shape-input-group row g-3" id="input-prism">
+                            <div class="col-12 text-center mb-2">
+                                
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Length</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-arrows-expand"></i></span>
+                                    <input type="number" class="form-control" name="length" placeholder="0.00" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Width</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-arrows-left-right"></i></span>
+                                    <input type="number" class="form-control" name="width" placeholder="0.00" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Height</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-arrow-up"></i></span>
+                                    <input type="number" class="form-control" name="height_prism" placeholder="0.00" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="shape-input-group row g-3 d-none" id="input-cylinder">
+                            <div class="col-12 text-center mb-2">
+                                
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Radius</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-radius"></i></span>
+                                    <input type="number" class="form-control" name="radius_cyl" placeholder="0.00" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Height</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-arrow-up-circle"></i></span>
+                                    <input type="number" class="form-control" name="height_cyl" placeholder="0.00" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="shape-input-group row g-3 d-none" id="input-sphere">
+                            <div class="col-12 text-center mb-2">
+                                
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold">Radius</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-radius"></i></span>
+                                    <input type="number" class="form-control" name="radius_sph" placeholder="0.00" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-danger btn-lg w-100 shadow-sm fw-bold py-3 mt-3" type="submit">
+                        <i class="bi bi-calculator-fill me-2"></i>Calculate Volume
+                    </button>
+                </form>
+
+                <div id="result-container" class="mt-5 d-none animate__animated animate__fadeIn">
+                    <div class="result-display p-4 text-center mb-4 shadow">
+                        <p class="mb-1 text-uppercase small opacity-75 fw-bold">Total Volume</p>
+                        <h2 class="display-4 fw-bold mb-2" id="main-result">0.000 <small class="fs-4">cu ft</small></h2>
+                        <div class="mt-3">
+                            <span class="formula-badge" id="formula-text"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6 text-center">
+                            <div class="conversion-card p-3 shadow-sm rounded border">
+                                <p class="text-muted small mb-1 text-uppercase fw-bold">Cubic Feet (ft³)</p>
+                                <h4 class="mb-0 text-danger" id="result-ft3">0.000</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <div class="conversion-card p-3 shadow-sm rounded border">
+                                <p class="text-muted small mb-1 text-uppercase fw-bold">Cubic Yards (yd³)</p>
+                                <h4 class="mb-0 text-danger" id="result-yd3">0.000</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-light border-danger text-danger mt-4 d-none" id="error-alert" role="alert">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                    <span id="error-msg"></span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const SHAPE_MAP = {
+        'prism': 'input-prism',
+        'cylinder': 'input-cylinder',
+        'sphere': 'input-sphere'
+    };
+
+    function toggleShapeInputs() {
+        const selectedShape = document.querySelector('input[name="shape"]:checked').value;
+        
+        Object.keys(SHAPE_MAP).forEach(shape => {
+            const group = document.getElementById(SHAPE_MAP[shape]);
+            const inputs = group.querySelectorAll('input');
+            
+            if (shape === selectedShape) {
+                group.classList.remove('d-none');
+                inputs.forEach(i => i.setAttribute('required', 'required'));
+            } else {
+                group.classList.add('d-none');
+                inputs.forEach(i => i.removeAttribute('required'));
+            }
+        });
+        hideResults();
+    }
+
+    function hideResults() {
+        document.getElementById('result-container').classList.add('d-none');
+        document.getElementById('error-alert').classList.add('d-none');
+    }
+
+    document.querySelectorAll('input[name="shape"]').forEach(input => {
+        input.addEventListener('change', toggleShapeInputs);
+    });
+
+    document.getElementById('volume-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        
+        const selectedShape = document.querySelector('input[name="shape"]:checked').value;
+        const formData = new FormData(e.target);
+        
+        let volume_cu_ft = 0;
+        let formula = '';
+
+        try {
+            if (selectedShape === 'prism') {
+                const l = parseFloat(formData.get('length'));
+                const w = parseFloat(formData.get('width'));
+                const h = parseFloat(formData.get('height_prism'));
+                volume_cu_ft = l * w * h;
+                formula = 'V = Length × Width × Height';
+            } else if (selectedShape === 'cylinder') {
+                const r = parseFloat(formData.get('radius_cyl'));
+                const h = parseFloat(formData.get('height_cyl'));
+                volume_cu_ft = Math.PI * Math.pow(r, 2) * h;
+                formula = 'V = π × r² × h';
+            } else if (selectedShape === 'sphere') {
+                const r = parseFloat(formData.get('radius_sph'));
+                volume_cu_ft = (4/3) * Math.PI * Math.pow(r, 3);
+                formula = 'V = ⁴⁄₃ × π × r³';
+            }
+
+            if (isNaN(volume_cu_ft) || volume_cu_ft <= 0) throw new Error("Please enter positive dimensions.");
+
+            // Output Calculations
+            const volume_cu_yd = volume_cu_ft / 27;
+
+            // Update UI
+            document.getElementById('main-result').innerHTML = `${volume_cu_ft.toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3})} <small class="fs-4">cu ft</small>`;
+            document.getElementById('result-ft3').innerText = volume_cu_ft.toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3});
+            document.getElementById('result-yd3').innerText = volume_cu_yd.toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3});
+            document.getElementById('formula-text').innerText = formula;
+            
+            document.getElementById('result-container').classList.remove('d-none');
+            document.getElementById('error-alert').classList.add('d-none');
+            
+            // Smooth scroll to result
+            window.scrollTo({
+                top: document.getElementById('result-container').offsetTop + 100,
+                behavior: 'smooth'
+            });
+
+        } catch (err) {
+            document.getElementById('error-msg').innerText = err.message;
+            document.getElementById('error-alert').classList.remove('d-none');
+            document.getElementById('result-container').classList.add('d-none');
+        }
+    });
+
+    // Initialize
+    window.onload = toggleShapeInputs;
+</script>
+{% endblock %}

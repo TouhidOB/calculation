@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Paint Volume Calculator - Gallons & Liters{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    :root {
+        --paint-blue: #0d6efd;
+        --paint-teal: #009688;
+        --paint-orange: #fd7e14;
+    }
+    body { background-color: #f8f9fa; }
+    
+    .calc-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+
+    .section-header {
+        border-left: 4px solid var(--paint-blue);
+        padding-left: 15px;
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .result-display {
+        background: linear-gradient(135deg, #009688 0%, #00695c 100%);
+        color: white;
+        border-radius: 0.75rem;
+        display: none;
+    }
+
+    .input-group-text { width: 45px; justify-content: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold"><i class="bi bi-palette2 text-primary me-2"></i>Paint Volume Calculator</h1>
+        <p class="lead text-muted">Estimate the exact amount of paint needed for your room.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card calc-card p-4 p-md-5">
+                
+                
+
+                <form id="paint-form">
+                    <div class="section-header mt-3">1. Room Dimensions</div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="form-floating mb-3">
+                                <input type="number" name="length" class="form-control" id="length" placeholder="15" step="0.1" required>
+                                <label for="length">Length (ft)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating mb-3">
+                                <input type="number" name="width" class="form-control" id="width" placeholder="12" step="0.1" required>
+                                <label for="width">Width (ft)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating mb-3">
+                                <input type="number" name="height" class="form-control" id="height" placeholder="8" step="0.1" required>
+                                <label for="height">Height (ft)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-header mt-4">2. Non-Paintable Surfaces</div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="input-group mb-2">
+                                <span class="input-group-text bg-white"><i class="bi bi-door-closed text-danger"></i></span>
+                                <div class="form-floating">
+                                    <input type="number" name="subtractArea" class="form-control" id="subtract" value="0" step="1">
+                                    <label for="subtract">Doors/Windows Area (sq ft)</label>
+                                </div>
+                            </div>
+                            <div class="form-text mb-4 ms-1">Typical door: 21 sq ft. Typical window: 15 sq ft.</div>
+                        </div>
+                    </div>
+
+                    <div class="section-header mt-2" style="border-color: var(--paint-orange);">3. Application</div>
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-layers text-warning"></i></span>
+                                <div class="form-floating">
+                                    <input type="number" name="coats" class="form-control" id="coats" value="2" min="1" required>
+                                    <label for="coats">Number of Coats</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded border border-info small">
+                                <i class="bi bi-info-circle-fill text-info me-2"></i>
+                                Based on standard coverage: <strong>400 sq ft / gallon</strong>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mt-5 py-3 shadow-sm fw-bold">
+                        Calculate Paint Volume
+                    </button>
+                </form>
+
+                <div id="result-card" class="result-display mt-5 p-4 text-center shadow animate__animated animate__fadeIn">
+                    <h5 class="text-uppercase opacity-75 small fw-bold">Estimated Paint Required</h5>
+                    <div class="display-4 fw-bold mb-0">
+                        <span id="res-gallons">0</span> <small class="fs-4">Gallons</small>
+                    </div>
+                    <p class="mb-3 opacity-75">~ <span id="res-liters">0</span> Liters</p>
+                    
+                    <div class="bg-white bg-opacity-10 p-3 rounded text-start">
+                        <div class="row small">
+                            <div class="col-7 text-uppercase opacity-75">Net Wall Area (1 Coat)</div>
+                            <div class="col-5 text-end fw-bold"><span id="res-area">0</span> sq ft</div>
+                            <div class="col-7 text-uppercase opacity-75">Total Coverage Area</div>
+                            <div class="col-5 text-end fw-bold"><span id="res-total">0</span> sq ft</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="error-alert" class="alert alert-danger mt-4 d-none" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span>Please enter valid dimensions.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('paint-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const L = parseFloat(form.elements.length.value);
+        const W = parseFloat(form.elements.width.value);
+        const H = parseFloat(form.elements.height.value);
+        const sub = parseFloat(form.elements.subtractArea.value) || 0;
+        const coats = parseInt(form.elements.coats.value);
+        
+        const resCard = document.getElementById('result-card');
+        const errAlert = document.getElementById('error-alert');
+
+        if (L > 0 && W > 0 && H > 0) {
+            // Calculation
+            const perimeter = 2 * (L + W);
+            const rawArea = perimeter * H;
+            const netArea = Math.max(0, rawArea - sub);
+            const totalToCover = netArea * coats;
+            const gallons = totalToCover / 400;
+            const gallonsRounded = Math.ceil(gallons);
+            const liters = (gallonsRounded * 3.785).toFixed(2);
+
+            // UI Update
+            document.getElementById('res-gallons').innerText = gallonsRounded;
+            document.getElementById('res-liters').innerText = liters;
+            document.getElementById('res-area').innerText = netArea.toFixed(1);
+            document.getElementById('res-total').innerText = totalToCover.toFixed(1);
+
+            resCard.style.display = 'block';
+            errAlert.classList.add('d-none');
+            
+            // Smooth scroll to result
+            resCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            resCard.style.display = 'none';
+            errAlert.classList.remove('d-none');
+        }
+    });
+</script>
+{% endblock %}
