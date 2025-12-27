@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("", views.date_time_home, name="date_time_dashboard"),
+
     path('date_difference_calculator/', views.date_difference_calculator, name='date_difference_calculator'),
     path('date_addition_and_subtraction_calculator/', views.date_addition_and_subtraction_calculator, name='date_addition_and_subtraction_calculator'),
     path('day_of_the_week_calculator/', views.day_of_the_week_calculator, name='day_of_the_week_calculator'),

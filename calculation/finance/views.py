@@ -1,6 +1,31 @@
 from django.shortcuts import render
 
 # Create your views here.
+from django.urls import reverse
+from . import urls
+
+
+def finance_home(request):
+    links = []
+
+    for pattern in urls.urlpatterns:
+        # skip dashboard itself
+        if pattern.name and pattern.name != "dashboard":
+            links.append({
+                "title": pattern.name.replace("_", " ").title(),
+                "url": reverse(pattern.name),
+            })
+
+    return render(
+        request,
+        "finance/finance_home.html",
+        {
+            "app_title": "Finance Tools",
+            "links": links,
+        }
+    )
+
+
 
 def budget_calculator(request):
     return render(request, "finance/budget_calculator.html")

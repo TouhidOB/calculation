@@ -16,9 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.sitemaps.views import sitemap
+from home.sitemaps import GlobalStaticSitemap
+
+
+
+sitemaps = {
+    'static': GlobalStaticSitemap,
+}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('home.urls')),
     path('math/', include('basic_calculator.urls')),
     path('finance/', include('finance.urls')),
     path('health/', include('health.urls')),
@@ -26,6 +35,10 @@ urlpatterns = [
     path('date_time/', include('date_time.urls')),
     path('garments_calculator/', include('garments_calculator.urls')),
     path('construction_calculator/', include('construction_calculator.urls')),
+    
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
 ]
+
+
 
 

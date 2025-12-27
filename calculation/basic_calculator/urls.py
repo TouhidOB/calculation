@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("", views.basic_calculator_home, name="basic_calculator_dashboard"),
+
     path('arithmetic/', views.arithmetic, name='arithmetic'),
     path('scientific_calculator/', views.scientific_calculator, name='scientific_calculator'),
     path('graphing_calculator/', views.graphing_calculator, name='graphing_calculator'),

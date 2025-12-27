@@ -3,7 +3,8 @@
 
     <h3 class="mt-3">All Calculators</h3>
     
-    <h5 class="mt-5">Finance Calculators</h5>
+    <h5 class="mt-5"><a href="{% url 'finance_dashboard' %}" class="{% if request.resolver_match.url_name == 'finance_dashboard' %}active{% endif %}">Finance Calculators</a></h5>
+
     <a href="{% url 'budget_calculator' %}" class="{% if request.resolver_match.url_name == 'budget_calculator' %}active{% endif %}">Budget Calculator</a>
     <a href="{% url 'net_worth' %}" class="{% if request.resolver_match.url_name == 'net_worth' %}active{% endif %}">Net Worth Calculator</a>
     <a href="{% url 'dti' %}" class="{% if request.resolver_match.url_name == 'dti' %}active{% endif %}">Debt To Income Ratio Calculator</a>
@@ -56,7 +57,8 @@
     
     <!-- <a href="#" >Loan EMI Calculator</a> -->
     
-    <h5 class="mt-5">Health Calculators</h5>
+    <h5 class="mt-5"><a href="{% url 'health_dashboard' %}" class="{% if request.resolver_match.url_name == 'health_dashboard' %}active{% endif %}">Health Calculators</a></h5>
+
     <a href="{% url 'bmi' %}" class="{% if request.resolver_match.url_name == 'bmi' %}active{% endif %}">BMI Calculator</a>
     <a href="{% url 'basal_metabolic_rate_calculator' %}" class="{% if request.resolver_match.url_name == 'basal_metabolic_rate_calculator' %}active{% endif %}">Basal Metabolic Rate Calculator</a>
     <a href="{% url 'total_daily_energy_expenditure' %}" class="{% if request.resolver_match.url_name == 'total_daily_energy_expenditure' %}active{% endif %}">Total Daily Energy Expenditure</a>
@@ -107,8 +109,11 @@
     <a href="{% url 'swimming_interval_calculator' %}" class="{% if request.resolver_match.url_name == 'swimming_interval_calculator' %}active{% endif %}">Swimming Interval Calculator</a>
     <a href="{% url 'crossfit_pacing_calculator' %}" class="{% if request.resolver_match.url_name == 'crossfit_pacing_calculator' %}active{% endif %}">Crossfit Pacing Calculator</a>
     
+
+
     
-    <h5 class="mt-5">Basic Math Calculators</h5>
+    <h5 class="mt-5"><a href="{% url 'basic_calculator_dashboard' %}" class="{% if request.resolver_match.url_name == 'basic_calculator_dashboard' %}active{% endif %}">Basic Math Calculators</a></h5>
+
     <a href="{% url 'arithmetic' %}" class="{% if request.resolver_match.url_name == 'arithmetic' %}active{% endif %}">Arithmetic Calculator</a>
     <a href="{% url 'scientific_calculator' %}" class="{% if request.resolver_match.url_name == 'scientific_calculator' %}active{% endif %}">Scientific Calculator</a>
     <a href="{% url 'graphing_calculator' %}" class="{% if request.resolver_match.url_name == 'graphing_calculator' %}active{% endif %}">Graphing Calculator</a>
@@ -161,7 +166,9 @@
     
     
     
-    <h5 class="mt-5">Business And Investment Calculators</h5>
+
+    <h5 class="mt-5"><a href="{% url 'business_investment_dashboard' %}" class="{% if request.resolver_match.url_name == 'business_investment_dashboard' %}active{% endif %}">Business And Investment Calculators</a></h5>
+
     <a href="{% url 'roi_calculator' %}" class="{% if request.resolver_match.url_name == 'roi_calculator' %}active{% endif %}">Return On Investment Calculator</a>
     <a href="{% url 'compound_interest_calculator' %}" class="{% if request.resolver_match.url_name == 'compound_interest_calculator' %}active{% endif %}">Compound Interest Calculator</a>
     <a href="{% url 'net_present_value_calculator' %}" class="{% if request.resolver_match.url_name == 'net_present_value_calculator' %}active{% endif %}">Net Present Value Calculator (NPV)</a>
@@ -213,7 +220,13 @@
     <a href="{% url 'crypto_profit_calculator' %}" class="{% if request.resolver_match.url_name == 'crypto_profit_calculator' %}active{% endif %}">Crypto Profit Calculator</a>
     
     
-    <h5 class="mt-5">Date and Time Calculators</h5>
+
+
+
+
+
+    <h5 class="mt-5"><a href="{% url 'date_time_dashboard' %}" class="{% if request.resolver_match.url_name == 'date_time_dashboard' %}active{% endif %}">Date and Time Calculators</a></h5>
+
     <a href="{% url 'date_difference_calculator' %}" class="{% if request.resolver_match.url_name == 'date_difference_calculator' %}active{% endif %}">Date Difference Calculator</a>
     <a href="{% url 'date_addition_and_subtraction_calculator' %}" class="{% if request.resolver_match.url_name == 'date_addition_and_subtraction_calculator' %}active{% endif %}">Date Addition and Subtraction Calculator</a>
     <a href="{% url 'day_of_the_week_calculator' %}" class="{% if request.resolver_match.url_name == 'day_of_the_week_calculator' %}active{% endif %}">Day of the Week Calculator</a>
@@ -267,7 +280,8 @@
     
     
     
-    <h5 class="mt-5">Garments Factory Calculators</h5>
+    <h5 class="mt-5"><a href="{% url 'garments_dashboard' %}" class="{% if request.resolver_match.url_name == 'garments_dashboard' %}active{% endif %}">Garments Factory Calculators</a></h5>
+
     <a href="{% url 'cino_long_1' %}" class="{% if request.resolver_match.url_name == 'cino_long_1' %}active{% endif %}">Long 5 PKT Pant Fabric Consumption</a>
     <a href="{% url 'cino_long_2' %}" class="{% if request.resolver_match.url_name == 'cino_long_2' %}active{% endif %}">Sheet 3, 7 Fabric Consumption</a>
     <a href="{% url 'cino_long_3' %}" class="{% if request.resolver_match.url_name == 'cino_long_3' %}active{% endif %}">Sheet 4 Fabric Consumption</a>
@@ -283,6 +297,7 @@
     
     
     <h5 class="mt-5"><a href="{% url 'construction_dashboard' %}" class="{% if request.resolver_match.url_name == 'construction_dashboard' %}active{% endif %}">Construction Calculators</a></h5>
+    
     <a href="{% url 'area_calculator' %}" class="{% if request.resolver_match.url_name == 'area_calculator' %}active{% endif %}">Area Calculator</a>
     <a href="{% url 'volume_calculator' %}" class="{% if request.resolver_match.url_name == 'volume_calculator' %}active{% endif %}">Volume Calculator</a>
     <a href="{% url 'concrete_slab_calculator' %}" class="{% if request.resolver_match.url_name == 'concrete_slab_calculator' %}active{% endif %}">Concrete Slab Calculator</a>

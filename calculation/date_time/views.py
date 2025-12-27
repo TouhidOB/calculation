@@ -2,6 +2,31 @@ from django.shortcuts import render
 
 # Create your views here.
 
+from django.urls import reverse
+from . import urls
+
+
+def date_time_home(request):
+    links = []
+
+    for pattern in urls.urlpatterns:
+        # skip dashboard itself
+        if pattern.name and pattern.name != "dashboard":
+            links.append({
+                "title": pattern.name.replace("_", " ").title(),
+                "url": reverse(pattern.name),
+            })
+
+    return render(
+        request,
+        "date_time/date_time_home.html",
+        {
+            "app_title": "Date Time Tools",
+            "links": links,
+        }
+    )
+
+
 
 def date_difference_calculator(request):
     return render(request, 'date_time/date_difference_calculator.html')

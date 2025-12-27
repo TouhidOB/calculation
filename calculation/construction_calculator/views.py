@@ -22,7 +22,7 @@ def construction_home(request):
         request,
         "construction_calculator/app_dashboard.html",
         {
-            "app_title": "Date & Time Tools",
+            "app_title": "Construction Calculator Tools",
             "links": links,
         }
     )

@@ -2,6 +2,29 @@ from django.shortcuts import render
 
 # Create your views here.
 
+from django.urls import reverse
+from . import urls
+
+def health_home(request):
+    links = []
+
+    for pattern in urls.urlpatterns:
+        # skip dashboard itself
+        if pattern.name and pattern.name != "dashboard":
+            links.append({
+                "title": pattern.name.replace("_", " ").title(),
+                "url": reverse(pattern.name),
+            })
+
+    return render(
+        request,
+        "health/health_home.html",
+        {
+            "app_title": "Health Tools",
+            "links": links,
+        }
+    )
+
 
 def basal_metabolic_rate_calculator(request):
     return render(request, "health/basal_metabolic_rate_calculator.html")

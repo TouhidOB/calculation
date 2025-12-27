@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("", views.business_investment_home, name="business_investment_dashboard"),
+
     path('roi_calculator/', views.roi_calculator, name='roi_calculator'),
     path('compound_interest_calculator/', views.compound_interest_calculator, name='compound_interest_calculator'),
     path('net_present_value_calculator/', views.net_present_value_calculator, name='net_present_value_calculator'),

@@ -41,8 +41,8 @@
                             <input type="number" class="form-control" id="shrinkageWidth" name="shrinkage_width" placeholder="e.g., 2.5" step="0.01" required value="{{ form_data.shrinkage_width }}">
                         </div>
                         <div class="col-md-4">
-                            <label for="fabricWidth" class="form-label">Fabric Width (cm)</label>
-                            <input type="number" class="form-control" id="fabricWidth" name="fabric_width" placeholder="e.g., 150" step="0.01" required value="{{ form_data.fabric_width }}">
+                            <label for="fabricWidth" class="form-label">Fabric Width (Inch)</label>
+                            <input type="number" class="form-control" id="fabricWidth" name="fabric_width" placeholder="e.g., 56.00" step="0.01" required value="{{ form_data.fabric_width }}">
                         </div>
                     </div>
 
@@ -133,12 +133,12 @@
                 <hr>
                 <div class="row text-center fs-5">
                     <div class="col-md-6 mb-3">
-                        <strong>Estimated Consumption:</strong>
-                        <p class="fw-bold text-success mb-0">{{ calculated_results.consumption_length_meters }} %</p>
+                        <strong>Actual Consumption:</strong>
+                        <p class="fw-bold text-success mb-0">{{ calculated_results.net_consumption }} Yards</p>
                     </div>
                     <div class="col-md-6 mb-3">
                         <strong>Efficiency:</strong>
-                        <p class="fw-bold text-success mb-0">{{ calculated_results.consumption_length_cm }} Yards</p>
+                        <p class="fw-bold text-success mb-0">{{ calculated_results.net_efficiency }} %</p>
                     </div>
                 </div>
                 <p class="text-center mt-3 mb-0"><small class="text-muted">{{ calculated_results.notes }}</small></p>

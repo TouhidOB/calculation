@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        {% block title %}
+        Calculator Site
+        {% endblock %}
+    </title>
+    <meta name="description" content="{% block meta_description %}{% endblock %}" />
+
+    <!-- ✅ Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        
+        .hero-section {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0d6efd, #084298);
+        }
+
+        #mainNavbar {
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            background: transparent;
+        }
+
+        #mainNavbar.scrolled {
+            background: #0d6efd;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .card a {
+            color: #000;
+        }
+
+        .card a:hover {
+            background: #007bff;
+            color: #ffffff;
+        }
+
+        :root {
+            --calc-blue-header: #e5e5e5;
+            /* Active Tab Blue */
+            --calc-body-bg: #3f8cb3c7;
+            /* Main Frame Grey */
+            --calc-display-bg: #dcdcdc;
+            /* Dark Blue Display */
+            --btn-blue-grey: #8fd0b3;
+            /* Number/Equal/AC color */
+            --btn-white: #ffffff;
+            /* Operators/Functions color */
+            --border-color: #999999;
+        }
+
+        .calc-wrapper {
+            background: var(--calc-body-bg);
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            max-width: 480px;
+            margin: 40px auto;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Tabs Styling */
+        .nav-tabs {
+            border-bottom: none;
+            margin-bottom: 2px;
+        }
+
+        .nav-tabs .nav-link {
+            color: #000;
+            font-weight: bold;
+            border: none !important;
+            border-radius: 0 !important;
+            background: transparent;
+            padding: 10px 20px;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: var(--calc-blue-header) !important;
+            color: white !important;
+        }
+
+        /* Display Screen */
+        .display-screen {
+            background-color: var(--calc-display-bg);
+            color: white;
+            padding: 15px;
+            text-align: right;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        #history-display {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            min-height: 20px;
+        }
+
+        #current-input {
+            font-size: 3rem;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        /* 5-Column Grid */
+        .calc-keys {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+        }
+
+        .calc-btn {
+            height: 65px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.1s;
+        }
+
+        .calc-btn:active {
+            opacity: 0.6;
+            transform: translateY(1px);
+        }
+
+        /* Specific Button Color Mapping */
+        .btn-bg-grey {
+            background-color: var(--btn-blue-grey);
+            color: #000;
+        }
+
+        .btn-bg-white {
+            background-color: var(--btn-white);
+            color: #000;
+        }
+
+        </style>
+        {% block extra_css %}
+
+        {% endblock %}
+</head>
+
+<body>
+    <header>
+        <!-- ✅ NAVBAR -->
+        <nav id="mainNavbar" class="navbar navbar-expand-lg fixed-top navbar-dark">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="/">MyCalculator</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"><span
+                        class="navbar-toggler-icon"></span></button>
+
+                <div class="collapse navbar-collapse justify-content-end" id="navMenu">
+                    <ul class="navbar-nav gap-3">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#calculators">Calculators</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#about">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    {% block content %}
+    <!-- HERO SECTION -->
+    <section class="hero-section d-flex align-items-center text-center text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 d-flex align-items-center text-center">
+                    <div class="">
+                        <h1 class="display-4 fw-bold">All-in-One Calculator Platform</h1>
+                        <p class="lead mt-3">Smart calculators for finance, construction, date & time, and more.</p>
+                        <a href="#calculators" class="btn btn-light btn-lg mt-4">Explore Calculators</a>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="calc-wrapper">
+                        <!--   <ul class="nav nav-tabs">
+                            <li class="nav-item"><a class="nav-link active" href="#">Basic</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">Scientific</a></li>
+                        </ul>   -->
+
+                        <div class="display-screen">
+                            <div id="history-display"></div>
+                            <div id="current-input">0</div>
+                        </div>
+
+                        <div class="calc-keys">
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('7')">7</div>
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('8')">8</div>
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('9')">9</div>
+                            <div class="calc-btn btn-bg-white" onclick="handleOperator('+')">+</div>
+                            <div class="calc-btn btn-bg-white" onclick="backspace()">Back</div>
+
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('4')">4</div>
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('5')">5</div>
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('6')">6</div>
+                            <div class="calc-btn btn-bg-white" onclick="handleOperator('-')">−</div>
+                            <div class="calc-btn btn-bg-white" onclick="useAns()">Ans</div>
+
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('1')">1</div>
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('2')">2</div>
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('3')">3</div>
+                            <div class="calc-btn btn-bg-white" onclick="handleOperator('*')">×</div>
+                            <div class="calc-btn btn-bg-white" onclick="memoryAdd()">M+</div>
+
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('0')">0</div>
+                            <div class="calc-btn btn-bg-grey" onclick="inputDigit('.')">.</div>
+                            <div class="calc-btn btn-bg-white" onclick="appendExp()">EXP</div>
+                            <div class="calc-btn btn-bg-white" onclick="handleOperator('/')">/</div>
+                            <div class="calc-btn btn-bg-white" onclick="memorySub()">M-</div>
+
+                            <div class="calc-btn btn-bg-white" onclick="toggleSign()">±</div>
+                            <div class="calc-btn btn-bg-white" onclick="generateRandom()">RND</div>
+                            <div class="calc-btn btn-bg-grey" onclick="clearCalculator()">AC</div>
+                            <div class="calc-btn btn-bg-grey" onclick="handleEquals()">=</div>
+                            <div class="calc-btn btn-bg-white" onclick="memoryRecall()">MR</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT CALCULATOR WEBSITE -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row text-center">
+                <h2 class="mb-3">Why This Calculator Platform?</h2>
+                <p class="text-muted">This website provides accurate, fast, and user-friendly calculators for
+                    professionals, students, and businesses.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- APPS SHOWCASE -->
+    <section id="calculators" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-4">Calculator Sections</h2>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="card shadow h-100">
+                        <a href="{% url 'basic_calculator_dashboard' %}" class="stretched-link text-decoration-none">
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                <h5 class="card-title text-center mb-0">Basic Calculator</h5>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow h-100">
+                        <a href="{% url 'construction_dashboard' %}" class="stretched-link text-decoration-none">
+                            <div class="card-body">
+                                <h5 class="card-title text-center mb-0">Construction Calculator</h5>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow h-100">
+                        <a href="{% url 'health_dashboard' %}" class="stretched-link text-decoration-none">
+                            <div class="card-body">
+                                <h5 class="card-title text-center mb-0">Health Calculator</h5>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow h-100">
+                        <a href="{% url 'garments_dashboard' %}" class="stretched-link text-decoration-none">
+                            <div class="card-body">
+                                <h5 class="card-title text-center mb-0">Garments Calculator</h5>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow h-100">
+                        <a href="{% url 'finance_dashboard' %}" class="stretched-link text-decoration-none">
+                            <div class="card-body">
+                                <h5 class="card-title text-center mb-0">Finance Calculator</h5>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow h-100">
+                        <a href="{% url 'date_time_dashboard' %}" class="stretched-link text-decoration-none">
+                            <div class="card-body">
+                                <h5 class="card-title text-center mb-0">Date Time Calculator</h5>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card shadow h-100">
+                        <a href="{% url 'business_investment_dashboard' %}" class="stretched-link text-decoration-none">
+                            <div class="card-body">
+                                <h5 class="card-title text-center mb-0">Business Calculator</h5>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT US -->
+    <section id="contact" class="py-5 bg-dark text-white">
+        <div class="container text-center">
+            <h2>Contact Us</h2>
+            <p class="mt-3">
+                Have feedback or suggestions? Email us at
+                <strong>support@mycalculator.com</strong>
+            </p>
+        </div>
+    </section>
+
+    <!-- ABOUT US -->
+    <section id="about" class="py-5 bg-white">
+        <div class="container text-center">
+            <h2>About This Platform</h2>
+            <p class="mt-3 text-muted">We provide accurate, fast, and easy-to-use calculators for students,
+                professionals, and businesses.</p>
+        </div>
+    </section>
+    {% endblock %}
+
+    <!-- FOOTER -->
+    <footer class="py-3 bg-black text-white text-center">
+        <p class="mb-0">
+            &copy;{% now 'Y' %}MyCalculator. All rights reserved.
+        </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% block js %}
+    <script>
+        window.addEventListener('scroll', function () {
+            const navbar = document.getElementById('mainNavbar')
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled')
+            } else {
+                navbar.classList.remove('scrolled')
+            }
+        })
+    </script>
+
+    <script>
+        let currentInput = '0'
+        let history = ''
+        let firstOperand = null
+        let operator = null
+        let waitingForSecondOperand = false
+        let lastAns = '0'
+        let memory = 0
+
+        const currentDisplay = document.getElementById('current-input')
+        const historyDisplay = document.getElementById('history-display')
+
+        function updateDisplay() {
+            currentDisplay.textContent = currentInput
+            historyDisplay.textContent = history
+        }
+
+        function inputDigit(digit) {
+            if (waitingForSecondOperand) {
+                currentInput = digit
+                waitingForSecondOperand = false
+            } else {
+                currentInput = currentInput === '0' ? digit : currentInput + digit
+            }
+            updateDisplay()
+        }
+
+        function handleOperator(nextOperator) {
+            const value = parseFloat(currentInput)
+            if (firstOperand === null) {
+                firstOperand = value
+            } else if (operator) {
+                const result = calculate(firstOperand, value, operator)
+                currentInput = String(result)
+                firstOperand = result
+            }
+            waitingForSecondOperand = true
+            operator = nextOperator
+            history = `${firstOperand} ${nextOperator}`
+            updateDisplay()
+        }
+
+        function calculate(first, second, op) {
+            if (op === '+') return first + second
+            if (op === '-') return first - second
+            if (op === '*') return first * second
+            if (op === '/') return second === 0 ? 'Error' : first / second
+            return second
+        }
+
+        function handleEquals() {
+            if (operator === null || waitingForSecondOperand) return
+            const secondOperand = parseFloat(currentInput)
+            const result = calculate(firstOperand, secondOperand, operator)
+            history = `${firstOperand} ${operator} ${secondOperand} =`
+            currentInput = String(result)
+            lastAns = currentInput
+            firstOperand = null
+            operator = null
+            waitingForSecondOperand = true
+            updateDisplay()
+        }
+
+        function clearCalculator() {
+            currentInput = '0'
+            history = ''
+            firstOperand = null
+            operator = null
+            waitingForSecondOperand = false
+            updateDisplay()
+        }
+
+        function backspace() {
+            currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : '0'
+            updateDisplay()
+        }
+
+        function memoryAdd() {
+            memory += parseFloat(currentInput)
+        }
+        function memorySub() {
+            memory -= parseFloat(currentInput)
+        }
+        function memoryRecall() {
+            currentInput = String(memory)
+            updateDisplay()
+        }
+        function useAns() {
+            currentInput = lastAns
+            updateDisplay()
+        }
+        function generateRandom() {
+            currentInput = Math.random().toFixed(4)
+            updateDisplay()
+        }
+        function toggleSign() {
+            currentInput = (parseFloat(currentInput) * -1).toString()
+            updateDisplay()
+        }
+        function appendExp() {
+            if (!currentInput.includes('e')) currentInput += 'e+'
+            updateDisplay()
+        }
+    </script>
+    {% endblock %}
+</body>
+
+</html>

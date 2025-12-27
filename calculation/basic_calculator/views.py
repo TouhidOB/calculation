@@ -2,6 +2,32 @@ from django.shortcuts import render
 
 # Create your views here.
 
+from django.urls import reverse
+from . import urls
+
+
+def basic_calculator_home(request):
+    links = []
+
+    for pattern in urls.urlpatterns:
+        # skip dashboard itself
+        if pattern.name and pattern.name != "dashboard":
+            links.append({
+                "title": pattern.name.replace("_", " ").title(),
+                "url": reverse(pattern.name),
+            })
+
+    return render(
+        request,
+        "basic_calculator/basic_calculator_home.html",
+        {
+            "app_title": "Basic Calculator Tools",
+            "links": links,
+        }
+    )
+
+
+
 
 def arithmetic(request):
     return render(request, 'basic_calculator/arithmetic.html')

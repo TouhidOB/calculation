@@ -2,6 +2,31 @@ from django.shortcuts import render
 
 # Create your views here.
 
+from django.urls import reverse
+from . import urls
+
+
+def business_investment_home(request):
+    links = []
+
+    for pattern in urls.urlpatterns:
+        # skip dashboard itself
+        if pattern.name and pattern.name != "dashboard":
+            links.append({
+                "title": pattern.name.replace("_", " ").title(),
+                "url": reverse(pattern.name),
+            })
+
+    return render(
+        request,
+        "business_investment/business_investment_home.html",
+        {
+            "app_title": "Business Investment Calculator Tools",
+            "links": links,
+        }
+    )
+
+
 
 def roi_calculator(request):
     return render(request, 'business_investment/roi_calculator.html')

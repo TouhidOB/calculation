@@ -1,0 +1,47 @@
+{% extends "home/index.html" %}
+{% block title %}Contact Us | MyCalculator{% endblock %}
+{% block meta_description %}Contact MyCalculator for feedback, support, or suggestions.{% endblock %}
+
+{% block extra_css %}
+<style>
+    #mainNavbar {
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        background: #000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 mt-4 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h1 class="text-center mb-4">Contact Us</h1>
+
+                <form class="card shadow p-4">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" rows="5" required></textarea>
+                    </div>
+
+                    <button class="btn btn-primary w-100">Send Message</button>
+                </form>
+
+                <p class="text-center mt-3 text-muted">
+                    Or email us directly at <strong>support@mycalculator.com</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

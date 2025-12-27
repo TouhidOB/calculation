@@ -1,4 +1,27 @@
 from django.shortcuts import render
+from django.urls import reverse
+from . import urls
+
+
+def garments_home(request):
+    links = []
+
+    for pattern in urls.urlpatterns:
+        # skip dashboard itself
+        if pattern.name and pattern.name != "dashboard":
+            links.append({
+                "title": pattern.name.replace("_", " ").title(),
+                "url": reverse(pattern.name),
+            })
+
+    return render(
+        request,
+        "garments_calculations/garments_home.html",
+        {
+            "app_title": "Garments Tools",
+            "links": links,
+        }
+    )
 
 def cino_long_1(request):    
     context = {}
@@ -122,7 +145,7 @@ def cino_long_1(request):
 
 
             Efficiency = efficiency_loss - efficiency_loss_2
-            consumption = (abs(Efficiency) + 0.02) * 100
+            net_efficiency = (abs(Efficiency) + 0.02) * 100
 
 
             print("block_box", block_box)
@@ -132,13 +155,12 @@ def cino_long_1(request):
             print("actual_height_back_2", actual_height_back_2)
             print("efficiency_loss_2", efficiency_loss_2)
             print("Efficiency", Efficiency)
-            print("consumption", consumption)
+            print("net_efficiency", net_efficiency)
 
             # --- 3. Prepare Calculated Results ---
             calculated_results = {
-                'consumption_length_meters': round(consumption, 2),
-                'consumption_length_cm': round(Efficiency, 2),
-                'shrink_factor': round(Efficiency, 4),
+                'net_consumption': round(net_consumption, 2),
+                'net_efficiency': round(net_efficiency, 2),
                 'notes': "This calculation is a simplified length-based estimate (meters of fabric per piece)."
             }
 
@@ -285,7 +307,7 @@ def cino_long_2(request):
 
 
             Efficiency = efficiency_loss - efficiency_loss_2
-            consumption = (abs(Efficiency) + 0.02) * 100
+            net_efficiency = (abs(Efficiency) + 0.02) * 100
 
 
             print("block_box", block_box)
@@ -295,14 +317,13 @@ def cino_long_2(request):
             print("actual_height_back_2", actual_height_back_2)
             print("efficiency_loss_2", efficiency_loss_2)
             print("Efficiency", Efficiency)
-            print("consumption", consumption)
+            print("consumption", net_efficiency)
 
             print("-"*15)
             # --- 3. Prepare Calculated Results ---
             calculated_results = {
-                'consumption_length_meters': round(consumption, 2),
-                'consumption_length_cm': round(Efficiency, 2),
-                'shrink_factor': round(Efficiency, 4),
+                'net_consumption': round(net_consumption, 2),
+                'net_efficiency': round(net_efficiency, 2),
                 'notes': "This calculation is a simplified length-based estimate (meters of fabric per piece)."
             }
 
@@ -449,7 +470,7 @@ def cino_long_3(request):
 
 
             Efficiency = efficiency_loss - efficiency_loss_2
-            consumption = (abs(Efficiency) + 0.02) * 100
+            net_efficiency = (abs(Efficiency) + 0.02) * 100
 
 
             print("block_box", block_box)
@@ -459,14 +480,13 @@ def cino_long_3(request):
             print("actual_height_back_2", actual_height_back_2)
             print("efficiency_loss_2", efficiency_loss_2)
             print("Efficiency", Efficiency)
-            print("consumption", consumption)
+            print("net_efficiency", net_efficiency)
 
             print("-"*15)
             # --- 3. Prepare Calculated Results ---
             calculated_results = {
-                'consumption_length_meters': round(consumption, 2),
-                'consumption_length_cm': round(Efficiency, 2),
-                'shrink_factor': round(Efficiency, 4),
+                'net_consumption': round(net_consumption, 2),
+                'net_efficiency': round(net_efficiency, 2),
                 'notes': "This calculation is a simplified length-based estimate (meters of fabric per piece)."
             }
 
@@ -613,7 +633,7 @@ def cino_long_4(request):
 
 
             Efficiency = efficiency_loss - efficiency_loss_2
-            consumption = (abs(Efficiency) + 0.02) * 100
+            net_efficiency = (abs(Efficiency) + 0.02) * 100
 
 
             print("block_box", block_box)
@@ -623,14 +643,13 @@ def cino_long_4(request):
             print("actual_height_back_2", actual_height_back_2)
             print("efficiency_loss_2", efficiency_loss_2)
             print("Efficiency", Efficiency)
-            print("consumption", consumption)
+            print("net_efficiency", net_efficiency)
 
             print("-"*15)
             # --- 3. Prepare Calculated Results ---
             calculated_results = {
-                'consumption_length_meters': round(consumption, 2),
-                'consumption_length_cm': round(Efficiency, 2),
-                'shrink_factor': round(Efficiency, 4),
+                'net_consumption': round(net_consumption, 2),
+                'net_efficiency': round(net_efficiency, 2),
                 'notes': "This calculation is a simplified length-based estimate (meters of fabric per piece)."
             }
 
@@ -777,7 +796,7 @@ def cino_long_5(request):
 
 
             Efficiency = efficiency_loss - efficiency_loss_2
-            consumption = (abs(Efficiency) + 0.02) * 100
+            net_efficiency = (abs(Efficiency) + 0.02) * 100
 
 
             print("block_box", block_box)
@@ -787,14 +806,13 @@ def cino_long_5(request):
             print("actual_height_back_2", actual_height_back_2)
             print("efficiency_loss_2", efficiency_loss_2)
             print("Efficiency", Efficiency)
-            print("consumption", consumption)
+            print("net_efficiency", net_efficiency)
 
             print("-"*15)
             # --- 3. Prepare Calculated Results ---
             calculated_results = {
-                'consumption_length_meters': round(consumption, 2),
-                'consumption_length_cm': round(Efficiency, 2),
-                'shrink_factor': round(Efficiency, 4),
+                'net_consumption': round(net_consumption, 2),
+                'net_efficiency': round(net_efficiency, 2),
                 'notes': "This calculation is a simplified length-based estimate (meters of fabric per piece)."
             }
 
@@ -941,7 +959,7 @@ def cino_long_6(request):
 
 
             Efficiency = efficiency_loss - efficiency_loss_2
-            consumption = (abs(Efficiency) + 0.02) * 100
+            net_efficiency = (abs(Efficiency) + 0.02) * 100
 
 
             print("block_box", block_box)
@@ -951,14 +969,13 @@ def cino_long_6(request):
             print("actual_height_back_2", actual_height_back_2)
             print("efficiency_loss_2", efficiency_loss_2)
             print("Efficiency", Efficiency)
-            print("consumption", consumption)
+            print("net_efficiency", net_efficiency)
 
             print("-"*15)
             # --- 3. Prepare Calculated Results ---
             calculated_results = {
-                'consumption_length_meters': round(consumption, 2),
-                'consumption_length_cm': round(Efficiency, 2),
-                'shrink_factor': round(Efficiency, 4),
+                'net_consumption': round(net_consumption, 2),
+                'net_efficiency': round(net_efficiency, 2),
                 'notes': "This calculation is a simplified length-based estimate (meters of fabric per piece)."
             }
 
@@ -1105,7 +1122,7 @@ def cino_long_7(request):
 
 
             Efficiency = efficiency_loss - efficiency_loss_2
-            consumption = (abs(Efficiency) + 0.02) * 100
+            net_efficiency = (abs(Efficiency) + 0.02) * 100
 
 
             print("block_box", block_box)
@@ -1115,13 +1132,13 @@ def cino_long_7(request):
             print("actual_height_back_2", actual_height_back_2)
             print("efficiency_loss_2", efficiency_loss_2)
             print("Efficiency", Efficiency)
-            print("consumption", consumption)
+            print("net_efficiency", net_efficiency)
 
             print("-"*15)
             # --- 3. Prepare Calculated Results ---
             calculated_results = {
-                'consumption_length_meters': round(consumption, 2),
-                'consumption_length_cm': round(Efficiency, 2),
+                'net_consumption': round(net_consumption, 2),
+                'net_efficiency': round(net_efficiency, 2),
                 'shrink_factor': round(Efficiency, 4),
                 'notes': "This calculation is a simplified length-based estimate (meters of fabric per piece)."
             }
@@ -1269,7 +1286,7 @@ def cino_long_8(request):
 
 
             Efficiency = efficiency_loss - efficiency_loss_2
-            consumption = (abs(Efficiency) + 0.02) * 100
+            net_efficiency = (abs(Efficiency) + 0.02) * 100
 
 
             print("block_box", block_box)
@@ -1279,14 +1296,13 @@ def cino_long_8(request):
             print("actual_height_back_2", actual_height_back_2)
             print("efficiency_loss_2", efficiency_loss_2)
             print("Efficiency", Efficiency)
-            print("consumption", consumption)
+            print("net_efficiency", net_efficiency)
 
             print("-"*15)
             # --- 3. Prepare Calculated Results ---
             calculated_results = {
-                'consumption_length_meters': round(consumption, 2),
-                'consumption_length_cm': round(Efficiency, 2),
-                'shrink_factor': round(Efficiency, 4),
+                'net_consumption': round(net_consumption, 2),
+                'net_efficiency': round(net_efficiency, 2),
                 'notes': "This calculation is a simplified length-based estimate (meters of fabric per piece)."
             }
 
@@ -1433,7 +1449,7 @@ def cino_long_9(request):
 
 
             Efficiency = efficiency_loss - efficiency_loss_2
-            consumption = (abs(Efficiency) + 0.02) * 100
+            net_efficiency = (abs(Efficiency) + 0.02) * 100
 
 
             print("block_box", block_box)
@@ -1443,14 +1459,13 @@ def cino_long_9(request):
             print("actual_height_back_2", actual_height_back_2)
             print("efficiency_loss_2", efficiency_loss_2)
             print("Efficiency", Efficiency)
-            print("consumption", consumption)
+            print("net_efficiency", net_efficiency)
 
             print("-"*15)
             # --- 3. Prepare Calculated Results ---
             calculated_results = {
-                'consumption_length_meters': round(consumption, 2),
-                'consumption_length_cm': round(Efficiency, 2),
-                'shrink_factor': round(Efficiency, 4),
+                'net_consumption': round(net_consumption, 2),
+                'net_efficiency': round(net_efficiency, 2),
                 'notes': "This calculation is a simplified length-based estimate (meters of fabric per piece)."
             }
 
@@ -1597,7 +1612,7 @@ def cino_long_10(request):
 
 
             Efficiency = efficiency_loss - efficiency_loss_2
-            consumption = (abs(Efficiency) + 0.02) * 100
+            net_efficiency = (abs(Efficiency) + 0.02) * 100
 
 
             print("block_box", block_box)
@@ -1607,14 +1622,13 @@ def cino_long_10(request):
             print("actual_height_back_2", actual_height_back_2)
             print("efficiency_loss_2", efficiency_loss_2)
             print("Efficiency", Efficiency)
-            print("consumption", consumption)
+            print("net_efficiency", net_efficiency)
 
             print("-"*15)
             # --- 3. Prepare Calculated Results ---
             calculated_results = {
-                'consumption_length_meters': round(consumption, 2),
-                'consumption_length_cm': round(Efficiency, 2),
-                'shrink_factor': round(Efficiency, 4),
+                'net_consumption': round(net_consumption, 2),
+                'net_efficiency': round(net_efficiency, 2),
                 'notes': "This calculation is a simplified length-based estimate (meters of fabric per piece)."
             }
 
