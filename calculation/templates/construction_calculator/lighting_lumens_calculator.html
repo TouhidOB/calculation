@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Lighting Lumens Calculator{% endblock %}
+
+{% block meta_description %}Calculate the total required lumens for any room based on its area, intended use (foot-candles), and room/fixture efficiency. {% endblock %}
+
+{% block meta_keywords %}lumens calculator, foot-candle, lighting design, room lighting, required lumens, lux, light output, lighting efficiency{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #FFA500; /* Orange for Light/Warmth */
+        border-bottom: 2px solid #FFA500;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFD700; /* Gold for key result */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #fff8e1;
+        font-weight: 600;
+        color: #FFA500;
+    }
+
+    .info-box {
+        background-color: #fffaf0; /* Lightest yellow info box */
+        border: 1px solid #FFA500;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: #FFD700;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    
+    .lumens-unit {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #4CAF50; /* Green for efficiency */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">💡 Lighting Lumens Calculator</h1>
+    <p class="text-center small-muted">Determine the total lumen output needed for optimum lighting in your space.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="lumens-calculator-form">
+            <h5 class="section-title">1. Room Dimensions and Use</h5>
+
+            <!-- Length Input (Feet) -->
+            <label for="length-input" class="form-label">Room Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length (L)</span>
+                <input type="number" id="length-input" class="form-control" name="roomLength" placeholder="e.g., 15" value="15" min="1" step="0.5" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Width Input (Feet) -->
+            <label for="width-input" class="form-label">Room Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Width (W)</span>
+                <input type="number" id="width-input" class="form-control" name="roomWidth" placeholder="e.g., 12" value="12" min="1" step="0.5" required>
+                <span class="input-group-text">ft</span>
+            </div>
+
+            <!-- Room Type/Foot-Candles -->
+            <label for="room-type-select" class="form-label">Room Type (Sets Target Foot-Candles)</label>
+            <select class="form-select mb-3" id="room-type-select" name="targetFootCandles">
+                <!-- Values represent approximate required Foot-Candles (FC) -->
+                <option value="20">Low Activity (Hallway, Storage, Garage)</option>
+                <option value="30" selected>Ambient (Bedroom, Living Room, Dining Room)</option>
+                <option value="50">Task Lighting (Home Office, Bathroom Vanity)</option>
+                <option value="70">High Task (Kitchen Counter, Workshop, Laundry)</option>
+                <option value="100">Fine Work (Detailed Workshop, Drafting)</option>
+            </select>
+
+            <h5 class="section-title">2. Efficiency Factor</h5>
+            
+            <!-- Efficiency/Adjustment Factor -->
+            <label for="efficiency-select" class="form-label">Room Finish & Fixture Efficiency</label>
+            <select class="form-select mb-3" id="efficiency-select" name="adjustmentFactor">
+                <!-- Values are adjustment multipliers (Simplified 1 / (CU * LLF)) -->
+                <option value="1.2">Excellent (Light colors, new efficient fixtures)</option>
+                <option value="1.4" selected>Average (Mid-tone colors, standard fixtures)</option>
+                <option value="1.6">Poor (Dark colors, dusty/old fixtures)</option>
+            </select>
+            
+            <div class="info-box">
+                **Formula:** $Total Lumens = Area \times Foot Candles \times Adjustment Factor$. The adjustment factor accounts for light lost to walls, ceiling, and fixture inefficiencies.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #FFA500; border-color: #FFA500;" type="submit">Calculate Required Lumens</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert" id="lumens-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="lumens-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #FFA500; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="lumens-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Helper function for number formatting
+    const numFormatter = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    });
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('lumens-result');
+        const table = document.getElementById('lumens-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('lumens-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger', 'alert-info', 'alert-success');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+        res.style.borderColor = '#FFD700';
+        res.classList.add('alert-warning');
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            // Primary result
+            res.innerHTML = `
+**Total Lumens Required:**
+<div class="text-center mt-3 mb-2">
+    <span class="result-value">${numFormatter.format(metrics.requiredLumens)}</span>
+    <span class="lumens-unit">Lumens</span>
+</div>
+<p class="small text-center mt-3 mb-0">
+    **Recommendation:** Distribute this total lumen value across multiple fixtures for even light coverage.
+</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Total Required Lumens**</td><td>**${numFormatter.format(metrics.requiredLumens)}**</td></tr>
+            <tr><td>Room Area (A)</td><td>${metrics.area.toFixed(1)} sq ft</td></tr>
+            <tr><td>Target Illumination (Foot-Candles)</td><td>${metrics.targetFootCandles.toFixed(0)} FC</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Factors**</td></tr>
+            <tr><td>Base Lumen Requirement (A x FC)</td><td>${numFormatter.format(metrics.baseLumens)} Lm</td></tr>
+            <tr><td>Adjustment Factor (Efficiency/Loss)</td><td>x ${metrics.adjustmentFactor.toFixed(2)}</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('lumens-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const roomLength = parseFloat(form.elements.roomLength.value);
+        const roomWidth = parseFloat(form.elements.roomWidth.value);
+        const targetFootCandles = parseFloat(form.elements.targetFootCandles.value);
+        const adjustmentFactor = parseFloat(form.elements.adjustmentFactor.value);
+        
+        // Basic validation
+        if (isNaN(roomLength) || roomLength <= 0 || isNaN(roomWidth) || roomWidth <= 0) 
+        {
+            displayResult(true, "Please ensure Room Length and Width are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Area ---
+            const area = roomLength * roomWidth;
+
+            // --- 2. Calculate Base Lumens (Area * FC) ---
+            const baseLumens = area * targetFootCandles;
+
+            // --- 3. Apply Adjustment Factor to get Total Required Lumens ---
+            const requiredLumens = baseLumens * adjustmentFactor;
+            
+            if (requiredLumens <= 0) {
+                displayResult(true, "Calculated lumen requirement is zero or negative. Check inputs.");
+                return;
+            }
+
+            // 4. Display results
+            const metrics = {
+                roomLength,
+                roomWidth,
+                area,
+                targetFootCandles,
+                adjustmentFactor,
+                baseLumens,
+                requiredLumens: Math.ceil(requiredLumens) // Round up to ensure adequate light
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('lumens-result').classList.add('d-none');
+        document.getElementById('lumens-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

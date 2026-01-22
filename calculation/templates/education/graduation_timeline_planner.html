@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Graduation Timeline Planner{% endblock %}
+
+{% block meta_description %}Plan your college schedule to calculate your projected graduation date based on credits required and planned semester course loads.{% endblock %}
+
+{% block meta_keywords %}graduation planner, college timeline, academic planning, credit tracking, semester schedule, degree progress{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    .planner-wrapper {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #dee2e6;
+    }
+
+    .input-group-card {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 20px;
+        height: 100%;
+        transition: border-color 0.3s ease;
+    }
+
+    .input-group-card:focus-within {
+        border-color: #0d6efd;
+    }
+
+    .result-display-area {
+        background-color: #f0f7ff;
+        border: 2px dashed #cfe2ff;
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .result-value {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #0d6efd;
+        line-height: 1.1;
+    }
+
+    /* Professional Timeline Styling */
+    .timeline-container {
+        padding: 10px 0 10px 20px;
+        border-left: 3px solid #e9ecef;
+        margin-left: 10px;
+    }
+
+    .timeline-point {
+        position: relative;
+        margin-bottom: 25px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .timeline-point::before {
+        content: '';
+        position: absolute;
+        left: -27px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #dee2e6;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px #dee2e6;
+    }
+
+    .timeline-point.active::before {
+        background: #0d6efd;
+        box-shadow: 0 0 0 2px #0d6efd;
+    }
+
+    .timeline-point.graduated::before {
+        background: #198754;
+        box-shadow: 0 0 0 2px #198754;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">🗓️ Graduation Timeline Planner</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Calculate exactly when you will walk across the stage. Map out your remaining credits and visualize your path to a degree.
+        </p>
+    </div>
+
+    
+
+    <div class="planner-wrapper mx-auto" style="max-width: 1100px;">
+        <div class="row g-4 mb-5">
+            <div class="col-lg-4 col-md-6">
+                <div class="input-group-card">
+                    <label class="form-label fw-bold small text-uppercase text-primary"><i class="bi bi-mortarboard-fill me-2"></i>Degree Requirements</label>
+                    <input type="number" id="required-credits" class="form-control form-control-lg" placeholder="Total (e.g. 120)" oninput="calculateTimeline()">
+                    <div class="mt-3">
+                        <label class="form-label fw-bold small text-uppercase text-success"><i class="bi bi-check-circle-fill me-2"></i>Credits Completed</label>
+                        <input type="number" id="completed-credits" class="form-control form-control-lg" placeholder="Already earned" oninput="calculateTimeline()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="input-group-card">
+                    <label class="form-label fw-bold small text-uppercase text-secondary"><i class="bi bi-calendar3 me-2"></i>Start Term</label>
+                    <div class="d-flex gap-2">
+                        <select id="current-semester-name" class="form-select" onchange="calculateTimeline()">
+                            <option value="Fall">Fall</option>
+                            <option value="Spring">Spring</option>
+                            <option value="Summer">Summer</option>
+                        </select>
+                        <input type="number" id="current-semester-year" class="form-control" value="2025" oninput="calculateTimeline()">
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label fw-bold small text-uppercase text-secondary"><i class="bi bi-speedometer2 me-2"></i>Avg Credits/Semester</label>
+                        <input type="number" id="credits-per-semester" class="form-control form-control-lg" placeholder="e.g. 15" oninput="calculateTimeline()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-12">
+                <div class="h-100 d-flex flex-column justify-content-center align-items-center p-4 rounded-3 border bg-light text-center">
+                    <span class="text-muted fw-bold small text-uppercase mb-2">Remaining Credits</span>
+                    <div id="remaining-credits-display" class="display-4 fw-black text-dark">--</div>
+                    <div class="mt-2 text-muted small">to be completed</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h5 class="fw-bold mb-3"><i class="bi bi-flag-fill text-primary me-2"></i>Projection</h5>
+                <div id="result-box" class="result-display-area">
+                    <div id="empty-state">
+                        <i class="bi bi-calculator fs-1 text-muted mb-3 d-block"></i>
+                        <p class="text-muted">Enter your required and completed credits to generate your timeline.</p>
+                    </div>
+                    <div id="calculation-state" style="display: none;">
+                        <span class="text-uppercase fw-bold text-muted small">Projected Graduation</span>
+                        <div class="result-value" id="projected-graduation-date">--</div>
+                        <p class="text-muted mt-3 mb-0">Semesters needed: <span class="fw-bold text-dark" id="total-semesters-needed">0</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <h5 class="fw-bold mb-3"><i class="bi bi-list-columns-reverse text-primary me-2"></i>Semester Roadmap</h5>
+                <div id="timeline-breakdown" class="timeline-container max-h-80 overflow-y-auto bg-white p-3 rounded shadow-sm border" style="max-height: 400px; display: none;">
+                    </div>
+                <div id="timeline-empty" class="p-5 border rounded bg-light text-center text-muted italic">
+                    Roadmap will appear here...
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <button class="btn btn-link text-muted text-decoration-none" onclick="location.reload()">
+                <i class="bi bi-arrow-counterclockwise"></i> Clear All Data
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const requiredInput = document.getElementById('required-credits');
+    const completedInput = document.getElementById('completed-credits');
+    const remainingDisplay = document.getElementById('remaining-credits-display');
+    const startYearInput = document.getElementById('current-semester-year');
+    const startSemesterInput = document.getElementById('current-semester-name');
+    const creditsPerSemInput = document.getElementById('credits-per-semester');
+
+    const resultBox = document.getElementById('result-box');
+    const emptyState = document.getElementById('empty-state');
+    const calcState = document.getElementById('calculation-state');
+    const timelineBox = document.getElementById('timeline-breakdown');
+    const timelineEmpty = document.getElementById('timeline-empty');
+
+    const gradDateEl = document.getElementById('projected-graduation-date');
+    const totalSemsEl = document.getElementById('total-semesters-needed');
+
+    const semesterOrder = ["Spring", "Summer", "Fall"];
+
+    function getNextSemester(currSem, currYear) {
+        const idx = semesterOrder.indexOf(currSem);
+        const nextIdx = (idx + 1) % semesterOrder.length;
+        const nextSem = semesterOrder[nextIdx];
+        let nextYear = currYear;
+
+        if (currSem === "Fall" && nextSem === "Spring") nextYear += 1;
+        return { semester: nextSem, year: nextYear };
+    }
+
+    function calculateTimeline() {
+        const req = parseFloat(requiredInput.value) || 0;
+        const comp = parseFloat(completedInput.value) || 0;
+        const creditsPerMain = parseFloat(creditsPerSemInput.value) || 0;
+        const rem = Math.max(0, req - comp);
+
+        remainingDisplay.textContent = rem > 0 ? rem : "--";
+
+        // Logic to show/hide results based on sufficient input
+        if (req <= 0 || creditsPerMain <= 0) {
+            emptyState.style.display = 'block';
+            calcState.style.display = 'none';
+            timelineBox.style.display = 'none';
+            timelineEmpty.style.display = 'block';
+            resultBox.style.borderStyle = 'dashed';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        calcState.style.display = 'block';
+        timelineBox.style.display = 'block';
+        timelineEmpty.style.display = 'none';
+        resultBox.style.borderStyle = 'solid';
+
+        let currYear = parseInt(startYearInput.value) || 2025;
+        let currSem = startSemesterInput.value;
+        let creditsLeft = rem;
+        let totalSems = 0;
+        let html = '';
+
+        while (creditsLeft > 0 && totalSems < 24) {
+            totalSems++;
+            let load = (currSem === "Summer") ? (creditsPerMain / 2) : creditsPerMain;
+            let applied = Math.min(creditsLeft, load);
+            creditsLeft -= applied;
+
+            const isGrad = creditsLeft <= 0;
+            const statusClass = isGrad ? 'graduated' : 'active';
+            
+            html += `
+                <div class="timeline-point ${statusClass}">
+                    <div class="fw-bold text-dark">${currSem} ${currYear}</div>
+                    <div class="small text-muted">Credits: ${applied.toFixed(1)} ${isGrad ? ' — <span class="text-success fw-bold">Degree Conferred!</span>' : ''}</div>
+                </div>
+            `;
+
+            if (isGrad) {
+                gradDateEl.textContent = `${currSem} ${currYear}`;
+                totalSemsEl.textContent = totalSems;
+                break;
+            }
+
+            const next = getNextSemester(currSem, currYear);
+            currSem = next.semester;
+            currYear = next.year;
+        }
+
+        timelineBox.innerHTML = html;
+    }
+</script>
+{% endblock %}

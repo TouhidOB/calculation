@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Furnace Size BTU Calculator{% endblock %}
+
+{% block meta_description %}Estimate the required furnace BTU capacity based on heated square footage, climate zone, and home insulation quality for efficient heating. {% endblock %}
+
+{% block meta_keywords %}furnace size calculator, BTU calculator, heating capacity, HVAC sizing, house square footage BTU, heat loss estimate{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #FF5722; /* Deep Orange for Heating/Fire */
+        border-bottom: 2px solid #FF5722;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFC107; /* Amber for key result */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #ffe0b2;
+        font-weight: 600;
+        color: #FF5722;
+    }
+
+    .info-box {
+        background-color: #fff3e0; /* Light orange info box */
+        border: 1px solid #FF5722;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #FF5722;
+    }
+
+    .btu-recommendation {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #03A9F4; /* Blue for the final recommendation contrast */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🔥 Furnace Size BTU Calculator</h1>
+    <p class="text-center small-muted">Estimate the required BTU capacity for your furnace based on space and location.</p>
+    [Image of house showing heat loss through roof, windows, and walls]
+
+    <div class="calc-wrapper">
+
+        <form id="furnace-calculator-form">
+            <h5 class="section-title">1. Heated Area and Climate</h5>
+
+            <!-- Area Input (Square Feet) -->
+            <label for="area-input" class="form-label">Total Heated Area</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Area (A)</span>
+                <input type="number" id="area-input" class="form-control" name="area" placeholder="e.g., 2000" value="2000" min="100" step="50" required>
+                <span class="input-group-text">sq ft</span>
+            </div>
+            
+            <!-- Climate Zone -->
+            <label for="climate-select" class="form-label">Climate Zone / Expected Coldest Temperature</label>
+            <select class="form-select mb-3" id="climate-select" name="climateFactor">
+                <!-- Values represent the standard BTU per square foot factor for the zone -->
+                <option value="50">Very Cold (Northern US / Canada - e.g., 50 BTU/sq ft)</option>
+                <option value="40" selected>Moderate Cold (Mid-Latitude US - e.g., 40 BTU/sq ft)</option>
+                <option value="30">Mild Cold (Southern US - e.g., 30 BTU/sq ft)</option>
+                <option value="20">Very Mild (Extreme South - e.g., 20 BTU/sq ft)</option>
+            </select>
+
+            <h5 class="section-title">2. Home Efficiency and Adjustment</h5>
+            
+            <!-- Insulation Quality -->
+            <label for="efficiency-select" class="form-label">Home Efficiency/Insulation Quality</label>
+            <select class="form-select mb-3" id="efficiency-select" name="efficiencyFactor">
+                <!-- Values are multipliers based on an assumed standard (1.0) -->
+                <option value="1.15">Poor (Old, drafty, poor insulation) - 15% increase</option>
+                <option value="1.0" selected>Average (Standard 1980s-2000s construction)</option>
+                <option value="0.9">Excellent (New, well-sealed, high-efficiency windows) - 10% decrease</option>
+                <option value="0.8">Passive/High-Performance (Extremely well-sealed/insulated) - 20% decrease</option>
+            </select>
+            
+            <div class="info-box">
+                **How it works:** We take a base BTU per sq ft (determined by your climate zone) and adjust it up or down based on how well-insulated your home is. The final result is the estimated *output* BTU required.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #FF5722; border-color: #FF5722;" type="submit">Calculate Required Furnace BTU</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="furnace-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Furnace Calculation Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="furnace-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #FF5722; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="furnace-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to find the nearest standard Furnace output BTU size
+    // Note: Furnaces are typically sized by INPUT BTU, but the requirement is for OUTPUT BTU.
+    // We assume an average 80% AFUE (efficiency) and round to common output sizes (e.g., 60k, 80k, 100k).
+    function getStandardOutputBTU(requiredBTU) {
+        // Common furnace *output* sizes (BTUs)
+        const standardOutputSizes = [48000, 64000, 80000, 96000, 112000, 128000];
+        
+        for (let size of standardOutputSizes) {
+            if (requiredBTU <= size) {
+                return size;
+            }
+        }
+        return standardOutputSizes[standardOutputSizes.length - 1]; // Return largest standard if required BTU is very high
+    }
+
+    // Helper function for number formatting (BTU)
+    const btuFormatter = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    });
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('furnace-result');
+        const table = document.getElementById('furnace-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('furnace-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger', 'alert-info');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Calculated BTU and Recommended Unit
+            res.innerHTML = `
+**Minimum Required Output BTU:**
+<div class="d-flex justify-content-around align-items-center mt-3">
+    <div class="text-center">
+        <span class="result-value">${btuFormatter.format(metrics.requiredOutputBTU)}</span><br>
+        <span class="small text-muted">Estimated BTU/hr (Output)</span>
+    </div>
+    <div class="text-center">
+        <span class="btu-recommendation">${btuFormatter.format(metrics.recommendedOutputBTU)} BTU</span><br>
+        <span class="small text-muted">Recommended Standard Output Size</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Recommended Standard Output BTU**</td><td>**${btuFormatter.format(metrics.recommendedOutputBTU)}**</td></tr>
+            <tr><td>Minimum Required Output BTU (Estimated)</td><td>${btuFormatter.format(metrics.requiredOutputBTU)}</td></tr>
+            <tr><td>Heated Area</td><td>${btuFormatter.format(metrics.area)} sq ft</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Load Factor Breakdown**</td></tr>
+            <tr><td>Base BTU per Sq Ft (Climate Zone Factor)</td><td>${metrics.climateFactor.toFixed(0)} BTU/sq ft</td></tr>
+            <tr><td>Home Efficiency Multiplier</td><td>x ${metrics.efficiencyFactor.toFixed(2)}</td></tr>
+            <tr><td>Heat Load Calculation (${metrics.climateFactor} x ${metrics.efficiencyFactor})</td><td>${(metrics.climateFactor * metrics.efficiencyFactor).toFixed(1)} BTU/sq ft</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('furnace-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const area = parseFloat(form.elements.area.value);
+        const climateFactor = parseFloat(form.elements.climateFactor.value);
+        const efficiencyFactor = parseFloat(form.elements.efficiencyFactor.value);
+        
+        // Basic validation
+        if (isNaN(area) || area <= 0 || isNaN(climateFactor) || climateFactor <= 0) 
+        {
+            displayResult(true, "Please ensure the Heated Area and Climate Zone are valid.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate the Required Heat Load per Sq Ft ---
+            // This combines the climate factor (base) and the efficiency factor (adjustment)
+            const requiredBTUPerSqFt = climateFactor * efficiencyFactor;
+
+            // --- 2. Calculate Total Required Output BTU ---
+            const requiredOutputBTU = area * requiredBTUPerSqFt;
+            
+            if (requiredOutputBTU <= 0) {
+                displayResult(true, "Calculated BTU requirement is zero or negative. Check inputs.");
+                return;
+            }
+
+            // --- 3. Find Recommended Standard Output BTU ---
+            const recommendedOutputBTU = getStandardOutputBTU(requiredOutputBTU);
+
+            // 4. Display results
+            const metrics = {
+                area,
+                climateFactor,
+                efficiencyFactor,
+                requiredOutputBTU,
+                recommendedOutputBTU
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('furnace-result').classList.add('d-none');
+        document.getElementById('furnace-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

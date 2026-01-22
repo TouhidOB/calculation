@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Text Reading Time & Word Count Calculator{% endblock %}
+
+{% block meta_description %}Calculate the estimated time needed to read your text based on customizable average reading speeds. Includes real-time word count.{% endblock %}
+
+{% block meta_keywords %}reading time calculator, words per minute, WPM, text analysis, word count estimate{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Styling for the reading time calculator application */
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e0e0e0;
+    }
+
+    #text-input {
+        min-height: 300px;
+        font-size: 1.1rem;
+        padding: 20px;
+        resize: vertical;
+        border: 2px solid #f0f2f5;
+        border-radius: 8px;
+        transition: border-color 0.3s ease;
+    }
+
+    #text-input:focus {
+        border-color: #0d6efd;
+        outline: none;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+
+    .stat-box {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%;
+    }
+
+    .stat-box:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #212529;
+        line-height: 1;
+    }
+    
+    .stat-value.highlight {
+        color: #0d6efd; /* Professional Blue */
+    }
+
+    .wpm-guide {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        font-size: 0.9rem;
+    }
+
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+        .stat-value { font-size: 1.6rem; }
+        .calc-wrapper { padding: 20px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">⏱️ Reading Time Calculator</h1>
+        <p class="text-muted">Estimate reading and speaking duration for articles, scripts, and speeches.</p>
+    </div>
+
+    <div class="calc-wrapper mx-auto" style="max-width: 1000px;">
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <label class="form-label fw-bold">Reading Speed (Words Per Minute)</label>
+                <div class="input-group shadow-sm">
+                    <input 
+                        type="number" 
+                        class="form-control form-control-lg" 
+                        id="wpm-input" 
+                        placeholder="200" 
+                        min="10" 
+                        max="1000" 
+                        value="200"
+                    >
+                    <span class="input-group-text bg-white text-muted">WPM</span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="wpm-guide border">
+                    <div class="fw-bold mb-1 small text-uppercase">WPM Reference Guide:</div>
+                    <ul class="list-unstyled mb-0 small row">
+                        <li class="col-6">• <b>100:</b> Technical/Complex</li>
+                        <li class="col-6">• <b>200:</b> Standard Adult</li>
+                        <li class="col-6">• <b>300:</b> Speed Reader</li>
+                        <li class="col-6">• <b>150:</b> Formal Speech</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-5">
+            <div class="col-md-4">
+                <div class="stat-box border-bottom border-4 border-secondary">
+                    <div class="stat-label">Total Word Count</div>
+                    <div class="stat-value" id="word-count">0</div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stat-box border-bottom border-4 border-primary">
+                    <div class="stat-label">Reading Time</div>
+                    <div class="stat-value highlight" id="reading-time-minutes">0m 0s</div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stat-box border-bottom border-4 border-warning">
+                    <div class="stat-label">Speaking Time</div>
+                    <div class="stat-value" id="speaking-time-minutes">0m 0s</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <h5 class="mb-0 fw-bold">Paste Content</h5>
+            <button class="btn btn-outline-danger btn-sm" id="clear-btn">
+                <i class="bi bi-trash me-1"></i> Clear Text
+            </button>
+        </div>
+        
+        <textarea 
+            class="form-control shadow-sm" 
+            id="text-input" 
+            placeholder="Start typing or paste your content here to calculate time..."
+            autofocus
+        ></textarea>
+        
+        <div class="mt-4">
+            
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const SPEAKING_WPM = 150; 
+
+    const textInput = document.getElementById('text-input');
+    const wpmInput = document.getElementById('wpm-input');
+    const wordCountEl = document.getElementById('word-count');
+    const readingTimeEl = document.getElementById('reading-time-minutes');
+    const speakingTimeEl = document.getElementById('speaking-time-minutes');
+    const clearBtn = document.getElementById('clear-btn');
+
+    function formatTime(totalSeconds) {
+        if (totalSeconds <= 0 || isNaN(totalSeconds)) return '0m 0s';
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = Math.round(totalSeconds % 60);
+        return `${minutes}m ${seconds}s`;
+    }
+
+    function getWordCount(text) {
+        const trimmedText = text.trim();
+        if (!trimmedText) return 0;
+        // Accurate word count regex
+        const words = trimmedText.match(/\b[-?(\w+)]+/gi);
+        return words ? words.length : 0;
+    }
+
+    function updateTime() {
+        const text = textInput.value;
+        const userWPM = parseFloat(wpmInput.value) || 200; 
+        const wordCount = getWordCount(text);
+        
+        if (wordCount === 0) {
+            wordCountEl.textContent = '0';
+            readingTimeEl.textContent = '0m 0s';
+            speakingTimeEl.textContent = '0m 0s';
+            return;
+        }
+
+        const safeUserWPM = Math.max(1, userWPM);
+
+        // Reading Time
+        const totalReadingSeconds = (wordCount / safeUserWPM) * 60;
+        
+        // Speaking Time (Fixed 150 WPM)
+        const totalSpeakingSeconds = (wordCount / SPEAKING_WPM) * 60;
+        
+        // Update UI
+        wordCountEl.textContent = wordCount.toLocaleString();
+        readingTimeEl.textContent = formatTime(totalReadingSeconds);
+        speakingTimeEl.textContent = formatTime(totalSpeakingSeconds);
+    }
+
+    function clearContent() {
+        textInput.value = '';
+        updateTime();
+        textInput.focus();
+    }
+
+    // Event Listeners
+    textInput.addEventListener('input', updateTime);
+    wpmInput.addEventListener('input', updateTime);
+    clearBtn.addEventListener('click', clearContent);
+
+    // Run once on load to initialize 0s correctly
+    window.addEventListener('load', () => {
+        textInput.value = ''; // Ensure start is empty
+        updateTime();
+    });
+</script>
+{% endblock %}

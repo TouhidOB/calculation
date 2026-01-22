@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Plagiarism Checker Score Estimator{% endblock %}
+
+{% block meta_description %}Estimate your document's potential plagiarism score based on text length, direct quote usage, and citation quality. Ideal for academic self-assessment.{% endblock %}
+
+{% block meta_keywords %}plagiarism score, academic integrity, citation tools, paraphrasing quality, writing estimation{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #dee2e6;
+    }
+
+    #text-input {
+        min-height: 280px;
+        font-size: 1rem;
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        transition: border-color 0.3s ease;
+    }
+
+    #text-input:focus {
+        border-color: #0d6efd;
+        box-shadow: none;
+    }
+
+    .stat-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 25px;
+        text-align: center;
+        border: 1px solid #dee2e6;
+    }
+
+    #score-value {
+        font-size: 4rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* Used to hide the results until input is detected */
+    #results-section {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .placeholder-view {
+        padding: 40px;
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        color: #adb5bd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">🕵️‍♂️ Plagiarism Score Estimator</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">
+            Estimate potential similarity matches based on your writing habits, quote frequency, and citation depth. 
+        </p>
+    </div>
+
+    <div class="calc-wrapper mx-auto" style="max-width: 950px;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">1. Paste Your Text</h5>
+            <button class="btn btn-sm btn-outline-secondary" onclick="resetForm()">
+                <i class="bi bi-arrow-clockwise"></i> Reset All
+            </button>
+        </div>
+
+        <textarea 
+            class="form-control mb-2" 
+            id="text-input" 
+            placeholder="Paste your essay or document here to begin the estimation..."
+            oninput="updateEstimate()"
+        ></textarea>
+
+        <div class="d-flex justify-content-start gap-4 mb-5 text-muted small">
+            <span>Words: <b id="word-count" class="text-dark">0</b></span>
+            <span>Characters: <b id="char-count" class="text-dark">0</b></span>
+        </div>
+
+        <h5 class="fw-bold mb-4">2. Adjust Contributing Factors</h5>
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <label for="quote-percentage" class="form-label">
+                    Direct Quotes <span id="quote-display" class="text-primary">0%</span>
+                </label>
+                <input type="range" class="form-range" id="quote-percentage" min="0" max="40" value="0" oninput="updateEstimate()">
+                <p class="small text-muted">Amount of text contained within quotation marks.</p>
+            </div>
+
+            <div class="col-md-6">
+                <label for="paraphrase-quality" class="form-label">
+                    Paraphrase Quality <span id="paraphrase-display" class="text-primary">100%</span>
+                </label>
+                <input type="range" class="form-range" id="paraphrase-quality" min="0" max="100" value="100" oninput="updateEstimate()">
+                <p class="small text-muted">How different your wording is from the original sources.</p>
+            </div>
+
+            <div class="col-md-6">
+                <label for="source-count" class="form-label">
+                    Sources Cited <span id="source-display" class="text-primary">0</span>
+                </label>
+                <input type="range" class="form-range" id="source-count" min="0" max="20" value="0" oninput="updateEstimate()">
+                <p class="small text-muted">Number of unique entries in your bibliography.</p>
+            </div>
+        </div>
+
+        <h5 class="fw-bold mb-3">3. Estimated Outcome</h5>
+
+        <div id="placeholder-view" class="placeholder-view text-center">
+            <i class="bi bi-textarea-t fs-1 d-block mb-2"></i>
+            Waiting for text input to generate estimate...
+        </div>
+
+        <div id="results-section">
+            <div class="row align-items-center">
+                <div class="col-lg-5">
+                    <div class="stat-card">
+                        <div class="text-uppercase small fw-bold text-muted mb-2">Estimated Match</div>
+                        <div id="score-value" class="text-dark">0%</div>
+                        <div id="risk-level" class="fw-bold mt-2">--</div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="p-3 border rounded-3 bg-light h-100" id="recommendation-box">
+                        <h6 class="fw-bold"><i class="bi bi-lightbulb"></i> Analysis & Action:</h6>
+                        <p id="recommendation-text" class="mb-0 small text-secondary"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4 py-2 small border-0" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i> This is a statistical estimation based on writing patterns, not a database scan.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function getScoreFeedback(score) {
+        if (score <= 15) return {
+            color: '#198754', // Success Green
+            level: 'Low Risk',
+            recommendation: 'Your text shows high originality. A score under 15% is standard for academic work with proper citations.'
+        };
+        if (score <= 30) return {
+            color: '#ffc107', // Warning Yellow
+            level: 'Moderate Risk',
+            recommendation: 'Acceptable for research-heavy papers, but ensure all technical phrases are cited correctly to avoid mosaic plagiarism.'
+        };
+        if (score <= 50) return {
+            color: '#fd7e14', // Orange
+            level: 'High Risk',
+            recommendation: 'Consider re-paraphrasing major sections. This score suggests the sentence structures are too similar to your sources.'
+        };
+        return {
+            color: '#dc3545', // Danger Red
+            level: 'Critical Risk',
+            recommendation: 'Significant similarity detected. We strongly recommend a full rewrite and more careful use of original wording.'
+        };
+    }
+
+    function updateEstimate() {
+        const text = document.getElementById('text-input').value.trim();
+        const resultsSection = document.getElementById('results-section');
+        const placeholderView = document.getElementById('placeholder-view');
+
+        // Toggle visibility: Hide results if no text
+        if (text.length === 0) {
+            resultsSection.style.display = 'none';
+            resultsSection.style.opacity = '0';
+            placeholderView.style.display = 'block';
+            document.getElementById('word-count').innerText = '0';
+            document.getElementById('char-count').innerText = '0';
+            return;
+        }
+
+        placeholderView.style.display = 'none';
+        resultsSection.style.display = 'block';
+        setTimeout(() => { resultsSection.style.opacity = '1'; }, 50);
+
+        // Stats
+        const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+        document.getElementById('word-count').innerText = wordCount;
+        document.getElementById('char-count').innerText = text.length;
+
+        // Input Values
+        const quotePct = parseInt(document.getElementById('quote-percentage').value);
+        const paraQual = parseInt(document.getElementById('paraphrase-quality').value);
+        const sources = parseInt(document.getElementById('source-count').value);
+
+        // Update Slider Labels
+        document.getElementById('quote-display').innerText = quotePct + '%';
+        document.getElementById('paraphrase-display').innerText = paraQual + '%';
+        document.getElementById('source-display').innerText = sources;
+
+        // Calculation Logic
+        let baseScore = 5;
+        let quoteRisk = quotePct * 0.9;
+        let qualityRisk = (100 - paraQual) * 0.4;
+        let citationBonus = Math.min(10, sources * 1.5);
+        let lengthBonus = Math.min(5, wordCount / 200);
+
+        let finalScore = Math.round(baseScore + quoteRisk + qualityRisk - citationBonus - lengthBonus);
+        finalScore = Math.max(0, Math.min(100, finalScore));
+
+        // Update UI
+        const feedback = getScoreFeedback(finalScore);
+        const scoreEl = document.getElementById('score-value');
+        const riskEl = document.getElementById('risk-level');
+        const recommendEl = document.getElementById('recommendation-text');
+
+        scoreEl.innerText = finalScore + '%';
+        scoreEl.style.color = feedback.color;
+        riskEl.innerText = feedback.level;
+        riskEl.style.color = feedback.color;
+        recommendEl.innerText = feedback.recommendation;
+    }
+
+    function resetForm() {
+        document.getElementById('text-input').value = '';
+        document.getElementById('quote-percentage').value = 0;
+        document.getElementById('paraphrase-quality').value = 100;
+        document.getElementById('source-count').value = 0;
+        updateEstimate();
+    }
+</script>
+{% endblock %}

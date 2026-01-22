@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Presentation Slide Count Estimator{% endblock %}
+
+{% block meta_description %}Estimate the ideal number of slides for your presentation based on time limit and speaking style.{% endblock %}
+
+{% block meta_keywords %}slide count, presentation timer, powerpoint estimator, speech planning, public speaking, deck length{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 234, 88, 12; /* Brand Orange */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #fffaf5;
+        border-right: 1px solid #fce8d5;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .result-display-box {
+        background-color: #fff7ed;
+        border: 2px solid #fdba74;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .result-value {
+        font-size: 4rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #ea580c;
+    }
+
+    /* Slide Map Blocks */
+    .slide-block {
+        display: inline-block;
+        width: 30px;
+        height: 22px;
+        margin: 2px;
+        border-radius: 3px;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    .slide-intro { background-color: #93c5fd; } /* Blue */
+    .slide-body { background-color: #86efac; }  /* Green */
+    .slide-conc { background-color: #fca5a5; }  /* Red */
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .breakdown-item {
+        padding: 12px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-easel2-fill text-orange me-2" style="color: #ea580c;"></i>Slide Count Estimator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Don't let your slides dictate your speech. Enter your time limit and speaking style to find the "Sweet Spot" for your slide deck length.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-gear-wide-connected me-2"></i>Parameters</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Time Limit (Mins)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-stopwatch"></i></span>
+                        <input type="number" id="total-minutes" class="form-control" placeholder="e.g. 15">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Q&A Buffer (Mins)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-chat-dots"></i></span>
+                        <input type="number" id="qna-minutes" class="form-control" placeholder="e.g. 3">
+                    </div>
+                    <small class="text-muted d-block mt-1">Highly recommended to reserve ~20% of time.</small>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Speaking Pace / Style</label>
+                    <select id="pres-style" class="form-select">
+                        <option value="" selected disabled>Choose a style...</option>
+                        <option value="0.5">Rapid (30s / slide)</option>
+                        <option value="1.0">Dynamic (1m / slide)</option>
+                        <option value="1.5">Standard (1.5m / slide)</option>
+                        <option value="2.5">Detailed (2.5m / slide)</option>
+                        <option value="4.0">Interactive (4m+ / slide)</option>
+                    </select>
+                </div>
+
+                <div class="mt-4 p-3 bg-white border rounded small shadow-sm" id="pace-tip">
+                    <i class="bi bi-lightbulb text-warning me-1"></i>
+                    Select a style to see speaking tips.
+                </div>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white d-flex align-items-center">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-images display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold">Ready to Estimate</h4>
+                    <p>Enter your time limit and select a presentation style to generate your recommended slide structure.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label text-orange opacity-75">Recommended Slide Total</span>
+                        <div class="result-value" id="total-slides">0</div>
+                        <p class="mb-0 mt-2 text-dark fw-bold">For <span id="net-time">0</span> mins of speaking</p>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-3">Recommended Structure</h6>
+                    <div class="row g-2 mb-4">
+                        <div class="col-4">
+                            <div class="breakdown-item text-center">
+                                <div class="small text-muted fw-bold mb-1">INTRO</div>
+                                <div class="h4 mb-0 text-primary" id="intro-count">0</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="breakdown-item text-center">
+                                <div class="small text-muted fw-bold mb-1">BODY</div>
+                                <div class="h4 mb-0 text-success" id="body-count">0</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="breakdown-item text-center">
+                                <div class="small text-muted fw-bold mb-1">CONC.</div>
+                                <div class="h4 mb-0 text-danger" id="conc-count">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2 d-flex justify-content-between align-items-end">
+                        <span class="form-label mb-0">Visual Deck Map</span>
+                        <span class="small text-muted" id="map-legend">Intro | Body | Conc</span>
+                    </div>
+                    <div id="visual-deck-map" class="d-flex flex-wrap border p-2 rounded bg-light">
+                        </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updatePaceTip(pace) {
+        const tipEl = document.getElementById('pace-tip');
+        let text = "";
+        if (pace <= 0.5) text = "<strong>Rapid Style:</strong> Focus on one image per slide and very little text. Perfect for high-energy pitches.";
+        else if (pace <= 1.0) text = "<strong>Dynamic Style:</strong> TED-style pacing. Keep slides clean and move quickly to maintain engagement.";
+        else if (pace <= 1.5) text = "<strong>Standard Style:</strong> A balanced pace allowing for short bullet points and brief chart explanations.";
+        else if (pace <= 2.5) text = "<strong>Detailed Style:</strong> Best for technical or academic talks where data needs to be parsed by the audience.";
+        else text = "<strong>Interactive Style:</strong> Slides act as background anchors while you engage in discussion or workshops.";
+        
+        tipEl.innerHTML = `<i class="bi bi-lightbulb-fill text-warning me-1"></i> ${text}`;
+    }
+
+    function calculateSlides() {
+        const totalMins = parseFloat(document.getElementById('total-minutes').value);
+        const qnaMins = parseFloat(document.getElementById('qna-minutes').value) || 0;
+        const pace = parseFloat(document.getElementById('pres-style').value);
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const results = document.getElementById('results-ui');
+
+        if (isNaN(totalMins) || isNaN(pace)) {
+            placeholder.classList.remove('d-none');
+            results.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        results.classList.remove('d-none');
+        updatePaceTip(pace);
+
+        const netTime = Math.max(0, totalMins - qnaMins);
+        let totalSlides = Math.round(netTime / pace);
+        if (totalSlides < 1 && netTime > 0) totalSlides = 1;
+
+        // Breakdown Logic
+        let intro = Math.max(1, Math.round(totalSlides * 0.15));
+        let conc = Math.max(1, Math.round(totalSlides * 0.15));
+        if (totalSlides <= 2) { intro = 1; conc = totalSlides === 2 ? 1 : 0; }
+        let body = Math.max(0, totalSlides - intro - conc);
+
+        // UI Updates
+        document.getElementById('total-slides').textContent = totalSlides;
+        document.getElementById('net-time').textContent = netTime;
+        document.getElementById('intro-count').textContent = intro;
+        document.getElementById('body-count').textContent = body;
+        document.getElementById('conc-count').textContent = conc;
+
+        // Map Generator
+        const mapContainer = document.getElementById('visual-deck-map');
+        mapContainer.innerHTML = '';
+        const addBlocks = (count, css) => {
+            for(let i=0; i<count; i++) {
+                const b = document.createElement('div');
+                b.className = `slide-block ${css}`;
+                mapContainer.appendChild(b);
+            }
+        };
+        addBlocks(intro, 'slide-intro');
+        addBlocks(body, 'slide-body');
+        addBlocks(conc, 'slide-conc');
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('input', calculateSlides);
+        });
+    };
+</script>
+{% endblock %}

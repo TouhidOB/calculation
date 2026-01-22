@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Concrete Mix Ratio Calculator{% endblock %}
+
+{% block meta_description %}Calculate the required volumes of cement, sand, and aggregate based on the mix ratio (C:S:G) and the total wet volume needed for concrete work. {% endblock %}
+
+{% block meta_keywords %}concrete mix calculator, cement sand gravel ratio, cubic yard concrete, concrete volume, bag count, dry volume factor{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #607D8B; /* Blue-Grey for Concrete */
+        border-bottom: 2px solid #607D8B;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF5722; /* Deep Orange for final result contrast */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #eceff1; /* Light grey info box */
+        border: 1px solid #607D8B;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .ratio-group .input-group-text {
+        min-width: 80px;
+        background-color: #CFD8DC; /* Lighter Blue-Grey */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🧱 Concrete Mix Ratio Calculator</h1>
+    <p class="text-center small-muted">Determine required material quantities (Cement, Sand, Gravel) for a specific mix ratio and volume.</p>
+    [Image of concrete mix ratio diagram]
+
+    <div class="calc-wrapper">
+
+        <form id="mix-ratio-form">
+            <h5 class="section-title">1. Desired Mix Ratio (C:S:G)</h5>
+
+            <p class="small text-muted mb-3">Standard ratios are 1:2:3 (footings, slabs) or 1:1.5:3 (high strength).</p>
+            
+            <div class="d-flex gap-2 ratio-group mb-4">
+                <!-- Cement Ratio -->
+                <div class="input-group">
+                    <span class="input-group-text">Cement</span>
+                    <input type="number" id="cement-ratio-input" class="form-control" name="cementRatio" placeholder="1" value="1" min="0.1" step="0.1" required>
+                </div>
+                <!-- Sand Ratio -->
+                <div class="input-group">
+                    <span class="input-group-text">Sand</span>
+                    <input type="number" id="sand-ratio-input" class="form-control" name="sandRatio" placeholder="2" value="2" min="0.1" step="0.1" required>
+                </div>
+                <!-- Gravel Ratio -->
+                <div class="input-group">
+                    <span class="input-group-text">Gravel</span>
+                    <input type="number" id="gravel-ratio-input" class="form-control" name="gravelRatio" placeholder="3" value="3" min="0.1" step="0.1" required>
+                </div>
+            </div>
+
+            <h5 class="section-title">2. Required Wet Volume</h5>
+
+            <!-- Total Volume Required -->
+            <label for="total-volume-input" class="form-label">Total Volume of Concrete Needed</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Volume</span>
+                <input type="number" id="total-volume-input" class="form-control" name="totalVolume" placeholder="e.g., 5" value="1" min="0.01" step="0.1" required>
+                <select class="form-select" id="volume-unit" name="volumeUnit" style="max-width: 100px;">
+                    <option value="cy">Cubic Yards (CY)</option>
+                    <option value="cf">Cubic Feet (CF)</option>
+                </select>
+            </div>
+            
+            <h5 class="section-title">3. Cement Bag Details</h5>
+
+            <!-- Cement Bag Volume -->
+            <label for="bag-volume-input" class="form-label">Volume of 1 Bag of Cement (Standard)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Bag Volume</span>
+                <input type="number" id="bag-volume-input" class="form-control" name="bagVolume" placeholder="1" value="1" min="0.1" step="0.1" required>
+                <span class="input-group-text">cu ft</span>
+            </div>
+
+            <div class="info-box">
+                **Note on Volume:** This calculation uses a dry volume factor of 1.54. This accounts for the fact that dry materials compact (bulking) when water is added, ensuring you order enough material to achieve the final wet volume.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #607D8B; border-color: #607D8B;" type="submit">Calculate Material Quantities</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-danger" id="mix-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Required Materials (Dry Volume)</h5>
+        <table class="table table-bordered mt-2 d-none" id="mix-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #607D8B; color: white;">
+                    <th>Material</th>
+                    <th>Cubic Feet (CF)</th>
+                    <th>Cubic Yards (CY)</th>
+                </tr>
+            </thead>
+            <tbody id="mix-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const CU_FT_PER_CU_YD = 27;
+    const DRY_VOLUME_FACTOR = 1.54; // Factor to account for bulking/compaction when dry materials are mixed with water
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('mix-result');
+        const table = document.getElementById('mix-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('mix-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Bags of Cement and Total Volume
+            res.innerHTML = `
+**Minimum Materials to Order (Rounded Up):**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span style="font-size:2rem; color:#607D8B; font-weight:bold;">${metrics.cementBagsNeeded}</span><br>
+        <span class="small text-muted">Bags of Cement</span>
+    </div>
+    <div class="text-center">
+        <span style="font-size:2rem; color:#607D8B; font-weight:bold;">${metrics.totalDryVolumeCY.toFixed(2)}</span><br>
+        <span class="small text-muted">Total Dry Volume CY</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Cement (Bags)</td><td>**${metrics.cementBagsNeeded} Bags**</td><td>--</td></tr>
+            <tr><td>Cement (Loose Volume)</td><td>${metrics.cementVolumeCF.toFixed(3)} CF</td><td>${metrics.cementVolumeCY.toFixed(3)} CY</td></tr>
+            <tr><td>Sand</td><td>${metrics.sandVolumeCF.toFixed(3)} CF</td><td>${metrics.sandVolumeCY.toFixed(3)} CY</td></tr>
+            <tr><td>Gravel / Coarse Aggregate</td><td>${metrics.gravelVolumeCF.toFixed(3)} CF</td><td>${metrics.gravelVolumeCY.toFixed(3)} CY</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('mix-ratio-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const cementRatio = parseFloat(form.elements.cementRatio.value);
+        const sandRatio = parseFloat(form.elements.sandRatio.value);
+        const gravelRatio = parseFloat(form.elements.gravelRatio.value);
+        let totalVolume = parseFloat(form.elements.totalVolume.value);
+        const volumeUnit = form.elements.volumeUnit.value;
+        const bagVolumeCF = parseFloat(form.elements.bagVolume.value);
+        
+        // Basic validation
+        if (isNaN(cementRatio) || cementRatio <= 0 || isNaN(sandRatio) || sandRatio <= 0 || isNaN(gravelRatio) || gravelRatio <= 0 || isNaN(totalVolume) || totalVolume <= 0 || isNaN(bagVolumeCF) || bagVolumeCF <= 0) {
+            displayResult(true, "Please ensure all ratio components, total volume, and bag volume are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // Convert Total Volume to Cubic Feet (CF)
+            let totalVolumeCF = totalVolume;
+            if (volumeUnit === 'cy') {
+                totalVolumeCF *= CU_FT_PER_CU_YD;
+            }
+
+            // 1. Calculate Total Parts and Required Dry Volume
+            const totalParts = cementRatio + sandRatio + gravelRatio;
+            
+            // Required dry volume of loose materials (CF)
+            const requiredDryVolumeCF = totalVolumeCF * DRY_VOLUME_FACTOR;
+
+            // 2. Calculate Individual Dry Volumes (CF)
+            
+            const cementVolumeCF = requiredDryVolumeCF * (cementRatio / totalParts);
+            const sandVolumeCF = requiredDryVolumeCF * (sandRatio / totalParts);
+            const gravelVolumeCF = requiredDryVolumeCF * (gravelRatio / totalParts);
+            
+            // 3. Convert to Cubic Yards (CY)
+            const cementVolumeCY = cementVolumeCF / CU_FT_PER_CU_YD;
+            const sandVolumeCY = sandVolumeCF / CU_FT_PER_CU_YD;
+            const gravelVolumeCY = gravelVolumeCF / CU_FT_PER_CU_YD;
+
+            // 4. Calculate Cement Bags
+            // Round up to ensure full coverage
+            const cementBagsNeeded = Math.ceil(cementVolumeCF / bagVolumeCF);
+
+            // 5. Total Dry Volume for summary
+            const totalDryVolumeCY = requiredDryVolumeCF / CU_FT_PER_CU_YD;
+
+
+            // 6. Display results
+            const metrics = {
+                cementRatio, sandRatio, gravelRatio, totalParts,
+                cementVolumeCF, sandVolumeCF, gravelVolumeCF,
+                cementVolumeCY, sandVolumeCY, gravelVolumeCY,
+                cementBagsNeeded,
+                totalDryVolumeCY
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('mix-result').classList.add('d-none');
+        document.getElementById('mix-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

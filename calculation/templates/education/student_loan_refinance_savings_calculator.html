@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Student Loan Refinance Savings Calculator{% endblock %}
+
+{% block meta_description %}Compare your existing student loan payments and total cost against a new refinance offer to calculate potential savings and new monthly payments.{% endblock %}
+
+{% block meta_keywords %}refinance calculator, student loan refinance, loan savings, monthly payment comparison, total interest savings{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e0e0e0;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        color: #0d47a1; /* Professional Navy Blue */
+        border-bottom: 2px solid #e3f2fd;
+        padding-bottom: 8px;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        min-width: 50px;
+        justify-content: center;
+    }
+
+    .result-box {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        text-align: center;
+        border: 1px solid #dee2e6;
+        transition: transform 0.2s;
+    }
+
+    .result-box:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .result-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .result-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+    }
+    
+    .savings-result {
+        background: linear-gradient(135deg, #2e7d32, #43a047);
+        color: white;
+        font-size: 1.8rem;
+        font-weight: 800;
+        padding: 25px;
+        border-radius: 12px;
+    }
+
+    .loss-result {
+        background: linear-gradient(135deg, #c62828, #e53935);
+        color: white;
+        font-size: 1.8rem;
+        font-weight: 800;
+        padding: 25px;
+        border-radius: 12px;
+    }
+
+    .comparison-card {
+        border-left: 5px solid #0d47a1;
+        background-color: #f8fbff;
+    }
+
+    @media (max-width: 767px) {
+        .border-end { border-right: none !important; border-bottom: 1px solid #dee2e6; padding-bottom: 20px; margin-bottom: 20px; }
+        .result-value { font-size: 1.3rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">🔄 Student Loan Refinance Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">Compare your current loan terms against a refinance offer to see how much you could save in monthly payments and total interest.</p>
+    </div>
+
+    <div class="calc-wrapper mx-auto" style="max-width: 1000px;">
+        <form id="refinance-calculator-form">
+            <div class="row g-5">
+                <div class="col-md-6 border-end">
+                    <h5 class="section-title"><i class="bi bi-bank me-2"></i>Current Loan</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Remaining Balance</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="current_principal" placeholder="e.g. 25000" min="1" step="1" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Interest Rate</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" class="form-control" id="current_rate" placeholder="e.g. 6.8" min="0.1" max="30" step="0.01" required>
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Remaining Term</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" class="form-control" id="current_term" placeholder="e.g. 10" min="1" max="30" step="1" required>
+                            <span class="input-group-text">Years</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h5 class="section-title text-primary"><i class="bi bi-stars me-2"></i>New Refinance Offer</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Refinance Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">$</span>
+                            <input type="text" class="form-control bg-light" id="new_principal_display" readonly placeholder="Auto-fills from current balance">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">New Interest Rate</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" class="form-control" id="new_rate" placeholder="e.g. 4.5" min="0.1" max="30" step="0.01" required>
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">New Loan Term</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" class="form-control" id="new_term" placeholder="e.g. 10" min="1" max="30" step="1" required>
+                            <span class="input-group-text">Years</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-primary btn-lg flex-grow-1 shadow" type="submit">Calculate Potential Savings</button>
+                <button class="btn btn-outline-secondary btn-lg px-4" type="button" id="reset-btn">Reset</button>
+            </div>
+        </form>
+
+        <div id="results-container" class="mt-5 d-none">
+            <div id="savings-message" class="rounded shadow-sm text-center mb-5"></div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 comparison-card shadow-sm">
+                        <div class="card-body">
+                            <h6 class="fw-bold text-center mb-4">Monthly Payment</h6>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="result-box">
+                                        <div class="result-label">Current</div>
+                                        <div class="result-value text-danger" id="current-payment">$0.00</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="result-box">
+                                        <div class="result-label">New</div>
+                                        <div class="result-value text-success" id="new-payment">$0.00</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center mt-3 fw-bold" id="monthly-difference"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 comparison-card shadow-sm">
+                        <div class="card-body">
+                            <h6 class="fw-bold text-center mb-4">Total Interest Paid</h6>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="result-box">
+                                        <div class="result-label">Current</div>
+                                        <div class="result-value text-danger" id="current-interest">$0.00</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="result-box">
+                                        <div class="result-label">New</div>
+                                        <div class="result-value text-success" id="new-interest">$0.00</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center mt-3 fw-bold" id="total-interest-savings"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+
+            <div class="mt-5">
+                <h5 class="section-title">Total Cost Visual Breakdown</h5>
+                <div style="height: 350px;">
+                    <canvas id="comparison-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let comparisonChart = null;
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency', currency: 'USD'
+        }).format(amount);
+    }
+
+    function calculateLoanDetails(principal, annualRate, termYears) {
+        const i = (annualRate / 100) / 12;
+        const n = termYears * 12;
+        
+        const monthlyPayment = i === 0 ? principal / n : principal * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
+        const totalCost = monthlyPayment * n;
+        const totalInterest = totalCost - principal;
+
+        return { payment: monthlyPayment, totalInterest: totalInterest, totalCost: totalCost };
+    }
+
+    function calculateRefinance(e) {
+        if (e) e.preventDefault();
+
+        const principal = parseFloat(document.getElementById('current_principal').value);
+        const currRate = parseFloat(document.getElementById('current_rate').value);
+        const currTerm = parseFloat(document.getElementById('current_term').value);
+        const newRate = parseFloat(document.getElementById('new_rate').value);
+        const newTerm = parseFloat(document.getElementById('new_term').value);
+
+        if (!principal || !currRate || !currTerm || !newRate || !newTerm) return;
+
+        const currentLoan = calculateLoanDetails(principal, currRate, currTerm);
+        const newLoan = calculateLoanDetails(principal, newRate, newTerm);
+
+        const monthlySavings = currentLoan.payment - newLoan.payment;
+        const interestSavings = currentLoan.totalInterest - newLoan.totalInterest;
+
+        // UI Updates
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('current-payment').textContent = formatCurrency(currentLoan.payment);
+        document.getElementById('new-payment').textContent = formatCurrency(newLoan.payment);
+        document.getElementById('current-interest').textContent = formatCurrency(currentLoan.totalInterest);
+        document.getElementById('new-interest').textContent = formatCurrency(newLoan.totalInterest);
+
+        const msgEl = document.getElementById('savings-message');
+        msgEl.className = interestSavings >= 0 ? 'savings-result shadow-sm' : 'loss-result shadow-sm';
+        msgEl.innerHTML = interestSavings >= 0 
+            ? `🎉 Total Savings: ${formatCurrency(interestSavings)}`
+            : `⚠️ Total Extra Cost: ${formatCurrency(Math.abs(interestSavings))}`;
+
+        document.getElementById('monthly-difference').innerHTML = monthlySavings >= 0 
+            ? `<span class="text-success">Save ${formatCurrency(monthlySavings)}/mo</span>`
+            : `<span class="text-danger">Extra ${formatCurrency(Math.abs(monthlySavings))}/mo</span>`;
+
+        document.getElementById('total-interest-savings').innerHTML = interestSavings >= 0
+            ? `<span class="text-success">Save ${formatCurrency(interestSavings)} total</span>`
+            : `<span class="text-danger">Pay ${formatCurrency(Math.abs(interestSavings))} extra</span>`;
+
+        updateChart(principal, currentLoan.totalInterest, newLoan.totalInterest);
+        window.scrollTo({ top: document.getElementById('results-container').offsetTop - 50, behavior: 'smooth' });
+    }
+
+    function updateChart(principal, curInt, newInt) {
+        const ctx = document.getElementById('comparison-chart').getContext('2d');
+        if (comparisonChart) comparisonChart.destroy();
+
+        comparisonChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Current Loan', 'Refinanced Loan'],
+                datasets: [
+                    { label: 'Principal', data: [principal, principal], backgroundColor: '#90caf9' },
+                    { label: 'Total Interest', data: [curInt, newInt], backgroundColor: '#ef9a9a' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    document.getElementById('refinance-calculator-form').addEventListener('submit', calculateRefinance);
+    
+    document.getElementById('current_principal').addEventListener('input', (e) => {
+        const val = e.target.value;
+        document.getElementById('new_principal_display').value = val ? formatCurrency(val) : '';
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        document.getElementById('refinance-calculator-form').reset();
+        document.getElementById('results-container').classList.add('d-none');
+        if (comparisonChart) comparisonChart.destroy();
+    });
+</script>
+{% endblock %}

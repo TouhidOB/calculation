@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Paper Formatting Checker{% endblock %}
+
+{% block meta_description %}Estimate paper page count based on word count and formatting (spacing, font size, margins).{% endblock %}
+
+{% block meta_keywords %}word count to page count, academic formatting, essay length estimator, spacing calculator, student tool, paper checker{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-container {
+        max-width: 900px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .sidebar-accent {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .result-card {
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .result-card.active {
+        background-color: #eff6ff;
+        border-color: #bfdbfe;
+    }
+
+    .display-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #1e40af;
+        line-height: 1;
+    }
+
+    .form-label {
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+    }
+
+    /* Remove arrows from number inputs */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">✍️ Paper Length Estimator</h1>
+        <p class="text-muted">Professional word count to page count conversion based on standard academic formatting.</p>
+    </div>
+
+    <div class="calc-container mx-auto">
+        <div class="row g-0">
+            <div class="col-lg-5 sidebar-accent p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-sliders me-2"></i>Formatting</h5>
+                
+                <div class="mb-4">
+                    <label for="word-count" class="form-label">Total Word Count</label>
+                    <div class="input-group input-group-lg">
+                        <input type="number" id="word-count" class="form-control fw-bold" placeholder="e.g. 1500" oninput="calculatePages()">
+                        <span class="input-group-text bg-white"><i class="bi bi-chat-left-text text-muted"></i></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="font-size" class="form-label">Font Size</label>
+                    <select id="font-size" class="form-select" onchange="calculatePages()">
+                        <option value="10">10pt (Compact)</option>
+                        <option value="11">11pt (Modern)</option>
+                        <option value="12" selected>12pt (Standard)</option>
+                        <option value="14">14pt (Large)</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="line-spacing" class="form-label">Line Spacing</label>
+                    <select id="line-spacing" class="form-select" onchange="calculatePages()">
+                        <option value="single">Single Spaced</option>
+                        <option value="double" selected>Double Spaced (Standard)</option>
+                    </select>
+                </div>
+
+                <div class="p-3 bg-white rounded border border-dashed text-center">
+                    <span class="small text-muted italic">Margins fixed at 1.0" per standard academic rules.</span>
+                </div>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white d-flex flex-column justify-content-center">
+                <div id="initial-state" class="text-center py-5">
+                    <i class="bi bi-calculator text-light" style="font-size: 5rem;"></i>
+                    <h4 class="text-muted fw-bold">Ready to Calculate</h4>
+                    <p class="text-muted">Enter a word count to see the estimated page length.</p>
+                </div>
+
+                <div id="results-display" class="d-none">
+                    <div class="result-card active rounded-4 p-4 text-center mb-4">
+                        <span class="form-label d-block mb-2">Estimated Total Pages</span>
+                        <div id="estimated-pages" class="display-value">0.0</div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6 text-center">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <span class="form-label d-block mb-1">Words Per Page</span>
+                                <h4 id="words-per-page" class="fw-bold m-0 text-dark">0</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 text-center">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <span class="form-label d-block mb-1">Density</span>
+                                <h4 id="density-label" class="fw-bold m-0 text-dark">Standard</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-blue-50 text-primary rounded-3 small">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>Note:</strong> This estimation is based on a standard font like Times New Roman. Script or narrow fonts may vary results.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const BASELINE_WPP = 275; 
+    
+    const FONT_MULTIPLIERS = {
+        '10': 1.25,
+        '11': 1.10,
+        '12': 1.00,
+        '14': 0.85 
+    };
+
+    const SPACING_MULTIPLIERS = {
+        'single': 2.0,
+        'double': 1.0 
+    };
+
+    function calculatePages() {
+        const wordCountInput = document.getElementById('word-count');
+        const wordCount = parseInt(wordCountInput.value);
+        const fontSize = document.getElementById('font-size').value;
+        const lineSpacing = document.getElementById('line-spacing').value;
+        
+        const initialState = document.getElementById('initial-state');
+        const resultsDisplay = document.getElementById('results-display');
+        const estimatedPagesEl = document.getElementById('estimated-pages');
+        const wppEl = document.getElementById('words-per-page');
+        const densityEl = document.getElementById('density-label');
+
+        if (!wordCount || wordCount < 1) {
+            initialState.classList.remove('d-none');
+            resultsDisplay.classList.add('d-none');
+            return;
+        }
+
+        initialState.classList.add('d-none');
+        resultsDisplay.classList.remove('d-none');
+
+        const fontMultiplier = FONT_MULTIPLIERS[fontSize] || 1.0;
+        const spacingMultiplier = SPACING_MULTIPLIERS[lineSpacing] || 1.0;
+        const estimatedWPP = BASELINE_WPP * fontMultiplier * spacingMultiplier;
+
+        const estimatedPages = wordCount / estimatedWPP;
+
+        // Update UI
+        wppEl.textContent = Math.round(estimatedWPP);
+        estimatedPagesEl.textContent = estimatedPages.toFixed(1);
+        
+        // Density Labeling
+        if (lineSpacing === 'single') {
+            densityEl.textContent = "High";
+        } else if (fontSize === '14') {
+            densityEl.textContent = "Low";
+        } else {
+            densityEl.textContent = "Standard";
+        }
+    }
+</script>
+{% endblock %}

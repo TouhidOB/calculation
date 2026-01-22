@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Cumulative GPA Calculator{% endblock %}
+
+{% block meta_description %}Calculate your semester and cumulative Grade Point Average (GPA) using a 4.0 scale with support for multiple courses and custom credit hours.{% endblock %}
+
+{% block meta_keywords %}GPA calculator, cumulative GPA, grade point average, semester GPA, college calculator, 4.0 scale{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Reusing the base calculator styling for consistency */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #0056b3; /* Navy-inspired color */
+    }
+
+    .course-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+    }
+
+    .course-row input, .course-row select {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .course-row .course-name {
+        flex: 2; /* Make the course name field wider */
+    }
+
+    .remove-btn {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+
+    /* Styling for the results table */
+    #gpa-body td, #gpa-body th {
+        font-size: 1.05rem;
+    }
+    #gpa-body .highlight {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #28a745; /* Success green */
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">📊 Advanced Cumulative GPA Calculator</h1>
+    <p class="small-muted">Calculate your **Semester GPA** and **Cumulative GPA** by adding your courses, credit hours, and letter grades.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="gpa-form">
+            
+            <h5 class="section-title">Pre-existing Cumulative Data (Optional)</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Prior Cumulative GPA</label>
+                    <input type="number" class="form-control" id="prior_gpa" placeholder="e.g., 3.50" min="0" max="4.0" step="0.01" value="0.00">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Prior Attempted Credit Hours</label>
+                    <input type="number" class="form-control" id="prior_credits" placeholder="e.g., 60" min="0" step="1" value="0">
+                </div>
+            </div>
+
+            <h5 class="section-title">Current Semester Courses</h5>
+            
+            <div id="course-list">
+                </div>
+
+            <button class="btn btn-outline-secondary btn-sm mt-2" type="button" id="add-course-btn">+ Add Another Course</button>
+            <hr>
+
+            <button class="btn btn-primary btn-lg w-100 mt-3" type="submit">Calculate My GPA</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-success" id="gpa-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Summary & Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="gpa-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="gpa-body"></tbody>
+        </table>
+
+        </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- 4.0 Grading Scale Conversion ---
+    const GRADE_POINTS = {
+        'A+': 4.00, 'A': 4.00, 'A-': 3.70,
+        'B+': 3.30, 'B': 3.00, 'B-': 2.70,
+        'C+': 2.30, 'C': 2.00, 'C-': 1.70,
+        'D+': 1.30, 'D': 1.00, 'F': 0.00,
+        'W': 0.00, 'P': 0.00, 'I': 0.00 // Non-GPA calculating grades (W=Withdraw, P=Pass, I=Incomplete)
+    };
+
+    /**
+     * Function to create a new course input row.
+     */
+    function createCourseRow(courseName = '', credits = 3, grade = 'A') {
+        const row = document.createElement('div');
+        row.className = 'course-row';
+
+        row.innerHTML = `
+            <input type="text" class="form-control course-name" placeholder="Course Name (e.g., Calculus I)" value="${courseName}">
+            <select class="form-select course-credits">
+                ${[...Array(11).keys()].slice(1).map(c => 
+                    `<option value="${c}" ${c == credits ? 'selected' : ''}>${c} cr</option>`
+                ).join('')}
+            </select>
+            <select class="form-select course-grade">
+                ${Object.keys(GRADE_POINTS).map(g => 
+                    `<option value="${g}" ${g === grade ? 'selected' : ''}>${g}</option>`
+                ).join('')}
+            </select>
+            <button type="button" class="btn btn-danger remove-btn" title="Remove Course">&times;</button>
+        `;
+
+        // Attach event listener for removal
+        row.querySelector('.remove-btn').addEventListener('click', () => {
+            row.remove();
+            calculateGPA(); // Recalculate immediately on course removal
+        });
+        
+        // Attach event listeners for immediate recalculation
+        row.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('change', calculateGPA);
+        });
+
+        return row;
+    }
+
+    /**
+     * Main calculation logic.
+     */
+    function calculateGPA() {
+        const courseRows = document.querySelectorAll('#course-list .course-row');
+        if (courseRows.length === 0) {
+            displayError("Please add at least one course.");
+            return;
+        }
+
+        // --- Semester Data ---
+        let semesterTotalCredits = 0;
+        let semesterTotalGradePoints = 0;
+        let semesterCoursesCount = 0;
+
+        courseRows.forEach(row => {
+            const credits = parseFloat(row.querySelector('.course-credits').value);
+            const grade = row.querySelector('.course-grade').value;
+            const points = GRADE_POINTS[grade];
+
+            if (points > 0 || grade === 'F') { // Only count credit hours for graded courses (A+ to F)
+                semesterTotalCredits += credits;
+                semesterTotalGradePoints += points * credits;
+            }
+            // Count all rows, even if they are 'W', 'P', 'I' etc.
+            semesterCoursesCount++;
+        });
+
+        // --- Prior Data ---
+        const priorGpa = parseFloat(document.getElementById('prior_gpa').value) || 0;
+        const priorCredits = parseInt(document.getElementById('prior_credits').value) || 0;
+        
+        const priorTotalGradePoints = priorGpa * priorCredits;
+
+        // --- Results Calculation ---
+        const semesterGPA = semesterTotalCredits > 0 
+            ? semesterTotalGradePoints / semesterTotalCredits 
+            : 0;
+
+        const cumulativeTotalCredits = priorCredits + semesterTotalCredits;
+        const cumulativeTotalGradePoints = priorTotalGradePoints + semesterTotalGradePoints;
+
+        const cumulativeGPA = cumulativeTotalCredits > 0
+            ? cumulativeTotalGradePoints / cumulativeTotalCredits
+            : semesterGPA; // If no prior credits, cumulative is the same as semester
+
+        // --- Display Results ---
+        displayResults(semesterGPA, cumulativeGPA, priorCredits, semesterTotalCredits, cumulativeTotalCredits, semesterCoursesCount);
+    }
+    
+    /**
+     * Function to handle results display.
+     */
+    function displayResults(semGPA, cumGPA, priorCredits, semCredits, cumCredits, numCourses) {
+        const semGPARounded = semGPA.toFixed(3);
+        const cumGPARounded = cumGPA.toFixed(3);
+        
+        const resultDiv = document.getElementById('gpa-result');
+        resultDiv.classList.remove('d-none', 'alert-danger');
+        resultDiv.classList.add('alert-success');
+        resultDiv.innerHTML = `
+            **Semester GPA:** <span class="highlight">${semGPARounded}</span>
+            <br>
+            **Cumulative GPA:** <span class="highlight">${cumGPARounded}</span>
+        `;
+        
+        // Update Table
+        document.getElementById('table-title').classList.remove('d-none');
+        document.getElementById('gpa-table').classList.remove('d-none');
+        const tableBody = document.getElementById('gpa-body');
+        tableBody.innerHTML = `
+            <tr><td>Current Courses Attempted</td><td>${numCourses}</td></tr>
+            <tr><td>Semester Credits Earned</td><td>${semCredits}</td></tr>
+            <tr><td>**Semester GPA**</td><td class="highlight">${semGPARounded}</td></tr>
+            <tr><td colspan="2"><hr class="my-0"></td></tr>
+            <tr><td>Prior Attempted Credits</td><td>${priorCredits}</td></tr>
+            <tr><td>Total Cumulative Credits</td><td>${cumCredits}</td></tr>
+            <tr><td>**Cumulative GPA**</td><td class="highlight">${cumGPARounded}</td></tr>
+        `;
+    }
+
+    /**
+     * Function to display calculation errors.
+     */
+    function displayError(message) {
+        const resultDiv = document.getElementById('gpa-result');
+        resultDiv.classList.remove('d-none', 'alert-success');
+        resultDiv.classList.add('alert-danger');
+        resultDiv.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('gpa-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    }
+
+    // --- Event Listeners and Initial Setup ---
+    
+    // Add event listeners for the prior data fields
+    document.getElementById('prior_gpa').addEventListener('change', calculateGPA);
+    document.getElementById('prior_credits').addEventListener('change', calculateGPA);
+
+    // Add Course button logic
+    document.getElementById('add-course-btn').addEventListener('click', () => {
+        document.getElementById('course-list').appendChild(createCourseRow());
+    });
+
+    // Form submission (just calls the main function)
+    document.getElementById('gpa-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        calculateGPA();
+    });
+
+    // Initial setup: Add a few starter rows
+    window.addEventListener('load', () => {
+        const courseList = document.getElementById('course-list');
+        courseList.appendChild(createCourseRow('English 101', 3, 'A'));
+        courseList.appendChild(createCourseRow('History 101', 3, 'B+'));
+        courseList.appendChild(createCourseRow('PE 101', 1, 'A-'));
+    });
+</script>
+{% endblock %}

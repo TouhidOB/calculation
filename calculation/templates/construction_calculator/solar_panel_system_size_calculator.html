@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Solar Panel System Size Calculator (kW){% endblock %}
+
+{% block meta_description %}Calculate the required solar panel system size in kilowatts (kW) based on average monthly energy use, site efficiency, and location's peak sun hours. {% endblock %}
+
+{% block meta_keywords %}solar system size, kW calculation, monthly kWh, peak sun hours, solar efficiency, energy offset, solar sizing tool{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #FFC107; /* Amber/Yellow for Sun/Solar */
+        border-bottom: 2px solid #FFC107;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF9800; /* Orange for key result */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #fffde7;
+        font-weight: 600;
+        color: #FFC107;
+    }
+
+    .info-box {
+        background-color: #fffaf0; /* Lightest yellow info box */
+        border: 1px solid #FFC107;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: #4CAF50; /* Green for efficiency */
+    }
+    
+    .kw-recommendation {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #FF9800; /* Orange for the critical result */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">☀️ Solar Panel System Size Calculator</h1>
+    <p class="text-center small-muted">Determine the required solar array size (in kW) to offset your electricity consumption.</p>
+    [Image of a solar panel array on a residential roof]
+
+    <div class="calc-wrapper">
+
+        <form id="solar-size-calculator-form">
+            <h5 class="section-title">1. Energy Consumption</h5>
+
+            <!-- kWh Input -->
+            <label for="kwh-input" class="form-label">Average Monthly Electricity Use</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Consumption</span>
+                <input type="number" id="kwh-input" class="form-control" name="monthlyKWh" placeholder="e.g., 850" value="850" min="10" step="10" required>
+                <span class="input-group-text">kWh / Month</span>
+            </div>
+            
+            <h5 class="section-title">2. Solar Location and Efficiency</h5>
+
+            <!-- Peak Sun Hours -->
+            <label for="sun-hours-select" class="form-label">Location's Peak Sun Hours (Daily Average)</label>
+            <select class="form-select mb-3" id="sun-hours-select" name="peakSunHours">
+                <!-- Data based on US averages, adjust for general use -->
+                <option value="3.5">Low Sun (e.g., Seattle, New England)</option>
+                <option value="4.5" selected>Average Sun (e.g., Midwest, East Coast)</option>
+                <option value="5.5">High Sun (e.g., Arizona, California, Southwest)</option>
+                <option value="6.5">Very High Sun (e.g., Desert Regions)</option>
+            </select>
+
+            <!-- System Efficiency/Loss -->
+            <label for="efficiency-input" class="form-label">System De-rating Factor (Losses)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Efficiency</span>
+                <input type="number" id="efficiency-input" class="form-control" name="systemEfficiency" placeholder="e.g., 0.80" value="0.80" min="0.60" max="0.90" step="0.05" required>
+                <span class="input-group-text">Factor (0.60 to 0.90)</span>
+            </div>
+            
+            <div class="info-box">
+                **Formula:** $kW_{system} = \frac{Monthly\ kWh \times 1000}{Peak\ Sun\ Hours \times 30 \times System\ Efficiency}$. Peak sun hours and the efficiency factor are critical site-specific inputs.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #FFC107; border-color: #FFC107; color: #333;" type="submit">Calculate Required System Size (kW)</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-info" id="solar-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="solar-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #FFC107; color: #333;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="solar-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const DAYS_PER_MONTH = 30.4167; // Average days per month (365/12)
+
+    // Helper function for number formatting
+    const numFormatter = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    });
+
+    // Function to calculate the required system size in kW
+    function calculateSystemSize(monthlyKWh, peakSunHours, systemEfficiency) {
+        // Daily kWh required
+        const dailyKWhRequired = monthlyKWh / DAYS_PER_MONTH;
+
+        // Formula: kW_system = (Daily kWh Required) / (Peak Sun Hours * System Efficiency)
+        const systemKW = dailyKWhRequired / (peakSunHours * systemEfficiency);
+
+        return systemKW;
+    }
+    
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('solar-result');
+        const table = document.getElementById('solar-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('solar-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger', 'alert-info', 'alert-success');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+        res.classList.add('alert-info');
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            // Primary result
+            res.innerHTML = `
+**Minimum Solar System Capacity:**
+<div class="text-center mt-3 mb-2">
+    <span class="kw-recommendation">${metrics.requiredKW.toFixed(2)}</span>
+    <span class="result-value">kW</span>
+</div>
+<p class="small text-center mt-3 mb-0">
+    **Recommendation:** This size is needed to offset your full energy consumption. Installers may round this size up.
+</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Required System Size**</td><td>**${metrics.requiredKW.toFixed(2)} kW**</td></tr>
+            <tr><td>Daily Energy Need (Average)</td><td>${metrics.dailyKWhRequired.toFixed(2)} kWh</td></tr>
+            <tr><td>Target Annual Production</td><td>${numFormatter.format(metrics.annualKWh.toFixed(0))} kWh</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Values**</td></tr>
+            <tr><td>Average Monthly Consumption</td><td>${metrics.monthlyKWh} kWh</td></tr>
+            <tr><td>Daily Peak Sun Hours</td><td>${metrics.peakSunHours} Hours</td></tr>
+            <tr><td>System Efficiency Factor</td><td>${metrics.systemEfficiency}</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('solar-size-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const monthlyKWh = parseFloat(form.elements.monthlyKWh.value);
+        const peakSunHours = parseFloat(form.elements.peakSunHours.value);
+        const systemEfficiency = parseFloat(form.elements.systemEfficiency.value);
+        
+        // Basic validation
+        if (isNaN(monthlyKWh) || monthlyKWh <= 0) 
+        {
+            displayResult(true, "Please enter a valid positive value for Monthly Electricity Use (kWh).");
+            return;
+        }
+        if (isNaN(peakSunHours) || peakSunHours <= 0) {
+            displayResult(true, "Peak Sun Hours must be a valid positive number.");
+            return;
+        }
+        if (isNaN(systemEfficiency) || systemEfficiency < 0.60 || systemEfficiency > 0.90) {
+            displayResult(true, "System Efficiency Factor must be between 0.60 and 0.90.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Required System Size (kW) ---
+            const requiredKW = calculateSystemSize(monthlyKWh, peakSunHours, systemEfficiency);
+
+            // --- 2. Calculate Secondary Metrics ---
+            const dailyKWhRequired = monthlyKWh / DAYS_PER_MONTH;
+            const annualKWh = monthlyKWh * 12;
+            
+            if (requiredKW <= 0) {
+                displayResult(true, "Calculated system size is zero or negative. Check inputs.");
+                return;
+            }
+
+            // 3. Display results
+            const metrics = {
+                monthlyKWh,
+                peakSunHours,
+                systemEfficiency,
+                dailyKWhRequired,
+                annualKWh,
+                requiredKW
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('solar-result').classList.add('d-none');
+        document.getElementById('solar-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

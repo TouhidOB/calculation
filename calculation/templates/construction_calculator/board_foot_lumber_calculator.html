@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Board Foot Lumber Calculator{% endblock %}
+
+{% block meta_description %}Calculate the total board footage and estimated cost for dimensional lumber based on piece quantity, width, thickness, and length. {% endblock %}
+
+{% block meta_keywords %}board foot calculator, lumber volume, wood cost estimate, nominal size, actual size, construction wood, timber measurement{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #5D4037; /* Wood/Brown Tone */
+        border-bottom: 2px solid #5D4037;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF9800; /* Orange for final result contrast */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #fbe9e7; /* Light brown info box */
+        border: 1px solid #FFCCBC;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .cost-input-group {
+        border-top: 1px dashed #ccc;
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🌲 Board Foot Lumber Calculator</h1>
+    <p class="text-center small-muted">Calculates total board footage and estimated cost for dimensional lumber.</p>
+    [Image of dimensional lumber illustrating thickness, width, and length]
+
+    <div class="calc-wrapper">
+
+        <form id="board-foot-form">
+            <h5 class="section-title">1. Lumber Dimensions (Nominal or Actual)</h5>
+
+            <!-- Thickness Input (Inches) -->
+            <label for="thickness-input" class="form-label">Thickness</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Thickness (T)</span>
+                <input type="number" id="thickness-input" class="form-control" name="thickness" placeholder="e.g., 2 (for 2x4)" value="2" min="0.1" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <!-- Width Input (Inches) -->
+            <label for="width-input" class="form-label">Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Width (W)</span>
+                <input type="number" id="width-input" class="form-control" name="width" placeholder="e.g., 4 (for 2x4)" value="4" min="0.1" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <!-- Length Input (Feet) -->
+            <label for="length-input" class="form-label">Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length (L)</span>
+                <input type="number" id="length-input" class="form-control" name="length" placeholder="e.g., 8" value="8" min="0.1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <h5 class="section-title">2. Quantity & Cost</h5>
+
+            <!-- Quantity Input (Pieces) -->
+            <label for="quantity-input" class="form-label">Number of Pieces</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Quantity</span>
+                <input type="number" id="quantity-input" class="form-control" name="quantity" placeholder="e.g., 50" value="10" min="1" step="1" required>
+                <span class="input-group-text">Pcs</span>
+            </div>
+
+            <div class="cost-input-group">
+                <!-- Price Per Board Foot Input -->
+                <label for="price-bf-input" class="form-label">Price per Board Foot</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Cost/BF</span>
+                    <input type="number" id="price-bf-input" class="form-control" name="pricePerBoardFoot" placeholder="e.g., 1.50" value="1.50" min="0" step="0.01" required>
+                    <span class="input-group-text">$</span>
+                </div>
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #5D4037; border-color: #5D4037;" type="submit">Calculate Board Footage & Cost</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="bf-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="bf-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #5D4037; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="bf-body"></tbody>
+        </table>
+
+        <div class="info-box d-none" id="bf-info">
+             **Definition:** One Board Foot (BF) is equal to 1 inch thick x 12 inches wide x 1 foot long (1" x 12" x 1').
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const BOARD_FOOT_DIVISOR = 144; // 12 inches * 12 inches (Board Foot definition)
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('bf-result');
+        const table = document.getElementById('bf-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('bf-body');
+        const infoBox = document.getElementById('bf-info');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+        infoBox.classList.add('d-none');
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            infoBox.classList.remove('d-none');
+            
+            // Primary result: Total Board Footage and Cost
+            res.innerHTML = `
+**Total Materials Required:**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span style="font-size:2rem; color:#5D4037; font-weight:bold;">${metrics.totalBoardFootage.toFixed(2)}</span><br>
+        <span class="small text-muted">Board Feet (BF)</span>
+    </div>
+    <div class="text-center">
+        <span style="font-size:2rem; color:#5D4037; font-weight:bold;">$${metrics.totalCost.toFixed(2)}</span><br>
+        <span class="small text-muted">Total Estimated Cost</span>
+    </div>
+</div>
+<p class="text-center mt-3 mb-0">Board Footage per piece: **${metrics.bfPerPiece.toFixed(3)} BF**.</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Board Footage (BF)</td><td>**${metrics.totalBoardFootage.toFixed(3)} BF**</td></tr>
+            <tr><td>Total Estimated Cost</td><td>$${metrics.totalCost.toFixed(2)}</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Single Piece BF</td><td>${metrics.bfPerPiece.toFixed(3)} BF</td></tr>
+            <tr><td>Price per BF</td><td>$${metrics.pricePerBoardFoot.toFixed(2)}</td></tr>
+            <tr><td>Number of Pieces</td><td>${metrics.quantity} Pcs</td></tr>
+            <tr><td>Dimensions (T x W x L)</td><td>${metrics.thickness}" x ${metrics.width}" x ${metrics.length}'</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('board-foot-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const thickness = parseFloat(form.elements.thickness.value); // in
+        const width = parseFloat(form.elements.width.value); // in
+        const length = parseFloat(form.elements.length.value); // ft
+        const quantity = parseInt(form.elements.quantity.value); // pcs
+        const pricePerBoardFoot = parseFloat(form.elements.pricePerBoardFoot.value); // $/BF
+        
+        // Basic validation
+        if (isNaN(thickness) || thickness <= 0 || isNaN(width) || width <= 0 || isNaN(length) || length <= 0 || isNaN(quantity) || quantity <= 0 || isNaN(pricePerBoardFoot) || pricePerBoardFoot < 0) {
+            displayResult(true, "Please ensure all dimensions and quantities are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // Formula for Board Feet (BF): T(in) x W(in) x L(ft) / 12 (Simplified from T*W*L(in) / 144)
+            // T(in) x W(in) x L(ft) / 12
+            const bfPerPiece = (thickness * width * length) / 12;
+
+            // Total Board Footage
+            const totalBoardFootage = bfPerPiece * quantity;
+
+            // Total Cost
+            const totalCost = totalBoardFootage * pricePerBoardFoot;
+            
+            // 4. Display results
+            const metrics = {
+                thickness,
+                width,
+                length,
+                quantity,
+                pricePerBoardFoot,
+                bfPerPiece,
+                totalBoardFootage,
+                totalCost
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('bf-result').classList.add('d-none');
+        document.getElementById('bf-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('bf-info').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

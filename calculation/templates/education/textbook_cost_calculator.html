@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Textbook Cost Calculator{% endblock %}
+
+{% block meta_description %}Estimate your total semester textbook costs by comparing prices for new, used, rental, and digital options for each course.{% endblock %}
+
+{% block meta_keywords %}textbook cost, college budget, student finance, book price estimator, rental vs buy{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #dee2e6;
+    }
+
+    .course-card {
+        background-color: #fcfaff;
+        border: 1px solid #e9ecef;
+        border-left: 5px solid #6f42c1; /* Purple accent */
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 66, 193, 0.1);
+    }
+
+    .stat-card {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 25px;
+        text-align: center;
+        height: 100%;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .empty-state {
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 50px;
+        color: #adb5bd;
+        text-align: center;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 576px) {
+        .stat-value { font-size: 1.8rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">💰 Textbook Cost Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">
+            Calculate your total semester expenditure by comparing different formats. Plan your budget effectively before the term begins.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-wrapper mx-auto" style="max-width: 1000px;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0">Book Inventory</h5>
+            <button id="add-textbook-btn" class="btn btn-purple shadow-sm" style="background-color: #6f42c1; color: white;">
+                <i class="bi bi-plus-lg"></i> Add Textbook
+            </button>
+        </div>
+
+        <div id="course-list">
+            <div class="empty-state" id="empty-msg">
+                <i class="bi bi-book fs-1 d-block mb-3"></i>
+                <p class="mb-0">Your book list is currently empty.</p>
+                <small>Click "Add Textbook" to start building your budget.</small>
+            </div>
+        </div>
+
+        <div class="alert alert-light border mt-4 small text-muted">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Pro Tip:</strong> Check your university library for reserve copies or digital subscriptions before purchasing to save significantly.
+        </div>
+
+        <hr class="my-5">
+
+        <h5 class="fw-bold mb-4 text-center">Semester Budget Summary</h5>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="stat-label">Total Books</div>
+                    <div class="stat-value text-dark" id="total-books">0</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="stat-label">Estimated Total Cost</div>
+                    <div class="stat-value text-success" id="total-cost">$0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <button class="btn btn-link text-decoration-none text-muted" onclick="resetAll()">
+                <i class="bi bi-trash"></i> Reset All Data
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const courseListEl = document.getElementById('course-list');
+    const addTextbookBtn = document.getElementById('add-textbook-btn');
+    const totalBooksEl = document.getElementById('total-books');
+    const totalCostEl = document.getElementById('total-cost');
+    const emptyMsg = document.getElementById('empty-msg');
+
+    let courseCounter = 0;
+
+    function calculateTotals() {
+        let totalBooks = 0;
+        let totalCost = 0;
+
+        const priceInputs = document.querySelectorAll('.input-price');
+
+        priceInputs.forEach(input => {
+            const price = parseFloat(input.value) || 0;
+            if (price > 0) {
+                totalBooks += 1;
+                totalCost += price;
+            }
+        });
+
+        totalBooksEl.textContent = totalBooks;
+        totalCostEl.textContent = `$${totalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    function addTextbook() {
+        if (emptyMsg) emptyMsg.style.display = 'none';
+        
+        courseCounter++;
+        const rowId = `textbook-${courseCounter}`;
+
+        const newCard = document.createElement('div');
+        newCard.className = 'course-card animate__animated animate__fadeIn';
+        newCard.id = rowId;
+        newCard.innerHTML = `
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold text-muted">Course / Textbook Name</label>
+                    <input type="text" class="form-control" placeholder="e.g. Calculus IV / Stewart Edition">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small fw-bold text-muted">Format</label>
+                    <select class="form-select">
+                        <option value="Used">Used</option>
+                        <option value="Digital">Digital / E-Book</option>
+                        <option value="Rental">Rental</option>
+                        <option value="New">New</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small fw-bold text-muted">Price</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control input-price" 
+                               min="0" step="0.01" value="0.00" oninput="calculateTotals()">
+                    </div>
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="button" class="btn btn-outline-danger" onclick="removeTextbook('${rowId}')">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        courseListEl.appendChild(newCard);
+        calculateTotals();
+    }
+
+    function removeTextbook(rowId) {
+        const el = document.getElementById(rowId);
+        if (el) {
+            el.remove();
+            calculateTotals();
+        }
+        
+        if (document.querySelectorAll('.course-card').length === 0) {
+            emptyMsg.style.display = 'block';
+        }
+    }
+
+    function resetAll() {
+        if(confirm("Clear all textbook data?")) {
+            courseListEl.innerHTML = '';
+            courseListEl.appendChild(emptyMsg);
+            emptyMsg.style.display = 'block';
+            calculateTotals();
+        }
+    }
+
+    addTextbookBtn.addEventListener('click', addTextbook);
+
+    window.addEventListener('load', () => {
+        // Starts empty for professional use
+        calculateTotals();
+    });
+</script>
+{% endblock %}

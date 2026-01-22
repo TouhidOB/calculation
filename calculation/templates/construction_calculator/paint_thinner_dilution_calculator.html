@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Paint Thinner Dilution Calculator{% endblock %}
+
+{% block meta_description %}Calculate the precise volume of paint thinner needed to achieve a desired dilution ratio (percentage) for a given volume of paint. {% endblock %}
+
+{% block meta_keywords %}paint thinner calculation, dilution ratio, volume calculator, paint mixing, viscosity, paint thinner percentage{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #1565C0; /* Dark Blue for a professional, clean look */
+        border-bottom: 2px solid #1565C0;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFC107; /* Amber/Yellow for key chemical result */
+    }
+
+    .input-group-text {
+        min-width: 80px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #e3f2fd; /* Light blue info box */
+        border: 1px solid #1565C0;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1565C0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">💧 Paint Thinner Dilution Calculator</h1>
+    <p class="text-center small-muted">Calculates the volume of thinner required based on your paint volume and desired dilution percentage.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="thinner-calculator-form">
+            <h5 class="section-title">1. Paint Volume & Unit</h5>
+
+            <!-- Paint Volume Input -->
+            <label for="paint-volume-input" class="form-label">Total Volume of Paint (V_P)</label>
+            <div class="input-group mb-3">
+                <input type="number" id="paint-volume-input" class="form-control" name="paintVolume" placeholder="e.g., 1" value="1" min="0.01" step="0.01" required>
+                <!-- Unit Selector -->
+                <select class="form-select" id="volume-unit-select" name="volumeUnit" style="max-width: 120px;">
+                    <option value="gallons">Gallons (US)</option>
+                    <option value="liters">Liters</option>
+                    <option value="quarts">Quarts (US)</option>
+                    <option value="milliliters">Milliliters</option>
+                    <option value="oz">Fluid Ounces</option>
+                </select>
+            </div>
+            
+            <h5 class="section-title">2. Desired Dilution Ratio</h5>
+
+            <!-- Dilution Ratio Input (Percentage) -->
+            <label for="dilution-ratio-input" class="form-label">Desired Thinner-to-Paint Ratio (Percentage)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Ratio (R_T)</span>
+                <input type="number" id="dilution-ratio-input" class="form-control" name="dilutionRatio" placeholder="e.g., 10 (for 10%)" value="10" min="0.1" max="50" step="0.1" required>
+                <span class="input-group-text">%</span>
+            </div>
+
+            <div class="info-box">
+                **Dilution Guideline:** Most paints recommend dilution between **5% and 20%** thinner by volume of the paint. Always check the paint manufacturer's recommendation.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #1565C0; border-color: #1565C0;" type="submit">Calculate Thinner Volume</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="thinner-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Details</h5>
+        <table class="table table-bordered mt-2 d-none" id="thinner-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #1565C0; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="thinner-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('thinner-result');
+        const table = document.getElementById('thinner-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('thinner-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Thinner Volume
+            res.innerHTML = `
+**Required Thinner Volume:**
+<div class="d-flex justify-content-center align-items-center mt-3">
+    <span class="result-value">${metrics.thinnerVolume.toFixed(3)}</span>
+    <span class="small text-muted ms-2">${metrics.volumeUnit}</span>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Paint Volume (V_P)</td><td>${metrics.paintVolume.toFixed(3)} ${metrics.volumeUnit}</td></tr>
+            <tr><td>Dilution Ratio (R_T)</td><td>${metrics.dilutionRatio}%</td></tr>
+            <tr><td>Total Mixture Volume</td><td>${metrics.totalVolume.toFixed(3)} ${metrics.volumeUnit}</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('thinner-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const paintVolume = parseFloat(form.elements.paintVolume.value);
+        const dilutionRatio = parseFloat(form.elements.dilutionRatio.value); // Percentage (e.g., 10)
+        const volumeUnit = form.elements.volumeUnit.value;
+        
+        // Basic validation
+        if (isNaN(paintVolume) || paintVolume <= 0 || isNaN(dilutionRatio) || dilutionRatio <= 0 || dilutionRatio > 100) {
+            displayResult(true, "Please ensure Paint Volume is positive and Dilution Ratio is a valid percentage (0.1 - 100).");
+            return;
+        }
+
+        try {
+            // Formula: V_Thinner = V_Paint * (Ratio / 100)
+            const ratioDecimal = dilutionRatio / 100;
+            
+            // 1. Calculate Thinner Volume
+            const thinnerVolume = paintVolume * ratioDecimal; 
+            
+            // 2. Calculate Total Volume
+            const totalVolume = paintVolume + thinnerVolume;
+            
+            // 3. Display results
+            const metrics = {
+                paintVolume,
+                dilutionRatio,
+                volumeUnit,
+                thinnerVolume,
+                totalVolume
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('thinner-result').classList.add('d-none');
+        document.getElementById('thinner-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

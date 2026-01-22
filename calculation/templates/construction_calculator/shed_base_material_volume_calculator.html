@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Shed Base Material Volume Calculator{% endblock %}
+
+{% block meta_description %}Calculate the cubic yard volume of gravel, concrete, or sand needed for a stable shed foundation based on the shed's footprint and the desired base depth. {% endblock %}
+
+{% block meta_keywords %}shed base calculator, gravel volume, concrete slab cubic yards, shed foundation estimate, base depth, square footage{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #8B4513; /* Earthy Brown for foundation/wood/soil */
+        border-bottom: 2px solid #8B4513;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF5722; /* Deep Orange for key material result */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #fbe9e7; /* Light terracotta info box */
+        border: 1px solid #8B4513;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #8B4513;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🏡 Shed Base Material Calculator</h1>
+    <p class="text-center small-muted">Calculates the volume of aggregate (gravel, sand, or concrete) needed for a solid shed foundation.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="shed-base-calculator-form">
+            <h5 class="section-title">1. Shed Footprint Dimensions</h5>
+
+            <!-- Shed Length Input (Feet) -->
+            <label for="length-input" class="form-label">Shed/Base Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length (L)</span>
+                <input type="number" id="length-input" class="form-control" name="shedLength" placeholder="e.g., 10" value="10" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Shed Width Input (Feet) -->
+            <label for="width-input" class="form-label">Shed/Base Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Width (W)</span>
+                <input type="number" id="width-input" class="form-control" name="shedWidth" placeholder="e.g., 8" value="8" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+
+            <h5 class="section-title">2. Base Depth & Compaction</h5>
+
+            <!-- Base Depth Input (Inches) -->
+            <label for="depth-input" class="form-label">Desired Material Depth (Thickness)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Depth (D)</span>
+                <input type="number" id="depth-input" class="form-control" name="baseDepth" placeholder="e.g., 4" value="4" min="1" step="0.5" required>
+                <span class="input-group-text">in</span>
+            </div>
+
+            <!-- Material Type Selector -->
+            <label for="material-select" class="form-label">Material Type (Affects Compaction)</label>
+            <select class="form-select mb-3" id="material-select" name="materialType">
+                <option value="gravel">Compacted Gravel/Crush</option>
+                <option value="sand">Sand (Uncompacted)</option>
+                <option value="concrete">Concrete Slab</option>
+            </select>
+            
+            <div class="info-box">
+                **Note on Compaction:** Gravel requires overfilling to account for compaction (typically 15-20% extra). Concrete is generally calculated without significant waste/compaction.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #8B4513; border-color: #8B4513;" type="submit">Calculate Material Volume</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-danger" id="base-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Volume Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="base-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #8B4513; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="base-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const CUBIC_FEET_PER_CUBIC_YARD = 27;
+    const INCHES_PER_FOOT = 12;
+    // Compaction/Waste Factors (as multipliers)
+    const GRAVEL_FACTOR = 1.20; // 20% extra for settling/compaction
+    const SAND_FACTOR = 1.05;   // 5% waste
+    const CONCRETE_FACTOR = 1.03; // 3% waste/spillage
+
+    // Function to get the appropriate factor based on material
+    function getFactor(materialType) {
+        switch (materialType) {
+            case 'gravel':
+                return GRAVEL_FACTOR;
+            case 'sand':
+                return SAND_FACTOR;
+            case 'concrete':
+                return CONCRETE_FACTOR;
+            default:
+                return 1.0;
+        }
+    }
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('base-result');
+        const table = document.getElementById('base-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('base-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-success', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-success');
+            
+            // Primary result: Volume in Cubic Yards
+            res.innerHTML = `
+**Required ${metrics.materialType} Volume (Including Compaction/Waste):**
+<div class="d-flex justify-content-center mt-3">
+    <span class="result-value">${metrics.finalVolumeYards.toFixed(2)}</span>
+    <span class="small text-muted ms-2">Cubic Yards</span>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total ${metrics.materialType} Volume Required</td><td>**${metrics.finalVolumeYards.toFixed(2)} yd³**</td></tr>
+            <tr><td>Total Volume (Cubic Feet)</td><td>${(metrics.finalVolumeYards * CUBIC_FEET_PER_CUBIC_YARD).toFixed(2)} ft³</td></tr>
+            <tr><td>Theoretical Minimum Volume (No Waste)</td><td>${metrics.theoreticalVolumeYards.toFixed(2)} yd³</td></tr>
+            <tr><td>Waste/Compaction Factor Applied</td><td>${((metrics.factor - 1) * 100).toFixed(0)}%</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Footprint Area (A)</td><td>${metrics.areaSqFt} sq ft</td></tr>
+            <tr><td>Base Depth (D)</td><td>${metrics.baseDepth} in</td></tr>
+            <tr><td>Material Type</td><td>${metrics.materialType.charAt(0).toUpperCase() + metrics.materialType.slice(1)}</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('shed-base-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const shedLength = parseFloat(form.elements.shedLength.value); // L (ft)
+        const shedWidth = parseFloat(form.elements.shedWidth.value); // W (ft)
+        const baseDepth = parseFloat(form.elements.baseDepth.value); // D (in)
+        const materialType = form.elements.materialType.value;
+        
+        // Basic validation
+        if (isNaN(shedLength) || shedLength <= 0 || isNaN(shedWidth) || shedWidth <= 0 || isNaN(baseDepth) || baseDepth <= 0) {
+            displayResult(true, "Please ensure Length, Width, and Depth are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Area and Theoretical Volume (in Cubic Yards) ---
+            
+            // Area in Square Feet
+            const areaSqFt = shedLength * shedWidth;
+            
+            // Convert Depth from inches to feet
+            const depthFt = baseDepth / INCHES_PER_FOOT;
+
+            // Theoretical Volume in Cubic Feet = Area * Depth (in ft)
+            const theoreticalVolumeCuFt = areaSqFt * depthFt;
+            
+            // Theoretical Volume in Cubic Yards
+            const theoreticalVolumeYards = theoreticalVolumeCuFt / CUBIC_FEET_PER_CUBIC_YARD;
+            
+            // --- 2. Apply Compaction/Waste Factor ---
+            const factor = getFactor(materialType);
+            const finalVolumeYards = theoreticalVolumeYards * factor;
+            
+            if (finalVolumeYards <= 0) {
+                displayResult(true, "Calculated volume is zero or negative. Check inputs.");
+                return;
+            }
+
+            // 3. Display results
+            const metrics = {
+                shedLength,
+                shedWidth,
+                baseDepth,
+                materialType,
+                areaSqFt,
+                theoreticalVolumeYards,
+                finalVolumeYards,
+                factor
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('base-result').classList.add('d-none');
+        document.getElementById('base-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Rubric Score Calculator{% endblock %}
+
+{% block meta_description %}Define criteria and scoring levels to quickly calculate the total score and percentage based on rubric performance.{% endblock %}
+
+{% block meta_keywords %}rubric grading, score calculator, weighted criteria, assignment scoring, teacher tool, assessment{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 6, 182, 212; /* Cyan */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .grading-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e2e8f0;
+    }
+
+    .criteria-header {
+        background-color: #f1f5f9;
+        border-radius: 0.5rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .criteria-row {
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f1f5f9;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .criteria-row:hover {
+        background-color: #fcfdfe;
+    }
+
+    .result-display {
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #06b6d4;
+        box-shadow: 0 0 0 0.25rem rgba(6, 182, 212, 0.15);
+    }
+
+    .btn-cyan {
+        background-color: #06b6d4;
+        color: white;
+        font-weight: 600;
+    }
+
+    .btn-cyan:hover {
+        background-color: #0891b2;
+        color: white;
+    }
+
+    .btn-remove {
+        color: #ef4444;
+        background: #fef2f2;
+        border: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-remove:hover {
+        background: #fee2e2;
+    }
+
+    .strikethrough {
+        text-decoration: line-through;
+        color: #94a3b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-clipboard2-check text-info me-2"></i>Rubric Score Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">
+            Standardize your grading process. Define weighted criteria, assign points, and generate instant percentage reports for your students.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="grading-card p-4 mb-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="result-display bg-light border">
+                            <div class="small fw-bold text-muted text-uppercase mb-1">Max Points</div>
+                            <div class="result-value text-dark" id="total-possible-points">0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="result-display bg-info bg-opacity-10 border border-info border-opacity-25">
+                            <div class="small fw-bold text-info text-uppercase mb-1">Achieved Score</div>
+                            <div class="result-value text-info" id="total-achieved-score">0.0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="result-display bg-success bg-opacity-10 border border-success border-opacity-25">
+                            <div class="small fw-bold text-success text-uppercase mb-1">Final Percentage</div>
+                            <div class="result-value text-success" id="score-percentage">0.0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="grading-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0 text-secondary">Grading Criteria</h5>
+                    <button id="add-criteria-btn" class="btn btn-sm btn-cyan" onclick="addCriteria()">
+                        <i class="bi bi-plus-lg me-1"></i> Add Row
+                    </button>
+                </div>
+
+                <div class="row criteria-header p-2 mb-2 d-none d-md-flex">
+                    <div class="col-md-5">Criterion Description</div>
+                    <div class="col-md-2 text-center">Max Points</div>
+                    <div class="col-md-4 text-center">Performance Level</div>
+                    <div class="col-md-1"></div>
+                </div>
+
+                <div id="criteria-list">
+                    </div>
+
+                <div class="mt-4 pt-3 border-top text-center">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="resetRubric()">
+                        <i class="bi bi-trash3 me-1"></i> Reset All Criteria
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const criteriaListEl = document.getElementById('criteria-list');
+    const totalPossiblePointsEl = document.getElementById('total-possible-points');
+    const totalAchievedScoreEl = document.getElementById('total-achieved-score');
+    const scorePercentageEl = document.getElementById('score-percentage');
+
+    let criteriaCounter = 0;
+
+    const scoringLevels = [
+        { label: "Select Level...", value: -1 },
+        { label: "4 - Excellent (100%)", value: 1.00 },
+        { label: "3 - Proficient (75%)", value: 0.75 },
+        { label: "2 - Developing (50%)", value: 0.50 },
+        { label: "1 - Emerging (25%)", value: 0.25 },
+        { label: "0 - Not Met (0%)", value: 0.00 }
+    ];
+
+    function calculateScore() {
+        let totalPossible = 0;
+        let totalAchieved = 0;
+
+        document.querySelectorAll('.criteria-row').forEach(rowEl => {
+            const maxPointsInput = rowEl.querySelector('.input-max-points');
+            const scoreLevelSelect = rowEl.querySelector('.select-score-level');
+            
+            const maxPoints = parseFloat(maxPointsInput.value) || 0;
+            const levelValue = parseFloat(scoreLevelSelect.value);
+
+            totalPossible += maxPoints;
+
+            // Only calculate achieved if a valid level (>=0) is chosen
+            if (levelValue >= 0 && maxPoints > 0) {
+                totalAchieved += (maxPoints * levelValue);
+            }
+        });
+
+        const finalPercentage = totalPossible > 0 ? (totalAchieved / totalPossible) * 100 : 0;
+
+        // UI Updates
+        totalPossiblePointsEl.textContent = totalPossible.toFixed(0);
+        totalAchievedScoreEl.textContent = totalAchieved.toFixed(1);
+        scorePercentageEl.textContent = `${finalPercentage.toFixed(1)}%`;
+    }
+
+    function addCriteria(name = '', maxPoints = '') {
+        criteriaCounter++;
+        const criteriaId = `row-${criteriaCounter}`;
+
+        const row = document.createElement('div');
+        row.className = 'criteria-row row align-items-center g-2';
+        row.id = criteriaId;
+        
+        row.innerHTML = `
+            <div class="col-md-5">
+                <input type="text" value="${name}" placeholder="e.g., Grammar & Punctuation" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-2">
+                <div class="input-group input-group-sm">
+                    <input type="number" min="0" value="${maxPoints}" class="form-control text-center input-max-points" oninput="calculateScore()">
+                    <span class="input-group-text d-none d-lg-block">pts</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select form-select-sm select-score-level" onchange="calculateScore()">
+                    ${scoringLevels.map(lvl => `<option value="${lvl.value}" ${lvl.value === -1 ? 'disabled selected' : ''}>${lvl.label}</option>`).join('')}
+                </select>
+            </div>
+            <div class="col-md-1 text-end">
+                <button class="btn-remove ms-auto" onclick="removeCriteria('${criteriaId}')">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        `;
+        
+        criteriaListEl.appendChild(row);
+        calculateScore();
+    }
+
+    function removeCriteria(id) {
+        document.getElementById(id).remove();
+        calculateScore();
+    }
+
+    function resetRubric() {
+        if(confirm("Clear all grading data?")) {
+            criteriaListEl.innerHTML = '';
+            addCriteria(); // Start with one fresh row
+            calculateScore();
+        }
+    }
+
+    // Professional Initialization: Don't fill it with mock grades
+    window.onload = function() {
+        // Add 4 common academic criteria but leave them un-scored (Select Level...)
+        addCriteria('Content and Research', 40);
+        addCriteria('Organization and Logic', 30);
+        addCriteria('Grammar and Style', 15);
+        addCriteria('Citations and Format', 15);
+        
+        // Final recalculation to ensure 0s are set
+        calculateScore();
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}Insulation Calculator (Batts & Loose-Fill){% endblock %}
+
+{% block meta_description %}Calculate the required amount of insulation (batts in sq ft, loose-fill in bags) for walls, floors, or attics based on dimensions, deduction area, and desired R-value.{% endblock %}
+
+{% block meta_keywords %}insulation calculator, R-value, batt insulation, loose fill, blown-in, insulation bags, square footage, construction estimate{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #4CAF50; /* Green for Energy Efficiency */
+        border-bottom: 2px solid #4CAF50;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #009688; /* Teal/Aqua for final result */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .unit-input-label {
+        font-size: 0.85rem;
+        font-style: italic;
+        color: #6c757d;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .info-box {
+        background-color: #e8f5e9; /* Light green info box */
+        border: 1px solid #4CAF50;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 0.9rem;
+    }
+
+    #loose-fill-group {
+        border-top: 1px dashed #ccc;
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🌡️ Insulation Calculator</h1>
+    <p class="text-center small-muted">Calculate the amount of Batt or Loose-Fill insulation needed for your project.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="insulation-form">
+            <h5 class="section-title">1. Area Dimensions (in Feet)</h5>
+
+            <!-- Length Input (Feet) -->
+            <label for="length-input" class="form-label">Area Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length</span>
+                <input type="number" id="length-input" class="form-control" name="length" placeholder="Area Length (e.g., 50)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Width Input (Feet) -->
+            <label for="width-input" class="form-label">Area Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Width</span>
+                <input type="number" id="width-input" class="form-control" name="width" placeholder="Area Width (e.g., 30)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <h5 class="section-title">2. Deductions and Waste</h5>
+
+            <!-- Deduction Area Input (Square Feet) -->
+            <label for="subtract-area-input" class="form-label">Total Deduction Area</label>
+            <div class="input-group mb-1">
+                <span class="input-group-text">Openings/Obstacles</span>
+                <input type="number" id="subtract-area-input" class="form-control" name="subtractArea" placeholder="Total sq ft to subtract (e.g., 50)" value="0" min="0" step="1">
+                <span class="input-group-text">sq ft</span>
+            </div>
+            <span class="unit-input-label">Area of openings, doors, or windows that will not be insulated.</span>
+            
+            <!-- Waste Percentage Input -->
+            <label for="waste-input" class="form-label mt-3">Waste/Cut Allowance</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Waste Factor</span>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5" value="5" min="0" max="20" step="1" required>
+                <span class="input-group-text">%</span>
+            </div>
+
+            <h5 class="section-title">3. Insulation Type & Coverage</h5>
+            
+            <!-- Type Selector -->
+            <label for="type-selector" class="form-label">Insulation Type</label>
+            <select id="type-selector" class="form-select mb-3" name="insulationType">
+                <option value="batt" selected>Batt/Roll (Fiberglass, Rockwool)</option>
+                <option value="loose-fill">Loose-Fill (Blown-In)</option>
+            </select>
+
+            <!-- R-Value/Coverage Group -->
+            <div id="batt-group" class="mb-3">
+                <!-- R-Value Input (Batt Only) -->
+                <label for="r-value-input" class="form-label">R-Value Per Batt</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">R-Value</span>
+                    <input type="number" id="r-value-input" class="form-control" name="rValue" placeholder="R-Value (e.g., 13, 19, 30)" value="13" min="1" step="1" required>
+                </div>
+                <!-- Coverage Area Per Bag (Batt Only) -->
+                <label for="batt-coverage-input" class="form-label">Area Covered by One Batt Package</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Coverage</span>
+                    <input type="number" id="batt-coverage-input" class="form-control" name="battCoverage" placeholder="Sq Ft per package (e.g., 40, 80)" value="60" min="1" step="1" required>
+                    <span class="input-group-text">sq ft/package</span>
+                </div>
+            </div>
+
+            <div id="loose-fill-group" class="d-none">
+                <p class="small text-muted">For Loose-Fill, you need the R-Value coverage printed on the bag.</p>
+                <!-- R-Value Input (Loose-Fill) -->
+                <label for="loose-r-value-input" class="form-label">Target R-Value</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Target R-Value</span>
+                    <input type="number" id="loose-r-value-input" class="form-control" name="looseRValue" placeholder="e.g., 38 for attic" value="38" min="1" step="1">
+                </div>
+                <!-- Coverage Area Per Bag (Loose-Fill) -->
+                <label for="bag-coverage-input" class="form-label">Sq Ft Covered Per Bag (at Target R-Value)</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Coverage</span>
+                    <input type="number" id="bag-coverage-input" class="form-control" name="bagCoverage" placeholder="Sq Ft per bag at R-Value (e.g., 40)" value="40" min="1" step="1">
+                    <span class="input-group-text">sq ft/bag</span>
+                </div>
+            </div>
+
+            <button class="btn btn-success btn-lg w-100 mt-4" type="submit">Calculate Insulation Needed</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-success" id="insulation-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="insulation-table">
+            <thead>
+                <tr class="table-success">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="insulation-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const INSULATION_TYPE_BATT = 'batt';
+    const INSULATION_TYPE_LOOSE_FILL = 'loose-fill';
+
+    // Function to toggle visibility and required state of type-specific inputs
+    function toggleInsulationInputs() {
+        const type = document.getElementById('type-selector').value;
+        const battGroup = document.getElementById('batt-group');
+        const looseFillGroup = document.getElementById('loose-fill-group');
+        
+        const battInputs = battGroup.querySelectorAll('input');
+        const looseInputs = looseFillGroup.querySelectorAll('input');
+
+        if (type === INSULATION_TYPE_BATT) {
+            battGroup.classList.remove('d-none');
+            looseFillGroup.classList.add('d-none');
+            battInputs.forEach(input => input.setAttribute('required', 'required'));
+            looseInputs.forEach(input => input.removeAttribute('required'));
+        } else if (type === INSULATION_TYPE_LOOSE_FILL) {
+            battGroup.classList.add('d-none');
+            looseFillGroup.classList.remove('d-none');
+            battInputs.forEach(input => input.removeAttribute('required'));
+            looseInputs.forEach(input => input.setAttribute('required', 'required'));
+        }
+        clearResults();
+    }
+    
+    // Function to clear the results display
+    function clearResults() {
+        document.getElementById('insulation-result').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('insulation-table').classList.add('d-none');
+        document.getElementById('insulation-body').innerHTML = '';
+    }
+
+    // Function to display errors or results
+    function displayResult(isError, message, netArea, totalAreaToBuy, wasteFactorUsed, primaryUnit, primaryQuantity, secondaryUnit, secondaryQuantity) {
+        const res = document.getElementById('insulation-result');
+        const table = document.getElementById('insulation-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('insulation-body');
+
+        res.classList.remove('d-none', 'alert-success', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-success');
+            
+            // Primary result: Total packages/bags
+            res.innerHTML = `
+**Total ${secondaryUnit} to Purchase:**
+<span style="font-size:2rem; color:#4CAF50; font-weight:bold;">${secondaryQuantity} ${secondaryUnit}</span>
+<span style="font-size:1.2rem; color:#4CAF50;">(${primaryQuantity.toFixed(2)} ${primaryUnit})</span>
+`;
+            
+            // Populate and show the detailed table
+            tableBody.innerHTML = `
+            <tr><td>Total ${secondaryUnit} (Rounded Up)</td><td>**${secondaryQuantity} ${secondaryUnit}**</td></tr>
+            <tr><td>Total Area to Purchase</td><td>${totalAreaToBuy.toFixed(2)} sq ft</td></tr>
+            <tr><td>Net Area to Cover</td><td>${netArea.toFixed(2)} sq ft</td></tr>
+            <tr><td>Waste Percentage Applied</td><td>${(wasteFactorUsed * 100).toFixed(1)}%</td></tr>
+            `;
+            
+            const type = document.getElementById('type-selector').value;
+            const rValue = (type === INSULATION_TYPE_BATT) 
+                           ? document.getElementById('r-value-input').value 
+                           : document.getElementById('loose-r-value-input').value;
+                           
+            tableBody.innerHTML += `<tr><td>R-Value</td><td>${rValue}</td></tr>`;
+            
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('insulation-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Universal Inputs
+        const length = parseFloat(form.elements.length.value);
+        const width = parseFloat(form.elements.width.value);
+        const subtractArea = parseFloat(form.elements.subtractArea.value);
+        const wastePercent = parseFloat(form.elements.wastePercent.value);
+        const insulationType = form.elements.insulationType.value;
+        
+        // Validation
+        if (isNaN(length) || length <= 0 || isNaN(width) || width <= 0 || isNaN(subtractArea) || subtractArea < 0 || isNaN(wastePercent) || wastePercent < 0) {
+            displayResult(true, "Please ensure Length, Width, Deduction, and Waste are positive numbers.");
+            return;
+        }
+
+        try {
+            // 1. Calculate Net Area
+            const grossArea = length * width;
+            let netArea = grossArea - subtractArea;
+
+            if (netArea < 0) {
+                netArea = 0;
+            }
+
+            // 2. Convert Waste Percentage to Factor
+            const wasteFactor = wastePercent / 100;
+
+            // 3. Calculate Total Area to Buy (Net Area including waste)
+            const totalAreaToBuy = netArea * (1 + wasteFactor);
+            
+            let primaryUnit = "sq ft"; // Total area needed
+            let secondaryUnit = "packages"; // Total packages/bags needed
+            let quantity = 0;
+            let coverageRate = 0;
+            
+            // 4. Type-Specific Calculation
+            if (insulationType === INSULATION_TYPE_BATT) {
+                // Batt calculation uses sq ft per package
+                coverageRate = parseFloat(form.elements.battCoverage.value);
+                if (isNaN(coverageRate) || coverageRate <= 0) {
+                     displayResult(true, "Please provide a valid Sq Ft Coverage per Batt Package.");
+                     return;
+                }
+                
+                // Packages needed = Total Sq Ft to Buy / Coverage Rate
+                quantity = totalAreaToBuy / coverageRate;
+                secondaryUnit = "packages";
+                
+            } else if (insulationType === INSULATION_TYPE_LOOSE_FILL) {
+                // Loose-Fill calculation uses bags
+                coverageRate = parseFloat(form.elements.bagCoverage.value);
+                if (isNaN(coverageRate) || coverageRate <= 0) {
+                     displayResult(true, "Please provide a valid Sq Ft Coverage per Loose-Fill Bag at the specified R-Value.");
+                     return;
+                }
+
+                // Bags needed = Total Sq Ft to Buy / Coverage Rate
+                quantity = totalAreaToBuy / coverageRate;
+                secondaryUnit = "bags";
+            }
+            
+            // 5. Finalize Quantity (Round up packages/bags)
+            const finalQuantity = Math.ceil(quantity);
+
+            // 6. Display results
+            displayResult(false, "", netArea, totalAreaToBuy, wasteFactor, primaryUnit, totalAreaToBuy, secondaryUnit, finalQuantity);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Event listeners and initial setup
+    document.getElementById('type-selector').addEventListener('change', toggleInsulationInputs);
+
+    window.onload = function() {
+        document.getElementById('insulation-result').classList.add('d-none');
+        document.getElementById('insulation-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+        // Initial setup for input visibility
+        toggleInsulationInputs();
+    };
+</script>
+{% endblock %}

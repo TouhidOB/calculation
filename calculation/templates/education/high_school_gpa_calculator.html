@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}High School GPA Calculator (Weighted & Unweighted){% endblock %}
+
+{% block meta_description %}Calculate your cumulative high school GPA, including both the standard unweighted (4.0) and the weighted (up to 5.0) score for Honors and AP/IB classes.{% endblock %}
+
+{% block meta_keywords %}high school GPA, weighted GPA, unweighted GPA, 4.0 scale, AP credit, honors courses, cumulative GPA{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #6f42c1; /* Professional purple */
+        border-bottom: 2px solid #f8f9fa;
+        padding-bottom: 5px;
+    }
+
+    .course-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 12px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background-color: #ffffff;
+        transition: all 0.2s;
+    }
+
+    .course-row:hover {
+        border-color: #6f42c1;
+        background-color: #fcfaff;
+    }
+
+    .course-row input, .course-row select {
+        font-size: 0.95rem;
+    }
+    
+    .remove-btn {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .result-alert {
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .gpa-display-box {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 15px;
+    }
+
+    .gpa-card {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        min-width: 150px;
+    }
+
+    .highlight-unweighted {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #007bff; 
+        display: block;
+    }
+    .highlight-weighted {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #6f42c1; 
+        display: block;
+    }
+    
+    @media (max-width: 767px) {
+        .course-row { flex-wrap: wrap; }
+        .course-row > div { flex: 1 1 45%; }
+        .course-row .name-field-wrapper { flex: 1 1 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">🏫 High School GPA Calculator</h1>
+        <p class="text-muted">Enter your courses below to calculate your standard and weighted GPA.</p>
+    </div>
+
+    <div class="calc-wrapper mx-auto" style="max-width: 900px;">
+        <form id="hs-gpa-form">
+            <h5 class="section-title">Step 1: Add Your Courses</h5>
+            
+            <div class="row g-2 mb-2 d-none d-md-flex fw-bold text-secondary small text-uppercase">
+                <div class="col-4">Course Name</div>
+                <div class="col-2">Grade</div>
+                <div class="col-3">Weight Level</div>
+                <div class="col-2">Credits</div>
+                <div class="col-1"></div>
+            </div>
+
+            <div id="course-list">
+                </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-outline-primary btn-sm" type="button" id="add-course-btn">
+                    + Add Course
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="reset-btn">
+                    Clear All
+                </button>
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" type="submit">Calculate Final GPA</button>
+        </form>
+
+        <div id="result-container" class="d-none">
+            <div class="alert mt-4 result-alert alert-light border">
+                <div class="gpa-display-box">
+                    <div class="gpa-card">
+                        <small class="text-uppercase fw-bold text-muted">Unweighted GPA</small>
+                        <span class="highlight-unweighted" id="unweighted-val">0.00</span>
+                    </div>
+                    <div class="gpa-card">
+                        <small class="text-uppercase fw-bold text-muted">Weighted GPA</small>
+                        <span class="highlight-weighted" id="weighted-val">0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="section-title">Detailed Summary</h5>
+            <table class="table table-hover border">
+                <tbody id="gpa-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const GRADE_POINTS = {
+        'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+        'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+        'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+        'D+': 1.3, 'D': 1.0, 'F': 0.0
+    };
+
+    const WEIGHT_BOOSTS = {
+        'Standard': 0.0,
+        'Honors': 0.5,
+        'AP/IB/Dual': 1.0
+    };
+
+    function createCourseRow(name = '', grade = 'A', level = 'Standard', credits = 1.0) {
+        const row = document.createElement('div');
+        row.className = 'course-row';
+
+        row.innerHTML = `
+            <div class="col-md-4 col-12 name-field-wrapper">
+                <input type="text" class="form-control" placeholder="e.g. Algebra II" value="${name}">
+            </div>
+            <div class="col-md-2 col-4">
+                <select class="form-select course-grade">
+                    ${Object.keys(GRADE_POINTS).map(g => `<option value="${g}" ${g === grade ? 'selected' : ''}>${g}</option>`).join('')}
+                </select>
+            </div>
+            <div class="col-md-3 col-4">
+                <select class="form-select course-level">
+                    ${Object.keys(WEIGHT_BOOSTS).map(l => `<option value="${l}" ${l === level ? 'selected' : ''}>${l}</option>`).join('')}
+                </select>
+            </div>
+            <div class="col-md-2 col-3">
+                <input type="number" class="form-control course-credits" step="0.5" min="0" value="${credits}">
+            </div>
+            <div class="col-md-1 col-1 text-end">
+                <button type="button" class="btn btn-outline-danger remove-btn">&times;</button>
+            </div>
+        `;
+
+        row.querySelector('.remove-btn').addEventListener('click', () => {
+            row.remove();
+            if(document.querySelectorAll('.course-row').length > 0) calculateGPA();
+        });
+
+        return row;
+    }
+
+    function calculateGPA(e) {
+        if (e) e.preventDefault();
+        
+        const rows = document.querySelectorAll('#course-list .course-row');
+        let totalCredits = 0;
+        let totalUnweightedPoints = 0;
+        let totalWeightedPoints = 0;
+
+        rows.forEach(row => {
+            const credits = parseFloat(row.querySelector('.course-credits').value) || 0;
+            const grade = row.querySelector('.course-grade').value;
+            const level = row.querySelector('.course-level').value;
+
+            if (GRADE_POINTS[grade] !== undefined) {
+                totalCredits += credits;
+                const base = GRADE_POINTS[grade];
+                totalUnweightedPoints += base * credits;
+                totalWeightedPoints += (base + WEIGHT_BOOSTS[level]) * credits;
+            }
+        });
+
+        if (totalCredits === 0) return;
+
+        const uwGPA = (totalUnweightedPoints / totalCredits).toFixed(3);
+        const wGPA = (totalWeightedPoints / totalCredits).toFixed(3);
+
+        // Update UI
+        document.getElementById('result-container').classList.remove('d-none');
+        document.getElementById('unweighted-val').innerText = uwGPA;
+        document.getElementById('weighted-val').innerText = wGPA;
+
+        document.getElementById('gpa-body').innerHTML = `
+            <tr><td>Total Courses</td><td class="text-end fw-bold">${rows.length}</td></tr>
+            <tr><td>Total Credits</td><td class="text-end fw-bold">${totalCredits.toFixed(1)}</td></tr>
+            <tr><td>Unweighted Average</td><td class="text-end fw-bold text-primary">${uwGPA}</td></tr>
+            <tr><td>Weighted Average</td><td class="text-end fw-bold text-purple" style="color:#6f42c1">${wGPA}</td></tr>
+        `;
+    }
+
+    // Event Listeners
+    document.getElementById('add-course-btn').addEventListener('click', () => {
+        document.getElementById('course-list').appendChild(createCourseRow('', 'A', 'Standard', 1.0));
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        if(confirm("Clear all courses?")) {
+            document.getElementById('course-list').innerHTML = '';
+            document.getElementById('course-list').appendChild(createCourseRow('', 'A', 'Standard', 1.0));
+            document.getElementById('result-container').classList.add('d-none');
+        }
+    });
+
+    document.getElementById('hs-gpa-form').addEventListener('submit', calculateGPA);
+
+    window.addEventListener('load', () => {
+        // Professional Clean Start: Add 4 empty rows
+        const list = document.getElementById('course-list');
+        for(let i=0; i<4; i++) {
+            list.appendChild(createCourseRow('', 'A', 'Standard', 1.0));
+        }
+    });
+</script>
+{% endblock %}

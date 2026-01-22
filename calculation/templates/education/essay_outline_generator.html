@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Essay Outline Generator{% endblock %}
+
+{% block meta_description %}Generate a structured academic essay outline (Introduction, Body Paragraphs, Conclusion) based on your thesis and requirements.{% endblock %}
+
+{% block meta_keywords %}essay outline, academic writing, thesis statement, paragraph structure, essay planning tool{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 124, 58, 237; /* Violet 600 */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f5f3ff;
+        border-right: 1px solid #ddd6fe;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #4c1d95;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .outline-section {
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        border-left: 6px solid;
+    }
+
+    .intro-section { background-color: #fff1f2; border-color: #e11d48; }
+    .body-section { background-color: #f0f9ff; border-color: #0284c7; }
+    .conc-section { background-color: #f0fdf4; border-color: #16a34a; }
+
+    .outline-list { list-style-type: none; padding-left: 0; }
+    .outline-list li { margin-bottom: 0.75rem; color: #334155; }
+    .sub-list { list-style-type: lower-alpha; padding-left: 1.5rem; margin-top: 0.5rem; }
+    .evidence-list { list-style-type: decimal; padding-left: 1.5rem; color: #64748b; font-style: italic; }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-journal-text text-primary me-2"></i>Academic Essay Outline Generator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Transform your research ideas into a logical structure. Customize your paragraph count and evidence depth for a perfect draft.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-purple-900"><i class="bi bi-pencil-square me-2"></i>Essay Structure</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Body Paragraphs</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-white"><i class="bi bi-layers"></i></span>
+                        <input type="number" id="num-paragraphs" class="form-control" placeholder="3" min="1" max="8">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Evidence per Paragraph</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-white"><i class="bi bi-hash"></i></span>
+                        <input type="number" id="evidence-points" class="form-control" placeholder="2" min="1" max="5">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Draft Thesis Statement</label>
+                    <textarea id="thesis-statement" class="form-control shadow-sm" rows="4" placeholder="Enter your main argument here..."></textarea>
+                    <div class="form-text small mt-2">A strong thesis is specific and debatable.</div>
+                </div>
+                
+                <div class="mt-5 p-3 bg-white rounded border border-purple-200 small">
+                    <i class="bi bi-lightbulb-fill text-warning me-1"></i>
+                    <strong>Writing Tip:</strong> Each body paragraph should support exactly one sub-point of your thesis.
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state">
+                    <i class="bi bi-layout-text-sidebar-reverse display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Ready to Outline</h4>
+                    <p>Enter your thesis statement or adjust the structure to generate your academic roadmap.</p>
+                </div>
+
+                <div id="outline-result" class="d-none">
+                    </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const numParagraphsInput = document.getElementById('num-paragraphs');
+    const evidencePointsInput = document.getElementById('evidence-points');
+    const thesisStatementInput = document.getElementById('thesis-statement');
+    const outlineResultEl = document.getElementById('outline-result');
+    const placeholderUi = document.getElementById('placeholder-ui');
+
+    function generateEvidenceList(points) {
+        let html = '<ul class="evidence-list">';
+        for (let i = 1; i <= points; i++) {
+            html += `
+                <li><strong>Evidence #${i}:</strong> [Supporting data, quote, or fact]</li>
+                <li><strong>Analysis:</strong> [Interpret how this proves your paragraph claim]</li>
+            `;
+        }
+        html += '</ul>';
+        return html;
+    }
+
+    function generateOutline() {
+        const numParagraphs = parseInt(numParagraphsInput.value) || 3;
+        const evidencePoints = parseInt(evidencePointsInput.value) || 2;
+        const thesis = thesisStatementInput.value.trim();
+
+        // Professional Clean State Logic
+        if (!thesis && !thesisStatementInput.matches(':focus') && !numParagraphsInput.value && !evidencePointsInput.value) {
+            placeholderUi.classList.remove('d-none');
+            outlineResultEl.classList.add('d-none');
+            return;
+        }
+
+        placeholderUi.classList.add('d-none');
+        outlineResultEl.classList.remove('d-none');
+
+        const displayThesis = thesis || '<span class="text-muted">[Your thesis will appear here]</span>';
+
+        let html = `
+            <div class="outline-section intro-section">
+                <h4 class="fw-bold text-danger mb-3"><i class="bi bi-door-open me-2"></i>I. Introduction</h4>
+                <ul class="outline-list fw-bold">
+                    <li>A. Hook & Context <span class="fw-normal d-block small text-muted">Engage the reader and introduce the broad topic.</span></li>
+                    <li>B. Background Research <span class="fw-normal d-block small text-muted">Provide necessary history or context for the debate.</span></li>
+                    <li>C. Thesis Statement: <span class="fw-normal text-dark italic">${displayThesis}</span></li>
+                </ul>
+            </div>
+        `;
+
+        for (let i = 1; i <= numParagraphs; i++) {
+            html += `
+                <div class="outline-section body-section">
+                    <h4 class="fw-bold text-primary mb-3"><i class="bi bi-bookmark-plus me-2"></i>II. Body Paragraph ${i}</h4>
+                    <ul class="outline-list fw-bold">
+                        <li>A. Topic Sentence <span class="fw-normal d-block small text-muted">What is the specific sub-claim for this paragraph?</span></li>
+                        <li>B. Supporting Evidence & Analysis:
+                            ${generateEvidenceList(evidencePoints)}
+                        </li>
+                        <li>C. Transition Sentence <span class="fw-normal d-block small text-muted">Summarize and bridge to the next point.</span></li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        html += `
+            <div class="outline-section conc-section">
+                <h4 class="fw-bold text-success mb-3"><i class="bi bi-flag me-2"></i>III. Conclusion</h4>
+                <ul class="outline-list fw-bold">
+                    <li>A. Thesis Synthesis <span class="fw-normal d-block small text-muted">Don't just repeat; show how you've proven the thesis.</span></li>
+                    <li>B. Review of Main Points <span class="fw-normal d-block small text-muted">Briefly tie the body paragraph arguments together.</span></li>
+                    <li>C. Final Significance <span class="fw-normal d-block small text-muted">What is the "So what?" Factor? End with a strong final thought.</span></li>
+                </ul>
+            </div>
+        `;
+
+        outlineResultEl.innerHTML = html;
+    }
+
+    window.onload = function() {
+        [numParagraphsInput, evidencePointsInput, thesisStatementInput].forEach(input => {
+            input.addEventListener('input', generateOutline);
+        });
+    };
+</script>
+{% endblock %}

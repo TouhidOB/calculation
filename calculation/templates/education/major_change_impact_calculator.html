@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Major Change Impact Calculator{% endblock %}
+
+{% block meta_description %}Assess the impact of changing your college major, including cost, time extension, and course overlap analysis.{% endblock %}
+
+{% block meta_keywords %}major change, academic planning, college credits, time to graduation, cost estimation, course overlap, degree planning{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 139, 92, 246; /* Violet-600 */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-container {
+        max-width: 1100px;
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #fdfbff;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+    }
+
+    .section-header {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #7c3aed;
+        text-transform: uppercase;
+        border-bottom: 2px solid #ddd6fe;
+        padding-bottom: 5px;
+        margin-bottom: 20px;
+    }
+
+    .result-card {
+        border-radius: 1rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        height: 100%;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .bg-time-light { background-color: #f5f3ff; border-color: #ddd6fe !important; color: #7c3aed; }
+    .bg-cost-light { background-color: #f0fdfa; border-color: #ccfbf1 !important; color: #0d9488; }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .analysis-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.9rem;
+    }
+
+    .analysis-row:last-child {
+        border-bottom: none;
+    }
+
+    .credit-tag {
+        font-weight: 700;
+        font-family: monospace;
+        background: #f1f5f9;
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-mortarboard-fill text-primary me-2"></i>Major Change Impact Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">Compare your current path with a new degree plan to see how your graduation date and total tuition costs will shift.</p>
+    </div>
+
+    
+
+    <div class="calc-container mx-auto">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                
+                <div class="section-header">1. Current Progress</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <label class="form-label">Total Credits Earned</label>
+                        <input type="number" id="credits-completed" class="form-control" placeholder="e.g. 30">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Old Major Total</label>
+                        <input type="number" id="credits-original-major" class="form-control" placeholder="e.g. 120">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Cost / Credit</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="cost-per-credit" class="form-control border-start-0" placeholder="500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-header">2. New Major Plan</div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label text-primary">New Major Total Credits</label>
+                        <input type="number" id="credits-new-major" class="form-control border-primary border-opacity-25" placeholder="e.g. 128">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-primary">Overlapping Credits</label>
+                        <input type="number" id="credits-overlap" class="form-control border-primary border-opacity-25" placeholder="Gen Ed overlap">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-primary">Avg Load / Sem</label>
+                        <input type="number" id="credits-per-semester" class="form-control border-primary border-opacity-25" placeholder="15">
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="resetCalc()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset All Data
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white d-flex align-items-center">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-file-earmark-diff display-1 mb-3"></i>
+                    <h4>Impact Analysis Ready</h4>
+                    <p class="text-muted">Enter your credit details and tuition cost to generate a timeline and budget projection.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Projected Impact</h5>
+                    
+                    <div class="row g-3 mb-4 text-center">
+                        <div class="col-md-6">
+                            <div class="result-card bg-time-light">
+                                <span class="form-label d-block mb-2">Time Extension</span>
+                                <div class="result-value" id="semester-extension">0</div>
+                                <span class="fw-bold small text-uppercase">Extra Semesters</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="result-card bg-cost-light">
+                                <span class="form-label d-block mb-2">Extra Tuition</span>
+                                <div class="result-value" id="cost-extension">$0</div>
+                                <span class="fw-bold small text-uppercase">Total Added Cost</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 bg-light rounded-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3 small text-uppercase text-muted border-bottom pb-2">Credit Comparison</h6>
+                            <div class="analysis-row">
+                                <span class="text-secondary">Required for New Major</span>
+                                <span class="credit-tag" id="required-new">0</span>
+                            </div>
+                            <div class="analysis-row">
+                                <span class="text-secondary">Remaining to Graduate (New)</span>
+                                <span class="credit-tag" id="remaining-new">0</span>
+                            </div>
+                            <div class="analysis-row">
+                                <span class="text-secondary">Net Credit Increase</span>
+                                <span class="credit-tag text-danger" id="net-credit-diff">0</span>
+                            </div>
+                            <div class="analysis-row">
+                                <span class="text-secondary">Total Semesters on Campus</span>
+                                <span class="credit-tag" id="total-semesters-new">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 border rounded-3 bg-white small text-muted">
+                        <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                        <strong>Pro Tip:</strong> Overlapping credits usually include General Education and unrestricted electives. Check your Degree Audit for the most accurate "Overlap" number.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function resetCalc() {
+        if(confirm("Clear all academic inputs?")) {
+            document.querySelectorAll('input').forEach(i => i.value = '');
+            calculateImpact();
+        }
+    }
+
+    function calculateImpact() {
+        const completed = parseFloat(document.getElementById('credits-completed').value);
+        const originalTotal = parseFloat(document.getElementById('credits-original-major').value);
+        const newTotal = parseFloat(document.getElementById('credits-new-major').value);
+        const overlap = parseFloat(document.getElementById('credits-overlap').value) || 0;
+        const creditsPerSem = parseFloat(document.getElementById('credits-per-semester').value) || 15;
+        const costPerCredit = parseFloat(document.getElementById('cost-per-credit').value) || 0;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const results = document.getElementById('results-ui');
+
+        // Professional Check: Hide results if core data is missing
+        if (isNaN(completed) || isNaN(originalTotal) || isNaN(newTotal)) {
+            placeholder.classList.remove('d-none');
+            results.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        results.classList.remove('d-none');
+
+        // Logic
+        const safeOverlap = Math.min(overlap, completed);
+        const remainingOld = Math.max(0, originalTotal - completed);
+        const remainingNew = Math.max(0, newTotal - safeOverlap);
+        const extraCredits = Math.max(0, remainingNew - remainingOld);
+        
+        const semesterExtension = extraCredits / (creditsPerSem || 1);
+        const totalSemestersRequired = (completed + remainingNew) / (creditsPerSem || 1);
+        const additionalCost = extraCredits * costPerCredit;
+
+        // UI Updates
+        document.getElementById('semester-extension').textContent = semesterExtension.toFixed(1);
+        document.getElementById('cost-extension').textContent = '$' + additionalCost.toLocaleString();
+        
+        document.getElementById('required-new').textContent = newTotal;
+        document.getElementById('remaining-new').textContent = remainingNew;
+        document.getElementById('net-credit-diff').textContent = `+${extraCredits}`;
+        document.getElementById('total-semesters-new').textContent = totalSemestersRequired.toFixed(1);
+    }
+
+    window.onload = function() {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateImpact);
+        });
+    };
+</script>
+{% endblock %}

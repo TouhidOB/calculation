@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Stair Calculator (Risers, Treads, Stringer Length){% endblock %}
+
+{% block meta_description %}Calculate the number of risers and treads, the actual rise and run dimensions, and the required stringer length for a staircase based on total rise and code limits. {% endblock %}
+
+{% block meta_keywords %}stair calculator, riser, tread, stringer length, total rise, total run, stair code, construction geometry{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #3F51B5; /* Blue for Precision/Structure */
+        border-bottom: 2px solid #3F51B5;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFC107; /* Yellow/Amber for final result contrast */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .unit-input-label {
+        font-size: 0.85rem;
+        font-style: italic;
+        color: #6c757d;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .info-box {
+        background-color: #e8eaf6; /* Light Blue info box */
+        border: 1px solid #3F51B5;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 0.9rem;
+    }
+
+    .code-input-group {
+        display: flex;
+        gap: 10px;
+    }
+    .code-input-group > div {
+        flex-grow: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">📐 Stair Calculator (Risers & Treads)</h1>
+    <p class="text-center small-muted">Calculates the optimal stair geometry based on total vertical rise and building code standards.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="stair-form">
+            <h5 class="section-title">1. Total Dimensions</h5>
+
+            <!-- Total Rise Input (Vertical Height) -->
+            <label for="total-rise-input" class="form-label">Total Vertical Rise (Floor to Floor)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Total Rise</span>
+                <input type="number" id="total-rise-input" class="form-control" name="totalRiseFeet" placeholder="Feet (e.g., 9)" min="1" step="0.01" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            <span class="unit-input-label">Enter the vertical distance from the finished lower floor to the finished upper floor.</span>
+            
+            <h5 class="section-title">2. Building Code Limits (Inches)</h5>
+            
+            <div class="code-input-group">
+                <!-- Max Riser Height -->
+                <div>
+                    <label for="max-riser-input" class="form-label">Max Riser Height (Code)</label>
+                    <div class="input-group mb-3">
+                        <input type="number" id="max-riser-input" class="form-control" name="maxRiser" placeholder="e.g., 7.75" value="7.75" min="6" max="10" step="0.01" required>
+                        <span class="input-group-text">in</span>
+                    </div>
+                </div>
+
+                <!-- Min Tread Depth -->
+                <div>
+                    <label for="min-tread-input" class="form-label">Min Tread Depth (Code)</label>
+                    <div class="input-group mb-3">
+                        <input type="number" id="min-tread-input" class="form-control" name="minTread" placeholder="e.g., 10" value="10" min="9" step="0.01" required>
+                        <span class="input-group-text">in</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                **Code Adherence:** This tool uses your max riser height to determine the number of steps and then calculates the geometry to fit the space.
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100 mt-4" type="submit">Calculate Stair Geometry</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="stair-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Results</h5>
+        <table class="table table-bordered mt-2 d-none" id="stair-table">
+            <thead>
+                <tr class="table-primary">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="stair-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const INCHES_PER_FOOT = 12;
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('stair-result');
+        const table = document.getElementById('stair-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('stair-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Risers and Treads
+            res.innerHTML = `
+**Required Stair Components:**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span style="font-size:2rem; color:#3F51B5; font-weight:bold;">${metrics.riserCount}</span><br>
+        <span class="small text-muted">Risers</span>
+    </div>
+    <div class="text-center">
+        <span style="font-size:2rem; color:#3F51B5; font-weight:bold;">${metrics.treadCount}</span><br>
+        <span class="small text-muted">Treads</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Number of Risers**</td><td>**${metrics.riserCount}**</td></tr>
+            <tr><td>**Number of Treads**</td><td>**${metrics.treadCount}**</td></tr>
+            <tr><td>Actual Riser Height</td><td>${metrics.actualRiserHeight.toFixed(3)} in</td></tr>
+            <tr><td>Actual Tread Depth</td><td>${metrics.actualTreadDepth.toFixed(2)} in</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Overall Geometry**</td></tr>
+            <tr><td>Total Rise (Input)</td><td>${metrics.totalRiseInches.toFixed(2)} in (${(metrics.totalRiseInches / INCHES_PER_FOOT).toFixed(2)} ft)</td></tr>
+            <tr><td>Total Run (Horizontal Travel)</td><td>${metrics.totalRunInches.toFixed(2)} in (${metrics.totalRunFeet.toFixed(2)} ft)</td></tr>
+            <tr><td>Required Stringer Length (Diagonal)</td><td>${metrics.stringerLength.toFixed(2)} in (${metrics.stringerLengthFeet.toFixed(2)} ft)</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('stair-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const totalRiseFeet = parseFloat(form.elements.totalRiseFeet.value);
+        const maxRiser = parseFloat(form.elements.maxRiser.value); // in inches
+        const minTread = parseFloat(form.elements.minTread.value); // in inches
+        
+        // Basic validation
+        if (isNaN(totalRiseFeet) || totalRiseFeet <= 0 || isNaN(maxRiser) || maxRiser <= 0 || isNaN(minTread) || minTread <= 0) {
+            displayResult(true, "Please ensure Total Rise, Max Riser, and Min Tread are positive numbers.");
+            return;
+        }
+
+        try {
+            // 1. Convert Total Rise to Inches
+            const totalRiseInches = totalRiseFeet * INCHES_PER_FOOT;
+
+            // 2. Calculate Number of Risers
+            // N = Total Rise / Max Riser (rounded UP to the nearest whole number)
+            const riserCount = Math.ceil(totalRiseInches / maxRiser);
+            
+            // Check for potential edge case where the result is 0 or 1
+            if (riserCount < 2) {
+                 displayResult(true, "Total rise is too small for a standard staircase (needs at least two risers). Check your Total Rise input.");
+                 return;
+            }
+
+            // 3. Calculate Actual Riser Height
+            // H = Total Rise / N
+            const actualRiserHeight = totalRiseInches / riserCount;
+
+            // 4. Calculate Number of Treads
+            // Treads = Risers - 1
+            const treadCount = riserCount - 1;
+
+            // 5. Determine Actual Tread Depth (using the minimum code requirement)
+            // We use the minimum code requirement as the standard depth unless otherwise specified
+            const actualTreadDepth = minTread; 
+
+            // 6. Calculate Total Run (Horizontal Travel)
+            // Total Run = Tread Count * Actual Tread Depth
+            const totalRunInches = treadCount * actualTreadDepth;
+            const totalRunFeet = totalRunInches / INCHES_PER_FOOT;
+
+            // 7. Calculate Stringer Length (Hypotenuse using Pythagorean Theorem)
+            // Stringer = sqrt( (Total Rise)^2 + (Total Run)^2 )
+            const stringerLength = Math.sqrt(
+                Math.pow(totalRiseInches, 2) + Math.pow(totalRunInches, 2)
+            );
+            const stringerLengthFeet = stringerLength / INCHES_PER_FOOT;
+
+            // 8. Final Code Compliance Check (Should pass if maxRiser is used correctly)
+            if (actualRiserHeight > maxRiser) {
+                 displayResult(true, `Riser height (${actualRiserHeight.toFixed(3)} in) exceeds the maximum code limit (${maxRiser.toFixed(2)} in). Check your Total Rise input.`);
+                 return;
+            }
+
+            // 9. Display results
+            const metrics = {
+                totalRiseInches,
+                riserCount,
+                treadCount,
+                actualRiserHeight,
+                actualTreadDepth,
+                totalRunInches,
+                totalRunFeet,
+                stringerLength,
+                stringerLengthFeet
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('stair-result').classList.add('d-none');
+        document.getElementById('stair-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

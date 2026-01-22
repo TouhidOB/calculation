@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Random Student Picker{% endblock %}
+
+{% block meta_description %}A fair and randomized student selection tool for classroom participation, ensuring all students are eventually called upon.{% endblock %}
+
+{% block meta_keywords %}random student picker, class participation, classroom tool, random name generator, teacher tool, fairness{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 245, 158, 11; /* Amber */
+    }
+
+    body {
+        background-color: #fffbeb; /* Soft Amber Background */
+    }
+
+    .picker-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        border: 1px solid #fde68a;
+        overflow: hidden;
+    }
+
+    .sidebar-config {
+        background-color: #fafafa;
+        border-right: 1px solid #f3f4f6;
+    }
+
+    .display-box {
+        background: radial-gradient(circle at center, #ffffff 0%, #fffbf0 100%);
+        border: 2px dashed #f59e0b;
+        border-radius: 1.25rem;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .student-name-text {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #92400e;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    .stat-pill {
+        background-color: #fef3c7;
+        color: #92400e;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    textarea.form-control {
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        transition: border-color 0.2s;
+    }
+
+    textarea.form-control:focus {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.15);
+    }
+
+    .btn-pick {
+        background-color: #f59e0b;
+        border: none;
+        color: white;
+        padding: 1rem;
+        font-weight: 700;
+        border-radius: 0.75rem;
+        font-size: 1.25rem;
+        transition: all 0.2s;
+    }
+
+    .btn-pick:hover {
+        background-color: #d97706;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(217, 119, 6, 0.3);
+    }
+
+    .btn-pick:disabled {
+        background-color: #d1d5db;
+        transform: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-person-check text-warning me-2"></i>Fair Participation Picker</h1>
+        <p class="text-muted">Ensure every student gets a turn. Once picked, a student won't be called again until the round is complete.</p>
+    </div>
+
+    <div class="picker-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-4 sidebar-config p-4 p-md-5">
+                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                    <i class="bi bi-people-fill me-2 text-warning"></i>Roster
+                </h5>
+                
+                <div class="mb-4">
+                    <label for="student-list" class="form-label small fw-bold text-muted text-uppercase">Student Names</label>
+                    <textarea id="student-list" class="form-control" rows="10" 
+                        placeholder="Type names here (one per line)..."></textarea>
+                </div>
+
+                <button class="btn btn-dark w-100 py-2 mb-2 fw-bold" onclick="resetPicker()">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Load / Reset List
+                </button>
+                <p class="text-center text-muted x-small">Resetting starts a new round with the current names above.</p>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 d-flex flex-column justify-content-center bg-white">
+                
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                    <div class="stat-pill">
+                        <i class="bi bi-collection me-1"></i> Class Size: <span id="total-count">0</span>
+                    </div>
+                    <div class="stat-pill">
+                        <i class="bi bi-hourglass-split me-1"></i> Remaining: <span id="remaining-count">0</span>
+                    </div>
+                </div>
+
+                <div class="display-box p-4 text-center mb-4 shadow-sm" id="result-container">
+                    <div id="status-text" class="text-muted mb-2 small fw-bold text-uppercase">Ready to start</div>
+                    <div id="picked-name" class="student-name-text">...</div>
+                </div>
+
+                <button id="pick-btn" class="btn btn-pick w-100 shadow-sm" onclick="pickRandomStudent()" disabled>
+                    <i class="bi bi-dice-5-fill me-2"></i> PICK A STUDENT
+                </button>
+                
+                <div id="round-alert" class="alert alert-warning mt-3 d-none text-center py-2 fw-medium border-0">
+                    <i class="bi bi-info-circle-fill me-2"></i> All students have been called!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let allStudents = [];
+    let availableStudents = [];
+
+    const studentListEl = document.getElementById('student-list');
+    const pickedNameEl = document.getElementById('picked-name');
+    const remainingCountEl = document.getElementById('remaining-count');
+    const totalCountEl = document.getElementById('total-count');
+    const pickBtn = document.getElementById('pick-btn');
+    const statusText = document.getElementById('status-text');
+    const roundAlert = document.getElementById('round-alert');
+
+    /**
+     * Resets the application to a fresh state with the user's input.
+     */
+    function resetPicker() {
+        const input = studentListEl.value.trim();
+        
+        if (!input) {
+            alert("Please enter at least one name.");
+            return;
+        }
+
+        allStudents = input.split('\n').map(n => n.trim()).filter(n => n !== "");
+        availableStudents = [...allStudents];
+        
+        // Update UI
+        totalCountEl.innerText = allStudents.length;
+        remainingCountEl.innerText = availableStudents.length;
+        pickedNameEl.innerText = "READY";
+        statusText.innerText = "List Loaded";
+        pickBtn.disabled = false;
+        roundAlert.classList.add('d-none');
+        
+        // Visual feedback
+        document.getElementById('result-container').style.borderColor = "#f59e0b";
+        document.getElementById('result-container').style.borderStyle = "solid";
+    }
+
+    /**
+     * Logic for fair selection
+     */
+    function pickRandomStudent() {
+        if (availableStudents.length === 0) {
+            // Automatically restart the round if empty
+            availableStudents = [...allStudents];
+            roundAlert.classList.add('d-none');
+        }
+
+        const randomIndex = Math.floor(Math.random() * availableStudents.length);
+        const selected = availableStudents.splice(randomIndex, 1)[0];
+
+        // Animate name change
+        pickedNameEl.classList.add('opacity-0');
+        
+        setTimeout(() => {
+            pickedNameEl.innerText = selected;
+            pickedNameEl.classList.remove('opacity-0');
+            remainingCountEl.innerText = availableStudents.length;
+            statusText.innerText = "Current Selection";
+
+            if (availableStudents.length === 0) {
+                roundAlert.classList.remove('d-none');
+                document.getElementById('result-container').style.borderStyle = "dashed";
+            }
+        }, 150);
+    }
+
+    // Initialize with a clean state, no names pre-loaded
+    window.onload = function() {
+        // We keep it empty for a professional look so teachers aren't 
+        // greeted by "Liam O'Connell" if he's not in their class.
+        pickBtn.disabled = true;
+    };
+</script>
+{% endblock %}

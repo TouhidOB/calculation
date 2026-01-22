@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Car Affordability Calculator (Max Price){% endblock %}
+
+{% block meta_description %}Determine the maximum vehicle price you can afford based on your desired monthly payment, loan term, and current interest rate.{% endblock %}
+
+{% block meta_keywords %}car affordability, max car price, budget calculator, monthly budget, car loan limits{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Reusing your base styles for consistency and modern aesthetic */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 12px; /* Slightly more rounded */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        font-size: 1.35rem;
+        color: #10b981; /* A nice green for affordability/budgeting */
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 5px;
+    }
+
+    .input-group-text {
+        font-weight: 500;
+        background-color: #f7f7f7;
+    }
+
+    .form-control:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+        border-left: 5px solid #10b981;
+        padding: 15px;
+        font-size: 1.1rem;
+        background-color: #ecfdf5; /* Light background for success */
+        color: #065f46;
+        font-weight: 600;
+    }
+
+    canvas {
+        margin-top: 30px;
+        max-height: 400px;
+    }
+    
+    .table-title {
+        color: #374151;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💰 Car Affordability Calculator</h1>
+    <p class="small-muted">Determine the **Maximum Affordable Vehicle Price** based on your monthly budget constraints and loan terms.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <form id="affordability-form">
+            
+            <!-- Step 1: Budget & Loan Limits -->
+            <h5 class="section-title">Step 1: Your Budget & Desired Loan Terms</h5>
+
+            <!-- Desired Max Monthly Payment -->
+            <label class="form-label d-block mt-3">Maximum Desired Monthly Loan Payment</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" id="max_payment" placeholder="e.g., 450" min="50" step="1" required>
+            </div>
+
+            <div class="row g-3">
+                <!-- Interest Rate -->
+                <div class="col-md-6">
+                    <label class="form-label">Annual Interest Rate (APR)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="rate" placeholder="e.g., 6.5" min="0.01" max="50" step="0.01" required>
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+                <!-- Loan Term -->
+                <div class="col-md-6">
+                    <label class="form-label">Loan Term</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="term_months" placeholder="e.g., 72" min="12" max="120" step="1" required>
+                        <span class="input-group-text">Months</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Initial Costs & Taxes -->
+            <h5 class="section-title">Step 2: Down Payment, Trade-in & Tax Rate</h5>
+
+            <div class="row g-3">
+                <!-- Down Payment -->
+                <div class="col-md-4">
+                    <label class="form-label">Down Payment</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="down_payment" value="0" min="0" step="1">
+                    </div>
+                </div>
+                <!-- Trade-in Value -->
+                <div class="col-md-4">
+                    <label class="form-label">Trade-in Value</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="trade_in" value="0" min="0" step="1">
+                    </div>
+                </div>
+                <!-- Sales Tax Rate -->
+                <div class="col-md-4">
+                    <label class="form-label">Sales Tax Rate</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="tax_rate" placeholder="e.g., 7.5" value="7.5" min="0" max="25" step="0.01">
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Other Monthly Expenses (For Total Budget Picture) -->
+            <h5 class="section-title">Step 3: Other Estimated Monthly Car Expenses (Optional)</h5>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Estimated Insurance Cost</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="insurance" value="150" min="0" step="1">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Estimated Fuel/Gas Cost</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="gas" value="100" min="0" step="1">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Estimated Maintenance/Buffer</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="maintenance" value="50" min="0" step="1">
+                    </div>
+                </div>
+            </div>
+
+
+            <button class="btn btn-success mt-4 w-100" type="submit">Calculate Max Affordability</button>
+        </form>
+
+        <!-- Results Section -->
+        <div class="alert mt-4 d-none result-alert" id="affordability-result"></div>
+
+        <h5 class="table-title d-none mt-5" id="summary-title">Summary of Affordability</h5>
+        <table class="table table-striped mt-2 d-none" id="affordability-summary-table">
+            <tbody id="affordability-summary-body"></tbody>
+        </table>
+
+        <!-- Visual Breakdown of Monthly/Total Budget -->
+        <canvas id="affordability-chart" class="d-none"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let affordabilityChart = null;
+
+    // Helper for formatting currency
+    const formatCurrency = (amount) => `$${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+
+    function calculateAffordability() {
+        // 1. Get Inputs
+        const max_payment = parseFloat(document.getElementById('max_payment').value) || 0;
+        const rate_annual = parseFloat(document.getElementById('rate').value) / 100 || 0;
+        const term_months = parseInt(document.getElementById('term_months').value) || 0;
+        const down_payment = parseFloat(document.getElementById('down_payment').value) || 0;
+        const trade_in = parseFloat(document.getElementById('trade_in').value) || 0;
+        const tax_rate = parseFloat(document.getElementById('tax_rate').value) / 100 || 0;
+        
+        // Optional Monthly Costs for budget breakdown
+        const insurance = parseFloat(document.getElementById('insurance').value) || 0;
+        const gas = parseFloat(document.getElementById('gas').value) || 0;
+        const maintenance = parseFloat(document.getElementById('maintenance').value) || 0;
+
+        // Basic validation
+        if (max_payment <= 0 || rate_annual <= 0 || term_months <= 0) {
+            displayError("Please enter valid monthly payment, interest rate, and loan term.");
+            return null;
+        }
+
+        // 2. Calculate Maximum Affordable Principal (P)
+        const rate_monthly = rate_annual / 12;
+        let max_principal;
+
+        if (rate_monthly > 0) {
+            // P = M * [ (1 + i)^n – 1 ] / [ i(1 + i)^n ]
+            const term_factor = Math.pow(1 + rate_monthly, term_months);
+            max_principal = max_payment * (term_factor - 1) / (rate_monthly * term_factor);
+        } else {
+            // For 0% APR, Principal = Monthly Payment * Term
+            max_principal = max_payment * term_months;
+        }
+        
+        if (max_principal <= 0) {
+            displayError("The maximum affordable principal is zero or negative. Please check your inputs.");
+            return null;
+        }
+
+        // 3. Calculate Maximum Affordable Car Price (C)
+        // C = (Max Principal + Credit) / (1 + Tax Rate)
+        const credit = down_payment + trade_in;
+        const max_car_price = (max_principal + credit) / (1 + tax_rate);
+        
+        // 4. Calculate Summary Metrics
+        const sales_tax_dollars = max_car_price * tax_rate;
+        const total_price_with_tax = max_car_price + sales_tax_dollars;
+        const total_interest = (max_payment * term_months) - max_principal;
+        const total_loan_payments = max_principal + total_interest;
+        const total_cost_of_car = total_loan_payments + credit;
+
+        return {
+            max_principal,
+            max_car_price,
+            total_interest,
+            sales_tax_dollars,
+            down_payment,
+            trade_in,
+            total_cost_of_car,
+            total_loan_payments,
+            total_monthly_car_expenses: max_payment + insurance + gas + maintenance,
+            budget_breakdown: {
+                loan_payment: max_payment,
+                insurance: insurance,
+                gas: gas,
+                maintenance: maintenance
+            }
+        };
+    }
+    
+    function displayError(message) {
+        const res = document.getElementById('affordability-result');
+        res.classList.remove('d-none', 'alert-info');
+        res.classList.add('alert-danger');
+        res.innerHTML = `**Calculation Error:** ${message}`;
+        document.getElementById('summary-title').classList.add('d-none');
+        document.getElementById('affordability-summary-table').classList.add('d-none');
+        document.getElementById('affordability-chart').classList.add('d-none');
+    }
+
+    document.getElementById('affordability-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const results = calculateAffordability();
+        if (!results) return;
+
+        // 1. Update Main Result Display
+        const res = document.getElementById('affordability-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.innerHTML = `
+**MAXIMUM AFFORDABLE CAR PRICE (MSRP):** <span style="font-size:1.75rem; color:#10b981;">${formatCurrency(results.max_car_price)}</span>
+
+**Maximum Loan Principal:** ${formatCurrency(results.max_principal)}
+**Total Estimated Monthly Expense:** ${formatCurrency(results.total_monthly_car_expenses)}
+`;
+        
+        // 2. Update Summary Table
+        document.getElementById('summary-title').classList.remove('d-none');
+        document.getElementById('affordability-summary-table').classList.remove('d-none');
+        const summaryBody = document.getElementById('affordability-summary-body');
+        summaryBody.innerHTML = `
+        <tr><td>Max Affordable Car Price (MSRP)</td><td>**${formatCurrency(results.max_car_price)}**</td></tr>
+        <tr><td>Sales Tax on Max Price</td><td>${formatCurrency(results.sales_tax_dollars)}</td></tr>
+        <tr><td>**Max Loan Principal**</td><td>**${formatCurrency(results.max_principal)}**</td></tr>
+        <tr><td>Down Payment / Trade-in Credit</td><td>${formatCurrency(results.down_payment + results.trade_in)}</td></tr>
+        <tr><td>Total Interest Paid Over Term</td><td>${formatCurrency(results.total_interest)}</td></tr>
+        <tr><td>Total Cost of Ownership (Loan + Credit)</td><td>${formatCurrency(results.total_cost_of_car)}</td></tr>
+        `;
+
+        // 3. Update Chart (Breakdown of Monthly Budget)
+        const ctx = document.getElementById('affordability-chart').getContext('2d');
+        document.getElementById('affordability-chart').classList.remove('d-none');
+        if (affordabilityChart) affordabilityChart.destroy();
+
+        affordabilityChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Loan Payment', 'Insurance', 'Gas/Fuel', 'Maintenance/Buffer'],
+                datasets: [{
+                    data: [
+                        results.budget_breakdown.loan_payment,
+                        results.budget_breakdown.insurance,
+                        results.budget_breakdown.gas,
+                        results.budget_breakdown.maintenance
+                    ],
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: `Monthly Car Budget Breakdown: ${formatCurrency(results.total_monthly_car_expenses)}` },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += formatCurrency(context.parsed);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Scroll to results
+        document.getElementById('affordability-result').scrollIntoView({ behavior: 'smooth' });
+    });
+
+</script>
+{% endblock %}

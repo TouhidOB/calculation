@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Tile Grout Calculator{% endblock %}
+
+{% block meta_description %}Calculate the pounds of grout and total bags required for a tiling project based on area, tile size, joint width, and tile thickness. {% endblock %}
+
+{% block meta_keywords %}grout calculator, tile joint size, grout quantity, tiling supplies, square footage, tile thickness{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #009688; /* Teal/Green for a clean, tiling aesthetic */
+        border-bottom: 2px solid #009688;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF5722; /* Deep Orange for key results */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #e0f2f1; /* Light teal info box */
+        border: 1px solid #009688;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .dimension-group .input-group-text {
+        min-width: 60px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">📐 Tile Grout Calculator</h1>
+    <p class="text-center small-muted">Estimates the required grout weight and bag count for your tiling project.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="grout-calculator-form">
+            <h5 class="section-title">1. Project Area (Square Feet)</h5>
+
+            <!-- Area Input -->
+            <label for="area-input" class="form-label">Total Area to be Tiled</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Area (A)</span>
+                <input type="number" id="area-input" class="form-control" name="areaSqFt" placeholder="e.g., 100" value="100" min="1" step="0.1" required>
+                <span class="input-group-text">sq ft</span>
+            </div>
+            
+            <h5 class="section-title">2. Tile & Joint Dimensions (Inches)</h5>
+
+            <p class="small text-muted mb-3">All dimensions should be in inches (in).</p>
+
+            <!-- Tile Dimensions -->
+            <label for="tile-l-input" class="form-label">Tile Size (Length x Width)</label>
+            <div class="d-flex gap-2 dimension-group mb-3">
+                <div class="input-group">
+                    <span class="input-group-text">L</span>
+                    <input type="number" id="tile-l-input" class="form-control" name="tileLength" placeholder="e.g., 12" value="12" min="0.5" step="0.1" required>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text">W</span>
+                    <input type="number" id="tile-w-input" class="form-control" name="tileWidth" placeholder="e.g., 12" value="12" min="0.5" step="0.1" required>
+                </div>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <!-- Joint Width Input -->
+            <label for="joint-w-input" class="form-label">Grout Joint Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Joint Width (J)</span>
+                <input type="number" id="joint-w-input" class="form-control" name="jointWidth" placeholder="e.g., 0.25 (1/4)" value="0.25" min="0.05" step="0.01" required>
+                <span class="input-group-text">in</span>
+            </div>
+
+            <!-- Tile Thickness Input -->
+            <label for="tile-t-input" class="form-label">Tile Thickness/Depth</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Thickness (T)</span>
+                <input type="number" id="tile-t-input" class="form-control" name="tileThickness" placeholder="e.g., 0.375" value="0.375" min="0.1" step="0.01" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <h5 class="section-title">3. Grout Bag Size</h5>
+
+            <!-- Grout Bag Weight Input -->
+            <label for="bag-weight-input" class="form-label">Weight of One Bag of Grout</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Bag Weight</span>
+                <input type="number" id="bag-weight-input" class="form-control" name="bagWeight" placeholder="e.g., 10 or 25" value="10" min="1" step="1" required>
+                <span class="input-group-text">lbs</span>
+            </div>
+
+            <div class="info-box">
+                **Calculation Constant (K):** This tool uses a standard constant ($K \approx 1.65$) to account for grout density, waste, and unit conversion from cubic inches to pounds per square foot.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #009688; border-color: #009688;" type="submit">Calculate Grout Required</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-danger" id="grout-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Grout Requirements Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="grout-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #009688; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="grout-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constant K for conversion and density (used in the industry formula)
+    // K = 1.65 is an approximate factor for L, W, J, T in inches, Area in sq ft, resulting in Lbs.
+    const GROUT_CONSTANT_K = 1.65; 
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('grout-result');
+        const table = document.getElementById('grout-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('grout-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-success', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-success');
+            
+            // Primary result: Total Bags and Lbs
+            res.innerHTML = `
+**Grout Required (Purchase)**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span style="font-size:2rem; color:#009688; font-weight:bold;">${metrics.totalBagsNeeded}</span><br>
+        <span class="small text-muted">Bags (Rounded Up)</span>
+    </div>
+    <div class="text-center">
+        <span style="font-size:2rem; color:#009688; font-weight:bold;">${metrics.totalGroutLbs.toFixed(2)}</span><br>
+        <span class="small text-muted">Lbs of Grout Needed</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Bags to Purchase</td><td>**${metrics.totalBagsNeeded} Pcs**</td></tr>
+            <tr><td>Total Grout Weight Required</td><td>${metrics.totalGroutLbs.toFixed(2)} lbs</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Area to be Tiled</td><td>${metrics.areaSqFt} sq ft</td></tr>
+            <tr><td>Tile Dimensions (L x W)</td><td>${metrics.tileLength}" x ${metrics.tileWidth}"</td></tr>
+            <tr><td>Joint Width (J)</td><td>${metrics.jointWidth}"</td></tr>
+            <tr><td>Tile Thickness (T)</td><td>${metrics.tileThickness}"</td></tr>
+            <tr><td>Bag Size</td><td>${metrics.bagWeight} lbs</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('grout-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const areaSqFt = parseFloat(form.elements.areaSqFt.value); // A (sq ft)
+        const tileLength = parseFloat(form.elements.tileLength.value); // L (in)
+        const tileWidth = parseFloat(form.elements.tileWidth.value); // W (in)
+        const jointWidth = parseFloat(form.elements.jointWidth.value); // J (in)
+        const tileThickness = parseFloat(form.elements.tileThickness.value); // T (in)
+        const bagWeight = parseFloat(form.elements.bagWeight.value); // lbs per bag
+        
+        // Basic validation
+        if (isNaN(areaSqFt) || areaSqFt <= 0 || isNaN(tileLength) || tileLength <= 0 || isNaN(tileWidth) || tileWidth <= 0 || isNaN(jointWidth) || jointWidth <= 0 || isNaN(tileThickness) || tileThickness <= 0 || isNaN(bagWeight) || bagWeight <= 0) {
+            displayResult(true, "Please ensure all dimensions and weights are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // Formula for Grout Weight (Lbs) - Common Industry Approximation:
+            // Weight = [(L + W) * J * T * A] / (L * W) * K
+            // Where:
+            // L, W = Tile Length, Width (in)
+            // J = Joint Width (in)
+            // T = Tile Thickness (in)
+            // A = Area (sq ft)
+            // K = Grout Constant (approx 1.65)
+
+            const numerator = (tileLength + tileWidth) * jointWidth * tileThickness * areaSqFt;
+            const denominator = tileLength * tileWidth;
+            
+            if (denominator === 0) {
+                 displayResult(true, "Tile Length multiplied by Tile Width resulted in zero, which is invalid.");
+                 return;
+            }
+
+            // Calculate total required grout weight
+            const totalGroutLbs = (numerator / denominator) * GROUT_CONSTANT_K;
+            
+            // Calculate number of bags needed (rounded up for purchase)
+            const totalBagsNeeded = Math.ceil(totalGroutLbs / bagWeight);
+            
+            // 4. Display results
+            const metrics = {
+                areaSqFt,
+                tileLength,
+                tileWidth,
+                jointWidth,
+                tileThickness,
+                bagWeight,
+                totalGroutLbs,
+                totalBagsNeeded
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('grout-result').classList.add('d-none');
+        document.getElementById('grout-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

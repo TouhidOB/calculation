@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Text Character & Word Counter{% endblock %}
+
+{% block meta_description %}Real-time tool to count characters, words, sentences, and paragraphs in any given text, including options for counting with and without spaces.{% endblock %}
+
+{% block meta_keywords %}word counter, character counter, text statistics, writing tool, online counter{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e0e0e0;
+    }
+
+    #text-input {
+        min-height: 300px;
+        font-size: 1.1rem;
+        padding: 20px;
+        resize: vertical;
+        border: 2px solid #f0f2f5;
+        border-radius: 8px;
+        transition: border-color 0.3s ease;
+    }
+
+    #text-input:focus {
+        border-color: #0d6efd;
+        box-shadow: none;
+    }
+
+    .stat-box {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 15px 10px;
+        text-align: center;
+        transition: all 0.2s ease;
+        height: 100%;
+    }
+
+    .stat-box:hover {
+        border-color: #0d6efd;
+        background-color: #f8fbff;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #212529;
+    }
+    
+    .primary-stat .stat-value {
+        color: #0d6efd; /* Highlight Words and Chars */
+    }
+
+    .action-btn {
+        font-weight: 600;
+        padding: 8px 20px;
+        border-radius: 6px;
+    }
+
+    /* Reading time badge style */
+    #reading-time-suffix {
+        font-size: 0.9rem;
+        font-weight: normal;
+        color: #6c757d;
+    }
+
+    @media (max-width: 767px) {
+        .stat-value { font-size: 1.4rem; }
+        .calc-wrapper { padding: 15px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">📝 Text Character & Word Counter</h1>
+        <p class="text-muted">A professional utility for writers, editors, and students.</p>
+    </div>
+
+    <div class="calc-wrapper mx-auto" style="max-width: 1100px;">
+
+        <div class="row g-3 mb-4" id="stats-display">
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-box primary-stat">
+                    <div class="stat-label">Words</div>
+                    <div class="stat-value" id="word-count">0</div>
+                </div>
+            </div>
+            
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-box primary-stat">
+                    <div class="stat-label">Chars <small>(Spaces)</small></div>
+                    <div class="stat-value" id="char-with-spaces-count">0</div>
+                </div>
+            </div>
+            
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-box">
+                    <div class="stat-label">Chars <small>(No Space)</small></div>
+                    <div class="stat-value" id="char-no-spaces-count">0</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-box">
+                    <div class="stat-label">Sentences</div>
+                    <div class="stat-value" id="sentence-count">0</div>
+                </div>
+            </div>
+            
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-box">
+                    <div class="stat-label">Paragraphs</div>
+                    <div class="stat-value" id="paragraph-count">0</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="stat-box">
+                    <div class="stat-label">Read Time</div>
+                    <div class="stat-value"><span id="reading-time">0</span><span id="reading-time-suffix">m</span></div>
+                </div>
+            </div>
+        </div>
+
+        <textarea 
+            class="form-control shadow-sm" 
+            id="text-input" 
+            placeholder="Paste your content here to analyze word count and text density..."
+            spellcheck="true"
+            autofocus
+        ></textarea>
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <button class="btn btn-primary action-btn shadow-sm" id="copy-btn">
+                <i class="bi bi-clipboard me-1"></i> Copy Text
+            </button>
+            <button class="btn btn-outline-danger action-btn" id="clear-btn">
+                Clear All
+            </button>
+            <div id="copy-status" class="ms-auto align-self-center text-success fw-bold d-none">
+                Copied!
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const WORDS_PER_MINUTE = 200;
+
+    const textInput = document.getElementById('text-input');
+    const wordCountEl = document.getElementById('word-count');
+    const charWithSpacesCountEl = document.getElementById('char-with-spaces-count');
+    const charNoSpacesCountEl = document.getElementById('char-no-spaces-count');
+    const sentenceCountEl = document.getElementById('sentence-count');
+    const paragraphCountEl = document.getElementById('paragraph-count');
+    const readingTimeEl = document.getElementById('reading-time');
+    const clearBtn = document.getElementById('clear-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const copyStatus = document.getElementById('copy-status');
+
+    function updateStats() {
+        const text = textInput.value;
+        
+        // Character Counts
+        const charWithSpacesCount = text.length;
+        const charNoSpacesCount = text.replace(/\s/g, '').length;
+
+        // Word Count: Splits by any whitespace and filters out empty strings
+        const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+        const wordCount = words.length;
+        
+        // Sentence Count: Looks for terminal punctuation followed by space or end of string
+        const sentences = text.trim().match(/[^\.!\?]+[\.!\?]+(\s|$)/g);
+        let sentenceCount = sentences ? sentences.length : 0;
+        if (wordCount > 0 && sentenceCount === 0) sentenceCount = 1;
+
+        // Paragraph Count: Splits by double newlines
+        const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim() !== '');
+        const paragraphCount = paragraphs.length;
+
+        // Reading Time
+        const readingTime = wordCount > 0 ? Math.ceil(wordCount / WORDS_PER_MINUTE) : 0;
+
+        // Update UI
+        wordCountEl.textContent = wordCount.toLocaleString();
+        charWithSpacesCountEl.textContent = charWithSpacesCount.toLocaleString();
+        charNoSpacesCountEl.textContent = charNoSpacesCount.toLocaleString();
+        sentenceCountEl.textContent = sentenceCount.toLocaleString();
+        paragraphCountEl.textContent = paragraphCount.toLocaleString();
+        readingTimeEl.textContent = readingTime;
+    }
+
+    function clearText() {
+        if (textInput.value.length > 0) {
+            textInput.value = '';
+            updateStats();
+        }
+        textInput.focus();
+    }
+
+    function copyToClipboard() {
+        if (!textInput.value) return;
+        
+        textInput.select();
+        document.execCommand('copy');
+        
+        // Visual feedback
+        copyStatus.classList.remove('d-none');
+        setTimeout(() => {
+            copyStatus.classList.add('d-none');
+        }, 2000);
+    }
+
+    // Event Listeners
+    textInput.addEventListener('input', updateStats);
+    clearBtn.addEventListener('click', clearText);
+    copyBtn.addEventListener('click', copyToClipboard);
+
+    // Run once on load to ensure 0s are initialized correctly
+    window.addEventListener('load', updateStats);
+</script>
+{% endblock %}

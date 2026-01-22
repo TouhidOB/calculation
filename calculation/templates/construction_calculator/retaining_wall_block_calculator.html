@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Retaining Wall Block Calculator{% endblock %}
+
+{% block meta_description %}Calculate the total number of retaining wall blocks and the area of geotextile fabric needed based on wall dimensions and block size. {% endblock %}
+
+{% block meta_keywords %}retaining wall block count, landscape block calculator, geotechnical fabric area, wall square footage, block material estimate{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #455A64; /* Blue-Grey for stone/concrete structure */
+        border-bottom: 2px solid #455A64;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFC107; /* Amber for material count result */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #eceff1; /* Light gray info box */
+        border: 1px solid #455A64;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #455A64;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🧱 Retaining Wall Block Calculator</h1>
+    <p class="text-center small-muted">Estimates the number of blocks and the area of stabilizing fabric needed for your wall.</p>
+    [Image of a stone retaining wall under construction]
+
+    <div class="calc-wrapper">
+
+        <form id="retaining-wall-calculator-form">
+            <h5 class="section-title">1. Wall Dimensions</h5>
+
+            <!-- Wall Length Input (Feet) -->
+            <label for="wall-length-input" class="form-label">Total Wall Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length (L)</span>
+                <input type="number" id="wall-length-input" class="form-control" name="wallLength" placeholder="e.g., 40" value="40" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Wall Height Input (Feet) -->
+            <label for="wall-height-input" class="form-label">Wall Height (Exposed)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Height (H)</span>
+                <input type="number" id="wall-height-input" class="form-control" name="wallHeight" placeholder="e.g., 3.5" value="3.5" min="0.5" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+
+            <h5 class="section-title">2. Block Dimensions (Specific Product)</h5>
+
+            <!-- Block Height Input (Inches) -->
+            <label for="block-height-input" class="form-label">Block Height (Visible Face)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Block H</span>
+                <input type="number" id="block-height-input" class="form-control" name="blockHeightInches" placeholder="e.g., 6" value="6" min="1" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <!-- Block Width Input (Inches) -->
+            <label for="block-width-input" class="form-label">Block Width (Length of Face)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Block W</span>
+                <input type="number" id="block-width-input" class="form-control" name="blockWidthInches" placeholder="e.g., 16" value="16" min="1" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <h5 class="section-title">3. Geogrid / Fabric Requirements</h5>
+            
+            <!-- Geogrid Depth (Feet) -->
+            <label for="geogrid-depth-input" class="form-label">Geogrid/Fabric Depth (Length of strip)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Grid Depth</span>
+                <input type="number" id="geogrid-depth-input" class="form-control" name="geogridDepth" placeholder="e.g., 4" value="4" min="0" step="1">
+                <span class="input-group-text">ft</span>
+            </div>
+
+            <!-- Geogrid Layers -->
+            <label for="geogrid-layers-input" class="form-label">Number of Geogrid/Fabric Layers</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Layers</span>
+                <input type="number" id="geogrid-layers-input" class="form-control" name="geogridLayers" placeholder="e.g., 2" value="2" min="0" step="1">
+                <span class="input-group-text">Pcs</span>
+            </div>
+
+            <div class="info-box">
+                **Block Waste:** This calculation includes a **5% block waste factor** for cutting and breakage. Fabric calculation includes 10% overlap/waste.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #455A64; border-color: #455A64;" type="submit">Calculate Materials</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="wall-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Material Requirement Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="wall-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #455A64; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="wall-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const INCHES_PER_FOOT = 12;
+    const BLOCK_WASTE_FACTOR = 1.05; // 5% extra blocks for cutting/breakage
+    const FABRIC_WASTE_FACTOR = 1.10; // 10% extra for overlap/waste
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('wall-result');
+        const table = document.getElementById('wall-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('wall-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Blocks and Fabric
+            res.innerHTML = `
+**Required Materials:**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span class="result-value">${metrics.totalBlocksNeeded}</span><br>
+        <span class="small text-muted">Total Blocks (Rounded Up)</span>
+    </div>
+    <div class="text-center">
+        <span class="result-value">${metrics.fabricSqFt.toFixed(1)}</span><br>
+        <span class="small text-muted">Sq Ft of Fabric/Geogrid</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Blocks to Purchase</td><td>**${metrics.totalBlocksNeeded} Pcs**</td></tr>
+            <tr><td>Total Fabric Area (Incl. Waste)</td><td>**${metrics.fabricSqFt.toFixed(1)} sq ft**</td></tr>
+            <tr><td>Wall Face Area</td><td>${metrics.wallSqFt.toFixed(1)} sq ft</td></tr>
+            <tr><td>Blocks per Sq Ft</td><td>${metrics.blocksPerSqFt.toFixed(2)}</td></tr>
+            <tr><td>Theoretical Minimum Blocks</td><td>${metrics.theoreticalBlocks.toFixed(0)} Pcs</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Wall Length (L)</td><td>${metrics.wallLength} ft</td></tr>
+            <tr><td>Wall Height (H)</td><td>${metrics.wallHeight} ft</td></tr>
+            <tr><td>Block Face Area</td><td>${metrics.blockSqFt.toFixed(3)} sq ft</td></tr>
+            <tr><td>Geogrid Depth (per layer)</td><td>${metrics.geogridDepth} ft</td></tr>
+            <tr><td>Geogrid Layers</td><td>${metrics.geogridLayers}</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('retaining-wall-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const wallLength = parseFloat(form.elements.wallLength.value); // L (ft)
+        const wallHeight = parseFloat(form.elements.wallHeight.value); // H (ft)
+        const blockHeightInches = parseFloat(form.elements.blockHeightInches.value); // BH (in)
+        const blockWidthInches = parseFloat(form.elements.blockWidthInches.value); // BW (in)
+        const geogridDepth = parseFloat(form.elements.geogridDepth.value) || 0;
+        const geogridLayers = parseInt(form.elements.geogridLayers.value) || 0;
+        
+        // Basic validation
+        if (isNaN(wallLength) || wallLength <= 0 || isNaN(wallHeight) || wallHeight <= 0 || 
+            isNaN(blockHeightInches) || blockHeightInches <= 0 || isNaN(blockWidthInches) || blockWidthInches <= 0) 
+        {
+            displayResult(true, "Please ensure all dimension fields (Wall and Block) are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Block Requirements ---
+            
+            // Wall area in square feet
+            const wallSqFt = wallLength * wallHeight;
+            
+            // Block face area in square feet
+            const blockHeightFt = blockHeightInches / INCHES_PER_FOOT;
+            const blockWidthFt = blockWidthInches / INCHES_PER_FOOT;
+            const blockSqFt = blockHeightFt * blockWidthFt;
+
+            // Blocks per square foot
+            const blocksPerSqFt = 1 / blockSqFt;
+            
+            // Theoretical minimum blocks needed
+            const theoreticalBlocks = wallSqFt * blocksPerSqFt;
+            
+            // Total blocks including waste, rounded up
+            const totalBlocksNeeded = Math.ceil(theoreticalBlocks * BLOCK_WASTE_FACTOR);
+            
+            // --- 2. Calculate Geogrid/Fabric Requirements ---
+            let fabricSqFt = 0;
+            if (geogridDepth > 0 && geogridLayers > 0) {
+                // Area of fabric per layer = Wall Length * Geogrid Depth
+                const totalFabricAreaNoWaste = wallLength * geogridDepth * geogridLayers;
+                
+                // Total fabric including waste
+                fabricSqFt = totalFabricAreaNoWaste * FABRIC_WASTE_FACTOR;
+            }
+
+            // 3. Display results
+            const metrics = {
+                wallLength,
+                wallHeight,
+                blockHeightInches,
+                blockWidthInches,
+                geogridDepth,
+                geogridLayers,
+                wallSqFt,
+                blockSqFt,
+                blocksPerSqFt,
+                theoreticalBlocks,
+                totalBlocksNeeded,
+                fabricSqFt
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('wall-result').classList.add('d-none');
+        document.getElementById('wall-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

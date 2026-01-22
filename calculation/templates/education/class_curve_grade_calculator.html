@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Class Curve Grade Calculator{% endblock %}
+
+{% block meta_description %}Apply various grading curves (add points, percentage, standard deviation) to a set of student scores and view new class statistics.{% endblock %}
+
+{% block meta_keywords %}grading curve, class average, standard deviation, Z-score, score normalization, grade adjustment, curve calculator{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 5, 150, 105; /* Emerald */
+    }
+    
+    body {
+        background-color: #f8fafc;
+    }
+    
+    .calc-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    .sidebar-config {
+        background-color: #f0fdf4;
+        border-right: 1px solid #d1fae5;
+    }
+
+    .stat-box {
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-top: 0.25rem;
+    }
+
+    .table-container {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .empty-state {
+        padding: 4rem 1rem;
+        color: #94a3b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-bar-chart-fill text-success me-2"></i>Class Curve Grade Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 700px;">
+            Professional grade normalization tool. Input your class scores and choose a distribution method to adjust grades fairly based on statistical performance.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-card overflow-hidden">
+        <div class="row g-0">
+            <div class="col-lg-4 sidebar-config p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-success">1. Input Scores</h5>
+                
+                <div class="mb-4">
+                    <label for="raw-scores" class="form-label">Raw Student Scores</label>
+                    <textarea id="raw-scores" class="form-control" rows="8" 
+                        placeholder="Enter scores (comma or line separated)..."></textarea>
+                    <div class="form-text mt-2 small text-muted">
+                        e.g., 85, 72.5, 91, 68... (Values 0-100)
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="fw-bold mb-3 text-success">2. Curve Settings</h5>
+                <div class="mb-3">
+                    <label class="form-label">Curving Method</label>
+                    <select id="curve-method" class="form-select shadow-sm" onchange="toggleCurveParameters(); calculateCurve()">
+                        <option value="none">Raw Scores (No Curve)</option>
+                        <option value="add_points">Fixed Points Adjustment</option>
+                        <option value="percentage">Percentage Scaling</option>
+                        <option value="set_max">Highest Score = 100%</option>
+                        <option value="standard_dev">Normal Distribution (Z-Score)</option>
+                    </select>
+                </div>
+
+                <div id="curve-params" class="p-3 bg-white border rounded shadow-sm">
+                    </div>
+            </div>
+
+            <div class="col-lg-8 bg-white p-4 p-md-5">
+                <div id="empty-view" class="empty-state text-center">
+                    <i class="bi bi-clipboard-data display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold">Ready to Calculate</h4>
+                    <p>Enter your class scores on the left to see statistics and adjusted grades.</p>
+                </div>
+
+                <div id="results-view" class="d-none">
+                    <h5 class="fw-bold mb-4 text-secondary">3. Statistical Overview</h5>
+                    
+                    <div class="row g-3 mb-5 text-center">
+                        <div class="col-6 col-md-3">
+                            <div class="stat-box bg-light border">
+                                <div class="stat-label">Raw Avg</div>
+                                <div class="stat-value text-dark" id="raw-average">0.0</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-box bg-success bg-opacity-10 border border-success">
+                                <div class="stat-label text-success">Curved Avg</div>
+                                <div class="stat-value text-success" id="curved-average">0.0</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-box bg-light border">
+                                <div class="stat-label">Raw StDev</div>
+                                <div class="stat-value text-dark" id="raw-stdev">0.0</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-box bg-success bg-opacity-10 border border-success">
+                                <div class="stat-label text-success">Curved StDev</div>
+                                <div class="stat-value text-success" id="curved-stdev">0.0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 text-secondary">4. Adjusted Score Detail</h5>
+                    <div class="table-container border rounded">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Student</th>
+                                    <th class="text-center">Raw (%)</th>
+                                    <th class="text-center">Adjustment</th>
+                                    <th class="text-end pe-3">Curved (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="score-output">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Statistical Logic ---
+    const calculateMean = scores => scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+    const calculateStandardDeviation = (scores, mean) => {
+        if (scores.length <= 1) return 0;
+        return Math.sqrt(scores.map(s => Math.pow(s - mean, 2)).reduce((a, b) => a + b) / scores.length);
+    };
+
+    function toggleCurveParameters() {
+        const method = document.getElementById('curve-method').value;
+        const paramsDiv = document.getElementById('curve-params');
+        paramsDiv.innerHTML = '';
+        
+        const config = {
+            add_points: `<label class="small fw-bold">Points to Add</label><input type="number" id="param-points" value="5" class="form-control" oninput="calculateCurve()">`,
+            percentage: `<label class="small fw-bold">Percentage Increase (%)</label><input type="number" id="param-percent" value="10" class="form-control" oninput="calculateCurve()">`,
+            standard_dev: `
+                <div class="mb-2"><label class="small fw-bold text-muted">Target Mean</label><input type="number" id="param-target-mean" value="80" class="form-control" oninput="calculateCurve()"></div>
+                <div><label class="small fw-bold text-muted">Target Std Dev</label><input type="number" id="param-target-stdev" value="10" class="form-control" oninput="calculateCurve()"></div>`,
+            set_max: `<div class="small text-primary"><i class="bi bi-info-circle me-1"></i> Scales best score to 100%</div>`
+        };
+        
+        paramsDiv.innerHTML = config[method] || `<div class="small text-muted">No parameters needed</div>`;
+    }
+
+    function calculateCurve() {
+        const rawInput = document.getElementById('raw-scores').value.trim();
+        const resultsView = document.getElementById('results-view');
+        const emptyView = document.getElementById('empty-view');
+
+        if (!rawInput) {
+            resultsView.classList.add('d-none');
+            emptyView.classList.remove('d-none');
+            return;
+        }
+
+        const rawScores = rawInput.split(/,|\n/).map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+        if (rawScores.length === 0) return;
+
+        resultsView.classList.remove('d-none');
+        emptyView.classList.add('d-none');
+
+        const rawMean = calculateMean(rawScores);
+        const rawStDev = calculateStandardDeviation(rawScores, rawMean);
+        const maxRaw = Math.max(...rawScores);
+        const method = document.getElementById('curve-method').value;
+
+        const curvedData = rawScores.map(score => {
+            let curved = score;
+            let adj = "0";
+
+            if (method === 'add_points') {
+                const p = parseFloat(document.getElementById('param-points')?.value || 0);
+                curved = Math.min(100, score + p);
+                adj = `+${p}`;
+            } else if (method === 'percentage') {
+                const p = parseFloat(document.getElementById('param-percent')?.value || 0);
+                curved = Math.min(100, score * (1 + p/100));
+                adj = `+${p}%`;
+            } else if (method === 'set_max') {
+                curved = (score / maxRaw) * 100;
+                adj = `x${(100/maxRaw).toFixed(2)}`;
+            } else if (method === 'standard_dev') {
+                const tm = parseFloat(document.getElementById('param-target-mean')?.value || 80);
+                const ts = parseFloat(document.getElementById('param-target-stdev')?.value || 10);
+                const z = rawStDev === 0 ? 0 : (score - rawMean) / rawStDev;
+                curved = Math.min(100, Math.max(0, tm + (z * ts)));
+                adj = (curved - score) >= 0 ? `+${(curved-score).toFixed(1)}` : (curved-score).toFixed(1);
+            }
+
+            return { raw: score, curved, adj };
+        });
+
+        const finalCurvedScores = curvedData.map(d => d.curved);
+        
+        // Update UI Stats
+        document.getElementById('raw-average').innerText = rawMean.toFixed(1);
+        document.getElementById('raw-stdev').innerText = rawStDev.toFixed(1);
+        document.getElementById('curved-average').innerText = calculateMean(finalCurvedScores).toFixed(1);
+        document.getElementById('curved-stdev').innerText = calculateStandardDeviation(finalCurvedScores, calculateMean(finalCurvedScores)).toFixed(1);
+
+        // Update Table
+        const output = document.getElementById('score-output');
+        output.innerHTML = curvedData.map((d, i) => `
+            <tr>
+                <td class="ps-3 text-muted">Student ${i+1}</td>
+                <td class="text-center">${d.raw.toFixed(1)}</td>
+                <td class="text-center"><span class="badge bg-light text-dark border">${d.adj}</span></td>
+                <td class="text-end pe-3 fw-bold text-success">${d.curved.toFixed(1)}%</td>
+            </tr>
+        `).join('');
+    }
+
+    window.onload = () => {
+        document.getElementById('raw-scores').addEventListener('input', calculateCurve);
+        toggleCurveParameters();
+    };
+</script>
+{% endblock %}

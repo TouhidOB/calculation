@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block title %}Project Timeline Calculator (Critical Path){% endblock %}
+
+{% block meta_description %}Calculate the minimum project duration, task float, and the Critical Path using the Critical Path Method (CPM) based on task durations and dependencies. {% endblock %}
+
+{% block meta_keywords %}critical path method, CPM calculator, project timeline, task dependency, float, early start, late finish, project management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #0077B6; /* Deep Blue for analysis/management */
+        border-bottom: 2px solid #0077B6;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f0f8ff;
+        font-weight: 600;
+        color: #0077B6;
+    }
+
+    .info-box {
+        background-color: #e6f7ff; /* Light blue info box */
+        border: 1px solid #0077B6;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .task-input-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        gap: 5px;
+    }
+
+    .task-input-row .form-control {
+        flex: 1;
+        min-width: 80px;
+    }
+    .task-input-row input[type="text"] {
+        flex-basis: 15%;
+    }
+    .task-input-row input[type="number"] {
+        flex-basis: 10%;
+    }
+
+    .remove-btn {
+        background: none;
+        border: none;
+        color: #D32F2F;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 0 10px;
+        font-size: 1.2rem;
+    }
+
+    /* Results Table Styling */
+    .table thead th {
+        background-color: #0077B6;
+        color: white;
+        text-align: center;
+    }
+    .table tbody td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    .critical-path {
+        background-color: #ffcccc !important; /* Light Red/Pink for critical tasks */
+        font-weight: bold;
+    }
+    .project-duration {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #D32F2F; /* Highlight the final duration */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">⏱️ Critical Path Method (CPM) Calculator</h1>
+    <p class="text-center small-muted">Determine the project's shortest completion time and identify tasks where delays are critical.</p>
+
+    <div class="calc-wrapper">
+
+        <h5 class="section-title">1. Define Project Tasks</h5>
+
+        <div class="task-input-row mb-2 small text-muted">
+            <input type="text" class="form-control" value="Task ID" disabled style="font-weight: bold; flex-basis: 5%;">
+            <input type="text" class="form-control" value="Task Name" disabled style="font-weight: bold; flex-basis: 25%;">
+            <input type="text" class="form-control" value="Duration (Days)" disabled style="font-weight: bold; flex-basis: 15%;">
+            <input type="text" class="form-control" value="Predecessors (IDs)" disabled style="font-weight: bold; flex-basis: 35%;">
+            <div style="flex-basis: 5%;"></div>
+        </div>
+
+        <form id="cpm-calculator-form">
+            <div id="task-items-container">
+                <!-- Task inputs go here -->
+            </div>
+
+            <button type="button" id="add-task-btn" class="btn btn-outline-secondary w-100 mt-3" style="border-color: #0077B6; color: #0077B6;">+ Add Task</button>
+
+            <div class="info-box">
+                **Predecessors:** Enter the Task IDs (e.g., A, B) of tasks that must be completed *before* the current task can start, separated by commas (no spaces). Use **'A'** for the starting task.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #0077B6; border-color: #0077B6;" type="submit">Calculate Critical Path</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-info" id="cpm-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">2. Critical Path Analysis</h5>
+        <table class="table table-bordered mt-2 d-none" id="cpm-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">ID</th>
+                    <th rowspan="2">Name</th>
+                    <th rowspan="2">Duration</th>
+                    <th colspan="2">Early Dates</th>
+                    <th colspan="2">Late Dates</th>
+                    <th rowspan="2">Float (Slack)</th>
+                </tr>
+                <tr>
+                    <th>Start (ES)</th>
+                    <th>Finish (EF)</th>
+                    <th>Start (LS)</th>
+                    <th>Finish (LF)</th>
+                </tr>
+            </thead>
+            <tbody id="cpm-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let taskIdCounter = 'A'.charCodeAt(0) - 1; // Start counter before 'A'
+
+    // Function to create a new task input row
+    function createTaskInput(id, name, duration, predecessors) {
+        taskIdCounter++;
+        const newId = String.fromCharCode(taskIdCounter);
+        
+        const container = document.getElementById('task-items-container');
+        
+        const div = document.createElement('div');
+        div.className = 'task-input-row';
+        div.dataset.id = newId;
+
+        div.innerHTML = `
+            <input type="text" class="form-control" name="id-${newId}" value="${newId}" readonly style="flex-basis: 5%; font-weight: bold;">
+            <input type="text" class="form-control" name="name-${newId}" value="${name}" placeholder="Description" required style="flex-basis: 25%;">
+            <input type="number" class="form-control" name="duration-${newId}" value="${duration}" min="1" step="1" required style="flex-basis: 15%;">
+            <input type="text" class="form-control" name="predecessors-${newId}" value="${predecessors}" placeholder="e.g., A,B" style="flex-basis: 35%;">
+            <button type="button" class="remove-btn" data-id="${newId}" aria-label="Remove task" style="flex-basis: 5%;">
+                &times;
+            </button>
+        `;
+
+        container.appendChild(div);
+    }
+
+    // Function to handle removing an item
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-btn')) {
+            const id = e.target.dataset.id;
+            const itemToRemove = document.querySelector(`.task-input-row[data-id="${id}"]`);
+            if (itemToRemove) {
+                itemToRemove.remove();
+            }
+        }
+    });
+
+    // Add Task button handler
+    document.getElementById('add-task-btn').addEventListener('click', () => {
+        // Use a generic placeholder when adding manually
+        createTaskInput('', '', 5, 'PreviousID');
+    });
+
+    // Function to find the final project duration and display it
+    function displaySummary(duration, criticalPath) {
+        const res = document.getElementById('cpm-result');
+        res.classList.remove('d-none', 'alert-danger');
+        res.classList.add('alert-info');
+        
+        const pathList = criticalPath.join(' → ');
+
+        res.innerHTML = `
+**Project Duration:**
+<div class="text-center mt-3 mb-2">
+    <span class="project-duration">${duration} Days</span>
+</div>
+<p class="small text-center mt-2">
+    **Critical Path:** <span style="color: #D32F2F; font-weight: bold;">${pathList}</span>
+</p>
+<p class="small text-center">
+    Tasks on the Critical Path have zero float (slack) and must be completed on time to avoid project delays.
+</p>
+`;
+    }
+
+    // Main Calculation Logic
+    document.getElementById('cpm-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        
+        const table = document.getElementById('cpm-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('cpm-body');
+        const resultDiv = document.getElementById('cpm-result');
+
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        resultDiv.classList.add('d-none');
+        tableBody.innerHTML = '';
+        resultDiv.classList.remove('alert-danger'); // Reset error class
+
+        const tasks = [];
+        const taskElements = document.querySelectorAll('#task-items-container .task-input-row');
+        
+        if (taskElements.length === 0) {
+            resultDiv.classList.remove('d-none');
+            resultDiv.classList.add('alert-danger');
+            resultDiv.innerHTML = "**Calculation Error:** Please add at least one task to the project plan.";
+            return;
+        }
+
+        try {
+            // --- 1. Gather and Validate Task Data ---
+            const taskMap = {}; // Map of ID -> Task object
+            
+            taskElements.forEach(row => {
+                const id = row.dataset.id;
+                const name = document.querySelector(`[name="name-${id}"]`).value.trim();
+                const duration = parseFloat(document.querySelector(`[name="duration-${id}"]`).value);
+                // Clean up predecessors input: strip whitespace, convert to array
+                const predecessorsText = document.querySelector(`[name="predecessors-${id}"]`).value.trim().toUpperCase();
+                const predecessors = predecessorsText ? predecessorsText.split(',').map(p => p.trim()) : [];
+                
+                if (isNaN(duration) || duration <= 0 || !name) {
+                    throw new Error(`Invalid duration or name for Task ${id}. Duration must be positive.`);
+                }
+                
+                // Initialize task structure
+                const task = {
+                    id, name, duration, predecessors, 
+                    ES: 0, EF: 0, LS: Infinity, LF: Infinity, 
+                    float: 0, isCritical: false, successors: []
+                };
+                tasks.push(task);
+                taskMap[id] = task;
+            });
+
+            // --- 2. Build Successor List and Check Dependency Validity ---
+            tasks.forEach(task => {
+                task.predecessors.forEach(predId => {
+                    if (!taskMap[predId]) {
+                        throw new Error(`Task ${task.id} lists unknown predecessor ID: ${predId}.`);
+                    }
+                    taskMap[predId].successors.push(task.id);
+                });
+            });
+
+            // --- 3. Forward Pass (Calculate ES and EF) ---
+            // ES(Start) = Max(EF of all predecessors)
+            
+            // Queue for processing tasks (simulating topological sort for simplicity)
+            let readyTasks = tasks.filter(t => t.predecessors.length === 0);
+            let processedCount = 0;
+            
+            while (readyTasks.length > 0) {
+                const task = readyTasks.shift();
+                
+                // Calculate ES
+                if (task.predecessors.length > 0) {
+                    const maxEF = Math.max(...task.predecessors.map(p => taskMap[p].EF));
+                    task.ES = maxEF;
+                } else {
+                    task.ES = 0; // Starting tasks begin at time 0
+                }
+                
+                task.EF = task.ES + task.duration;
+                processedCount++;
+
+                // Mark successors as ready if all their predecessors are processed
+                task.successors.forEach(succId => {
+                    const successor = taskMap[succId];
+                    const predecessorsProcessed = successor.predecessors.every(predId => taskMap[predId].EF > 0);
+                    if (predecessorsProcessed && !readyTasks.includes(successor)) {
+                        readyTasks.push(successor);
+                    }
+                });
+            }
+
+            if (processedCount !== tasks.length) {
+                throw new Error("Dependency error detected (e.g., circular dependency or task missing predecessors). Cannot calculate EF.");
+            }
+
+            // --- 4. Determine Project Duration and Backward Pass Start ---
+            const projectDuration = Math.max(...tasks.map(t => t.EF));
+
+            // --- 5. Backward Pass (Calculate LS and LF) ---
+            // LF(Predecessor) = Min(LS of all successors)
+            // LS = LF - Duration
+
+            // Initialize end tasks
+            const endTasks = tasks.filter(t => t.successors.length === 0);
+            endTasks.forEach(task => {
+                task.LF = projectDuration;
+                task.LS = task.LF - task.duration;
+            });
+
+            // Process tasks in reverse order of EF (closest to the end first)
+            const reverseOrderTasks = [...tasks].sort((a, b) => b.EF - a.EF);
+
+            reverseOrderTasks.forEach(task => {
+                if (task.successors.length > 0) {
+                    const minLS = Math.min(...task.successors.map(sId => taskMap[sId].LS));
+                    task.LF = minLS;
+                } 
+                // If it's an end task, LF is already set to projectDuration
+
+                task.LS = task.LF - task.duration;
+            });
+
+            // --- 6. Calculate Float and Identify Critical Path ---
+            let criticalPath = [];
+            tasks.forEach(task => {
+                task.float = task.LS - task.ES;
+                task.isCritical = task.float === 0;
+                
+                if (task.isCritical) {
+                    criticalPath.push(task.id);
+                }
+            });
+
+            // --- 7. Display Results ---
+            
+            // Display overall summary
+            displaySummary(projectDuration, criticalPath);
+
+            // Display table
+            let tableRows = '';
+            // Sort tasks by ID for clear presentation
+            tasks.sort((a, b) => a.id.localeCompare(b.id)).forEach(task => {
+                const rowClass = task.isCritical ? 'critical-path' : '';
+                tableRows += `
+                <tr class="${rowClass}">
+                    <td>${task.id}</td>
+                    <td class="text-start">${task.name}</td>
+                    <td>${task.duration}</td>
+                    <td>${task.ES}</td>
+                    <td>${task.EF}</td>
+                    <td>${task.LS}</td>
+                    <td>${task.LF}</td>
+                    <td>${task.float}</td>
+                </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            resultDiv.classList.remove('d-none');
+            resultDiv.classList.add('alert-danger');
+            resultDiv.innerHTML = `**Calculation Error:** ${error.message}`;
+        }
+    });
+
+    // Initialize with example data
+    window.onload = function() {
+        createTaskInput('A', 'Design & Planning', 5, '');
+        createTaskInput('B', 'Procurement', 4, 'A');
+        createTaskInput('C', 'Foundation Work', 6, 'A');
+        createTaskInput('D', 'Framing', 8, 'C');
+        createTaskInput('E', 'Roofing & Siding', 7, 'D');
+        createTaskInput('F', 'Interiors', 10, 'B,E');
+        createTaskInput('G', 'Final Inspection', 2, 'F');
+        
+        // Reset counter after loading example data
+        taskIdCounter = 'G'.charCodeAt(0);
+
+        // Ensure results section is hidden on load
+        document.getElementById('cpm-result').classList.add('d-none');
+        document.getElementById('cpm-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}

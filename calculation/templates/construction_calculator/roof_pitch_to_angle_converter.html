@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Roof Pitch to Angle Converter{% endblock %}
+
+{% block meta_description %}Convert standard roof pitch (rise-over-12) into the equivalent angle in degrees and percentage grade. Essential for roof framing and design. {% endblock %}
+
+{% block meta_keywords %}pitch to angle, roof pitch, angle converter, degrees, grade percentage, rise over run, roof slope calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #8BC34A; /* Light Green for Roofs/Nature */
+        border-bottom: 2px solid #8BC34A;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF5722; /* Deep Orange for final result contrast */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #f1f8e9; /* Very light green info box */
+        border: 1px solid #8BC34A;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">📐 Pitch to Angle Converter</h1>
+    <p class="text-center small-muted">Convert standard roof pitch (Rise/12) to Angle in Degrees and Grade Percentage.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="pitch-to-angle-form">
+            <h5 class="section-title">1. Input Roof Pitch</h5>
+
+            <!-- Pitch Rise Input (Rise in 12) -->
+            <label for="pitch-rise-input" class="form-label">Pitch Rise (Value of 'A' in A/12)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Rise (A)</span>
+                <input type="number" id="pitch-rise-input" class="form-control" name="pitchRise" placeholder="e.g., 4 (for a 4/12 pitch)" value="6" min="0" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <div class="input-group mb-3">
+                <span class="input-group-text">Standard Run</span>
+                <input type="text" class="form-control text-center" value="12 inches" readonly>
+            </div>
+
+            <div class="info-box">
+                Roof pitch is defined by the vertical rise over a 12-inch horizontal run.
+            </div>
+            
+            <h5 class="section-title">2. Calculate</h5>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #8BC34A; border-color: #8BC34A;" type="submit">Convert Pitch to Angle</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-danger" id="pitch-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Conversion Results</h5>
+        <table class="table table-bordered mt-2 d-none" id="pitch-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #8BC34A; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="pitch-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const STANDARD_RUN = 12; // The '12' in the A/12 pitch
+    const RADIANS_TO_DEGREES = 180 / Math.PI;
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('pitch-result');
+        const table = document.getElementById('pitch-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('pitch-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Angle in Degrees
+            res.innerHTML = `
+**Equivalent Slope Angle:**
+<span style="font-size:2rem; color:#8BC34A; font-weight:bold;">${metrics.slopeDegrees.toFixed(3)}°</span>
+<p class="text-center mt-3 mb-0">Grade: **${metrics.gradePercent.toFixed(2)}%**</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Slope Angle (Degrees)</td><td>**${metrics.slopeDegrees.toFixed(4)} °**</td></tr>
+            <tr><td>Grade Percentage (Slope)</td><td>${metrics.gradePercent.toFixed(2)}%</td></tr>
+            <tr><td>Unit Rafter Length (Hypotenuse)</td><td>${metrics.unitLength.toFixed(4)} inches</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Pitch Rise (A)</td><td>${metrics.pitchRise.toFixed(2)} inches</td></tr>
+            <tr><td>Pitch Ratio</td><td>${metrics.pitchRise.toFixed(0)} / 12</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('pitch-to-angle-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input value
+        const pitchRise = parseFloat(form.elements.pitchRise.value); // A in A/12
+        
+        // Basic validation
+        if (isNaN(pitchRise) || pitchRise < 0) {
+            displayResult(true, "Please enter a non-negative number for the Pitch Rise.");
+            return;
+        }
+
+        try {
+            // 1. Calculate Slope Angle (Degrees)
+            // Angle = atan(Rise / Run)
+            const angleRadians = Math.atan(pitchRise / STANDARD_RUN);
+            const slopeDegrees = angleRadians * RADIANS_TO_DEGREES;
+
+            // 2. Calculate Grade Percentage
+            // Grade % = (Rise / Run) * 100
+            const gradePercent = (pitchRise / STANDARD_RUN) * 100;
+            
+            // 3. Calculate Unit Rafter Length (Hypotenuse of the 12" run triangle)
+            // This is useful for Rafter Length calculations
+            const unitLength = Math.sqrt(Math.pow(pitchRise, 2) + Math.pow(STANDARD_RUN, 2)); // in inches
+            
+            // 4. Display results
+            const metrics = {
+                pitchRise,
+                slopeDegrees,
+                gradePercent,
+                unitLength
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('pitch-result').classList.add('d-none');
+        document.getElementById('pitch-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}

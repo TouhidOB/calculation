@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Student Monthly Budget Calculator{% endblock %}
+
+{% block meta_description %}Manage your student finances by calculating monthly income, tracking expenses, and determining your net budget surplus or deficit.{% endblock %}
+
+{% block meta_keywords %}student budget, monthly budget, finance calculator, expense tracker, college savings, income analysis{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #dee2e6;
+    }
+
+    .budget-section {
+        border-radius: 12px;
+        padding: 20px;
+        height: 100%;
+        border-top: 5px solid;
+    }
+
+    .income-section { border-color: #198754; background-color: #f8fff9; }
+    .fixed-section { border-color: #dc3545; background-color: #fff8f8; }
+    .variable-section { border-color: #fd7e14; background-color: #fffaf5; }
+
+    .item-row {
+        margin-bottom: 10px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card {
+        border-radius: 12px;
+        padding: 25px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+    }
+
+    /* Result State Colors */
+    .surplus { background-color: #d1fae5; border: 1px solid #198754; color: #198754; }
+    .deficit { background-color: #fee2e2; border: 1px solid #dc3545; color: #dc3545; }
+    .neutral { background-color: #f8f9fa; border: 1px solid #dee2e6; color: #6c757d; }
+
+    .btn-add {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">📊 Student Monthly Budget</h1>
+        <p class="text-muted">Take control of your finances by tracking every dollar in and out.</p>
+    </div>
+
+    
+
+    <div class="calc-wrapper mx-auto" style="max-width: 1100px;">
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="budget-section income-section">
+                    <h5 class="fw-bold text-success mb-3"><i class="bi bi-wallet2 me-2"></i>Monthly Income</h5>
+                    <div id="income-list"></div>
+                    <button class="btn btn-outline-success btn-add w-100 mt-2" onclick="addItem('income')">
+                        <i class="bi bi-plus-lg"></i> Add Income Source
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="budget-section fixed-section">
+                    <h5 class="fw-bold text-danger mb-3"><i class="bi bi-house me-2"></i>Fixed Expenses</h5>
+                    <div id="fixed-list"></div>
+                    <button class="btn btn-outline-danger btn-add w-100 mt-2" onclick="addItem('fixed')">
+                        <i class="bi bi-plus-lg"></i> Add Fixed Cost
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="budget-section variable-section">
+                    <h5 class="fw-bold text-warning mb-3"><i class="bi bi-cart4 me-2"></i>Variable Expenses</h5>
+                    <div id="variable-list"></div>
+                    <button class="btn btn-outline-warning btn-add w-100 mt-2" onclick="addItem('variable')">
+                        <i class="bi bi-plus-lg"></i> Add Variable Cost
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <h5 class="fw-bold mb-4 text-center">Budget Summary</h5>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="stat-card bg-light border">
+                    <div class="stat-label">Total Income</div>
+                    <div class="stat-value text-success" id="total-income-display">$0.00</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card bg-light border">
+                    <div class="stat-label">Total Expenses</div>
+                    <div class="stat-value text-danger" id="total-expense-display">$0.00</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div id="balance-card" class="stat-card neutral">
+                    <div class="stat-label">Monthly Net Balance</div>
+                    <div class="stat-value" id="net-balance-display">$0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <button class="btn btn-link text-muted text-decoration-none" onclick="resetBudget()">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset Entire Budget
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let itemCounter = 0;
+
+    function calculate() {
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        document.querySelectorAll('.income-amount').forEach(el => totalIncome += parseFloat(el.value) || 0);
+        document.querySelectorAll('.fixed-amount').forEach(el => totalExpenses += parseFloat(el.value) || 0);
+        document.querySelectorAll('.variable-amount').forEach(el => totalExpenses += parseFloat(el.value) || 0);
+
+        const balance = totalIncome - totalExpenses;
+
+        // Update Displays
+        document.getElementById('total-income-display').innerText = `$${totalIncome.toFixed(2)}`;
+        document.getElementById('total-expense-display').innerText = `$${totalExpenses.toFixed(2)}`;
+        document.getElementById('net-balance-display').innerText = `$${balance.toFixed(2)}`;
+
+        // Update Balance Styling
+        const card = document.getElementById('balance-card');
+        card.className = 'stat-card';
+        if (balance > 0) card.classList.add('surplus');
+        else if (balance < 0) card.classList.add('deficit');
+        else card.classList.add('neutral');
+    }
+
+    function addItem(type, desc = '', amt = 0) {
+        itemCounter++;
+        const container = document.getElementById(`${type}-list`);
+        const rowId = `row-${itemCounter}`;
+        
+        const row = document.createElement('div');
+        row.className = 'item-row d-flex gap-2';
+        row.id = rowId;
+        row.innerHTML = `
+            <input type="text" class="form-control form-control-sm" placeholder="e.g. Rent" value="${desc}">
+            <div class="input-group input-group-sm w-50">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control ${type}-amount" step="0.01" value="${amt.toFixed(2)}" oninput="calculate()">
+            </div>
+            <button class="btn btn-sm btn-link text-danger p-0" onclick="removeItem('${rowId}')">
+                <i class="bi bi-x-circle-fill"></i>
+            </button>
+        `;
+        container.appendChild(row);
+        calculate();
+    }
+
+    function removeItem(id) {
+        document.getElementById(id).remove();
+        calculate();
+    }
+
+    function resetBudget() {
+        if(confirm("Are you sure you want to clear all data?")) {
+            document.getElementById('income-list').innerHTML = '';
+            document.getElementById('fixed-list').innerHTML = '';
+            document.getElementById('variable-list').innerHTML = '';
+            calculate();
+        }
+    }
+
+    window.onload = () => {
+        // Start empty for professional visitor experience
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Study Abroad Cost Calculator{% endblock %}
+
+{% block meta_description %}Estimate the total cost of a study abroad program, factoring in tuition, travel, living expenses, and financial aid.{% endblock %}
+
+{% block meta_keywords %}study abroad, cost calculator, tuition, travel expenses, living expenses, scholarship, financial aid, budget planning{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 13, 110, 253;
+    }
+    
+    body {
+        background-color: #f8f9fa;
+    }
+    
+    .calc-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+        border: none;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #495057;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-title i {
+        margin-right: 10px;
+        color: #0d6efd;
+    }
+
+    .input-group-text {
+        background-color: #f1f3f5;
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .result-card {
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: transform 0.2s;
+        border: 2px solid transparent;
+    }
+
+    .result-value {
+        font-size: 2.25rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .bg-summary-total { background-color: #e7f1ff; border-color: #0d6efd; color: #084298; }
+    .bg-summary-aid { background-color: #e6fffa; border-color: #38b2ac; color: #234e52; }
+    .bg-summary-net { background-color: #fff5f5; border-color: #fc8181; color: #a02020; }
+
+    .breakdown-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .breakdown-row:last-child {
+        border-bottom: none;
+    }
+
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        color: #adb5bd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold"><i class="bi bi-globe-americas text-primary me-2"></i>Study Abroad Cost Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 700px;">Plan your global education journey with precision. Enter your program details below to generate a comprehensive budget and net out-of-pocket projection.</p>
+    </div>
+
+    
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="calc-card p-4 p-md-5">
+                
+                <div class="section-title"><i class="bi bi-calendar-check"></i> 1. Program Basics</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Program / Tuition Fee</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="program-fee" class="form-control" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Duration (Weeks)</label>
+                        <input type="number" id="duration-weeks" class="form-control" placeholder="12">
+                    </div>
+                </div>
+
+                <div class="section-title"><i class="bi bi-airplane"></i> 2. Upfront Fixed Costs</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-uppercase">Flights</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="flight-cost" class="form-control" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-uppercase">Visa/Insurance</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="visa-insurance" class="form-control" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-uppercase">Misc. Pre-travel</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="pre-travel-misc" class="form-control" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title"><i class="bi bi-wallet2"></i> 3. Weekly Living Expenses</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-uppercase">Food/Dining</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="weekly-food" class="form-control" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-uppercase">Transport</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="weekly-transport" class="form-control" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-uppercase">Personal/Fun</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="weekly-fun-misc" class="form-control" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title text-success"><i class="bi bi-gift text-success"></i> 4. Financial Aid</div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Scholarships & Grants Received</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-success bg-opacity-10 text-success">$</span>
+                            <input type="number" id="scholarship-aid" class="form-control border-success border-opacity-25" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div id="results-placeholder" class="calc-card empty-state h-100 d-flex flex-column justify-content-center">
+                <i class="bi bi-receipt-cutoff display-4 mb-3"></i>
+                <h5>Awaiting Input</h5>
+                <p class="small">Enter your program fee and duration to see your budget projection.</p>
+            </div>
+
+            <div id="results-content" class="d-none">
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="result-card bg-summary-total shadow-sm">
+                            <div class="small fw-bold text-uppercase opacity-75">Estimated Gross Cost</div>
+                            <div class="result-value" id="total-estimated-cost">$0</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="result-card bg-summary-aid shadow-sm">
+                            <div class="small fw-bold text-uppercase opacity-75">Total Financial Aid</div>
+                            <div class="result-value" id="total-aid">$0</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="result-card bg-summary-net shadow-lg">
+                            <div class="small fw-bold text-uppercase">Net Out-of-Pocket</div>
+                            <div class="result-value" id="net-cost">$0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calc-card p-4">
+                    <h6 class="fw-bold mb-3 border-bottom pb-2">Budget Breakdown</h6>
+                    <div class="breakdown-row">
+                        <span class="text-muted">Fixed Upfront Costs</span>
+                        <span class="fw-bold text-dark" id="fixed-cost-detail">$0</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span class="text-muted">Total Variable Living</span>
+                        <span class="fw-bold text-dark" id="variable-cost-detail">$0</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span class="text-muted">Program & Tuition</span>
+                        <span class="fw-bold text-dark" id="program-fee-detail">$0</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-3 bg-white border rounded small text-muted">
+                    <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                    <strong>Note:</strong> This is an estimate based on your inputs. Currency exchange rates and local inflation may affect actual costs.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    });
+
+    function calculateCost() {
+        // --- 1. Get Inputs ---
+        const programFee = parseFloat(document.getElementById('program-fee').value) || 0;
+        const durationWeeks = parseInt(document.getElementById('duration-weeks').value) || 0;
+        const flightCost = parseFloat(document.getElementById('flight-cost').value) || 0;
+        const visaInsurance = parseFloat(document.getElementById('visa-insurance').value) || 0;
+        const preTravelMisc = parseFloat(document.getElementById('pre-travel-misc').value) || 0;
+        const weeklyFood = parseFloat(document.getElementById('weekly-food').value) || 0;
+        const weeklyTransport = parseFloat(document.getElementById('weekly-transport').value) || 0;
+        const weeklyFunMisc = parseFloat(document.getElementById('weekly-fun-misc').value) || 0;
+        const scholarshipAid = parseFloat(document.getElementById('scholarship-aid').value) || 0;
+
+        const resultsPlaceholder = document.getElementById('results-placeholder');
+        const resultsContent = document.getElementById('results-content');
+
+        // Professional Check: Only show results if duration or program fee is set
+        if (programFee === 0 && durationWeeks === 0) {
+            resultsPlaceholder.classList.remove('d-none');
+            resultsContent.classList.add('d-none');
+            return;
+        } else {
+            resultsPlaceholder.classList.add('d-none');
+            resultsContent.classList.remove('d-none');
+        }
+
+        // --- 2. Calculate ---
+        const totalFixedCost = flightCost + visaInsurance + preTravelMisc;
+        const weeklyTotal = weeklyFood + weeklyTransport + weeklyFunMisc;
+        const totalVariableCost = weeklyTotal * durationWeeks;
+        const totalEstimatedCost = programFee + totalFixedCost + totalVariableCost;
+        const netCost = Math.max(0, totalEstimatedCost - scholarshipAid);
+
+        // --- 3. Update UI ---
+        document.getElementById('total-estimated-cost').textContent = formatter.format(totalEstimatedCost);
+        document.getElementById('total-aid').textContent = formatter.format(scholarshipAid);
+        document.getElementById('net-cost').textContent = formatter.format(netCost);
+        
+        document.getElementById('program-fee-detail').textContent = formatter.format(programFee);
+        document.getElementById('fixed-cost-detail').textContent = formatter.format(totalFixedCost);
+        document.getElementById('variable-cost-detail').textContent = formatter.format(totalVariableCost);
+    }
+
+    window.onload = function() {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateCost);
+        });
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Gutter Downspout Capacity Calculator{% endblock %}
+
+{% block meta_description %}Calculate the number of downspouts and the required capacity based on the roof's effective drainage area and local rainfall rate. {% endblock %}
+
+{% block meta_keywords %}downspout calculator, gutter capacity, roof drainage area, rainfall intensity, rain gutter sizing, downspout number, downspout size{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #00897B; /* Teal for water/drainage */
+        border-bottom: 2px solid #00897B;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #03A9F4; /* Light Blue for water-related results */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #e0f7fa; /* Light teal info box */
+        border: 1px solid #00897B;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #00897B;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🌧️ Gutter Downspout Calculator</h1>
+    <p class="text-center small-muted">Calculates the required downspout capacity and count based on your roof area and local rainfall rate.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="downspout-calculator-form">
+            <h5 class="section-title">1. Drainage Area & Rainfall Rate</h5>
+
+            <!-- Effective Roof Area Input (Sq Ft) -->
+            <label for="area-input" class="form-label">Effective Roof Drainage Area (A)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Area</span>
+                <input type="number" id="area-input" class="form-control" name="roofAreaSqFt" placeholder="e.g., 1000" value="1000" min="1" step="1" required>
+                <span class="input-group-text">sq ft</span>
+            </div>
+            
+            <!-- Rainfall Rate Input (Inches per Hour) -->
+            <label for="rainfall-input" class="form-label">Maximum 5-Minute Rainfall Intensity (I)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Rate</span>
+                <input type="number" id="rainfall-input" class="form-control" name="rainfallRate" placeholder="e.g., 4" value="4" min="0.5" step="0.1" required>
+                <span class="input-group-text">in / hr</span>
+            </div>
+            
+            <h5 class="section-title">2. Downspout Sizing</h5>
+
+            <!-- Downspout Capacity Input (Sq Inches) -->
+            <label for="downspout-capacity-input" class="form-label">Single Downspout Capacity/Area (C)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Area</span>
+                <input type="number" id="downspout-capacity-input" class="form-control" name="downspoutCapacitySqIn" placeholder="e.g., 7.0 (for 2x3 downspout)" value="7.0" min="1" step="0.1" required>
+                <span class="input-group-text">sq in</span>
+            </div>
+
+            <div class="info-box">
+                **Standard Downspout Areas:**
+                <ul>
+                    <li>2"x3" Rectangular: ~7.0 sq in</li>
+                    <li>3"x4" Rectangular: ~12.0 sq in</li>
+                    <li>4" Round: ~12.5 sq in</li>
+                    <li>6" Round: ~28.2 sq in</li>
+                </ul>
+                Use the actual cross-sectional area of your chosen downspout type.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #00897B; border-color: #00897B;" type="submit">Calculate Downspouts</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-info" id="downspout-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Drainage Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="downspout-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #00897B; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="downspout-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constant used in drainage calculations: 
+    // This value converts (Sq Ft * In/Hr) to the required (Sq Inches of Capacity).
+    // K = 144 / 96.25 (144 in²/ft² divided by 96.25 gallons per minute per square inch)
+    const DRAINAGE_CONSTANT = 1.5; 
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('downspout-result');
+        const table = document.getElementById('downspout-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('downspout-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-info', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-info');
+            
+            // Primary result: Total Downspouts Needed
+            res.innerHTML = `
+**Required Downspouts (Using ${metrics.downspoutCapacitySqIn}" Downspouts):**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span class="result-value">${metrics.downspoutsNeeded}</span><br>
+        <span class="small text-muted">Total Downspouts (Rounded Up)</span>
+    </div>
+    <div class="text-center">
+        <span class="result-value">${metrics.totalCapacityRequired.toFixed(2)} sq in</span><br>
+        <span class="small text-muted">Required Total Downspout Capacity</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Downspouts to Install</td><td>**${metrics.downspoutsNeeded} Pcs**</td></tr>
+            <tr><td>Total Required Capacity</td><td>${metrics.totalCapacityRequired.toFixed(2)} sq in</td></tr>
+            <tr><td>Actual Installed Capacity</td><td>${metrics.actualInstalledCapacity.toFixed(2)} sq in</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Effective Roof Area (A)</td><td>${metrics.roofAreaSqFt} sq ft</td></tr>
+            <tr><td>Rainfall Rate (I)</td><td>${metrics.rainfallRate} in / hr</td></tr>
+            <tr><td>Single Downspout Capacity (C)</td><td>${metrics.downspoutCapacitySqIn} sq in</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('downspout-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const roofAreaSqFt = parseFloat(form.elements.roofAreaSqFt.value); // A (sq ft)
+        const rainfallRate = parseFloat(form.elements.rainfallRate.value); // I (in/hr)
+        const downspoutCapacitySqIn = parseFloat(form.elements.downspoutCapacitySqIn.value); // C (sq in)
+        
+        // Basic validation
+        if (isNaN(roofAreaSqFt) || roofAreaSqFt <= 0 || isNaN(rainfallRate) || rainfallRate <= 0 || isNaN(downspoutCapacitySqIn) || downspoutCapacitySqIn <= 0) {
+            displayResult(true, "Please ensure Roof Area, Rainfall Rate, and Downspout Capacity are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Total Required Downspout Capacity ---
+            
+            // Formula: Total Capacity (Sq In) = Area (Sq Ft) * Rainfall Rate (In/Hr) / K 
+            // Simplified Formula: Total Capacity (Sq In) = Area * Rate / 96.25 * 144
+            const totalCapacityRequired = (roofAreaSqFt * rainfallRate) / DRAINAGE_CONSTANT;
+
+            if (totalCapacityRequired <= 0) {
+                displayResult(true, "Calculated required capacity is zero or negative. Check inputs.");
+                return;
+            }
+            
+            // --- 2. Calculate Number of Downspouts Needed ---
+            
+            // Downspouts Needed = Total Required Capacity / Single Downspout Capacity
+            const theoreticalDownspouts = totalCapacityRequired / downspoutCapacitySqIn;
+            
+            // Round up to the nearest whole number for purchasing and installation
+            const downspoutsNeeded = Math.ceil(theoreticalDownspouts);
+            
+            // --- 3. Calculate Actual Capacity Provided ---
+            const actualInstalledCapacity = downspoutsNeeded * downspoutCapacitySqIn;
+            
+            // 4. Display results
+            const metrics = {
+                roofAreaSqFt,
+                rainfallRate,
+                downspoutCapacitySqIn,
+                totalCapacityRequired,
+                downspoutsNeeded,
+                actualInstalledCapacity
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('downspout-result').classList.add('d-none');
+        document.getElementById('downspout-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Decking Calculator (Boards & Joists){% endblock %}
+
+{% block meta_description %}Calculate the total linear feet and number of decking boards needed for a deck, including joist material estimate, waste allowance, and gap spacing.{% endblock %}
+
+{% block meta_keywords %}decking calculator, linear feet, deck boards, joist spacing, lumber estimate, composite decking, waste factor{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #6D4C41; /* Brown/Wood color */
+        border-bottom: 2px solid #6D4C41;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFB300; /* Amber for final result */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .unit-input-label {
+        font-size: 0.85rem;
+        font-style: italic;
+        color: #6c757d;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .joist-group {
+        border-top: 1px dashed #ccc;
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🌳 Decking Material Calculator</h1>
+    <p class="text-center small-muted">Estimate the required decking boards (surface) and support beams (structure).</p>
+
+    <div class="calc-wrapper">
+
+        <form id="decking-form">
+            <h5 class="section-title">1. Deck Footprint (in Feet)</h5>
+            [Image of a deck structure with length and width labeled]
+
+            <!-- Length Input (Feet) -->
+            <label for="deck-length-input" class="form-label">Deck Length (Direction Parallel to Deck Boards)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length</span>
+                <input type="number" id="deck-length-input" class="form-control" name="deckLength" placeholder="Deck Length (e.g., 20)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            <span class="unit-input-label">The length of the boards you are laying.</span>
+
+            <!-- Width Input (Feet) -->
+            <label for="deck-width-input" class="form-label">Deck Width (Direction Perpendicular to Boards)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Width</span>
+                <input type="number" id="deck-width-input" class="form-control" name="deckWidth" placeholder="Deck Width (e.g., 12)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <h5 class="section-title">2. Deck Board & Waste Details</h5>
+
+            <!-- Board Length Input (Feet) -->
+            <label for="board-length-input" class="form-label">Deck Board Length (To be Purchased)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Board Length</span>
+                <input type="number" id="board-length-input" class="form-control" name="boardLength" placeholder="e.g., 16 (ft)" value="16" min="6" step="2" required>
+                <span class="input-group-text">ft</span>
+            </div>
+
+            <!-- Board Actual Width Input (Inches) -->
+            <label for="board-width-input" class="form-label">Actual Board Width (The surface area it covers)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Actual Width</span>
+                <input type="number" id="board-width-input" class="form-control" name="boardWidth" placeholder="e.g., 5.5 for a 6-inch nominal board" value="5.5" min="1" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+
+            <!-- Gap Input (Inches) -->
+            <label for="gap-input" class="form-label">Gap Between Boards</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Gap Size</span>
+                <input type="number" id="gap-input" class="form-control" name="gap" placeholder="e.g., 0.125 for 1/8 inch" value="0.125" min="0" step="0.01">
+                <span class="input-group-text">in</span>
+            </div>
+
+            <!-- Waste Percentage Input -->
+            <label for="waste-input" class="form-label">Waste/Cut Allowance</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Waste Factor</span>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 10" value="10" min="0" max="25" step="1" required>
+                <span class="input-group-text">%</span>
+            </div>
+
+            <h5 class="section-title">3. Structure (Joist) Estimate (Optional)</h5>
+
+            <!-- Joist Spacing Input (Inches) -->
+            <label for="joist-spacing-input" class="form-label">Joist Spacing (Center-to-Center)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Spacing</span>
+                <input type="number" id="joist-spacing-input" class="form-control" name="joistSpacing" placeholder="e.g., 16 or 24" value="16" min="1" step="1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            <span class="unit-input-label">Joists run perpendicular to the Deck Boards.</span>
+
+
+            <button class="btn btn-warning btn-lg w-100 mt-4" type="submit">Calculate Decking Materials</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="decking-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="decking-table">
+            <thead>
+                <tr class="table-warning">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="decking-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const INCHES_PER_FOOT = 12;
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('decking-result');
+        const table = document.getElementById('decking-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('decking-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Individual Boards
+            res.innerHTML = `
+**Total Individual Deck Boards to Purchase:**
+<span style="font-size:2rem; color:#6D4C41; font-weight:bold;">${metrics.finalBoards} Boards</span>
+<span style="font-size:1.2rem; color:#6D4C41;">(${metrics.totalLinearFeet.toFixed(1)} LF)</span>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Individual Boards (Rounded Up)</td><td>**${metrics.finalBoards} Boards**</td></tr>
+            <tr><td>Total Linear Feet Required (LF)</td><td>${metrics.totalLinearFeet.toFixed(1)} LF</td></tr>
+            <tr><td>Deck Surface Area</td><td>${metrics.deckArea.toFixed(1)} sq ft</td></tr>
+            <tr><td>Waste Percentage Applied</td><td>${(metrics.wasteFactorUsed * 100).toFixed(1)}%</td></tr>
+            <tr><td>Board Coverage (Board + Gap)</td><td>${metrics.boardCoverageInches.toFixed(3)} inches</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Joist Material Estimate**</td></tr>
+            <tr><td>Number of Joists Needed</td><td>${metrics.joistCount} Joists</td></tr>
+            <tr><td>Total Joist Linear Feet</td><td>${metrics.joistTotalLF.toFixed(1)} LF</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('decking-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const deckLength = parseFloat(form.elements.deckLength.value);
+        const deckWidth = parseFloat(form.elements.deckWidth.value);
+        const boardLength = parseFloat(form.elements.boardLength.value);
+        const boardWidth = parseFloat(form.elements.boardWidth.value); // Actual width in inches (e.g., 5.5)
+        const gap = parseFloat(form.elements.gap.value); // Gap in inches (e.g., 0.125)
+        const wastePercent = parseFloat(form.elements.wastePercent.value);
+        const joistSpacing = parseFloat(form.elements.joistSpacing.value); // Joist spacing in inches
+        
+        // Basic validation
+        if (isNaN(deckLength) || deckLength <= 0 || isNaN(deckWidth) || deckWidth <= 0 || isNaN(boardLength) || boardLength <= 0 || isNaN(boardWidth) || boardWidth <= 0 || isNaN(wastePercent) || wastePercent < 0 || isNaN(joistSpacing) || joistSpacing <= 0) {
+            displayResult(true, "Please ensure all dimensions (Length, Width, Board Size, Spacing) are positive numbers.");
+            return;
+        }
+
+        try {
+            // DECK BOARD CALCULATION
+            // 1. Calculate Deck Area (L x W)
+            const deckArea = deckLength * deckWidth;
+
+            // 2. Calculate the total coverage of one board (Board + Gap) in inches
+            const boardCoverageInches = boardWidth + gap;
+            const boardCoverageFeet = boardCoverageInches / INCHES_PER_FOOT;
+
+            // 3. Calculate the number of boards required *across the width* of the deck.
+            // (Deck Width in inches) / (Board Coverage in inches)
+            const deckWidthInches = deckWidth * INCHES_PER_FOOT;
+            const numberOfBoardsRequired = deckWidthInches / boardCoverageInches;
+
+            // 4. Calculate Total Linear Feet (No Waste)
+            // (Number of boards) * (Length of deck they cover)
+            const linearFeetNoWaste = numberOfBoardsRequired * deckLength;
+
+            // 5. Convert Waste Percentage to Factor (e.g., 10% -> 1.10)
+            const wasteFactor = 1 + (wastePercent / 100);
+
+            // 6. Calculate Total Linear Feet (with waste)
+            const totalLinearFeet = linearFeetNoWaste * wasteFactor;
+            
+            // 7. Calculate Total Individual Boards to Buy (round up to ensure coverage)
+            // Total Boards = Total Linear Feet / Length of Board to be purchased
+            const individualBoards = totalLinearFeet / boardLength;
+            const finalBoards = Math.ceil(individualBoards);
+
+
+            // JOIST MATERIAL CALCULATION (Simplified - assuming joists run the width of the deck)
+            // Joist Length = Deck Width
+            const joistLength = deckWidth;
+            
+            // Number of Joist Spaces = (Deck Length in inches / Joist Spacing in inches)
+            // Add 1 for the end joists (e.g., 10 spaces needs 11 joists)
+            const deckLengthInches = deckLength * INCHES_PER_FOOT;
+            const joistCount = Math.ceil(deckLengthInches / joistSpacing) + 1;
+            
+            // Total Joist Linear Feet = Joist Count * Joist Length (Deck Width)
+            const joistTotalLF = joistCount * joistLength;
+            
+            
+            // 8. Display results
+            const metrics = {
+                deckArea,
+                boardCoverageInches,
+                linearFeetNoWaste,
+                totalLinearFeet,
+                finalBoards,
+                wasteFactorUsed: wasteFactor - 1,
+                joistCount,
+                joistTotalLF
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('decking-result').classList.add('d-none');
+        document.getElementById('decking-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

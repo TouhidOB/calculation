@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Paver Sand & Gravel Base Calculator{% endblock %}
+
+{% block meta_description %}Calculate the cubic yard volume of gravel base and bedding sand needed for a paver installation based on area dimensions and desired layer depths. {% endblock %}
+
+{% block meta_keywords %}paver calculator, gravel base volume, bedding sand volume, cubic yards, patio foundation, paver sub-base, compaction factor{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #01579B; /* Deep Blue for foundation/stability */
+        border-bottom: 2px solid #01579B;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFCA28; /* Amber for material results */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #e3f2fd; /* Light blue info box */
+        border: 1px solid #01579B;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #01579B;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🧱 Paver Base Material Calculator</h1>
+    <p class="text-center small-muted">Estimates the cubic yard volume of gravel sub-base and bedding sand for your paving project.</p>
+    [Image of a cross-section diagram of paver installation showing the subgrade, gravel base, bedding sand, and paver]
+
+    <div class="calc-wrapper">
+
+        <form id="paver-base-calculator-form">
+            <h5 class="section-title">1. Paving Area Dimensions</h5>
+
+            <!-- Area Length Input (Feet) -->
+            <label for="length-input" class="form-label">Area Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length (L)</span>
+                <input type="number" id="length-input" class="form-control" name="areaLength" placeholder="e.g., 20" value="20" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Area Width Input (Feet) -->
+            <label for="width-input" class="form-label">Area Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Width (W)</span>
+                <input type="number" id="width-input" class="form-control" name="areaWidth" placeholder="e.g., 15" value="15" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+
+            <h5 class="section-title">2. Layer Depths (Thickness)</h5>
+
+            <!-- Gravel Base Depth Input (Inches) -->
+            <label for="gravel-depth-input" class="form-label">Gravel/Crushed Stone Base Depth</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Gravel D</span>
+                <input type="number" id="gravel-depth-input" class="form-control" name="gravelDepth" placeholder="e.g., 6" value="6" min="1" step="0.5" required>
+                <span class="input-group-text">in</span>
+            </div>
+
+            <!-- Bedding Sand Depth Input (Inches) -->
+            <label for="sand-depth-input" class="form-label">Bedding Sand Depth</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Sand D</span>
+                <input type="number" id="sand-depth-input" class="form-control" name="sandDepth" placeholder="e.g., 1" value="1" min="0.5" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <div class="info-box">
+                **Compaction & Waste:** Gravel volume includes **15% extra** for compaction. Sand volume includes **5% extra** for waste and leveling.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #01579B; border-color: #01579B;" type="submit">Calculate Material Volume</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="paver-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Volume Requirement Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="paver-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #01579B; color: white;">
+                    <th>Material / Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="paver-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const CUBIC_FEET_PER_CUBIC_YARD = 27;
+    const INCHES_PER_FOOT = 12;
+    // Factors
+    const GRAVEL_COMPACTION_FACTOR = 1.15; // 15% extra for settling/compaction
+    const SAND_WASTE_FACTOR = 1.05;       // 5% extra for waste/leveling
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('paver-result');
+        const table = document.getElementById('paver-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('paver-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Sand and Gravel Volume
+            res.innerHTML = `
+**Required Materials:**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span class="result-value">${metrics.gravelYards.toFixed(2)}</span><br>
+        <span class="small text-muted">Cubic Yards of Gravel Base</span>
+    </div>
+    <div class="text-center">
+        <span class="result-value">${metrics.sandYards.toFixed(2)}</span><br>
+        <span class="small text-muted">Cubic Yards of Bedding Sand</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Gravel Base Volume (Compacted)**</td><td>**${metrics.gravelYards.toFixed(2)} yd³**</td></tr>
+            <tr><td>Gravel Volume (Cubic Feet)</td><td>${(metrics.gravelYards * CUBIC_FEET_PER_CUBIC_YARD).toFixed(2)} ft³</td></tr>
+            <tr><td>Gravel Compaction Factor Applied</td><td>${((GRAVEL_COMPACTION_FACTOR - 1) * 100).toFixed(0)}%</td></tr>
+            <tr><td colspan="2" class="text-center table-active">---</td></tr>
+            <tr><td>**Bedding Sand Volume (With Waste)**</td><td>**${metrics.sandYards.toFixed(2)} yd³**</td></tr>
+            <tr><td>Sand Volume (Cubic Feet)</td><td>${(metrics.sandYards * CUBIC_FEET_PER_CUBIC_YARD).toFixed(2)} ft³</td></tr>
+            <tr><td>Sand Waste Factor Applied</td><td>${((SAND_WASTE_FACTOR - 1) * 100).toFixed(0)}%</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Total Paving Area</td><td>${metrics.areaSqFt.toFixed(1)} sq ft</td></tr>
+            <tr><td>Gravel Depth</td><td>${metrics.gravelDepth} in</td></tr>
+            <tr><td>Sand Depth</td><td>${metrics.sandDepth} in</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('paver-base-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const areaLength = parseFloat(form.elements.areaLength.value); // L (ft)
+        const areaWidth = parseFloat(form.elements.areaWidth.value); // W (ft)
+        const gravelDepth = parseFloat(form.elements.gravelDepth.value); // D_g (in)
+        const sandDepth = parseFloat(form.elements.sandDepth.value); // D_s (in)
+        
+        // Basic validation
+        if (isNaN(areaLength) || areaLength <= 0 || isNaN(areaWidth) || areaWidth <= 0 || 
+            isNaN(gravelDepth) || gravelDepth <= 0 || isNaN(sandDepth) || sandDepth <= 0) 
+        {
+            displayResult(true, "Please ensure all dimensions are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Area and Depths ---
+            
+            const areaSqFt = areaLength * areaWidth;
+            const gravelDepthFt = gravelDepth / INCHES_PER_FOOT;
+            const sandDepthFt = sandDepth / INCHES_PER_FOOT;
+
+            // --- 2. Calculate Gravel Base Volume ---
+            // Volume = Area * Depth * Compaction Factor
+            const gravelCuFt = areaSqFt * gravelDepthFt * GRAVEL_COMPACTION_FACTOR;
+            const gravelYards = gravelCuFt / CUBIC_FEET_PER_CUBIC_YARD;
+
+            // --- 3. Calculate Sand Bedding Volume ---
+            // Volume = Area * Depth * Waste Factor
+            const sandCuFt = areaSqFt * sandDepthFt * SAND_WASTE_FACTOR;
+            const sandYards = sandCuFt / CUBIC_FEET_PER_CUBIC_YARD;
+            
+            if (gravelYards <= 0 || sandYards <= 0) {
+                displayResult(true, "Calculated volume is zero or negative. Check inputs.");
+                return;
+            }
+
+            // 4. Display results
+            const metrics = {
+                areaLength,
+                areaWidth,
+                gravelDepth,
+                sandDepth,
+                areaSqFt,
+                gravelYards,
+                sandYards
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('paver-result').classList.add('d-none');
+        document.getElementById('paver-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

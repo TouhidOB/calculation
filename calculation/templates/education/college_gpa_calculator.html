@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}College GPA Calculator (Semester & Cumulative){% endblock %}
+
+{% block meta_description %}Calculate your current semester GPA and your new cumulative GPA using standard college grading scales and credit hours.{% endblock %}
+
+{% block meta_keywords %}college GPA, semester GPA, cumulative GPA, 4.0 scale, credit hours, grade point average{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        color: #1e90ff;
+        border-bottom: 2px solid #f8f9fa;
+        padding-bottom: 8px;
+    }
+
+    .course-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 12px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background-color: #ffffff;
+        transition: border-color 0.2s;
+    }
+
+    .course-row:hover {
+        border-color: #1e90ff;
+    }
+
+    .course-row input, .course-row select {
+        font-size: 0.95rem;
+    }
+    
+    .remove-btn {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .result-alert {
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .gpa-card-container {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .gpa-card {
+        background: #f8fbff;
+        padding: 15px;
+        border-radius: 10px;
+        min-width: 160px;
+        border: 1px solid #e1efff;
+    }
+
+    .highlight-semester {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #28a745;
+        display: block;
+    }
+
+    .highlight-cumulative {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #1e90ff;
+        display: block;
+    }
+    
+    @media (max-width: 767px) {
+        .course-row { flex-wrap: wrap; }
+        .course-row > div:nth-child(1) { flex: 1 1 100%; }
+        .course-row > div:nth-child(2), .course-row > div:nth-child(3) { flex: 1 1 40%; }
+        .remove-btn { margin-left: auto; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">🎓 College GPA Calculator</h1>
+        <p class="text-muted">Track your academic progress by calculating semester and cumulative grade point averages.</p>
+    </div>
+
+    <div class="calc-wrapper mx-auto" style="max-width: 850px;">
+        <form id="college-gpa-form">
+            
+            <h5 class="section-title">Step 1: Current Semester Courses</h5>
+            
+            <div class="row g-2 mb-2 d-none d-md-flex fw-bold text-secondary small text-uppercase">
+                <div class="col-6">Course Name</div>
+                <div class="col-3 text-center">Letter Grade</div>
+                <div class="col-2 text-center">Credits</div>
+                <div class="col-1"></div>
+            </div>
+
+            <div id="course-list">
+                </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-outline-primary btn-sm" type="button" id="add-course-btn">
+                    + Add Course
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="reset-btn">
+                    Clear All
+                </button>
+            </div>
+            
+            <h5 class="section-title">Step 2: Previous Cumulative Stats <small class="text-muted fw-normal">(Optional)</small></h5>
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Prior Cumulative GPA</label>
+                    <input type="number" class="form-control" id="prev_gpa" placeholder="e.g. 3.50" min="0" max="4.0" step="0.01">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Prior Earned Credits</label>
+                    <input type="number" class="form-control" id="prev_credits" placeholder="e.g. 45" min="0" step="0.5">
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" type="submit">Calculate My GPA</button>
+        </form>
+
+        <div id="results-container" class="d-none">
+            <div class="alert mt-4 result-alert alert-light border">
+                <div class="gpa-card-container">
+                    <div class="gpa-card">
+                        <small class="text-uppercase fw-bold text-muted">Semester GPA</small>
+                        <span class="highlight-semester" id="sem-gpa-val">0.00</span>
+                    </div>
+                    <div class="gpa-card" id="cum-gpa-card">
+                        <small class="text-uppercase fw-bold text-muted">New Cumulative</small>
+                        <span class="highlight-cumulative" id="cum-gpa-val">0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="section-title">Detailed Breakdown</h5>
+            <table class="table table-hover border">
+                <tbody id="gpa-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const GRADE_POINTS = {
+        'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+        'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+        'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+        'D+': 1.3, 'D': 1.0, 'D-': 0.7,
+        'F': 0.0
+    };
+
+    function createCourseRow(name = '', grade = 'A', credits = '') {
+        const row = document.createElement('div');
+        row.className = 'course-row';
+        row.innerHTML = `
+            <div class="col-md-6 col-12">
+                <input type="text" class="form-control" placeholder="Course Name (Optional)" value="${name}">
+            </div>
+            <div class="col-md-3 col-5">
+                <select class="form-select course-grade">
+                    ${Object.keys(GRADE_POINTS).map(g => `<option value="${g}" ${g === grade ? 'selected' : ''}>${g}</option>`).join('')}
+                    <option value="P">Pass (P)</option>
+                    <option value="NP">No Pass (NP)</option>
+                </select>
+            </div>
+            <div class="col-md-2 col-4">
+                <input type="number" class="form-control course-credits" placeholder="Credits" step="0.5" min="0" value="${credits}">
+            </div>
+            <div class="col-md-1 col-2 text-end">
+                <button type="button" class="btn btn-outline-danger remove-btn">&times;</button>
+            </div>
+        `;
+
+        row.querySelector('.remove-btn').addEventListener('click', () => {
+            row.remove();
+            // Don't auto-calculate here to keep it clean, or uncomment below to auto-update
+            // if(document.querySelectorAll('.course-row').length > 0) calculateGPA();
+        });
+
+        return row;
+    }
+
+    function calculateGPA(e) {
+        if (e) e.preventDefault();
+        
+        const rows = document.querySelectorAll('#course-list .course-row');
+        let semCredits = 0;
+        let semGradePoints = 0;
+
+        rows.forEach(row => {
+            const credits = parseFloat(row.querySelector('.course-credits').value) || 0;
+            const grade = row.querySelector('.course-grade').value;
+            const points = GRADE_POINTS[grade];
+
+            // Only count grades that exist in our 4.0 mapping
+            if (points !== undefined) {
+                semCredits += credits;
+                semGradePoints += (points * credits);
+            }
+        });
+
+        if (semCredits === 0) {
+            alert("Please enter credit hours for at least one course.");
+            return;
+        }
+
+        const semGPA = semGradePoints / semCredits;
+
+        // Cumulative Calculation
+        const prevGPA = parseFloat(document.getElementById('prev_gpa').value) || 0;
+        const prevCredits = parseFloat(document.getElementById('prev_credits').value) || 0;
+        
+        let cumGPA = 0;
+        let totalCredits = semCredits;
+        let hasCumulative = prevCredits > 0;
+
+        if (hasCumulative) {
+            totalCredits = prevCredits + semCredits;
+            cumGPA = ((prevGPA * prevCredits) + semGradePoints) / totalCredits;
+        }
+
+        // Update UI
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('sem-gpa-val').innerText = semGPA.toFixed(3);
+        
+        const cumCard = document.getElementById('cum-gpa-card');
+        if (hasCumulative) {
+            cumCard.style.display = 'block';
+            document.getElementById('cum-gpa-val').innerText = cumGPA.toFixed(3);
+        } else {
+            cumCard.style.display = 'none';
+        }
+
+        updateTable(semGPA, semCredits, semGradePoints, cumGPA, totalCredits, hasCumulative);
+    }
+
+    function updateTable(semGPA, semCr, semPts, cumGPA, totCr, hasCum) {
+        let html = `
+            <tr><td>Semester Credits Attempted</td><td class="text-end fw-bold">${semCr.toFixed(1)}</td></tr>
+            <tr><td>Semester Total Grade Points</td><td class="text-end fw-bold">${semPts.toFixed(2)}</td></tr>
+            <tr class="table-success"><td><strong>Semester GPA</strong></td><td class="text-end fw-bold">${semGPA.toFixed(3)}</td></tr>
+        `;
+
+        if (hasCum) {
+            html += `
+                <tr class="table-light"><td colspan="2" class="py-1"></td></tr>
+                <tr><td>Total Cumulative Credits</td><td class="text-end fw-bold">${totCr.toFixed(1)}</td></tr>
+                <tr class="table-primary"><td><strong>New Cumulative GPA</strong></td><td class="text-end fw-bold">${cumGPA.toFixed(3)}</td></tr>
+            `;
+        }
+
+        document.getElementById('gpa-body').innerHTML = html;
+        window.scrollTo({ top: document.getElementById('results-container').offsetTop - 20, behavior: 'smooth' });
+    }
+
+    // Event Listeners
+    document.getElementById('add-course-btn').addEventListener('click', () => {
+        document.getElementById('course-list').appendChild(createCourseRow());
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        if(confirm("Are you sure you want to clear all inputs?")) {
+            document.getElementById('course-list').innerHTML = '';
+            for(let i=0; i<4; i++) document.getElementById('course-list').appendChild(createCourseRow());
+            document.getElementById('college-gpa-form').reset();
+            document.getElementById('results-container').classList.add('d-none');
+        }
+    });
+
+    document.getElementById('college-gpa-form').addEventListener('submit', calculateGPA);
+
+    // Initial load: 4 empty rows
+    window.addEventListener('load', () => {
+        const list = document.getElementById('course-list');
+        for(let i=0; i<4; i++) {
+            list.appendChild(createCourseRow());
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Slope & Grade Percentage Calculator{% endblock %}
+
+{% block meta_description %}Calculate slope as a percentage grade, degrees, and ratio (1:X) using the vertical rise and horizontal run. Essential for construction and engineering. {% endblock %}
+
+{% block meta_keywords %}slope calculator, grade percentage, rise run, angle calculation, gradient, construction planning, pitch ratio, surveying{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #00796B; /* Teal/Blue-Green for Engineering/Precision */
+        border-bottom: 2px solid #00796B;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFEB3B; /* Yellow for high visibility contrast */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .unit-input-label {
+        font-size: 0.85rem;
+        font-style: italic;
+        color: #6c757d;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">📐 Slope/Grade Percentage Calculator</h1>
+    <p class="text-center small-muted">Calculates the grade, slope angle, and ratio based on vertical rise and horizontal run.</p>
+    [Image of slope calculation showing vertical rise (A) and horizontal run (B)]
+
+    <div class="calc-wrapper">
+
+        <form id="slope-form">
+            <h5 class="section-title">1. Input Dimensions (Use Consistent Units)</h5>
+
+            <!-- Rise Input (Vertical change) -->
+            <label for="rise-input" class="form-label">Vertical Rise (Elevation Change)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Rise (A)</span>
+                <input type="number" id="rise-input" class="form-control" name="rise" placeholder="Vertical distance (e.g., 5)" min="0" step="0.01" required>
+                <span class="input-group-text">Units</span>
+            </div>
+            
+            <!-- Run Input (Horizontal distance) -->
+            <label for="run-input" class="form-label">Horizontal Run (Distance Covered)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Run (B)</span>
+                <input type="number" id="run-input" class="form-control" name="run" placeholder="Horizontal distance (e.g., 100)" min="0.1" step="0.01" required>
+                <span class="input-group-text">Units</span>
+            </div>
+            <span class="unit-input-label">Ensure both Rise and Run use the same measurement unit (e.g., feet, meters, inches).</span>
+            
+            <h5 class="section-title">2. Calculate</h5>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #00796B; border-color: #00796B;" type="submit">Calculate Slope and Grade</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="slope-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Results</h5>
+        <table class="table table-bordered mt-2 d-none" id="slope-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #00796B; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="slope-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants for conversion
+    const RADIANS_TO_DEGREES = 180 / Math.PI;
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('slope-result');
+        const table = document.getElementById('slope-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('slope-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Grade Percentage
+            res.innerHTML = `
+**Calculated Slope Grade:**
+<span style="font-size:2rem; color:#00796B; font-weight:bold;">${metrics.gradePercent.toFixed(2)}%</span>
+<p class="text-center mt-3 mb-0">Angle: **${metrics.slopeDegrees.toFixed(2)} degrees**</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Grade Percentage (Slope)</td><td>**${metrics.gradePercent.toFixed(3)}%**</td></tr>
+            <tr><td>Slope Angle (Degrees)</td><td>${metrics.slopeDegrees.toFixed(3)} °</td></tr>
+            <tr><td>Slope Ratio (1:X Run)</td><td>1:${metrics.slopeRatioRun.toFixed(3)}</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Vertical Rise (A)</td><td>${metrics.rise.toFixed(2)} Units</td></tr>
+            <tr><td>Horizontal Run (B)</td><td>${metrics.run.toFixed(2)} Units</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('slope-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const rise = parseFloat(form.elements.rise.value);
+        const run = parseFloat(form.elements.run.value);
+        
+        // Basic validation
+        if (isNaN(rise) || rise < 0 || isNaN(run) || run <= 0) {
+            displayResult(true, "Please ensure Rise is non-negative and Run is a positive number.");
+            return;
+        }
+
+        try {
+            // 1. Calculate Grade Percentage
+            // Grade % = (Rise / Run) * 100
+            const gradePercent = (rise / run) * 100;
+
+            // 2. Calculate Slope Angle (Degrees)
+            // Angle = atan(Rise / Run)
+            const angleRadians = Math.atan(rise / run);
+            const slopeDegrees = angleRadians * RADIANS_TO_DEGREES;
+
+            // 3. Calculate Slope Ratio (1:X)
+            // X = Run / Rise
+            const slopeRatioRun = run / rise;
+            
+            // 4. Display results
+            const metrics = {
+                rise,
+                run,
+                gradePercent,
+                slopeDegrees,
+                slopeRatioRun
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('slope-result').classList.add('d-none');
+        document.getElementById('slope-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

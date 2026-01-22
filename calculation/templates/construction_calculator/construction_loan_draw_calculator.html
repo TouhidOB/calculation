@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Construction Loan Draw Calculator{% endblock %}
+
+{% block meta_description %}Calculate the maximum available draw amount for a construction loan based on total loan value, percentage of completion, holdback (retainage), and previous draws. {% endblock %}
+
+{% block meta_keywords %}construction loan draw, loan calculator, draw schedule, builder financing, retainage calculation, construction finance{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #00796B; /* Teal for finance/planning */
+        border-bottom: 2px solid #00796B;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFC107; /* Amber for money results */
+    }
+
+    .input-group-text {
+        min-width: 130px;
+        justify-content: left;
+        background-color: #f0f8f7;
+        font-weight: 600;
+        color: #00796B;
+    }
+
+    .info-box {
+        background-color: #e0f2f1; /* Light teal info box */
+        border: 1px solid #00796B;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #00796B;
+    }
+
+    .draw-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #FF7043; /* Deep Orange for the final draw amount */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🏦 Construction Loan Draw Calculator</h1>
+    <p class="text-center small-muted">Determine the maximum amount you can draw in your current request based on project completion and retainage.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="loan-draw-calculator-form">
+            <h5 class="section-title">1. Loan & Completion Status</h5>
+
+            <!-- Total Loan Amount Input ($) -->
+            <label for="loan-amount-input" class="form-label">Total Construction Loan Value</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Total Loan</span>
+                <span class="input-group-text">$</span>
+                <input type="number" id="loan-amount-input" class="form-control" name="loanAmount" placeholder="e.g., 500000" value="500000" min="1000" step="1000" required>
+            </div>
+            
+            <!-- Current Completion Percentage Input (%) -->
+            <label for="completion-percent-input" class="form-label">Current Project Completion</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Completion %</span>
+                <input type="number" id="completion-percent-input" class="form-control" name="completionPercent" placeholder="e.g., 40" value="40" min="0" max="100" step="1" required>
+                <span class="input-group-text">%</span>
+            </div>
+
+            <h5 class="section-title">2. Financial Terms & History</h5>
+
+            <!-- Holdback/Retainage Percentage Input (%) -->
+            <label for="holdback-percent-input" class="form-label">Lender Holdback/Retainage Rate</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Holdback Rate</span>
+                <input type="number" id="holdback-percent-input" class="form-control" name="holdbackPercent" placeholder="e.g., 10" value="10" min="0" max="25" step="1" required>
+                <span class="input-group-text">%</span>
+            </div>
+            
+            <!-- Previous Draws Received Input ($) -->
+            <label for="previous-draws-input" class="form-label">Total Previous Draws Received</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Previous Draws</span>
+                <span class="input-group-text">$</span>
+                <input type="number" id="previous-draws-input" class="form-control" name="previousDraws" placeholder="e.g., 180000" value="180000" min="0" step="1000" required>
+            </div>
+            
+            <div class="info-box">
+                **How it works:** We calculate the *cumulative* net amount available based on your completion, then subtract your *previous* draws to find the maximum incremental amount for the current draw.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #00796B; border-color: #00796B;" type="submit">Calculate Current Draw</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="draw-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Draw Calculation Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="draw-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #00796B; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="draw-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Helper function for currency formatting
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('draw-result');
+        const table = document.getElementById('draw-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('draw-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Current Maximum Draw
+            res.innerHTML = `
+**Maximum Available for Current Draw:**
+<div class="text-center mt-3 mb-2">
+    <span class="draw-value">${formatter.format(metrics.currentDrawRequest)}</span>
+</div>
+<p class="small text-center mt-2">This is the net payment amount remaining after deducting retainage and previous draws.</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Maximum Available Draw**</td><td>**${formatter.format(metrics.currentDrawRequest)}**</td></tr>
+            <tr><td>Cumulative Earned Amount</td><td>${formatter.format(metrics.cumulativeEarned)}</td></tr>
+            <tr><td>Cumulative Retained Amount</td><td>${formatter.format(metrics.cumulativeRetainage)}</td></tr>
+            <tr><td>Cumulative Net Available</td><td>${formatter.format(metrics.cumulativeNetAvailable)}</td></tr>
+            <tr><td>Less: Previous Draws Received</td><td>(${formatter.format(metrics.previousDraws)})</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Total Loan Amount</td><td>${formatter.format(metrics.loanAmount)}</td></tr>
+            <tr><td>Completion Percentage</td><td>${metrics.completionPercent}%</td></tr>
+            <tr><td>Holdback/Retainage Rate</td><td>${metrics.holdbackPercent}%</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('loan-draw-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const loanAmount = parseFloat(form.elements.loanAmount.value);
+        const completionPercent = parseFloat(form.elements.completionPercent.value);
+        const holdbackPercent = parseFloat(form.elements.holdbackPercent.value);
+        const previousDraws = parseFloat(form.elements.previousDraws.value);
+        
+        // Basic validation
+        if (isNaN(loanAmount) || loanAmount <= 0 || 
+            isNaN(completionPercent) || completionPercent < 0 || completionPercent > 100 ||
+            isNaN(holdbackPercent) || holdbackPercent < 0 || holdbackPercent > 100 || 
+            isNaN(previousDraws) || previousDraws < 0) 
+        {
+            displayResult(true, "Please ensure all financial and percentage inputs are valid.");
+            return;
+        }
+
+        try {
+            // Convert percentages to decimals
+            const completionFactor = completionPercent / 100;
+            const holdbackFactor = holdbackPercent / 100;
+
+            // 1. Calculate the Cumulative Earned Amount (based on completion)
+            const cumulativeEarned = loanAmount * completionFactor;
+
+            // 2. Calculate the Cumulative Retained Amount
+            const cumulativeRetainage = cumulativeEarned * holdbackFactor;
+
+            // 3. Calculate the Cumulative Net Available Amount
+            const cumulativeNetAvailable = cumulativeEarned - cumulativeRetainage;
+            
+            // 4. Calculate the Current Maximum Draw Request
+            const currentDrawRequest = Math.max(0, cumulativeNetAvailable - previousDraws);
+
+            // Check for over-drawing past amounts
+            if (previousDraws > cumulativeNetAvailable) {
+                 displayResult(true, `Error: Previous draws (${formatter.format(previousDraws)}) already exceed the cumulative net available amount (${formatter.format(cumulativeNetAvailable)}) at ${completionPercent}% completion. Check your inputs.`);
+                 return;
+            }
+
+
+            // 5. Display results
+            const metrics = {
+                loanAmount,
+                completionPercent,
+                holdbackPercent,
+                previousDraws,
+                cumulativeEarned,
+                cumulativeRetainage,
+                cumulativeNetAvailable,
+                currentDrawRequest
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('draw-result').classList.add('d-none');
+        document.getElementById('draw-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

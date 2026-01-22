@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Rafter Length Calculator (Pythagorean Theorem){% endblock %}
+
+{% block meta_description %}Calculate the common rafter line length and total length, including overhang, based on roof span and pitch (rise over run).{% endblock %}
+
+{% block meta_keywords %}rafter calculator, rafter length, roof pitch, common rafter, construction geometry, roof framing, hypotenuse calculation{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #A67C52; /* Earthy Brown/Structure Color */
+        border-bottom: 2px solid #A67C52;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFD700; /* Gold for final result contrast */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .unit-input-label {
+        font-size: 0.85rem;
+        font-style: italic;
+        color: #6c757d;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .info-box {
+        background-color: #f7f4e9; /* Light contrast info box */
+        border: 1px solid #A67C52;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🔨 Rafter Length Calculator</h1>
+    <p class="text-center small-muted">Determine the actual diagonal length required for common rafters.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="rafter-form">
+            <h5 class="section-title">1. Roof Dimensions (in Feet)</h5>
+
+            <!-- Span Input (Horizontal distance) -->
+            <label for="span-input" class="form-label">Total Roof Span (Horizontal distance from wall plate to wall plate)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Total Span</span>
+                <input type="number" id="span-input" class="form-control" name="totalSpan" placeholder="Span (e.g., 24)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Overhang Input (Feet) -->
+            <label for="overhang-input" class="form-label">Rafter Overhang (Distance past the wall plate)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Overhang Run</span>
+                <input type="number" id="overhang-input" class="form-control" name="overhangRun" placeholder="Overhang (e.g., 1.5)" value="1.5" min="0" step="0.01" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <h5 class="section-title">2. Roof Pitch (Slope)</h5>
+
+            <!-- Roof Pitch Rise Input (Rise in 12) -->
+            <label for="pitch-rise-input" class="form-label">Roof Pitch Rise (e.g., enter 6 for a 6/12 pitch)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Rise</span>
+                <input type="number" id="pitch-rise-input" class="form-control" name="pitchRise" placeholder="Pitch Rise (e.g., 6)" value="6" min="0" max="24" step="1" required>
+                <span class="input-group-text">in 12</span>
+            </div>
+            <span class="unit-input-label">The standard Run is 12 inches.</span>
+            
+            <h5 class="section-title">3. Waste Allowance</h5>
+
+            <!-- Waste Percentage Input -->
+            <label for="waste-input" class="form-label">Waste/Cut Allowance</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Waste Factor</span>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5" value="5" min="0" max="15" step="1" required>
+                <span class="input-group-text">%</span>
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" type="submit">Calculate Rafter Length</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-dark" id="rafter-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="rafter-table">
+            <thead>
+                <tr class="table-dark">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="rafter-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants for calculation
+    const PITCH_RUN = 12; // Standard run for pitch calculation (12 inches)
+    const INCHES_PER_FOOT = 12;
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('rafter-result');
+        const table = document.getElementById('rafter-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('rafter-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger', 'alert-dark');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-dark');
+            
+            // Primary result: Total Rafter Length
+            res.innerHTML = `
+**Total Required Rafter Length (Ready to Cut):**
+<span style="font-size:2rem; color:#A67C52; font-weight:bold;">${metrics.finalRafterLengthWithWaste.toFixed(2)} ft</span>
+<span style="font-size:1.2rem; color:#A67C52;">(${metrics.finalRafterLengthWithWasteInches.toFixed(0)} inches)</span>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Unit Rafter Length (Per 12" Run)</td><td>${metrics.unitLength.toFixed(3)} inches</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Line Length (Plate to Ridge)**</td></tr>
+            <tr><td>True Run (Horizontal)</td><td>${metrics.trueRun.toFixed(2)} ft</td></tr>
+            <tr><td>Rafter Line Length (Diagonal)</td><td>${metrics.rafterLineLength.toFixed(2)} ft</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Overhang**</td></tr>
+            <tr><td>Overhang Run (Horizontal)</td><td>${metrics.overhangRun.toFixed(2)} ft</td></tr>
+            <tr><td>Overhang Line Length (Diagonal)</td><td>${metrics.overhangLength.toFixed(2)} ft</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Final Results**</td></tr>
+            <tr><td>Total Rafter Length (No Waste)</td><td>${metrics.totalRafterLength.toFixed(2)} ft</td></tr>
+            <tr><td>Waste Percentage Applied</td><td>${(metrics.wasteFactorUsed * 100).toFixed(1)}%</td></tr>
+            <tr><td>Total Rafter Length (With Waste)</td><td>**${metrics.finalRafterLengthWithWaste.toFixed(2)} ft**</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('rafter-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const totalSpan = parseFloat(form.elements.totalSpan.value); // ft
+        const pitchRise = parseFloat(form.elements.pitchRise.value); // in
+        const overhangRun = parseFloat(form.elements.overhangRun.value); // ft (horizontal)
+        const wastePercent = parseFloat(form.elements.wastePercent.value); // %
+        
+        // Basic validation
+        if (isNaN(totalSpan) || totalSpan <= 0 || isNaN(pitchRise) || pitchRise < 0 || isNaN(overhangRun) || overhangRun < 0 || isNaN(wastePercent) || wastePercent < 0) {
+            displayResult(true, "Please ensure all dimensions are positive numbers, and the pitch/overhang/waste is non-negative.");
+            return;
+        }
+
+        try {
+            // 1. Calculate Unit Rafter Length (Hypotenuse of the 12" run triangle)
+            // L_unit = sqrt(Rise^2 + Run^2)
+            const unitLength = Math.sqrt(Math.pow(pitchRise, 2) + Math.pow(PITCH_RUN, 2)); // in inches
+
+            // 2. Calculate Rafter Line Length (Plate to Ridge)
+            // True Run is half the total span
+            const trueRun = totalSpan / 2; // ft
+            
+            // Rafter Line Length = True Run * (Unit Length / PITCH_RUN)
+            const rafterLineLength = trueRun * (unitLength / PITCH_RUN); // ft
+
+            // 3. Calculate Overhang Length
+            // Overhang Length = Overhang Run * (Unit Length / PITCH_RUN)
+            const overhangLength = overhangRun * (unitLength / PITCH_RUN); // ft
+
+            // 4. Calculate Total Rafter Length (No Waste)
+            const totalRafterLength = rafterLineLength + overhangLength; // ft
+
+            // 5. Apply Waste Factor
+            const wasteFactor = 1 + (wastePercent / 100);
+            const finalRafterLengthWithWaste = totalRafterLength * wasteFactor; // ft
+            const finalRafterLengthWithWasteInches = finalRafterLengthWithWaste * INCHES_PER_FOOT;
+
+            
+            // 6. Display results
+            const metrics = {
+                unitLength,
+                trueRun,
+                rafterLineLength,
+                overhangRun,
+                overhangLength,
+                totalRafterLength,
+                finalRafterLengthWithWaste,
+                finalRafterLengthWithWasteInches,
+                wasteFactorUsed: wasteFactor - 1
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('rafter-result').classList.add('d-none');
+        document.getElementById('rafter-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

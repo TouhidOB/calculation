@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Online Course Progress Tracker{% endblock %}
+
+{% block meta_description %}Define course modules and lessons to track your completion status and visualize overall progress in real-time.{% endblock %}
+
+{% block meta_keywords %}online course tracker, module progress, lesson checklist, completion rate, learning management, study productivity{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 16, 185, 129; /* Emerald */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .tracker-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: none;
+    }
+
+    .progress-circle-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+    }
+
+    .module-card {
+        border-left: 4px solid #10b981;
+        transition: all 0.2s ease;
+    }
+
+    .module-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .lesson-item {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.2s;
+    }
+
+    .lesson-item:hover {
+        background-color: #f8fafc;
+    }
+
+    .lesson-item:last-child {
+        border-bottom: none;
+    }
+
+    .form-control-focus:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+    }
+
+    .lesson-checkbox {
+        width: 1.2rem;
+        height: 1.2rem;
+        cursor: pointer;
+    }
+
+    .strikethrough {
+        text-decoration: line-through;
+        color: #94a3b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-check2-circle text-primary me-2"></i>Course Progress Tracker</h1>
+        <p class="text-muted">Stay organized and motivated by visualizing your journey through any online course.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="tracker-card p-4 mb-4 text-center">
+                <h6 class="text-uppercase fw-bold text-muted small mb-3">Overall Progress</h6>
+                <div class="display-4 fw-black text-primary mb-2" id="progress-percentage">0%</div>
+                
+                <div class="progress mb-3" style="height: 12px; border-radius: 6px;">
+                    <div id="progress-bar" class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                </div>
+
+                <div class="d-flex justify-content-between small fw-bold text-secondary px-2">
+                    <span>Completed: <span id="completed-count">0</span></span>
+                    <span>Total: <span id="total-count">0</span></span>
+                </div>
+            </div>
+
+            <div class="tracker-card p-4">
+                <h6 class="text-uppercase fw-bold text-muted small mb-3">Course Configuration</h6>
+                <div class="mb-3">
+                    <label class="form-label small">Paste Modules & Lessons</label>
+                    <textarea id="course-structure" class="form-control form-control-sm form-control-focus" rows="8" placeholder="Format:&#10;Module 1 - Intro - Setup&#10;Module 2 - Logic - Loops"></textarea>
+                    <div class="form-text x-small">Format: Module Name - Lesson 1 - Lesson 2...</div>
+                </div>
+                <button onclick="loadCourseStructure()" class="btn btn-primary w-100 fw-bold py-2">
+                    <i class="bi bi-arrow-repeat me-2"></i>Update Structure
+                </button>
+                <button onclick="clearTracker()" class="btn btn-outline-danger btn-sm w-100 mt-2 border-0">
+                    <i class="bi bi-trash me-1"></i>Reset All Progress
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div id="empty-state" class="tracker-card p-5 text-center">
+                <i class="bi bi-journal-text display-1 text-light mb-3"></i>
+                <h4 class="fw-bold">No Course Loaded</h4>
+                <p class="text-muted">Enter your course modules in the configuration box to generate your interactive checklist.</p>
+            </div>
+
+            <div id="checklist-container" class="d-none">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold m-0 text-dark">Lesson Roadmap</h5>
+                    <span id="status-badge" class="badge bg-light text-primary border border-primary fw-medium">Ready to start</span>
+                </div>
+                <div id="course-modules-container">
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let courseData = [];
+    const STORAGE_KEY = 'eduTracker_v1';
+
+    // --- State Handlers ---
+
+    function loadCourseStructure() {
+        const text = document.getElementById('course-structure').value.trim();
+        if (!text) return;
+
+        const newStructure = parseText(text);
+        // Merge with existing progress if module/lesson names match
+        courseData = mergeData(newStructure, courseData);
+
+        document.getElementById('empty-state').classList.add('d-none');
+        document.getElementById('checklist-container').classList.remove('d-none');
+
+        saveAndRefresh();
+    }
+
+    function parseText(text) {
+        return text.split('\n').filter(l => l.trim()).map(line => {
+            const parts = line.split('-').map(p => p.trim());
+            return {
+                name: parts[0],
+                lessons: parts.slice(1).map(l => ({ name: l, complete: false }))
+            };
+        });
+    }
+
+    function mergeData(newS, oldS) {
+        return newS.map(newMod => {
+            const oldMod = oldS.find(m => m.name === newMod.name);
+            if (oldMod) {
+                newMod.lessons = newMod.lessons.map(newLes => {
+                    const oldLes = oldMod.lessons.find(l => l.name === newLes.name);
+                    if (oldLes) newLes.complete = oldLes.complete;
+                    return newLes;
+                });
+            }
+            return newMod;
+        });
+    }
+
+    function toggleLesson(mIdx, lIdx) {
+        courseData[mIdx].lessons[lIdx].complete = !courseData[mIdx].lessons[lIdx].complete;
+        saveAndRefresh();
+    }
+
+    function clearTracker() {
+        if(confirm("Are you sure? This will delete all saved progress.")) {
+            localStorage.removeItem(STORAGE_KEY);
+            courseData = [];
+            location.reload();
+        }
+    }
+
+    // --- UI Update ---
+
+    function saveAndRefresh() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(courseData));
+        renderChecklist();
+        updateProgressUI();
+    }
+
+    function renderChecklist() {
+        const container = document.getElementById('course-modules-container');
+        container.innerHTML = '';
+
+        courseData.forEach((mod, mIdx) => {
+            const completed = mod.lessons.filter(l => l.complete).length;
+            const total = mod.lessons.length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            const modDiv = document.createElement('div');
+            modDiv.className = 'tracker-card module-card p-3 mb-3';
+            modDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-dark">${mod.name}</span>
+                    <span class="badge ${percent === 100 ? 'bg-success' : 'bg-light text-dark'} border">${percent}%</span>
+                </div>
+                <div class="list-group list-group-flush border-top pt-2">
+                    ${mod.lessons.map((les, lIdx) => `
+                        <div class="list-group-item lesson-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span class="${les.complete ? 'strikethrough' : ''}">${les.name}</span>
+                            <input type="checkbox" class="form-check-input lesson-checkbox m-0" 
+                                ${les.complete ? 'checked' : ''} 
+                                onchange="toggleLesson(${mIdx}, ${lIdx})">
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            container.appendChild(modDiv);
+        });
+    }
+
+    function updateProgressUI() {
+        let total = 0, done = 0;
+        courseData.forEach(m => {
+            total += m.lessons.length;
+            done += m.lessons.filter(l => l.complete).length;
+        });
+
+        const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+        
+        document.getElementById('progress-percentage').innerText = `${percent}%`;
+        document.getElementById('progress-bar').style.width = `${percent}%`;
+        document.getElementById('completed-count').innerText = done;
+        document.getElementById('total-count').innerText = total;
+
+        const badge = document.getElementById('status-badge');
+        if (percent === 100) {
+            badge.innerText = "Course Completed! 🏆";
+            badge.className = "badge bg-success text-white";
+        } else if (percent > 0) {
+            badge.innerText = "In Progress...";
+            badge.className = "badge bg-primary text-white";
+        } else {
+            badge.innerText = "Ready to start";
+            badge.className = "badge bg-light text-primary border border-primary";
+        }
+    }
+
+    // --- Initialization ---
+    window.onload = function() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            courseData = JSON.parse(saved);
+            const textOutput = courseData.map(mod => `${mod.name} - ${mod.lessons.map(l => l.name).join(' - ')}`).join('\n');
+            document.getElementById('course-structure').value = textOutput;
+            document.getElementById('empty-state').classList.add('d-none');
+            document.getElementById('checklist-container').classList.remove('d-none');
+            saveAndRefresh();
+        }
+    };
+</script>
+{% endblock %}

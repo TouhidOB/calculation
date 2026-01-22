@@ -1,156 +1,172 @@
 {% extends "base.html" %}
 
-{% block title %}Daily Water Intake Calculator{% endblock %}
-
-{% block meta_description %}Calculate your recommended daily water intake based on your body weight and activity level, giving results in fluid ounces and milliliters.{% endblock %}
-
-{% block meta_keywords %}water intake, hydration calculator, fluid ounces, milliliters, daily recommendation, fitness, health{% endblock %}
+{% block title %}Daily Water Intake Calculator - Stay Hydrated{% endblock %}
+{% block meta_description %}Calculate your optimal daily water intake based on weight and activity level. Get results in
+ounces and milliliters.{% endblock %}
+{% block meta_keywords %}water calculator, hydration, daily water intake, health tools, fluid needs{% endblock %}
 
 {% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <style>
-    .calc-wrapper {
+    :root {
+        --primary-water: #0ea5e9;
+        /* Sky Blue */
+        --primary-dark: #0284c7;
+        /* Darker Sky */
+        --bg-water: #f0f9ff;
+        /* Very light blue */
+    }
+
+    body {
+        background-color: var(--bg-water);
+    }
+
+    .calc-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(14, 165, 233, 0.15);
         background: white;
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
     }
 
-    .section-title {
-        font-weight: bold;
-        margin-top: 20px;
+    .input-icon-wrap {
+        background-color: #e0f2fe;
+        border-right: none;
+        color: var(--primary-dark);
+        border-color: #e0f2fe;
     }
 
-    .result-alert {
-        white-space: pre-wrap;
-    }
-    
-    .water-output {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #007bff; /* Primary blue color for water */
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary-water);
+        box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
     }
 
-    .unit-label {
-        font-size: 1rem;
-        color: #6c757d;
+    .result-display {
+        background: linear-gradient(135deg, var(--primary-water) 0%, #0369a1 100%);
+        color: white;
+        border-radius: 1rem;
+    }
+
+    .conversion-card {
+        background: #f8fafc;
+        border-radius: 0.75rem;
+        border: 1px solid #e2e8f0;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-4">
-    <h1 class="mb-3">💧 Daily Water Intake Calculator</h1>
-    <p class="small-muted">Estimate the optimal amount of **water** you should consume daily based on your body weight and exercise habits.</p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-dark"><i class="bi bi-droplet-fill text-primary me-2"></i>Water Intake
+            Calculator</h1>
+        <p class="lead text-secondary">Find out exactly how much water you need to drink to stay peak performant.</p>
+    </div>
 
-    <div class="calc-wrapper mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card calc-card p-4 p-md-5">
 
-        <form id="water-form">
-            <h5 class="section-title">Step 1: Your Metrics</h5>
+                <form id="water-form">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Step 1: Your Stats</label>
 
-            <!-- Weight Input -->
-            <div class="input-group my-3">
-                <input type="number" class="form-control" id="weight_lb" placeholder="Body Weight" min="50" max="500" step="1" required>
-                <span class="input-group-text">lbs</span>
+                        <!-- Weight -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Body Weight (lbs)</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text input-icon-wrap"><i class="bi bi-person-fill"></i></span>
+                                <input type="number" class="form-control" id="weight_lb" placeholder="e.g. 150" min="50"
+                                    max="500" required>
+                            </div>
+                        </div>
+
+                        <!-- Activity -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Daily Activity Level</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text input-icon-wrap"><i class="bi bi-activity"></i></span>
+                                <select class="form-select" id="activity_level" required>
+                                    <option value="" disabled selected>Select activity...</option>
+                                    <option value="0">Sedentary (Little/No Exercise)</option>
+                                    <option value="12">Moderate (30-60 mins)</option>
+                                    <option value="24">Active (60+ mins)</option>
+                                </select>
+                            </div>
+                            <div class="form-text small"><i class="bi bi-info-circle me-1"></i>We add water for sweat
+                                loss during exercise.</div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg w-100 shadow-sm fw-bold py-3" type="submit"
+                        style="background-color: var(--primary-water); border:none;">
+                        <i class="bi bi-calculator me-2"></i>Calculate Hydration
+                    </button>
+                </form>
+
+                <div id="result-container" class="mt-5 d-none animate__animated animate__fadeInUp">
+                    <div class="result-display p-4 text-center mb-4 shadow">
+                        <p class="mb-1 text-uppercase small opacity-75">Recommended Daily Intake</p>
+                        <h2 class="display-3 fw-bold mb-0" id="result-oz">0 <small class="fs-4">fl oz</small></h2>
+                        <p class="small opacity-75 mt-2 mb-0">Total fluids per day</p>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="conversion-card p-3 text-center">
+                                <h4 class="fw-bold text-dark mb-0" id="result-ml">0</h4>
+                                <small class="text-muted text-uppercase fw-bold"
+                                    style="font-size: 0.7rem;">Milliliters</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="conversion-card p-3 text-center">
+                                <h4 class="fw-bold text-dark mb-0" id="result-cup">0</h4>
+                                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Cups
+                                    (~8oz)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light mt-4 border text-center small text-muted">
+                        <i class="bi bi-lightbulb-fill text-warning me-1"></i> <strong>Tip:</strong> Drink a glass of
+                        water before every meal to easily reach your goal!
+                    </div>
+                </div>
+
             </div>
-
-            <h5 class="section-title mt-4">Step 2: Activity Level</h5>
-
-            <!-- Activity Level Input -->
-            <div class="form-group my-3">
-                <label for="activity_level" class="form-label">Daily Exercise Level</label>
-                <select class="form-select" id="activity_level" required>
-                    <option value="" disabled selected>Select activity level</option>
-                    <option value="0">Sedentary (Little or no exercise)</option>
-                    <option value="12">Moderate (30-60 mins of exercise/day)</option>
-                    <option value="24">High (60+ mins of intense exercise/day)</option>
-                </select>
-            </div>
-            <small class="form-text text-muted d-block">Intense exercise requires additional fluid intake to replace lost sweat.</small>
-
-            <button class="btn btn-primary mt-4" type="submit">Calculate Intake</button>
-        </form>
-
-        <div class="alert alert-info mt-4 d-none result-alert" id="water-result"></div>
-
-        <h5 class="section-title d-none" id="table-title">Recommended Daily Fluid Intake</h5>
-        <table class="table table-bordered mt-2 d-none" id="water-table">
-            <thead>
-                <tr>
-                    <th>Unit</th>
-                    <th>Recommended Volume</th>
-                </tr>
-            </thead>
-            <tbody id="water-body"></tbody>
-        </table>
-
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    const OZ_PER_POUND = 0.5; // Half an ounce of water per pound of body weight (baseline)
-    const ML_PER_OZ = 29.5735; // Conversion factor
-
     document.getElementById('water-form').addEventListener('submit', function (e) {
         e.preventDefault();
 
         // 1. Get Inputs
         const weight_lb = parseFloat(document.getElementById('weight_lb').value);
-        const activity_adjustment_oz = parseFloat(document.getElementById('activity_level').value);
+        const activity_add_oz = parseFloat(document.getElementById('activity_level').value);
 
-        // Simple validation
-        if (weight_lb <= 0) {
-            displayError("Weight must be greater than zero.");
-            return;
+        if (weight_lb > 0) {
+            // 2. Calculation
+            // Baseline: 0.5 oz per lb
+            const baseline = weight_lb * 0.5;
+            const total_oz = baseline + activity_add_oz;
+
+            const total_ml = total_oz * 29.5735;
+            const total_cups = total_oz / 8;
+
+            // 3. Update UI
+            document.getElementById('result-oz').innerHTML = `${total_oz.toFixed(0)} <small class="fs-4">fl oz</small>`;
+            document.getElementById('result-ml').innerText = total_ml.toFixed(0);
+            document.getElementById('result-cup').innerText = total_cups.toFixed(1);
+
+            const resBox = document.getElementById('result-container');
+            resBox.classList.remove('d-none');
+            resBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-
-        // 2. Calculation (Body Weight Method)
-        // Baseline: weight * 0.5 oz
-        const baseline_intake_oz = weight_lb * OZ_PER_POUND;
-        
-        // Final Intake: Baseline + Activity Adjustment
-        const total_intake_oz = baseline_intake_oz + activity_adjustment_oz;
-        
-        // Convert to Milliliters
-        const total_intake_ml = total_intake_oz * ML_PER_OZ;
-
-        // 3. Update Result Display
-        const intake_oz_rounded = total_intake_oz.toFixed(0);
-        const intake_ml_rounded = total_intake_ml.toFixed(0);
-        
-        const res = document.getElementById('water-result');
-        res.classList.remove('d-none', 'alert-danger');
-        res.classList.add('alert-info');
-        res.innerHTML = `
-Based on your weight and activity level, your estimated daily water requirement is:
-
-<span class="water-output">${intake_oz_rounded} <span class="unit-label">fl oz</span></span>
-or
-<span class="water-output">${intake_ml_rounded} <span class="unit-label">mL</span></span>
-
----
-*Remember that this includes all fluids, but water is best!*
-`;
-        
-        // 4. Update Table
-        document.getElementById('table-title').classList.remove('d-none');
-        document.getElementById('water-table').classList.remove('d-none');
-        const tableBody = document.getElementById('water-body');
-        tableBody.innerHTML = `
-        <tr><td>Fluid Ounces (fl oz)</td><td>**${intake_oz_rounded}**</td></tr>
-        <tr><td>Milliliters (mL)</td><td>**${intake_ml_rounded}**</td></tr>
-        `;
     });
-
-    function displayError(message) {
-        const res = document.getElementById('water-result');
-        res.classList.remove('d-none', 'alert-info');
-        res.classList.add('alert-danger');
-        res.innerHTML = `**Calculation Error:** ${message}`;
-        document.getElementById('table-title').classList.add('d-none');
-        document.getElementById('water-table').classList.add('d-none');
-    }
 </script>
-
 {% endblock %}

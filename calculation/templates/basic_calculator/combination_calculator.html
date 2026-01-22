@@ -2,30 +2,40 @@
 
 {% block title %}Combination Calculator (nCr){% endblock %}
 
-{% block meta_description %}Calculate the number of combinations (selections without regard to order) of 'r' items chosen from a set of 'n' items using the nCr formula. Formula: nCr = n! / (r! * (n-r)!){% endblock %}
+{% block meta_description %}Calculate the number of combinations (selections without regard to order) of 'r' items
+chosen from a set of 'n' items using the nCr formula. Formula: nCr = n! / (r! * (n-r)!){% endblock %}
 
-{% block meta_keywords %}combination calculator, nCr, binomial coefficient, selections, choose, probability math{% endblock %}
+{% block meta_keywords %}combination calculator, nCr, binomial coefficient, selections, choose, probability math{%
+endblock %}
 
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjHh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjHh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 <style>
     /* 🎨 Define Custom Theme Colors using CSS Variables */
     :root {
-        --mint-lightest: #f0fdf4; /* Solver Wrapper Background */
-        --mint-light: #ecfdf5; /* Input Grid Background */
-        --mint-border: #a7f3d0; /* Light border */
-        --emerald-dark: #047857; /* Dark Emerald Label Color */
-        --emerald-medium: #34d399; /* Medium Emerald Border */
-        --emerald-hot: #059669; /* Hot Emerald (Result/Accent) */
-        --emerald-button: #059669; /* Button Color (Emerald-600) */
+        --mint-lightest: #f0fdf4;
+        /* Solver Wrapper Background */
+        --mint-light: #ecfdf5;
+        /* Input Grid Background */
+        --mint-border: #a7f3d0;
+        /* Light border */
+        --emerald-dark: #047857;
+        /* Dark Emerald Label Color */
+        --emerald-medium: #34d399;
+        /* Medium Emerald Border */
+        --emerald-hot: #059669;
+        /* Hot Emerald (Result/Accent) */
+        --emerald-button: #059669;
+        /* Button Color (Emerald-600) */
     }
 
     /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: var(--mint-lightest); 
+        background: var(--mint-lightest);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -33,21 +43,21 @@
         margin: 0 auto;
         font-family: 'Inter', sans-serif;
     }
-    
+
     .input-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
         padding: 20px;
         border-radius: 8px;
-        background-color: var(--mint-light); 
+        background-color: var(--mint-light);
         border: 1px solid var(--mint-border);
     }
 
     .input-box label {
         font-size: 1.1rem;
         font-weight: 600;
-        color: var(--emerald-dark); 
+        color: var(--emerald-dark);
         margin-bottom: 5px;
         display: block;
         text-align: center;
@@ -57,18 +67,19 @@
         width: 100%;
         padding: 12px;
         font-size: 1.4rem;
-        border: 2px solid var(--emerald-medium); 
+        border: 2px solid var(--emerald-medium);
         border-radius: 8px;
         text-align: center;
         font-weight: 700;
         color: #065f46;
         transition: box-shadow 0.15s ease-in-out;
     }
+
     .input-field:focus {
         border-color: var(--emerald-hot) !important;
         box-shadow: 0 0 0 0.25rem rgba(5, 150, 105, 0.25) !important;
     }
-    
+
     /* 📊 Result Display Styles */
     .result-box {
         margin-top: 25px;
@@ -78,12 +89,14 @@
     }
 
     .result-success {
-        border-left-color: var(--emerald-hot); 
+        border-left-color: var(--emerald-hot);
         background-color: #f0fdfa;
         color: #064e3b;
     }
+
     .result-error {
-        border-left-color: #dc3545; /* Bootstrap danger red */
+        border-left-color: #dc3545;
+        /* Bootstrap danger red */
         background-color: #f8d7da;
         color: #842029;
     }
@@ -95,6 +108,7 @@
         margin-top: 5px;
         margin-bottom: 10px;
     }
+
     .output-value {
         font-size: 3rem;
         font-weight: 800;
@@ -102,7 +116,7 @@
         margin-top: 10px;
         word-break: break-all;
         /* Ensure MathJax rendering for large number */
-        line-height: 1.2; 
+        line-height: 1.2;
     }
 </style>
 {% endblock %}
@@ -123,27 +137,24 @@
 
     <div class="solver-wrapper">
         <form id="combination-form" class="d-grid gap-4">
-            
+
             <div class="input-grid shadow-lg">
                 <div class="input-box">
                     <label for="n-input">Total Items ($\mathbf{n}$):</label>
-                    <input type="number" id="n-input" required step="1" min="0"
-                           placeholder="e.g., 10 (Total members)"
-                           class="form-control input-field shadow-sm">
+                    <input type="number" id="n-input" required step="1" min="0" placeholder="e.g., 10 (Total members)"
+                        class="form-control input-field shadow-sm">
                     <p class="text-center text-muted small mt-2 mb-0">The size of the overall set.</p>
                 </div>
                 <div class="input-box">
                     <label for="r-input">Items to Choose ($\mathbf{r}$):</label>
                     <input type="number" id="r-input" required step="1" min="0"
-                           placeholder="e.g., 3 (Committee members)"
-                           class="form-control input-field shadow-sm">
+                        placeholder="e.g., 3 (Committee members)" class="form-control input-field shadow-sm">
                     <p class="text-center text-muted small mt-2 mb-0">The size of the subset to select.</p>
                 </div>
             </div>
 
-            <button type="submit"
-                    class="btn w-100 fw-bold py-3 shadow-xl text-white"
-                    style="background-color: var(--emerald-button); border-color: var(--emerald-button);">
+            <button type="submit" class="btn w-100 fw-bold py-3 shadow-xl text-white"
+                style="background-color: var(--emerald-button); border-color: var(--emerald-button);">
                 Calculate $\text{C}(n, r)$
             </button>
         </form>
@@ -151,15 +162,118 @@
         <div id="result-container" class="mt-5">
             <h2 class="fs-4 fw-semibold text-dark mb-3 border-bottom pb-2">Calculation Result</h2>
             <div id="solution-output" class="result-box d-none">
-                </div>
+            </div>
         </div>
-        
+
+    </div>
+
+    <div class="mt-5 p-4 bg-white rounded shadow-sm">
+        <h2>What is a Combination Calculator?</h2>
+        <p>A Combination Calculator determines the number of possible ways to select a specific number of items from a
+            larger group, where the order of selection typically does not matter. This is mathematically represented as
+            <strong>nCr</strong>.</p>
+
+        <h3>Combinations vs. Permutations: What's the Difference?</h3>
+        <p>The key difference is <strong>Order</strong>.</p>
+        <ul>
+            <li><strong>Permutation (nPr):</strong> Order matters. (e.g., A password "123" is different from "321").
+            </li>
+            <li><strong>Combination (nCr):</strong> Order does NOT matter. (e.g., A fruit salad with "Apple, Banana" is
+                the same as "Banana, Apple").</li>
+        </ul>
+
+        <h3>Real-Life Examples of Combinations</h3>
+        <div class="row mt-4">
+            <div class="col-md-4 mb-3">
+                <div class="p-3 border rounded h-100 bg-light">
+                    <h4>🎰 Lottery Odds</h4>
+                    <p>In a lottery where you pick 6 numbers out of 49, the order you pick them doesn't change your
+                        winning status. This is a classic combination problem.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="p-3 border rounded h-100 bg-light">
+                    <h4>🃏 Poker Hands</h4>
+                    <p>When you are dealt 5 cards, it doesn't matter which order they arrived in. A "Royal Flush" is the
+                        same hand regardless of card deal order.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="p-3 border rounded h-100 bg-light">
+                    <h4>👥 Team Selection</h4>
+                    <p>Choosing 3 students from a class of 20 to represent the school is a combination, provided
+                        positions (like President vs. VP) aren't assigned.</p>
+                </div>
+            </div>
+        </div>
+
+        <h3>The Math Behind It</h3>
+        <p>The formula for combinations is:</p>
+        <div class="text-center bg-light p-3 rounded">
+            Looking for C(n, r)
+        </div>
+        <p class="mt-2">Where:</p>
+        <ul>
+            <li><strong>n</strong> = Total number of items in the set.</li>
+            <li><strong>r</strong> = Number of items you are choosing.</li>
+            <li><strong>!</strong> = Factorial (e.g., 5! = 5 × 4 × 3 × 2 × 1).</li>
+        </ul>
+
+        <h3>Frequently Asked Questions (FAQs)</h3>
+        <div class="accordion" id="comboFaq">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingComboOne">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseComboOne" aria-expanded="false" aria-controls="collapseComboOne">
+                        Does order matter in combinations?
+                    </button>
+                </h2>
+                <div id="collapseComboOne" class="accordion-collapse collapse" aria-labelledby="headingComboOne"
+                    data-bs-parent="#comboFaq">
+                    <div class="accordion-body">
+                        No, order does not matter in combinations. If order does matter (e.g., a lock combination), you
+                        should use a Permutation Calculator instead.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingComboTwo">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseComboTwo" aria-expanded="false" aria-controls="collapseComboTwo">
+                        Can "r" be larger than "n"?
+                    </button>
+                </h2>
+                <div id="collapseComboTwo" class="accordion-collapse collapse" aria-labelledby="headingComboTwo"
+                    data-bs-parent="#comboFaq">
+                    <div class="accordion-body">
+                        No. You cannot choose more items than are available in the total set. If r > n, the number of
+                        combinations is 0.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingComboThree">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseComboThree" aria-expanded="false" aria-controls="collapseComboThree">
+                        What is C(n, n)?
+                    </button>
+                </h2>
+                <div id="collapseComboThree" class="accordion-collapse collapse" aria-labelledby="headingComboThree"
+                    data-bs-parent="#comboFaq">
+                    <div class="accordion-body">
+                        C(n, n) equals 1. There is only one way to choose all items from a set: by taking everything.
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
 
 <script>
     /**
@@ -168,7 +282,7 @@
     function calculateCombination(n, r) {
         if (r === 0 || r === n) return 1;
         if (r < 0 || r > n) return 0;
-        
+
         // Optimization: C(n, r) = C(n, n - r)
         if (r > n / 2) {
             r = n - r;
@@ -190,38 +304,38 @@
         const outputDiv = document.getElementById('solution-output');
         // Reset classes and show/hide
         outputDiv.classList.remove('d-none', 'result-error', 'result-success');
-        
+
         outputDiv.classList.add(className);
         outputDiv.innerHTML = contentHtml;
         outputDiv.classList.remove('d-none');
-        
+
         // Trigger MathJax re-render after content update
         if (window.MathJax) {
             window.MathJax.typesetPromise([outputDiv]);
         }
     }
 
-    document.getElementById('combination-form').addEventListener('submit', function(e) {
+    document.getElementById('combination-form').addEventListener('submit', function (e) {
         e.preventDefault();
 
         const nInput = document.getElementById('n-input').value.trim();
         const rInput = document.getElementById('r-input').value.trim();
         const n = parseInt(nInput);
         const r = parseInt(rInput);
-        
+
         const outputDiv = document.getElementById('solution-output');
         outputDiv.classList.add('d-none');
-        outputDiv.className = 'result-box'; 
+        outputDiv.className = 'result-box';
         outputDiv.innerHTML = '';
 
         // If either input is empty, do nothing but validate if the other is present
         if (nInput === '' || rInput === '') {
             // Only show an error if the user pressed submit with *some* invalid/incomplete input
-             if (nInput !== '' || rInput !== '') {
+            if (nInput !== '' || rInput !== '') {
                 htmlContent = `<p class="fw-bold text-center">Incomplete Input</p><p class="text-center">Please enter a non-negative **whole number** for both $n$ and $r$.</p>`;
                 resultClass = 'result-error';
                 displayResult(resultClass, htmlContent);
-             }
+            }
             return;
         }
 
@@ -250,21 +364,21 @@
             displayResult(resultClass, htmlContent);
             return;
         }
-        
+
         // --- Calculation ---
         const result = calculateCombination(n, r);
 
         if (result === Infinity) {
-             htmlContent = `<p class="fw-bold text-center">Result Too Large</p><p class="text-center">The result exceeds the maximum number that can be accurately represented in JavaScript.</p>`;
+            htmlContent = `<p class="fw-bold text-center">Result Too Large</p><p class="text-center">The result exceeds the maximum number that can be accurately represented in JavaScript.</p>`;
             resultClass = 'result-error';
             displayResult(resultClass, htmlContent);
             return;
         }
 
         // --- Result Display ---
-        
+
         htmlContent += `<p class="output-label text-center">The Number of Combinations is:</p>`;
-        
+
         // Detailed Formula Display
         htmlContent += `<p class="text-lg text-center font-monospace text-secondary">
                            $$\\text{C}(${n}, ${r}) = \\frac{${n}!}{\\mathbf{${r}!} (\\mathbf{${n}-${r}})!}$$
@@ -272,13 +386,13 @@
 
         // Final Value Display
         htmlContent += `<div class="output-value text-center">$$\\mathbf{${result.toLocaleString()}}$$</div>`;
-        
+
         htmlContent += `<p class="text-sm text-center text-secondary mt-4 mb-0">
                             There are $\\mathbf{${result.toLocaleString()}}$ unique ways to select ${r} items from a set of ${n}$.
                         </p>`;
 
         resultClass = 'result-success';
-        
+
         displayResult(resultClass, htmlContent);
     });
 

@@ -2,7 +2,8 @@
 
 {% block title %}Advanced Basic Arithmetic Calculator{% endblock %}
 
-{% block meta_description %}Perform basic arithmetic calculations (+, -, *, /) using a simple, advanced calculator interface.{% endblock %}
+{% block meta_description %}Perform basic arithmetic calculations (+, -, *, /) using a simple, advanced calculator
+interface.{% endblock %}
 
 {% block meta_keywords %}calculator, arithmetic, math, plus, minus, multiply, divide, advanced calculator{% endblock %}
 
@@ -10,22 +11,26 @@
 <style>
     /* Calculator specific styles */
     .calc-wrapper {
-        background: #f7f7f7; /* Light background for the calculator block */
+        background: #f7f7f7;
+        /* Light background for the calculator block */
         padding: 25px;
         border-radius: 10px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        max-width: 400px; /* Constrain width for a handheld calculator feel */
+        max-width: 400px;
+        /* Constrain width for a handheld calculator feel */
         margin: 0 auto;
     }
 
     .display-screen {
-        background: #e0e0e0; /* Slightly darker screen background */
+        background: #e0e0e0;
+        /* Slightly darker screen background */
         border: 1px solid #ccc;
         border-radius: 5px;
         padding: 10px;
         text-align: right;
         margin-bottom: 15px;
-        font-family: 'Consolas', monospace; /* Monospaced font for numbers */
+        font-family: 'Consolas', monospace;
+        /* Monospaced font for numbers */
         box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
         outline: none;
     }
@@ -72,23 +77,29 @@
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
-    .number-btn, .decimal-btn {
-        background-color: #ffffff; /* White for numbers */
+    .number-btn,
+    .decimal-btn {
+        background-color: #ffffff;
+        /* White for numbers */
         color: #333;
     }
-    
+
     .operator-btn {
-        background-color: #ff9500; /* Orange for operators */
+        background-color: #ff9500;
+        /* Orange for operators */
         color: white;
     }
 
-    .clear-btn, .special-btn {
-        background-color: #dcdcdc; /* Light grey for clear/special */
+    .clear-btn,
+    .special-btn {
+        background-color: #dcdcdc;
+        /* Light grey for clear/special */
         color: #333;
     }
 
     .equal-btn {
-        background-color: #1abc9c; /* Teal/Green for equals */
+        background-color: #1abc9c;
+        /* Teal/Green for equals */
         color: white;
     }
 
@@ -96,7 +107,8 @@
     .zero-btn {
         grid-column: span 2;
         text-align: left;
-        padding-left: 30px; /* Adjust padding for better look */
+        padding-left: 30px;
+        /* Adjust padding for better look */
     }
 </style>
 {% endblock %}
@@ -141,6 +153,95 @@
             <button class="calc-btn number-btn zero-btn" data-value="0">0</button>
             <button class="calc-btn decimal-btn" data-value=".">.</button>
             <button class="calc-btn equal-btn" data-value="=" data-type="equals">=</button>
+        </div>
+    </div>
+
+    <div class="mt-5 p-4 bg-white rounded shadow-sm">
+        <h2>What is Arithmetic?</h2>
+        <p>Arithmetic is the oldest and most fundamental branch of mathematics. It involves the study of numbers and the
+            traditional operations performed on them: addition, subtraction, multiplication, and division.</p>
+
+        <h3>Basic Arithmetic Operations</h3>
+        <p>Our calculator handles the four core operations that form the basis of all mathematics:</p>
+        <div class="row text-center mt-4">
+            <div class="col-md-3 mb-3">
+                <div class="p-3 border rounded bg-light">
+                    <h4>Addition (+)</h4>
+                    <p>Combining two or more numbers to find a total sum.</p>
+                    <small>Example: 5 + 3 = 8</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="p-3 border rounded bg-light">
+                    <h4>Subtraction (−)</h4>
+                    <p>Finding the difference between two numbers.</p>
+                    <small>Example: 10 − 4 = 6</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="p-3 border rounded bg-light">
+                    <h4>Multiplication (×)</h4>
+                    <p>Repeated addition of a number.</p>
+                    <small>Example: 4 × 3 = 12</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="p-3 border rounded bg-light">
+                    <h4>Division (÷)</h4>
+                    <p>Splitting a number into equal parts.</p>
+                    <small>Example: 20 ÷ 5 = 4</small>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="mt-4">Order of Operations (PEMDAS/BODMAS)</h3>
+        <p>When performing calculations with multiple operations, the order matters. The standard rule is known as
+            <strong>PEMDAS</strong> or <strong>BODMAS</strong>:</p>
+        <ul>
+            <li><strong>P/B</strong>: Parentheses / Brackets</li>
+            <li><strong>E/O</strong>: Exponents / Orders (Powers and Roots)</li>
+            <li><strong>MD/DM</strong>: Multiplication and Division (left to right)</li>
+            <li><strong>AS</strong>: Addition and Subtraction (left to right)</li>
+        </ul>
+        <div class="alert alert-info">
+            <strong>Note:</strong> This basic calculator performs operations immediately as you type. For complex
+            expressions requiring strict order of operations, use a Scientific Calculator.
+        </div>
+
+        <h3>Frequently Asked Questions (FAQs)</h3>
+        <div class="accordion" id="arithmeticFaq">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingArithOne">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseArithOne" aria-expanded="false" aria-controls="collapseArithOne">
+                        Why is dividing by zero undefined?
+                    </button>
+                </h2>
+                <div id="collapseArithOne" class="accordion-collapse collapse" aria-labelledby="headingArithOne"
+                    data-bs-parent="#arithmeticFaq">
+                    <div class="accordion-body">
+                        Division asks "how many times does the divisor fit into the dividend?" Since 0 fits into any
+                        number an infinite number of times (and no number of times results in a non-zero value), the
+                        operation is undefined in standard arithmetic.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingArithTwo">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseArithTwo" aria-expanded="false" aria-controls="collapseArithTwo">
+                        What is the difference between an integer and a real number?
+                    </button>
+                </h2>
+                <div id="collapseArithTwo" class="accordion-collapse collapse" aria-labelledby="headingArithTwo"
+                    data-bs-parent="#arithmeticFaq">
+                    <div class="accordion-body">
+                        <strong>Integers</strong> are whole numbers (positive, negative, or zero) without fractions
+                        (e.g., -5, 0, 10). <strong>Real numbers</strong> include integers plus fractions and decimals
+                        (e.g., 3.14, 2.5).
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -189,7 +290,7 @@
         }
         updateDisplay();
     }
-    
+
     function toggleSign() {
         currentInput = (parseFloat(currentInput) * -1).toString();
         updateDisplay();
@@ -203,7 +304,7 @@
         waitingForSecondOperand = false;
         updateDisplay();
     }
-    
+
     function backspace() {
         if (currentInput === 'Error') {
             clearCalculator();
@@ -236,10 +337,10 @@
         if (firstOperand === null || operator === null) {
             return;
         }
-        
+
         const secondOperand = parseFloat(currentInput);
         const result = calculate(firstOperand, secondOperand, operator);
-        
+
         if (result === 'Error') {
             clearCalculator();
             currentInput = 'Error';
@@ -269,7 +370,7 @@
             firstOperand = inputValue;
         } else if (operator) {
             const result = calculate(firstOperand, inputValue, operator);
-            
+
             if (result === 'Error') {
                 clearCalculator();
                 currentInput = 'Error';
@@ -292,19 +393,19 @@
         if (op === '*') return '×';
         return op;
     }
-    
+
     // --- FIX: Updated Keyboard Input Handler ---
     function handleKeyboardInput(event) {
         const key = event.key;
         const target = event.target;
-        
+
         // Check if the user is typing inside an input or textarea element
         const isTypingInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
-        
+
         // If the user is typing in a focusable text field, do not run the calculator logic.
         // The browser will handle the input normally.
         if (isTypingInInput) {
-            return; 
+            return;
         }
 
         // Only prevent default for keys that the calculator handles.
@@ -315,31 +416,31 @@
             inputDigit(key);
             shouldPreventDefault = true;
         }
-        
+
         // 2. Operators
         else if (key === '+' || key === '-' || key === '*' || key === '/') {
             handleOperator(key);
             shouldPreventDefault = true;
         }
-        
+
         // 3. Equals and Enter (Equals)
         else if (key === '=' || key === 'Enter') {
             handleEquals();
             shouldPreventDefault = true;
         }
-        
+
         // 4. Decimal
         else if (key === '.') {
             inputDecimal();
             shouldPreventDefault = true;
         }
-        
+
         // 5. Backspace/Delete (Clear last digit)
         else if (key === 'Backspace' || key === 'Delete') {
             backspace();
             shouldPreventDefault = true;
         }
-        
+
         // 6. Escape (Clear all)
         else if (key === 'Escape') {
             clearCalculator();
@@ -347,7 +448,7 @@
         }
 
         if (shouldPreventDefault) {
-             // Stop the browser from processing the key (e.g., scrolling on Spacebar, triggering button clicks on Enter)
+            // Stop the browser from processing the key (e.g., scrolling on Spacebar, triggering button clicks on Enter)
             event.preventDefault();
         }
     }
@@ -367,12 +468,12 @@
             clearCalculator();
             return;
         }
-        
+
         if (buttonType === 'backspace') {
             backspace();
             return;
         }
-        
+
         if (buttonType === 'sign') {
             toggleSign();
             return;
@@ -392,7 +493,7 @@
             inputDigit(buttonValue);
             return;
         }
-        
+
         if (target.classList.contains('decimal-btn')) {
             inputDecimal();
             return;

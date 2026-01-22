@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Dorm Room Size & Usable Area Calculator{% endblock %}
+
+{% block meta_description %}Calculate the total area and net usable floor space of your dorm room by subtracting fixed obstacles. (Dimensions in feet).{% endblock %}
+
+{% block meta_keywords %}dorm room size, area calculator, usable space, student housing, room dimensions, furniture layout{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #dee2e6;
+    }
+
+    .obstacle-card {
+        background-color: #fff9f9;
+        border: 1px solid #f8d7da;
+        border-left: 5px solid #dc3545;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: transform 0.2s ease;
+    }
+
+    .obstacle-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .stat-card {
+        border-radius: 12px;
+        padding: 25px;
+        text-align: center;
+        height: 100%;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .empty-state {
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 30px;
+        color: #adb5bd;
+        text-align: center;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    /* Net Usable Highlighting */
+    .bg-usable {
+        background-color: #e6fffa;
+        border: 1px solid #b2f5ea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">📏 Dorm Room Usable Space Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">
+            Planning your layout? Calculate your total square footage and subtract built-in obstacles to find your actual walkable floor space.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-wrapper mx-auto" style="max-width: 950px;">
+        
+        <h5 class="fw-bold mb-4 border-bottom pb-2 text-primary">1. Main Room Dimensions</h5>
+        <div class="row g-3 mb-5">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Room Width (Feet)</label>
+                <div class="input-group input-group-lg">
+                    <input type="number" id="room-width" class="form-control" placeholder="0.0" step="0.1" oninput="calculateArea()">
+                    <span class="input-group-text">ft</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Room Length (Feet)</label>
+                <div class="input-group input-group-lg">
+                    <input type="number" id="room-length" class="form-control" placeholder="0.0" step="0.1" oninput="calculateArea()">
+                    <span class="input-group-text">ft</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0 border-bottom pb-2 text-danger flex-grow-1">2. Fixed Obstacles</h5>
+            <button id="add-obstacle-btn" class="btn btn-outline-danger btn-sm ms-3">
+                <i class="bi bi-plus-circle me-1"></i> Add Built-in Item
+            </button>
+        </div>
+        
+        <div id="obstacle-list" class="mb-4">
+            <div class="empty-state" id="empty-msg">
+                <i class="bi bi-info-circle d-block mb-2 fs-4"></i>
+                No fixed obstacles added. (e.g., built-in closets, pillars, or fixed desks)
+            </div>
+        </div>
+
+        <h5 class="fw-bold mt-5 mb-4 border-bottom pb-2">3. Area Summary</h5>
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card bg-light">
+                    <div class="stat-label">Gross Area</div>
+                    <div class="stat-value text-primary" id="total-room-area">0.0</div>
+                    <small class="text-muted">Sq. Ft.</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card bg-light">
+                    <div class="stat-label">Obstacle Deduction</div>
+                    <div class="stat-value text-danger" id="total-obstacle-area">0.0</div>
+                    <small class="text-muted">Sq. Ft.</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card bg-usable">
+                    <div class="stat-label">Net Usable Area</div>
+                    <div class="stat-value text-success" id="net-usable-area">0.0</div>
+                    <small class="text-muted">Sq. Ft.</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <button class="btn btn-link text-muted text-decoration-none" onclick="resetAll()">
+                <i class="bi bi-trash"></i> Clear All Data
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const roomWidthInput = document.getElementById('room-width');
+    const roomLengthInput = document.getElementById('room-length');
+    const obstacleListEl = document.getElementById('obstacle-list');
+    const addObstacleBtn = document.getElementById('add-obstacle-btn');
+    const totalRoomAreaEl = document.getElementById('total-room-area');
+    const totalObstacleAreaEl = document.getElementById('total-obstacle-area');
+    const netUsableAreaEl = document.getElementById('net-usable-area');
+    const emptyMsg = document.getElementById('empty-msg');
+
+    let obstacleCounter = 0;
+
+    function calculateArea() {
+        // Room Area
+        const w = parseFloat(roomWidthInput.value) || 0;
+        const l = parseFloat(roomLengthInput.value) || 0;
+        const totalRoomArea = w * l;
+        totalRoomAreaEl.textContent = totalRoomArea.toFixed(1);
+
+        // Obstacle Area
+        let totalObstacleArea = 0;
+        const obsWidths = document.querySelectorAll('.input-obstacle-width');
+        const obsLengths = document.querySelectorAll('.input-obstacle-length');
+        
+        for (let i = 0; i < obsWidths.length; i++) {
+            totalObstacleArea += (parseFloat(obsWidths[i].value) || 0) * (parseFloat(obsLengths[i].value) || 0);
+        }
+        totalObstacleAreaEl.textContent = totalObstacleArea.toFixed(1);
+
+        // Net Area
+        const net = Math.max(0, totalRoomArea - totalObstacleArea);
+        netUsableAreaEl.textContent = net.toFixed(1);
+    }
+
+    function addObstacle() {
+        if (emptyMsg) emptyMsg.style.display = 'none';
+        
+        obstacleCounter++;
+        const rowId = `obstacle-${obstacleCounter}`;
+        const div = document.createElement('div');
+        div.className = 'obstacle-card animate__animated animate__fadeIn';
+        div.id = rowId;
+        div.innerHTML = `
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold text-muted">Obstacle Description</label>
+                    <input type="text" class="form-control" placeholder="e.g., Closet">
+                </div>
+                <div class="col-md-3 col-6">
+                    <label class="form-label small fw-bold text-muted">Width (ft)</label>
+                    <input type="number" class="form-control input-obstacle-width" placeholder="0.0" step="0.1" oninput="calculateArea()">
+                </div>
+                <div class="col-md-3 col-6">
+                    <label class="form-label small fw-bold text-muted">Length (ft)</label>
+                    <input type="number" class="form-control input-obstacle-length" placeholder="0.0" step="0.1" oninput="calculateArea()">
+                </div>
+                <div class="col-md-1 text-end">
+                    <button class="btn btn-link text-danger p-0 mb-2" onclick="removeObstacle('${rowId}')">
+                        <i class="bi bi-x-circle-fill fs-4"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        obstacleListEl.appendChild(div);
+    }
+
+    function removeObstacle(id) {
+        document.getElementById(id).remove();
+        if (document.querySelectorAll('.obstacle-card').length === 0) {
+            emptyMsg.style.display = 'block';
+        }
+        calculateArea();
+    }
+
+    function resetAll() {
+        if(confirm("Are you sure you want to clear all measurements?")) {
+            roomWidthInput.value = '';
+            roomLengthInput.value = '';
+            obstacleListEl.innerHTML = '';
+            obstacleListEl.appendChild(emptyMsg);
+            emptyMsg.style.display = 'block';
+            calculateArea();
+        }
+    }
+
+    addObstacleBtn.addEventListener('click', addObstacle);
+</script>
+{% endblock %}

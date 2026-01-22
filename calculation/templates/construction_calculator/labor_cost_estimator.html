@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Labor Cost Estimator{% endblock %}
+
+{% block meta_description %}Estimate total project labor costs by calculating hours required for different roles against their fully loaded hourly rates (wage, benefits, overhead). {% endblock %}
+
+{% block meta_keywords %}labor cost estimate, project cost, loaded hourly rate, overhead calculation, construction labor, professional services cost{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #8B4513; /* Saddle Brown for cost/business */
+        border-bottom: 2px solid #8B4513;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFD700; /* Gold for financial results */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f3f0;
+        font-weight: 600;
+        color: #8B4513;
+    }
+
+    .info-box {
+        background-color: #fff8dc; /* Light yellow/cream info box */
+        border: 1px solid #8B4513;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #8B4513;
+    }
+
+    .line-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+    }
+    
+    .line-item input[type="number"] {
+        flex-grow: 1;
+        margin: 0 5px;
+    }
+
+    .remove-btn {
+        background: none;
+        border: none;
+        color: #FF4500;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 0 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">💸 Project Labor Cost Estimator</h1>
+    <p class="text-center small-muted">Dynamically calculate the total labor cost for a project by defining roles, required hours, and their loaded rates.</p>
+    [Image of a project management financial chart showing labor vs materials costs]
+
+    <div class="calc-wrapper">
+
+        <form id="labor-cost-calculator-form">
+            <h5 class="section-title">1. Labor Inputs (Roles, Hours, and Rate)</h5>
+            <p class="small text-muted mb-3">Add as many roles as needed. The *Loaded Rate* should include salary, taxes, benefits, and overhead.</p>
+
+            <div id="labor-items-container">
+                <!-- Initial items will be placed here -->
+            </div>
+
+            <button type="button" id="add-item-btn" class="btn btn-outline-secondary w-100 mt-3" style="border-color: #8B4513; color: #8B4513;">+ Add Another Role/Trade</button>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #8B4513; border-color: #8B4513;" type="submit">Calculate Total Labor Cost</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="cost-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="cost-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #8B4513; color: white;">
+                    <th>Role/Trade</th>
+                    <th>Hours</th>
+                    <th>Rate</th>
+                    <th>Subtotal Cost</th>
+                </tr>
+            </thead>
+            <tbody id="cost-body"></tbody>
+            <tfoot>
+                <tr style="background-color: #f7f3f0; font-weight: bold;">
+                    <td colspan="3" class="text-end">Total Estimated Labor Cost:</td>
+                    <td id="total-cost-footer" class="result-value"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Helper function for currency formatting
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    let itemId = 0;
+
+    // Function to create a new labor input line item
+    function createLaborItem(role, hours, rate) {
+        itemId++;
+        const container = document.getElementById('labor-items-container');
+        
+        const div = document.createElement('div');
+        div.className = 'line-item';
+        div.dataset.id = itemId;
+
+        div.innerHTML = `
+            <input type="text" class="form-control form-control-sm me-2" name="role-${itemId}" value="${role}" placeholder="Role (e.g., Foreman)" required style="max-width: 150px;">
+            <div class="input-group input-group-sm me-2">
+                <span class="input-group-text">Hrs</span>
+                <input type="number" class="form-control" name="hours-${itemId}" value="${hours}" min="1" step="0.5" required>
+            </div>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">$ Rate</span>
+                <input type="number" class="form-control" name="rate-${itemId}" value="${rate}" min="1" step="0.1" required>
+            </div>
+            <button type="button" class="remove-btn" data-id="${itemId}" aria-label="Remove item">
+                &times;
+            </button>
+        `;
+
+        container.appendChild(div);
+    }
+
+    // Function to handle removing an item
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-btn')) {
+            const id = e.target.dataset.id;
+            const container = document.getElementById('labor-items-container');
+            const itemToRemove = document.querySelector(`.line-item[data-id="${id}"]`);
+            if (itemToRemove) {
+                container.removeChild(itemToRemove);
+            }
+        }
+    });
+
+    // Add Item button handler
+    document.getElementById('add-item-btn').addEventListener('click', () => {
+        createLaborItem('', 40, 50); // Default values for quick adding
+    });
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('cost-result');
+        const table = document.getElementById('cost-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('cost-body');
+        const totalFooter = document.getElementById('total-cost-footer');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+            totalFooter.innerHTML = '';
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Total Cost
+            res.innerHTML = `
+**Total Estimated Labor Cost:**
+<div class="text-center mt-3 mb-2">
+    <span class="result-value">${formatter.format(metrics.totalCost)}</span>
+</div>
+<p class="small text-center mt-2">This estimate covers all ${metrics.totalHours.toFixed(1)} required hours across ${metrics.itemCount} roles.</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = '';
+            metrics.items.forEach(item => {
+                tableRows += `
+                <tr>
+                    <td>${item.role}</td>
+                    <td>${item.hours.toFixed(1)}</td>
+                    <td>${formatter.format(item.rate)} / hr</td>
+                    <td>${formatter.format(item.subtotal)}</td>
+                </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = tableRows;
+            totalFooter.innerHTML = formatter.format(metrics.totalCost);
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('labor-cost-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        let totalCost = 0;
+        let totalHours = 0;
+        const laborItems = [];
+        let itemCount = 0;
+
+        const container = document.getElementById('labor-items-container');
+        const items = container.querySelectorAll('.line-item');
+        
+        if (items.length === 0) {
+            displayResult(true, "Please add at least one role to the estimator.");
+            return;
+        }
+
+        try {
+            items.forEach(item => {
+                const id = item.dataset.id;
+                const roleInput = form.elements[`role-${id}`];
+                const hoursInput = form.elements[`hours-${id}`];
+                const rateInput = form.elements[`rate-${id}`];
+                
+                const role = roleInput.value.trim();
+                const hours = parseFloat(hoursInput.value);
+                const rate = parseFloat(rateInput.value);
+
+                // Validation for individual fields
+                if (!role || isNaN(hours) || hours <= 0 || isNaN(rate) || rate <= 0) {
+                    throw new Error(`Invalid input for role: "${role}" (Hours: ${hours}, Rate: ${rate}).`);
+                }
+                
+                const subtotal = hours * rate;
+                
+                totalCost += subtotal;
+                totalHours += hours;
+                itemCount++;
+
+                laborItems.push({ role, hours, rate, subtotal });
+            });
+            
+            // Final check
+            if (totalCost <= 0) {
+                throw new Error("Total calculated cost is zero. Please check inputs.");
+            }
+
+            // 5. Display results
+            const metrics = {
+                itemCount,
+                totalCost,
+                totalHours,
+                items: laborItems
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, error.message);
+        }
+    });
+
+    // Initialize with two default items
+    window.onload = function() {
+        createLaborItem('Project Manager', 80, 75);
+        createLaborItem('Technician', 160, 45);
+
+        // Ensure results section is hidden on load
+        document.getElementById('cost-result').classList.add('d-none');
+        document.getElementById('cost-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

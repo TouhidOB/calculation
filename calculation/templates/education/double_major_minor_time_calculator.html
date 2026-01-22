@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Double Major/Minor Time Calculator{% endblock %}
+
+{% block meta_description %}Calculate the impact of adding a second major or minor on your time to graduation and required course load.{% endblock %}
+
+{% block meta_keywords %}double major, minor, academic planning, credit hours, time to graduation, course load, overlap calculation, college planning{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 8, 145, 178; /* Cyan-700 */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-container {
+        max-width: 1100px;
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #475569;
+    }
+
+    .result-card {
+        border-radius: 1rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        height: 100%;
+    }
+
+    .result-value {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .bg-primary-light { background-color: #ecfeff; border-color: #22d3ee !important; color: #0891b2; }
+    .bg-secondary-light { background-color: #f0f9ff; border-color: #38bdf8 !important; color: #0369a1; }
+    .bg-warning-light { background-color: #fffbeb; border-color: #fbbf24 !important; color: #b45309; }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .credit-badge {
+        font-family: 'Monaco', 'Consolas', monospace;
+        font-weight: bold;
+        background: #f1f5f9;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        color: #334155;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-mortarboard-fill text-info me-2"></i>Academic Time Projector</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">Project exactly how many extra semesters you'll need to complete a double major or minor by calculating credit overlap and remaining load.</p>
+    </div>
+
+    
+
+    <div class="calc-container mx-auto">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-sliders me-2"></i>Parameters</h5>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Credits Already Completed</label>
+                        <input type="number" id="credits-completed" class="form-control" placeholder="e.g. 45">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Primary Major Total</label>
+                        <input type="number" id="credits-primary-total" class="form-control" placeholder="e.g. 120">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Avg Load / Semester</label>
+                        <input type="number" id="credits-per-semester" class="form-control" placeholder="15">
+                    </div>
+
+                    <hr class="my-4 text-muted">
+
+                    <div class="col-12">
+                        <label class="form-label text-primary">Secondary Goal Credits</label>
+                        <input type="number" id="credits-secondary-total" class="form-control" placeholder="Minor: 18 | Major: 30+">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label text-primary">Credit Overlap (Double Count)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-intersect"></i></span>
+                            <input type="number" id="credits-overlap" class="form-control" placeholder="e.g. 6">
+                        </div>
+                        <small class="text-muted mt-1 d-block">Credits that fulfill requirements for both programs.</small>
+                    </div>
+                </div>
+
+                <button class="btn btn-outline-secondary btn-sm w-100 mt-5" onclick="resetCalculator()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Clear All Data
+                </button>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white d-flex align-items-center">
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-calendar3-range display-1 mb-3"></i>
+                    <h4>Ready to Project</h4>
+                    <p>Enter your credit details on the left to see your timeline impact.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <h5 class="fw-bold mb-4 text-dark text-center text-lg-start">Timeline Projection</h5>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="result-card bg-primary-light">
+                                <span class="form-label d-block mb-2">Original Path</span>
+                                <div class="result-value" id="semesters-primary">0</div>
+                                <span class="fw-bold small text-uppercase">Semesters Left</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="result-card bg-secondary-light">
+                                <span class="form-label d-block mb-2">New Path</span>
+                                <div class="result-value" id="semesters-combined">0</div>
+                                <span class="fw-bold small text-uppercase">Semesters Left</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="result-card bg-warning-light text-center shadow-sm">
+                                <span class="form-label d-block mb-2">Time Extension Required</span>
+                                <div class="result-value" id="time-extension">0</div>
+                                <span class="fw-bold fs-5 text-uppercase">Extra Semesters</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 bg-light rounded-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3 small text-uppercase">Requirement Breakdown</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Unique Credits (New Goal):</span>
+                                <span class="credit-badge" id="unique-secondary-credits">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Total Combined Program:</span>
+                                <span class="credit-badge" id="total-unique-credits">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted small">Net Credits Remaining:</span>
+                                <span class="credit-badge" id="combined-remaining-credits">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function resetCalculator() {
+        if(confirm("Are you sure you want to clear your data?")) {
+            document.querySelectorAll('input').forEach(i => i.value = '');
+            calculateTimeImpact();
+        }
+    }
+
+    function calculateTimeImpact() {
+        // --- Inputs ---
+        const completed = parseFloat(document.getElementById('credits-completed').value);
+        const primaryTotal = parseFloat(document.getElementById('credits-primary-total').value);
+        const secondaryTotal = parseFloat(document.getElementById('credits-secondary-total').value);
+        const overlap = parseFloat(document.getElementById('credits-overlap').value) || 0;
+        const creditsPerSem = parseFloat(document.getElementById('credits-per-semester').value) || 15;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const results = document.getElementById('results-ui');
+
+        // Logic: Only show results if primary total and completed are entered
+        if (isNaN(completed) || isNaN(primaryTotal) || isNaN(secondaryTotal)) {
+            placeholder.classList.remove('d-none');
+            results.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        results.classList.remove('d-none');
+
+        // --- Calculations ---
+        const safeOverlap = Math.min(overlap, secondaryTotal);
+        const uniqueSecondary = Math.max(0, secondaryTotal - safeOverlap);
+        const totalProgramCredits = primaryTotal + uniqueSecondary;
+        
+        const remainingPrimary = Math.max(0, primaryTotal - completed);
+        const remainingCombined = Math.max(0, totalProgramCredits - completed);
+
+        const sPrimary = remainingPrimary / creditsPerSem;
+        const sCombined = remainingCombined / creditsPerSem;
+        const extension = Math.max(0, sCombined - sPrimary);
+
+        // --- UI Updates ---
+        document.getElementById('semesters-primary').textContent = sPrimary.toFixed(1);
+        document.getElementById('semesters-combined').textContent = sCombined.toFixed(1);
+        document.getElementById('time-extension').textContent = extension.toFixed(1);
+        
+        document.getElementById('unique-secondary-credits').textContent = uniqueSecondary;
+        document.getElementById('total-unique-credits').textContent = totalProgramCredits;
+        document.getElementById('combined-remaining-credits').textContent = remainingCombined;
+    }
+
+    window.onload = function() {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateTimeImpact);
+        });
+    };
+</script>
+{% endblock %}

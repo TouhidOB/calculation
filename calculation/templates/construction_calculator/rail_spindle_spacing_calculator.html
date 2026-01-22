@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Rail Spindle Spacing Calculator{% endblock %}
+
+{% block meta_description %}Calculate the number of spindles (balusters) and the resulting precise spacing required for code-compliant railings. {% endblock %}
+
+{% block meta_keywords %}spindle spacing calculator, baluster spacing, railing code, 4 inch rule, deck railing, stair railing, newel post{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #4CAF50; /* Green for Safety/Compliance */
+        border-bottom: 2px solid #4CAF50;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF9800; /* Orange for key warning/results */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #e8f5e9; /* Light green info box */
+        border: 1px solid #4CAF50;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4CAF50;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">📏 Railing Spindle Spacing Calculator</h1>
+    <p class="text-center small-muted">Ensures code compliance by calculating the number of spindles and the resulting equal space between them.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="spindle-calculator-form">
+            <h5 class="section-title">1. Railing Section Dimensions (All in Inches)</h5>
+
+            <!-- Run Length Input -->
+            <label for="run-length-input" class="form-label">Total Railing Length (Center-to-Center of Posts)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length (L)</span>
+                <input type="number" id="run-length-input" class="form-control" name="runLengthFeet" placeholder="e.g., 8 (ft)" value="8" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Post Width Input -->
+            <label for="post-width-input" class="form-label">Main Post (Newel) Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Post Width (Wp)</span>
+                <input type="number" id="post-width-input" class="form-control" name="postWidth" placeholder="e.g., 4" value="4" min="0.5" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+
+            <h5 class="section-title">2. Spindle & Code Requirements</h5>
+            
+            <!-- Spindle Width Input -->
+            <label for="spindle-width-input" class="form-label">Spindle (Baluster) Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Spindle Width (Ws)</span>
+                <input type="number" id="spindle-width-input" class="form-control" name="spindleWidth" placeholder="e.g., 1.5" value="1.5" min="0.1" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+
+            <!-- Max Gap Input -->
+            <label for="max-gap-input" class="form-label">Maximum Allowed Gap (Building Code)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Max Gap (Gmax)</span>
+                <input type="number" id="max-gap-input" class="form-control" name="maxGap" placeholder="Typically 4" value="4.0" min="0.1" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <div class="info-box">
+                **Note on Calculation:** This formula finds the minimum number of spindles required to ensure the final, equalized gap is less than or equal to the Max Gap (Gmax), satisfying building codes.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #4CAF50; border-color: #4CAF50;" type="submit">Calculate Spacing</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-danger" id="spacing-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Final Measurements</h5>
+        <table class="table table-bordered mt-2 d-none" id="spacing-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #4CAF50; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="spacing-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const INCHES_PER_FOOT = 12;
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('spacing-result');
+        const table = document.getElementById('spacing-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('spacing-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Spindles and Gap
+            res.innerHTML = `
+**Code-Compliant Spacing Plan:**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span class="result-value">${metrics.spindlesNeeded}</span><br>
+        <span class="small text-muted">Total Spindles Needed</span>
+    </div>
+    <div class="text-center">
+        <span class="result-value">${metrics.actualGap.toFixed(3)} in</span><br>
+        <span class="small text-muted">Actual Spacing (Gap)</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Spindles (N_b)</td><td>**${metrics.spindlesNeeded} Pcs**</td></tr>
+            <tr><td>Total Spaces (N_s)</td><td>${metrics.numSpaces} Gaps</td></tr>
+            <tr><td>Actual Center-to-Center Spacing</td><td>${(metrics.spindleWidth + metrics.actualGap).toFixed(3)} in</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Net Railing Length (L_net)</td><td>${metrics.netLengthInches.toFixed(3)} in</td></tr>
+            <tr><td>Max Allowed Gap (Gmax)</td><td>${metrics.maxGap} in</td></tr>
+            <tr><td>Spindle Width (Ws)</td><td>${metrics.spindleWidth} in</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('spindle-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values (all converted to inches internally)
+        const runLengthFeet = parseFloat(form.elements.runLengthFeet.value); // L (ft)
+        const postWidth = parseFloat(form.elements.postWidth.value); // Wp (in)
+        const spindleWidth = parseFloat(form.elements.spindleWidth.value); // Ws (in)
+        const maxGap = parseFloat(form.elements.maxGap.value); // Gmax (in)
+        
+        // Basic validation
+        if (isNaN(runLengthFeet) || runLengthFeet <= 0 || isNaN(postWidth) || postWidth <= 0 || 
+            isNaN(spindleWidth) || spindleWidth <= 0 || isNaN(maxGap) || maxGap <= 0) 
+        {
+            displayResult(true, "Please ensure all dimensions are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate the Net Length for Spindles and Gaps ---
+            
+            // L_run (in) = Length in feet * 12
+            const runLengthInches = runLengthFeet * INCHES_PER_FOOT;
+            
+            // Net Length (L_net) = L_run - (2 * Wp)
+            const netLengthInches = runLengthInches - (2 * postWidth);
+            
+            if (netLengthInches <= 0) {
+                 displayResult(true, "The total post width is greater than or equal to the run length. Please check your dimensions.");
+                 return;
+            }
+
+            // --- 2. Calculate the Minimum Required Number of Spindles (N_b) ---
+            
+            // This formula determines the minimum N_b required to ensure the actual gap (G_actual) is <= Gmax.
+            // N_b = ceil((L_net - Gmax) / (Ws + Gmax))
+            const numerator = netLengthInches - maxGap;
+            const denominator = spindleWidth + maxGap;
+            
+            const spindlesNeeded = Math.ceil(numerator / denominator);
+            
+            // Ensure at least one spindle if the length is large enough
+            const finalSpindlesNeeded = Math.max(0, spindlesNeeded);
+
+            // --- 3. Calculate Actual Spacing (G_actual) ---
+            
+            // Number of spaces (N_s) = N_b + 1
+            const numSpaces = finalSpindlesNeeded + 1;
+            
+            // Total width consumed by all spindles: N_b * Ws
+            const totalSpindleWidth = finalSpindlesNeeded * spindleWidth;
+            
+            // Total remaining width for gaps: L_net - Total Spindle Width
+            const totalGapWidth = netLengthInches - totalSpindleWidth;
+            
+            // Actual Gap (G_actual) = Total Gap Width / N_s
+            const actualGap = totalGapWidth / numSpaces;
+
+            // --- 4. Final Validation and Display ---
+
+            if (actualGap > maxGap + 0.001) { // Adding tolerance for float issues
+                // This shouldn't happen if the formula is correct, but as a guardrail:
+                displayResult(true, `The calculated gap (${actualGap.toFixed(3)} in) is greater than the maximum allowed gap (${maxGap} in). Please verify the inputs.`);
+                return;
+            }
+            
+
+            const metrics = {
+                runLengthFeet,
+                postWidth,
+                spindleWidth,
+                maxGap,
+                netLengthInches,
+                spindlesNeeded: finalSpindlesNeeded,
+                numSpaces,
+                actualGap
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('spacing-result').classList.add('d-none');
+        document.getElementById('spacing-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

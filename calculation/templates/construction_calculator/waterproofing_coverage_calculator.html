@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Waterproofing Coverage Calculator{% endblock %}
+
+{% block meta_description %}Calculate the total volume or weight of waterproofing product (liquid membrane, sealant) needed based on the area, number of coats, and manufacturer coverage rate. {% endblock %}
+
+{% block meta_keywords %}waterproofing coverage, liquid membrane calculator, sealant quantity, square footage, coatings estimate, material consumption{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #607D8B; /* Blue-Grey for industrial/construction finish */
+        border-bottom: 2px solid #607D8B;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #00BCD4; /* Cyan/Aqua for key results */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #cfd8dc; /* Lighter Blue-Grey info box */
+        border: 1px solid #607D8B;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #607D8B;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🛡️ Waterproofing Coverage Calculator</h1>
+    <p class="text-center small-muted">Determine the total product needed based on area, number of coats, and manufacturer's coverage rate.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="waterproofing-calculator-form">
+            <h5 class="section-title">1. Project Area & Coats</h5>
+
+            <!-- Area Input (Sq Ft) -->
+            <label for="area-input" class="form-label">Total Area to be Waterproofed</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Area (A)</span>
+                <input type="number" id="area-input" class="form-control" name="areaSqFt" placeholder="e.g., 150" value="150" min="1" step="0.1" required>
+                <span class="input-group-text">sq ft</span>
+            </div>
+            
+            <!-- Number of Coats Input -->
+            <label for="coats-input" class="form-label">Number of Recommended Coats</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Coats (C)</span>
+                <input type="number" id="coats-input" class="form-control" name="numCoats" placeholder="e.g., 2" value="2" min="1" step="1" required>
+                <span class="input-group-text">Pcs</span>
+            </div>
+            
+            <h5 class="section-title">2. Coverage Rate & Packaging</h5>
+
+            <!-- Coverage Rate Input (Sq Ft per Gallon/Pound) -->
+            <label for="coverage-rate-input" class="form-label">Manufacturer's Coverage Rate (Per Coat)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Rate (R)</span>
+                <input type="number" id="coverage-rate-input" class="form-control" name="coverageRate" placeholder="e.g., 50 (sq ft per gallon)" value="50" min="5" step="1" required>
+                <span class="input-group-text" id="coverage-unit-display">sq ft / Gallon</span>
+            </div>
+
+            <!-- Product Unit Selection -->
+            <label for="product-unit-select" class="form-label">Product Unit Type (Gallons or Pounds)</label>
+            <select class="form-select mb-3" id="product-unit-select" name="productUnit">
+                <option value="Gallon">Gallons (Volume)</option>
+                <option value="Pound">Pounds (Weight)</option>
+            </select>
+            
+            <!-- Container Size Input -->
+            <label for="container-size-input" class="form-label">Container Size</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Size (S)</span>
+                <input type="number" id="container-size-input" class="form-control" name="containerSize" placeholder="e.g., 5" value="5" min="1" step="1" required>
+                <span class="input-group-text" id="container-unit-display">Gallons</span>
+            </div>
+
+            <div class="info-box">
+                **Tip:** Coverage rates often assume ideal conditions. It's wise to add **5-10% extra** for waste and surface irregularities.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #607D8B; border-color: #607D8B;" type="submit">Calculate Material Needed</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-info" id="waterproofing-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Product Requirement Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="waterproofing-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #607D8B; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="waterproofing-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const WASTE_FACTOR = 1.10; // 10% waste buffer
+
+    // Function to update unit displays based on product type
+    document.getElementById('product-unit-select').addEventListener('change', function() {
+        const unit = this.value;
+        document.getElementById('coverage-unit-display').textContent = `sq ft / ${unit}`;
+        document.getElementById('container-unit-display').textContent = `${unit}s`;
+    });
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('waterproofing-result');
+        const table = document.getElementById('waterproofing-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('waterproofing-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-info', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-info');
+            
+            // Primary result: Total Containers
+            res.innerHTML = `
+**Total Product to Purchase (with 10% Waste):**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span class="result-value">${metrics.totalContainersNeeded}</span><br>
+        <span class="small text-muted">${metrics.productUnit} Containers (Size: ${metrics.containerSize} ${metrics.productUnit}s)</span>
+    </div>
+    <div class="text-center">
+        <span class="result-value">${metrics.totalProductRequired.toFixed(2)}</span><br>
+        <span class="small text-muted">Total ${metrics.productUnit}s Required</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Containers to Buy</td><td>**${metrics.totalContainersNeeded} Pcs**</td></tr>
+            <tr><td>Total Product Required (Incl. Waste)</td><td>${metrics.totalProductRequired.toFixed(2)} ${metrics.productUnit}s</td></tr>
+            <tr><td>Theoretical Minimum Required</td><td>${metrics.theoreticalProduct.toFixed(2)} ${metrics.productUnit}s</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Total Area (A)</td><td>${metrics.areaSqFt} sq ft</td></tr>
+            <tr><td>Number of Coats (C)</td><td>${metrics.numCoats}</td></tr>
+            <tr><td>Coverage Rate (R)</td><td>${metrics.coverageRate} sq ft / ${metrics.productUnit}</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('waterproofing-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const areaSqFt = parseFloat(form.elements.areaSqFt.value); // A
+        const numCoats = parseInt(form.elements.numCoats.value); // C
+        const coverageRate = parseFloat(form.elements.coverageRate.value); // R (sq ft per unit)
+        const productUnit = form.elements.productUnit.value; // Gallon or Pound
+        const containerSize = parseFloat(form.elements.containerSize.value); // S (Units per container)
+        
+        // Basic validation
+        if (isNaN(areaSqFt) || areaSqFt <= 0 || isNaN(numCoats) || numCoats < 1 || isNaN(coverageRate) || coverageRate <= 0 || isNaN(containerSize) || containerSize <= 0) {
+            displayResult(true, "Please ensure Area, Coats, Coverage Rate, and Container Size are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Total Area to be Covered ---
+            // Total Area = Area * Number of Coats
+            const totalAreaToCover = areaSqFt * numCoats;
+            
+            // --- 2. Calculate Theoretical Minimum Product Required ---
+            // Theoretical Product (Units) = Total Area / Coverage Rate
+            const theoreticalProduct = totalAreaToCover / coverageRate;
+            
+            // --- 3. Apply Waste Factor ---
+            // Total Required = Theoretical Product * Waste Factor (1.10 for 10%)
+            const totalProductRequired = theoreticalProduct * WASTE_FACTOR;
+            
+            // --- 4. Calculate Number of Containers to Purchase ---
+            // Containers = ceil(Total Required / Container Size)
+            const totalContainersNeeded = Math.ceil(totalProductRequired / containerSize);
+            
+            // 5. Display results
+            const metrics = {
+                areaSqFt,
+                numCoats,
+                coverageRate,
+                productUnit,
+                containerSize,
+                theoreticalProduct,
+                totalProductRequired,
+                totalContainersNeeded
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to set initial state
+    window.onload = function() {
+        document.getElementById('waterproofing-result').classList.add('d-none');
+        document.getElementById('waterproofing-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+        
+        // Set initial display units
+        const unit = document.getElementById('product-unit-select').value;
+        document.getElementById('coverage-unit-display').textContent = `sq ft / ${unit}`;
+        document.getElementById('container-unit-display').textContent = `${unit}s`;
+    };
+</script>
+{% endblock %}
+

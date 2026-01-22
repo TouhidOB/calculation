@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Circular Slab Volume Calculator{% endblock %}
+
+{% block meta_description %}Calculate the cubic yard volume of concrete, gravel, or sand needed for a circular pad or slab given its diameter and thickness. {% endblock %}
+
+{% block meta_keywords %}circular slab calculator, concrete volume, cubic yards, diameter depth, cylinder volume, patio foundation, material estimation{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #6A1B9A; /* Deep Purple for geometry/precision */
+        border-bottom: 2px solid #6A1B9A;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF9800; /* Orange for material delivery result */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #f3e5f5; /* Light purple info box */
+        border: 1px solid #6A1B9A;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #6A1B9A;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">⭕ Circular Slab Volume Calculator</h1>
+    <p class="text-center small-muted">Estimates the cubic yard volume of material needed for a circular pad or slab.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="circular-slab-calculator-form">
+            <h5 class="section-title">1. Slab Dimensions</h5>
+
+            <!-- Diameter Input (Feet) -->
+            <label for="diameter-input" class="form-label">Slab Diameter</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Diameter (D)</span>
+                <input type="number" id="diameter-input" class="form-control" name="slabDiameter" placeholder="e.g., 12" value="12" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Depth Input (Inches) -->
+            <label for="depth-input" class="form-label">Slab Depth (Thickness)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Depth (H)</span>
+                <input type="number" id="depth-input" class="form-control" name="slabDepth" placeholder="e.g., 4" value="4" min="1" step="0.5" required>
+                <span class="input-group-text">in</span>
+            </div>
+
+            <h5 class="section-title">2. Material & Waste</h5>
+
+            <!-- Material Type Selector -->
+            <label for="material-select" class="form-label">Material Type (Affects Waste Factor)</label>
+            <select class="form-select mb-3" id="material-select" name="materialType">
+                <option value="concrete">Concrete Slab</option>
+                <option value="gravel">Gravel/Crushed Stone</option>
+                <option value="sand">Sand/Bedding</option>
+            </select>
+            
+            <!-- Waste Percentage Input -->
+            <label for="waste-input" class="form-label">Waste/Compaction Factor (%)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Extra %</span>
+                <input type="number" id="waste-input" class="form-control" name="wastePercentage" placeholder="e.g., 5" value="5" min="0" max="50" step="1" required>
+                <span class="input-group-text">%</span>
+            </div>
+
+            <div class="info-box">
+                **Calculation Tip:** For concrete, use 3-5% waste. For gravel/sand, use 15-20% to account for compaction and leveling.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #6A1B9A; border-color: #6A1B9A;" type="submit">Calculate Volume</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="slab-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Volume Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="slab-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #6A1B9A; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="slab-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const CUBIC_FEET_PER_CUBIC_YARD = 27;
+    const INCHES_PER_FOOT = 12;
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('slab-result');
+        const table = document.getElementById('slab-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('slab-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Volume in Cubic Yards
+            res.innerHTML = `
+**Required ${metrics.materialType} Volume (Including ${metrics.wastePercentage}% Waste):**
+<div class="d-flex justify-content-center mt-3">
+    <span class="result-value">${metrics.finalVolumeYards.toFixed(3)}</span>
+    <span class="small text-muted ms-2">Cubic Yards</span>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Volume Required</td><td>**${metrics.finalVolumeYards.toFixed(3)} yd³**</td></tr>
+            <tr><td>Total Volume (Cubic Feet)</td><td>${(metrics.finalVolumeYards * CUBIC_FEET_PER_CUBIC_YARD).toFixed(3)} ft³</td></tr>
+            <tr><td>Theoretical Minimum Volume (No Waste)</td><td>${metrics.theoreticalVolumeYards.toFixed(3)} yd³</td></tr>
+            <tr><td>Waste/Compaction Applied</td><td>${metrics.wastePercentage}%</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Slab Diameter (D)</td><td>${metrics.slabDiameter} ft</td></tr>
+            <tr><td>Slab Depth (H)</td><td>${metrics.slabDepth} in</td></tr>
+            <tr><td>Material Type</td><td>${metrics.materialType.charAt(0).toUpperCase() + metrics.materialType.slice(1)}</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('circular-slab-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const slabDiameter = parseFloat(form.elements.slabDiameter.value); // D (ft)
+        const slabDepth = parseFloat(form.elements.slabDepth.value); // H (in)
+        const materialType = form.elements.materialType.value;
+        const wastePercentage = parseFloat(form.elements.wastePercentage.value);
+        
+        // Basic validation
+        if (isNaN(slabDiameter) || slabDiameter <= 0 || isNaN(slabDepth) || slabDepth <= 0 || isNaN(wastePercentage) || wastePercentage < 0 || wastePercentage > 50) {
+            displayResult(true, "Please ensure Diameter, Depth, and Waste Percentage are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Theoretical Volume (V = pi * r^2 * h) ---
+            
+            // Radius in feet
+            const radiusFt = slabDiameter / 2;
+            
+            // Height (Depth) in feet
+            const depthFt = slabDepth / INCHES_PER_FOOT;
+
+            // Theoretical Volume in Cubic Feet
+            const theoreticalVolumeCuFt = Math.PI * Math.pow(radiusFt, 2) * depthFt;
+            
+            // Theoretical Volume in Cubic Yards
+            const theoreticalVolumeYards = theoreticalVolumeCuFt / CUBIC_FEET_PER_CUBIC_YARD;
+            
+            // --- 2. Apply Waste/Compaction Factor ---
+            const wasteFactor = 1 + (wastePercentage / 100);
+            const finalVolumeYards = theoreticalVolumeYards * wasteFactor;
+            
+            if (finalVolumeYards <= 0) {
+                displayResult(true, "Calculated volume is zero or negative. Check inputs.");
+                return;
+            }
+
+            // 3. Display results
+            const metrics = {
+                slabDiameter,
+                slabDepth,
+                materialType,
+                wastePercentage,
+                theoreticalVolumeYards,
+                finalVolumeYards
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('slab-result').classList.add('d-none');
+        document.getElementById('slab-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

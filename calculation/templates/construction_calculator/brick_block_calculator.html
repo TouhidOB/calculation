@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Brick & Block Calculator (Units & Mortar){% endblock %}
+
+{% block meta_description %}Calculate the number of bricks or blocks and the required volume of mortar based on wall dimensions and unit size, including joint thickness and waste. {% endblock %}
+
+{% block meta_keywords %}brick calculator, block calculator, mortar volume, unit count, construction estimate, masonry, joint thickness{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #8D6E63; /* Masonry/Clay color */
+        border-bottom: 2px solid #8D6E63;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #E64A19; /* Red/Orange for final result contrast */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .unit-input-label {
+        font-size: 0.85rem;
+        font-style: italic;
+        color: #6c757d;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .unit-dims-group, .mortar-group {
+        border-top: 1px dashed #ccc;
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🧱 Brick & Block Calculator</h1>
+    <p class="text-center small-muted">Calculates the number of units and the required mortar volume for a wall.</p>
+
+    <div class="calc-wrapper">
+
+        <form id="masonry-form">
+            <h5 class="section-title">1. Wall Dimensions (in Feet)</h5>
+
+            <!-- Wall Length Input (Feet) -->
+            <label for="wall-length-input" class="form-label">Wall Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length</span>
+                <input type="number" id="wall-length-input" class="form-control" name="wallLength" placeholder="Wall Length (e.g., 50)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Wall Height Input (Feet) -->
+            <label for="wall-height-input" class="form-label">Wall Height</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Height</span>
+                <input type="number" id="wall-height-input" class="form-control" name="wallHeight" placeholder="Wall Height (e.g., 8)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <h5 class="section-title">2. Unit Selection & Dimensions (in Inches)</h5>
+            
+            <!-- Unit Type Selector -->
+            <label for="unit-type-selector" class="form-label">Type of Unit</label>
+            <select id="unit-type-selector" class="form-select mb-3" name="unitType">
+                <option value="brick" data-len="8" data-hgt="2.25" data-dep="3.625" selected>Standard Brick (8"x2.25"x3.625")</option>
+                <option value="block" data-len="15.625" data-hgt="7.625" data-dep="7.625">CMU Block (8"x8"x16" nominal)</option>
+            </select>
+
+            <div class="unit-dims-group">
+                <!-- Unit Length Input (Inches) -->
+                <label for="unit-length-input" class="form-label">Unit Length (Actual)</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Length</span>
+                    <input type="number" id="unit-length-input" class="form-control" name="unitLength" value="8" min="1" step="0.01" required>
+                    <span class="input-group-text">in</span>
+                </div>
+                
+                <!-- Unit Height Input (Inches) -->
+                <label for="unit-height-input" class="form-label">Unit Height (Actual)</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Height</span>
+                    <input type="number" id="unit-height-input" class="form-control" name="unitHeight" value="2.25" min="1" step="0.01" required>
+                    <span class="input-group-text">in</span>
+                </div>
+
+                 <!-- Unit Depth Input (Inches) - Used for Mortar Volume -->
+                <label for="unit-depth-input" class="form-label">Unit Depth/Thickness (Actual)</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Depth</span>
+                    <input type="number" id="unit-depth-input" class="form-control" name="unitDepth" value="3.625" min="1" step="0.01" required>
+                    <span class="input-group-text">in</span>
+                </div>
+            </div>
+
+            <h5 class="section-title">3. Mortar & Waste</h5>
+
+            <div class="mortar-group">
+                <!-- Joint Thickness Input (Inches) -->
+                <label for="joint-thickness-input" class="form-label">Mortar Joint Thickness</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Joint Thickness</span>
+                    <input type="number" id="joint-thickness-input" class="form-control" name="jointThickness" placeholder="e.g., 0.375 for 3/8 inch" value="0.375" min="0" step="0.01" required>
+                    <span class="input-group-text">in</span>
+                </div>
+            </div>
+            
+            <!-- Waste Percentage Input -->
+            <label for="waste-input" class="form-label">Waste/Cut Allowance</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Waste Factor</span>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5-10" value="5" min="0" max="25" step="1" required>
+                <span class="input-group-text">%</span>
+            </div>
+
+            <button class="btn btn-warning btn-lg w-100 mt-4" type="submit">Calculate Units & Mortar</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-danger" id="masonry-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="masonry-table">
+            <thead>
+                <tr class="table-danger">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="masonry-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const INCHES_PER_FOOT = 12;
+    const CU_FT_PER_CU_YD = 27;
+
+    // Function to populate dimensions based on unit type selection
+    function updateUnitDimensions() {
+        const selector = document.getElementById('unit-type-selector');
+        const selectedOption = selector.options[selector.selectedIndex];
+        
+        document.getElementById('unit-length-input').value = selectedOption.getAttribute('data-len');
+        document.getElementById('unit-height-input').value = selectedOption.getAttribute('data-hgt');
+        document.getElementById('unit-depth-input').value = selectedOption.getAttribute('data-dep');
+        
+        clearResults();
+    }
+
+    // Function to clear the results display
+    function clearResults() {
+        document.getElementById('masonry-result').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('masonry-table').classList.add('d-none');
+        document.getElementById('masonry-body').innerHTML = '';
+    }
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('masonry-result');
+        const table = document.getElementById('masonry-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('masonry-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            const unitType = document.getElementById('unit-type-selector').value;
+            const unitName = unitType === 'brick' ? 'Bricks' : 'Blocks';
+
+            // Primary result: Units and Mortar
+            res.innerHTML = `
+**Total Materials to Purchase (Rounded Up):**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span style="font-size:2rem; color:#8D6E63; font-weight:bold;">${metrics.finalUnits}</span><br>
+        <span class="small text-muted">${unitName}</span>
+    </div>
+    <div class="text-center">
+        <span style="font-size:2rem; color:#8D6E63; font-weight:bold;">${metrics.mortarCuYd.toFixed(2)}</span><br>
+        <span class="small text-muted">Cubic Yards (Mortar)</span>
+    </div>
+</div>
+<p class="text-center mt-3 mb-0">Total Mortar is **${metrics.mortarCuFt.toFixed(2)} Cu Ft**.</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total ${unitName} (Rounded Up)</td><td>**${metrics.finalUnits} Units**</td></tr>
+            <tr><td>Units Per Sq Ft (Approx)</td><td>${metrics.unitsPerSqFt.toFixed(3)}</td></tr>
+            <tr><td>Total Wall Area</td><td>${metrics.wallArea.toFixed(2)} sq ft</td></tr>
+            <tr><td>Total Wall Volume</td><td>${metrics.wallVolume.toFixed(2)} cu ft</td></tr>
+            <tr><td>Mortar Volume (Cu Ft, with waste)</td><td>**${metrics.mortarCuFt.toFixed(2)} cu ft**</td></tr>
+            <tr><td>Waste Percentage Applied</td><td>${(metrics.wasteFactorUsed * 100).toFixed(1)}%</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('masonry-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const wallLength = parseFloat(form.elements.wallLength.value);
+        const wallHeight = parseFloat(form.elements.wallHeight.value);
+        const unitLength = parseFloat(form.elements.unitLength.value); // in
+        const unitHeight = parseFloat(form.elements.unitHeight.value); // in
+        const unitDepth = parseFloat(form.elements.unitDepth.value); // in (used for volume)
+        const jointThickness = parseFloat(form.elements.jointThickness.value); // in
+        const wastePercent = parseFloat(form.elements.wastePercent.value); // %
+        
+        // Basic validation
+        if (isNaN(wallLength) || wallLength <= 0 || isNaN(wallHeight) || wallHeight <= 0 || isNaN(unitLength) || unitLength <= 0 || isNaN(unitHeight) || unitHeight <= 0 || isNaN(unitDepth) || unitDepth <= 0 || isNaN(jointThickness) || jointThickness < 0 || isNaN(wastePercent) || wastePercent < 0) {
+            displayResult(true, "Please ensure all dimensions are valid positive numbers, and joint thickness/waste is non-negative.");
+            return;
+        }
+
+        try {
+            // 1. Calculate Wall Area
+            const wallArea = wallLength * wallHeight; // sq ft
+
+            // 2. Calculate Effective Unit Area (Unit + Joint)
+            // Convert to feet for area calculation
+            const effUnitLengthFt = (unitLength + jointThickness) / INCHES_PER_FOOT;
+            const effUnitHeightFt = (unitHeight + jointThickness) / INCHES_PER_FOOT;
+            const effUnitArea = effUnitLengthFt * effUnitHeightFt; // sq ft
+
+            // 3. Calculate Units Needed (No Waste)
+            const unitsNeededNoWaste = wallArea / effUnitArea;
+            
+            // Units per square foot for the summary table
+            const unitsPerSqFt = 1 / effUnitArea;
+
+            // 4. Calculate Mortar Volume (Subtracting unit volume from total wall volume)
+            
+            // Total Wall Volume (Thickness is unit depth)
+            const wallVolume = wallArea * (unitDepth / INCHES_PER_FOOT); // cu ft
+
+            // Volume of one solid unit (in cu ft)
+            const V_unit = (unitLength / INCHES_PER_FOOT) * (unitHeight / INCHES_PER_FOOT) * (unitDepth / INCHES_PER_FOOT);
+
+            // Total Volume of Units (No Waste)
+            const V_units_total = unitsNeededNoWaste * V_unit; // cu ft
+
+            // Mortar Volume (No Waste)
+            const V_mortar_no_waste = wallVolume - V_units_total; // cu ft
+            
+            // 5. Apply Waste Factor
+            const wasteFactor = 1 + (wastePercent / 100);
+            
+            // Final Units
+            const finalUnits = Math.ceil(unitsNeededNoWaste * wasteFactor);
+
+            // Final Mortar Volume
+            const mortarCuFt = V_mortar_no_waste * wasteFactor;
+            const mortarCuYd = mortarCuFt / CU_FT_PER_CU_YD;
+
+            
+            // 6. Display results
+            const metrics = {
+                wallArea,
+                wallVolume,
+                unitsPerSqFt,
+                unitsNeededNoWaste,
+                finalUnits,
+                mortarCuFt,
+                mortarCuYd,
+                wasteFactorUsed: wasteFactor - 1
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Event listeners and initial setup
+    document.getElementById('unit-type-selector').addEventListener('change', updateUnitDimensions);
+
+    window.onload = function() {
+        document.getElementById('masonry-result').classList.add('d-none');
+        document.getElementById('masonry-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+        // Initial setup for unit dimensions
+        updateUnitDimensions();
+    };
+</script>
+{% endblock %}
+

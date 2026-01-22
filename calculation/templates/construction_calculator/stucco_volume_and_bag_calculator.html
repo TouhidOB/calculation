@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Stucco Volume and Bag Calculator{% endblock %}
+
+{% block meta_description %}Calculate the cubic yard volume and number of bags of stucco mix needed based on area, thickness (depth), and bag coverage rates. {% endblock %}
+
+{% block meta_keywords %}stucco calculator, plaster calculation, cubic yards, material estimate, stucco depth, bag coverage, building materials{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #B71C1C; /* Deep Red/Terra Cotta for stucco material */
+        border-bottom: 2px solid #B71C1C;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF9800; /* Orange for key material result */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #ffebee; /* Light red info box */
+        border: 1px solid #B71C1C;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #B71C1C;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🧱 Stucco Volume Calculator</h1>
+    <p class="text-center small-muted">Estimates the volume of wet mix (cubic yards) and the number of dry bags required for your project.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="stucco-calculator-form">
+            <h5 class="section-title">1. Project Area & Depth (Thickness)</h5>
+
+            <!-- Area Input (Sq Ft) -->
+            <label for="area-input" class="form-label">Total Surface Area to be Covered</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Area (A)</span>
+                <input type="number" id="area-input" class="form-control" name="areaSqFt" placeholder="e.g., 500" value="500" min="1" step="0.1" required>
+                <span class="input-group-text">sq ft</span>
+            </div>
+            
+            <!-- Stucco Thickness Input (Inches) -->
+            <label for="depth-input" class="form-label">Total Stucco Thickness (Depth)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Thickness (D)</span>
+                <input type="number" id="depth-input" class="form-control" name="depthInches" placeholder="e.g., 0.75" value="0.75" min="0.1" step="0.01" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <h5 class="section-title">2. Bag Requirements (Optional)</h5>
+
+            <p class="small text-muted mb-3">Only required if calculating the number of bags needed.</p>
+
+            <!-- Bag Size Input (Weight) -->
+            <label for="bag-weight-input" class="form-label">Bag Size (Typical 80lb or 90lb)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Bag Weight</span>
+                <input type="number" id="bag-weight-input" class="form-control" name="bagWeight" placeholder="e.g., 80" value="80" min="10" step="5">
+                <span class="input-group-text">lbs</span>
+            </div>
+
+            <!-- Coverage Per Bag (Sq Ft at 3/4" depth) -->
+            <label for="bag-coverage-input" class="form-label">Coverage per Bag (at your required depth)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Coverage (C)</span>
+                <input type="number" id="bag-coverage-input" class="form-control" name="bagCoverage" placeholder="e.g., 20 sq ft" value="20" min="1" step="1">
+                <span class="input-group-text">sq ft / Bag</span>
+            </div>
+            
+            <div class="info-box">
+                **Waste Factor:** This calculation automatically includes a **5% waste factor** for mixing and spillage, common for stucco applications.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #B71C1C; border-color: #B71C1C;" type="submit">Calculate Stucco Needed</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="stucco-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Material Requirement Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="stucco-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #B71C1C; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="stucco-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const CUBIC_INCHES_PER_CUBIC_YARD = 46656; // 36 in/yd * 36 in/yd * 36 in/yd
+    const WASTE_FACTOR = 1.05; // 5% waste buffer
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('stucco-result');
+        const table = document.getElementById('stucco-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('stucco-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Volume and Bags
+            let primaryResult = `
+            **Required Stucco Material (Including 5% Waste):**
+            <div class="d-flex justify-content-around mt-3">
+                <div class="text-center">
+                    <span class="result-value">${metrics.cubicYardsRequired.toFixed(3)}</span><br>
+                    <span class="small text-muted">Cubic Yards</span>
+                </div>`;
+
+            if (metrics.totalBagsNeeded > 0) {
+                 primaryResult += `
+                <div class="text-center">
+                    <span class="result-value">${metrics.totalBagsNeeded}</span><br>
+                    <span class="small text-muted">${metrics.bagWeight} lb Bags (Rounded Up)</span>
+                </div>`;
+            }
+
+            primaryResult += `</div>`;
+            res.innerHTML = primaryResult;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Cubic Yards Required</td><td>**${metrics.cubicYardsRequired.toFixed(3)} yd³**</td></tr>
+            <tr><td>Total Volume (Cubic Feet)</td><td>${(metrics.cubicYardsRequired * 27).toFixed(2)} ft³</td></tr>
+            <tr><td>Total Theoretical Volume (No Waste)</td><td>${metrics.theoreticalVolumeYards.toFixed(3)} yd³</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Area (A)</td><td>${metrics.areaSqFt} sq ft</td></tr>
+            <tr><td>Thickness (D)</td><td>${metrics.depthInches} in</td></tr>`;
+            
+            if (metrics.totalBagsNeeded > 0) {
+                 tableRows += `
+                 <tr><td>Total Bags to Purchase</td><td>${metrics.totalBagsNeeded} Pcs</td></tr>
+                 <tr><td>Bag Weight</td><td>${metrics.bagWeight} lbs</td></tr>
+                 <tr><td>Bag Coverage Rate (C)</td><td>${metrics.bagCoverage} sq ft / Bag</td></tr>`;
+            }
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('stucco-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const areaSqFt = parseFloat(form.elements.areaSqFt.value); // A (sq ft)
+        const depthInches = parseFloat(form.elements.depthInches.value); // D (in)
+        const bagWeight = parseFloat(form.elements.bagWeight.value); // (lbs)
+        const bagCoverage = parseFloat(form.elements.bagCoverage.value); // C (sq ft / bag)
+        
+        // Basic validation
+        if (isNaN(areaSqFt) || areaSqFt <= 0 || isNaN(depthInches) || depthInches <= 0) {
+            displayResult(true, "Please ensure Area and Thickness are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Theoretical Volume (Cubic Yards) ---
+            
+            // Volume in Cubic Inches = Area (sq ft) * 144 (in²/ft²) * Depth (in)
+            const volumeCubicInches = areaSqFt * 144 * depthInches;
+            
+            // Volume in Cubic Yards = Volume in Cubic Inches / CUBIC_INCHES_PER_CUBIC_YARD
+            const theoreticalVolumeYards = volumeCubicInches / CUBIC_INCHES_PER_CUBIC_YARD;
+            
+            // --- 2. Apply Waste Factor ---
+            const cubicYardsRequired = theoreticalVolumeYards * WASTE_FACTOR;
+            
+            // --- 3. Calculate Bag Count (Optional) ---
+            let totalBagsNeeded = 0;
+            if (bagCoverage > 0) {
+                // Bags needed based on coverage rate: (Area / Coverage per Bag) * Waste Factor
+                const theoreticalBags = areaSqFt / bagCoverage;
+                const bagsRequiredWithWaste = theoreticalBags * WASTE_FACTOR;
+                
+                // Round up for purchasing
+                totalBagsNeeded = Math.ceil(bagsRequiredWithWaste);
+            }
+            
+            // 4. Display results
+            const metrics = {
+                areaSqFt,
+                depthInches,
+                bagWeight,
+                bagCoverage,
+                theoreticalVolumeYards,
+                cubicYardsRequired,
+                totalBagsNeeded
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('stucco-result').classList.add('d-none');
+        document.getElementById('stucco-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

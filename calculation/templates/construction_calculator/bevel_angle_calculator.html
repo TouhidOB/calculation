@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Crown Molding Miter & Bevel Angle Calculator{% endblock %}
+
+{% block meta_description %}Calculate the precise compound miter and bevel angles for cutting crown molding flat on the saw table, based on the molding's spring angle and the corner angle. {% endblock %}
+
+{% block meta_keywords %}crown molding calculator, miter angle, bevel angle, spring angle, compound miter saw settings, trim carpentry, corner angle{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #38761D; /* Deep Green for precision woodworking */
+        border-bottom: 2px solid #38761D;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFD700; /* Gold for precise results */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #e6ffe6; /* Light green info box */
+        border: 1px solid #38761D;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #38761D;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">📐 Crown Molding Angle Calculator</h1>
+    <p class="text-center small-muted">Calculates the required Miter and Bevel settings for cutting crown molding flat on your saw table.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="crown-molding-calculator-form">
+            <h5 class="section-title">1. Molding & Corner Details</h5>
+
+            <!-- Spring Angle Input (Degrees) -->
+            <label for="spring-angle-input" class="form-label">Molding Spring Angle (A)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Spring Angle</span>
+                <input type="number" id="spring-angle-input" class="form-control" name="springAngle" placeholder="e.g., 38" value="38" min="1" max="89" step="1" required>
+                <span class="input-group-text">Degrees (°)</span>
+            </div>
+            
+            <div class="info-box mb-4">
+                **Common Spring Angles:** 38°, 45°, or 52°. This is the angle the molding sits on the wall/ceiling.
+            </div>
+
+            <!-- Corner Angle Input (Degrees) -->
+            <label for="corner-angle-input" class="form-label">Inside Corner Angle (C)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Corner Angle</span>
+                <input type="number" id="corner-angle-input" class="form-control" name="cornerAngle" placeholder="e.g., 90" value="90" min="1" max="180" step="0.1" required>
+                <span class="input-group-text">Degrees (°)</span>
+            </div>
+            
+            <div class="info-box">
+                **Standard Corners:** Use 90° for square rooms. Use 135° for standard 45° bay windows.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #38761D; border-color: #38761D;" type="submit">Calculate Saw Settings</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="molding-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculated Saw Settings</h5>
+        <table class="table table-bordered mt-2 d-none" id="molding-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #38761D; color: white;">
+                    <th>Setting</th>
+                    <th>Required Angle</th>
+                </tr>
+            </thead>
+            <tbody id="molding-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants for angle conversion
+    const PI = Math.PI;
+    const DEGREES_TO_RADIANS = PI / 180;
+    const RADIANS_TO_DEGREES = 180 / PI;
+
+    // Helper function to convert degrees to radians
+    function toRadians(degrees) {
+        return degrees * DEGREES_TO_RADIANS;
+    }
+
+    // Helper function to convert radians to degrees
+    function toDegrees(radians) {
+        return radians * RADIANS_TO_DEGREES;
+    }
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('molding-result');
+        const table = document.getElementById('molding-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('molding-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Miter and Bevel Angles
+            res.innerHTML = `
+**Required Saw Settings for Flat Cutting:**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span class="result-value">${metrics.miterAngle.toFixed(2)}°</span><br>
+        <span class="small text-muted">Miter Angle</span>
+    </div>
+    <div class="text-center">
+        <span class="result-value">${metrics.bevelAngle.toFixed(2)}°</span><br>
+        <span class="small text-muted">Bevel Angle</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Miter Angle (Saw Table Turn)**</td><td>**${metrics.miterAngle.toFixed(2)}°**</td></tr>
+            <tr><td>**Bevel Angle (Saw Blade Tilt)**</td><td>**${metrics.bevelAngle.toFixed(2)}°**</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Molding Spring Angle (A)</td><td>${metrics.springAngle}°</td></tr>
+            <tr><td>Inside Corner Angle (C)</td><td>${metrics.cornerAngle}°</td></tr>
+            <tr><td>Half Corner Angle (C/2)</td><td>${metrics.halfCornerAngle.toFixed(1)}°</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('crown-molding-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const springAngle = parseFloat(form.elements.springAngle.value); // A (degrees)
+        const cornerAngle = parseFloat(form.elements.cornerAngle.value); // C (degrees)
+        
+        // Basic validation
+        if (isNaN(springAngle) || springAngle <= 0 || springAngle >= 90 || isNaN(cornerAngle) || cornerAngle <= 0 || cornerAngle > 180) {
+            displayResult(true, "Please ensure Spring Angle is between 1° and 89°, and Corner Angle is between 1° and 180°.");
+            return;
+        }
+
+        try {
+            // --- 1. Preparatory Angle Conversions ---
+            
+            // Half Corner Angle (must use complement for outside corners, but this tool assumes inside corner input for simplicity)
+            const halfCornerAngle = cornerAngle / 2;
+            
+            // Convert required angles to radians
+            const springAngleRad = toRadians(springAngle);
+            const halfCornerAngleRad = toRadians(halfCornerAngle);
+
+            // --- 2. Calculate Miter Angle (Saw Table Turn) ---
+            // Formula: tan(Miter) = cos(Spring Angle) * tan(1/2 * Corner Angle)
+            const tanMiter = Math.cos(springAngleRad) * Math.tan(halfCornerAngleRad);
+            const miterAngle = toDegrees(Math.atan(tanMiter));
+
+            // --- 3. Calculate Bevel Angle (Saw Blade Tilt) ---
+            // Formula: tan(Bevel) = sin(Spring Angle) / tan(1/2 * Corner Angle)
+            // Note: Use 90° - Bevel for saw that reads from 0° (some saws are 0=90, 90=0)
+            const tanBevel = Math.sin(springAngleRad) / Math.tan(halfCornerAngleRad);
+            const bevelAngle = toDegrees(Math.atan(tanBevel));
+            
+            if (isNaN(miterAngle) || isNaN(bevelAngle)) {
+                displayResult(true, "Calculation resulted in an invalid angle. Check inputs for extremes.");
+                return;
+            }
+
+            // 4. Display results
+            const metrics = {
+                springAngle,
+                cornerAngle,
+                halfCornerAngle,
+                miterAngle: miterAngle,
+                bevelAngle: bevelAngle
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('molding-result').classList.add('d-none');
+        document.getElementById('molding-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

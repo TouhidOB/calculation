@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Asphalt Tonnage Calculator{% endblock %}
+
+{% block meta_description %}Calculate the total tons of asphalt needed for paving projects based on area (sq ft), compacted depth (inches), and asphalt density. {% endblock %}
+
+{% block meta_keywords %}asphalt calculator, tonnage, paving volume, square footage, asphalt density, hot mix asphalt, road construction estimate{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #424242; /* Dark Gray/Black for Asphalt */
+        border-bottom: 2px solid #424242;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF9800; /* Orange for final result contrast */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #e0e0e0; /* Light Gray info box */
+        border: 1px solid #424242;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🚧 Asphalt Tonnage Calculator</h1>
+    <p class="text-center small-muted">Calculates the required weight (tons) of Hot Mix Asphalt (HMA) based on paving dimensions and density.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="asphalt-tonnage-form">
+            <h5 class="section-title">1. Paving Area Dimensions</h5>
+
+            <!-- Area Length Input (Feet) -->
+            <label for="area-length-input" class="form-label">Area Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length</span>
+                <input type="number" id="area-length-input" class="form-control" name="areaLength" placeholder="Length (e.g., 50)" value="50" min="0.1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Area Width Input (Feet) -->
+            <label for="area-width-input" class="form-label">Area Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Width</span>
+                <input type="number" id="area-width-input" class="form-control" name="areaWidth" placeholder="Width (e.g., 25)" value="25" min="0.1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Compacted Depth Input (Inches) -->
+            <label for="depth-input" class="form-label">Compacted Depth/Thickness</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Depth</span>
+                <input type="number" id="depth-input" class="form-control" name="depthInches" placeholder="Depth (e.g., 2)" value="2" min="0.1" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <h5 class="section-title">2. Material Properties</h5>
+
+            <!-- Asphalt Density Input (lb/cu ft or Specific Gravity) -->
+            <label for="density-input" class="form-label">Asphalt Density (Pounds per Cubic Foot)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Density (D)</span>
+                <input type="number" id="density-input" class="form-control" name="densityLbsPerCf" placeholder="e.g., 147 (Typical)" value="147" min="100" step="1" required>
+                <span class="input-group-text">lb/cu ft</span>
+            </div>
+
+            <div class="info-box">
+                **Typical Density:** Hot Mix Asphalt (HMA) density is usually around **147 lbs per cubic foot**, assuming a specific gravity of 2.35. Use your specific mix's density if known.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #424242; border-color: #424242;" type="submit">Calculate Tonnage</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="tonnage-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="tonnage-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #424242; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="tonnage-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const INCHES_PER_FOOT = 12;
+    const LBS_PER_TON = 2000;
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('tonnage-result');
+        const table = document.getElementById('tonnage-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('tonnage-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Total Tonnage
+            res.innerHTML = `
+**Total Asphalt Required:**
+<span style="font-size:2rem; color:#424242; font-weight:bold;">${metrics.totalTons.toFixed(2)}</span>
+<span class="small text-muted">Tons</span>
+<p class="text-center mt-3 mb-0">Total volume is **${metrics.totalCuFt.toFixed(2)} cu ft**.</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Weight (Tons)</td><td>**${metrics.totalTons.toFixed(3)} Tons**</td></tr>
+            <tr><td>Total Weight (Lbs)</td><td>${metrics.totalLbs.toFixed(0)} lbs</td></tr>
+            <tr><td>Total Volume</td><td>${metrics.totalCuFt.toFixed(3)} cu ft</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Paving Area</td><td>${metrics.areaSqFt.toFixed(2)} sq ft</td></tr>
+            <tr><td>Compacted Depth</td><td>${metrics.depthInches.toFixed(2)} in (${metrics.depthFt.toFixed(3)} ft)</td></tr>
+            <tr><td>Material Density (D)</td><td>${metrics.densityLbsPerCf.toFixed(0)} lb/cu ft</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('asphalt-tonnage-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const areaLength = parseFloat(form.elements.areaLength.value); // ft
+        const areaWidth = parseFloat(form.elements.areaWidth.value); // ft
+        const depthInches = parseFloat(form.elements.depthInches.value); // in
+        const densityLbsPerCf = parseFloat(form.elements.densityLbsPerCf.value); // lb/cu ft
+        
+        // Basic validation
+        if (isNaN(areaLength) || areaLength <= 0 || isNaN(areaWidth) || areaWidth <= 0 || isNaN(depthInches) || depthInches <= 0 || isNaN(densityLbsPerCf) || densityLbsPerCf <= 0) {
+            displayResult(true, "Please ensure all dimensions and density are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // 1. Calculate Area and Depth in Feet
+            const areaSqFt = areaLength * areaWidth; // sq ft
+            const depthFt = depthInches / INCHES_PER_FOOT; // ft
+
+            // 2. Calculate Total Volume
+            const totalCuFt = areaSqFt * depthFt; // cu ft
+            
+            // 3. Calculate Weight
+            // Weight (lbs) = Volume (cu ft) * Density (lbs/cu ft)
+            const totalLbs = totalCuFt * densityLbsPerCf; 
+            
+            // 4. Calculate Tonnage
+            const totalTons = totalLbs / LBS_PER_TON; // tons
+            
+            // 5. Display results
+            const metrics = {
+                areaSqFt,
+                depthInches,
+                depthFt,
+                densityLbsPerCf,
+                totalCuFt,
+                totalLbs,
+                totalTons
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('tonnage-result').classList.add('d-none');
+        document.getElementById('tonnage-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

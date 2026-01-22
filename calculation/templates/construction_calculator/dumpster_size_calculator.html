@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Dumpster Size Calculator (Cubic Yards){% endblock %}
+
+{% block meta_description %}Estimate the total cubic yard volume of debris (waste, drywall, wood, etc.) based on pile dimensions to choose the correct dumpster size. {% endblock %}
+
+{% block meta_keywords %}dumpster size calculator, cubic yard debris, waste volume, waste management estimate, dumpster rental, construction waste{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #795548; /* Brown for debris/waste */
+        border-bottom: 2px solid #795548;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF5722; /* Deep Orange for result */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #efebe9; /* Light brown info box */
+        border: 1px solid #795548;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #795548;
+    }
+
+    .recommended-size {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #FF5722;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🗑️ Dumpster Size Calculator</h1>
+    <p class="text-center small-muted">Estimates the cubic yard volume of your waste pile and recommends the best dumpster size.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="dumpster-calculator-form">
+            <h5 class="section-title">1. Debris Pile Dimensions (Feet)</h5>
+
+            <!-- Length Input (Feet) -->
+            <label for="length-input" class="form-label">Debris Pile Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length (L)</span>
+                <input type="number" id="length-input" class="form-control" name="pileLength" placeholder="e.g., 10" value="10" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Width Input (Feet) -->
+            <label for="width-input" class="form-label">Debris Pile Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Width (W)</span>
+                <input type="number" id="width-input" class="form-control" name="pileWidth" placeholder="e.g., 8" value="8" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+
+            <!-- Height Input (Feet) -->
+            <label for="height-input" class="form-label">Debris Pile Height/Depth</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Height (H)</span>
+                <input type="number" id="height-input" class="form-control" name="pileHeight" placeholder="e.g., 5" value="5" min="0.5" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <h5 class="section-title">2. Waste Type</h5>
+
+            <!-- Material Compaction Selector -->
+            <label for="material-select" class="form-label">Compaction/Density of Debris</label>
+            <select class="form-select mb-3" id="material-select" name="compactionFactor">
+                <option value="1.0" data-label="Wood, Cardboard, Light Debris">Light/Loose Debris (e.g., brush, light wood)</option>
+                <option value="0.85" data-label="Drywall, Standard Remodel">Medium Debris (e.g., drywall, mixed remodel)</option>
+                <option value="0.75" selected data-label="Heavy Debris, C&D Waste">Heavy/Dense Debris (e.g., roofing, concrete rubble)</option>
+                <option value="0.6" data-label="Fill, Packed Soil/Gravel">Very Dense/Packed Fill (e.g., excavated soil, dense fill)</option>
+            </select>
+            
+            <div class="info-box">
+                **Note:** Dense waste (like concrete or asphalt) takes up less physical space than loose materials, but may be limited by weight (tonnage limits). This calculator focuses on **volume**.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #795548; border-color: #795548;" type="submit">Calculate Required Volume</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-danger" id="dumpster-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Volume Summary & Recommendation</h5>
+        <table class="table table-bordered mt-2 d-none" id="dumpster-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #795548; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="dumpster-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const CUBIC_FEET_PER_CUBIC_YARD = 27;
+    // Standard Dumpster Sizes (in cubic yards)
+    const DUMPSTER_SIZES = [10, 20, 30, 40];
+
+    // Function to find the smallest recommended dumpster size
+    function getRecommendedDumpster(volume) {
+        for (let size of DUMPSTER_SIZES) {
+            if (volume <= size) {
+                return size;
+            }
+        }
+        return 40; // If volume exceeds 40, recommend 40 (or larger)
+    }
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('dumpster-result');
+        const table = document.getElementById('dumpster-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('dumpster-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Volume and Recommendation
+            res.innerHTML = `
+**Required Volume and Dumpster Recommendation:**
+<div class="d-flex justify-content-around align-items-center mt-3">
+    <div class="text-center">
+        <span class="result-value">${metrics.estimatedVolumeYards.toFixed(1)}</span><br>
+        <span class="small text-muted">Estimated Volume (yd³)</span>
+    </div>
+    <div class="text-center">
+        <span class="recommended-size">${metrics.recommendedDumpster} yd</span><br>
+        <span class="small text-muted">Recommended Dumpster</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Recommended Dumpster Size**</td><td>**${metrics.recommendedDumpster} Cubic Yards**</td></tr>
+            <tr><td>Total Estimated Volume</td><td>**${metrics.estimatedVolumeYards.toFixed(1)} yd³**</td></tr>
+            <tr><td>Theoretical Maximum Volume (L x W x H)</td><td>${metrics.theoreticalVolumeYards.toFixed(1)} yd³</td></tr>
+            <tr><td>Compaction/Density Factor Applied</td><td>${metrics.compactionFactor} (${metrics.materialLabel})</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Debris Pile Length</td><td>${metrics.pileLength} ft</td></tr>
+            <tr><td>Debris Pile Width</td><td>${metrics.pileWidth} ft</td></tr>
+            <tr><td>Debris Pile Height</td><td>${metrics.pileHeight} ft</td></tr>
+            <tr><td>Total Theoretical Cubic Feet</td><td>${metrics.theoreticalVolumeCuFt.toFixed(1)} ft³</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('dumpster-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const pileLength = parseFloat(form.elements.pileLength.value); // L (ft)
+        const pileWidth = parseFloat(form.elements.pileWidth.value); // W (ft)
+        const pileHeight = parseFloat(form.elements.pileHeight.value); // H (ft)
+        const compactionFactor = parseFloat(form.elements.compactionFactor.value);
+        const materialLabel = form.elements.compactionFactor.options[form.elements.compactionFactor.selectedIndex].dataset.label;
+        
+        // Basic validation
+        if (isNaN(pileLength) || pileLength <= 0 || isNaN(pileWidth) || pileWidth <= 0 || 
+            isNaN(pileHeight) || pileHeight <= 0 || isNaN(compactionFactor) || compactionFactor <= 0) 
+        {
+            displayResult(true, "Please ensure Length, Width, and Height are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Theoretical Volume ---
+            // Volume in Cubic Feet
+            const theoreticalVolumeCuFt = pileLength * pileWidth * pileHeight;
+            
+            // Volume in Cubic Yards
+            const theoreticalVolumeYards = theoreticalVolumeCuFt / CUBIC_FEET_PER_CUBIC_YARD;
+            
+            // --- 2. Calculate Estimated Required Volume (Volume * Compaction Factor) ---
+            // NOTE: Here, the compaction factor is used as a reduction multiplier because denser material takes up less volume for the same amount of debris.
+            // Example: If a pile of loose wood (1.0 factor) is 10 yds³, a pile of packed concrete (0.75 factor) of the same visual size might only represent 7.5 yds³ of actual debris volume.
+            const estimatedVolumeYards = theoreticalVolumeYards * compactionFactor;
+
+            // --- 3. Find Recommended Dumpster ---
+            const recommendedDumpster = getRecommendedDumpster(estimatedVolumeYards);
+            
+            if (estimatedVolumeYards <= 0) {
+                displayResult(true, "Calculated volume is zero or negative. Check inputs.");
+                return;
+            }
+
+            // 4. Display results
+            const metrics = {
+                pileLength,
+                pileWidth,
+                pileHeight,
+                compactionFactor,
+                materialLabel,
+                theoreticalVolumeCuFt,
+                theoreticalVolumeYards,
+                estimatedVolumeYards,
+                recommendedDumpster
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('dumpster-result').classList.add('d-none');
+        document.getElementById('dumpster-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

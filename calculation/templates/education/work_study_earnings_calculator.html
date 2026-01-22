@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Work-Study Earnings Calculator{% endblock %}
+
+{% block meta_description %}Calculate your maximum weekly hours and tracking your remaining work-study balance based on your total award and hourly wage.{% endblock %}
+
+{% block meta_keywords %}work-study calculator, student earnings, financial aid, college budget, hourly wage, maximum hours{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #dee2e6;
+    }
+
+    .input-section-card {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 25px;
+        height: 100%;
+    }
+
+    .stat-box {
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .placeholder-text {
+        color: #adb5bd;
+        font-style: italic;
+    }
+
+    /* Remove arrows from number inputs */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .border-warning-custom { border-left: 5px solid #ffc107; }
+    .border-primary-custom { border-left: 5px solid #0d6efd; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">💰 Work-Study Earnings Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Budget your financial aid award. Calculate how many hours you can work each week without exceeding your total allocation.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-wrapper mx-auto" style="max-width: 1000px;">
+        
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="input-section-card border-primary-custom shadow-sm">
+                    <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-gear-fill me-2"></i>Award Configuration</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Total Work-Study Award ($)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="total-award" class="form-control form-control-lg" placeholder="e.g. 3000" oninput="calculate()">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Hourly Wage ($)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="hourly-wage" class="form-control form-control-lg" placeholder="e.g. 15.00" oninput="calculate()">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Weeks in Term</label>
+                        <input type="number" id="academic-weeks" class="form-control form-control-lg" placeholder="e.g. 15" oninput="calculate()">
+                        <small class="text-muted">Typical semesters are 15-16 weeks.</small>
+                    </div>
+
+                    <hr>
+
+                    <div class="mt-4">
+                        <h5 class="fw-bold mb-3 text-secondary"><i class="bi bi-clock-history me-2"></i>Tracking</h5>
+                        <label class="form-label small fw-bold">Hours Worked to Date</label>
+                        <input type="number" id="hours-worked" class="form-control" placeholder="0" oninput="calculate()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div id="results-area" class="h-100 d-flex flex-column gap-4">
+                    
+                    <div id="empty-state" class="text-center py-5 border rounded bg-light">
+                        <i class="bi bi-calculator fs-1 text-muted mb-3 d-block"></i>
+                        <p class="text-muted">Enter your award amount and wage to see your maximum weekly hours.</p>
+                    </div>
+
+                    <div id="calc-content" style="display: none;">
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="stat-box bg-primary bg-opacity-10">
+                                    <div class="stat-label">Max Weekly Hours</div>
+                                    <div class="stat-value text-primary" id="max-weekly-hours">0.0</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-box bg-dark bg-opacity-10">
+                                    <div class="stat-label">Total Hours Cap</div>
+                                    <div class="stat-value text-dark" id="max-total-hours">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="input-section-card border-warning-custom shadow-sm bg-white">
+                            <h5 class="fw-bold mb-4 text-warning-emphasis"><i class="bi bi-wallet2 me-2"></i>Balance Progress</h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6 text-center border-end">
+                                    <div class="stat-label">Earned So Far</div>
+                                    <div class="h3 fw-bold mb-0 text-secondary" id="total-earned">$0.00</div>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <div id="balance-label" class="stat-label">Remaining Balance</div>
+                                    <div class="h3 fw-bold mb-0 text-success" id="remaining-balance">$0.00</div>
+                                </div>
+                            </div>
+
+                            <div class="progress mt-4" style="height: 10px;">
+                                <div id="balance-progress" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div id="alert-zone" class="mt-4"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 p-3 bg-light rounded-3 small text-muted">
+            <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+            <strong>Note:</strong> Most work-study programs cap hours at 20 per week regardless of the award size to ensure academic success. Check with your campus Financial Aid office for local policies.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculate() {
+        const award = parseFloat(document.getElementById('total-award').value);
+        const wage = parseFloat(document.getElementById('hourly-wage').value);
+        const weeks = parseFloat(document.getElementById('academic-weeks').value);
+        const worked = parseFloat(document.getElementById('hours-worked').value) || 0;
+
+        const emptyState = document.getElementById('empty-state');
+        const calcContent = document.getElementById('calc-content');
+        const alertZone = document.getElementById('alert-zone');
+
+        // Initial Visibility
+        if (!award || !wage || !weeks) {
+            emptyState.style.display = 'block';
+            calcContent.style.display = 'none';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        calcContent.style.display = 'block';
+
+        // Calculations
+        const totalHoursCap = award / wage;
+        const weeklyHours = totalHoursCap / weeks;
+        const earned = worked * wage;
+        const remaining = award - earned;
+        const percentUsed = (earned / award) * 100;
+
+        // UI Updates
+        document.getElementById('max-weekly-hours').textContent = weeklyHours.toFixed(1);
+        document.getElementById('max-total-hours').textContent = Math.floor(totalHoursCap);
+        document.getElementById('total-earned').textContent = `$${earned.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        
+        const balanceEl = document.getElementById('remaining-balance');
+        const balanceLabel = document.getElementById('balance-label');
+        const progressEl = document.getElementById('balance-progress');
+
+        // Logic for warnings
+        alertZone.innerHTML = '';
+        if (remaining < 0) {
+            balanceEl.className = 'h3 fw-bold mb-0 text-danger';
+            balanceEl.textContent = `-$${Math.abs(remaining).toFixed(2)}`;
+            balanceLabel.textContent = "Over Award Amount";
+            progressEl.style.width = '100%';
+            progressEl.className = 'progress-bar bg-danger';
+            
+            alertZone.innerHTML = `
+                <div class="alert alert-danger py-2 small">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Alert:</strong> You have exceeded your award limit. Please notify your employer.
+                </div>
+            `;
+        } else {
+            balanceEl.className = 'h3 fw-bold mb-0 text-success';
+            balanceEl.textContent = `$${remaining.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            balanceLabel.textContent = "Remaining Balance";
+            progressEl.style.width = `${Math.min(percentUsed, 100)}%`;
+            progressEl.className = 'progress-bar bg-success';
+        }
+
+        // Academic Warning
+        if (weeklyHours > 20) {
+            alertZone.innerHTML += `
+                <div class="alert alert-warning py-2 small mt-2">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Policy Note:</strong> Your award allows for >20 hours/week, but many colleges limit students to 20 hours to prioritize studies.
+                </div>
+            `;
+        }
+    }
+</script>
+{% endblock %}

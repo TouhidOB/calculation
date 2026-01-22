@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Semester Countdown Calculator{% endblock %}
+
+{% block meta_description %}Track your academic progress with a detailed semester countdown, showing elapsed time, remaining time, and percentage completion.{% endblock %}
+
+{% block meta_keywords %}semester countdown, academic schedule, progress tracker, deadline calculator, time management, school calendar{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 20, 184, 166; /* Teal */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-container {
+        max-width: 1000px;
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .sidebar-settings {
+        background-color: #f0fdfa;
+        border-right: 1px solid #ccfbf1;
+    }
+
+    .result-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        transition: transform 0.2s ease;
+        background: #ffffff;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #0d9488;
+        line-height: 1.2;
+    }
+
+    .progress {
+        height: 2rem;
+        border-radius: 1rem;
+        background-color: #f1f5f9;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .progress-bar {
+        background: linear-gradient(90deg, #14b8a6 0%, #0d9488 100%);
+        font-weight: 700;
+        transition: width 1s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.9rem;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-calendar3-event text-teal me-2"></i>Semester Progress Tracker</h1>
+        <p class="text-muted">Enter your semester dates to visualize your academic journey and manage your time effectively.</p>
+    </div>
+
+    
+
+    <div class="calc-container mx-auto">
+        <div class="row g-0">
+            <div class="col-lg-4 sidebar-settings p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-teal-700">1. Set Dates</h5>
+                
+                <div class="mb-4">
+                    <label for="start-date" class="form-label">Semester Start</label>
+                    <input type="date" id="start-date" class="form-control" onchange="calculateCountdown()">
+                </div>
+
+                <div class="mb-4">
+                    <label for="end-date" class="form-label">Semester End</label>
+                    <input type="date" id="end-date" class="form-control" onchange="calculateCountdown()">
+                </div>
+
+                <div class="mb-4">
+                    <label for="total-weeks" class="form-label">Total Scheduled Weeks</label>
+                    <input type="number" id="total-weeks" class="form-control" value="15" min="1" oninput="calculateCountdown()">
+                </div>
+
+                <button class="btn btn-outline-teal w-100 btn-sm" onclick="resetCalculator()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset Calculator
+                </button>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5">
+                <div id="empty-state" class="text-center py-5">
+                    <i class="bi bi-calendar-check empty-state-icon mb-3 d-block"></i>
+                    <h4 class="text-secondary fw-bold">Awaiting Dates</h4>
+                    <p class="text-muted">Input your semester start and end dates on the left to generate your progress dashboard.</p>
+                </div>
+
+                <div id="results-dashboard" class="d-none">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4 text-center">
+                            <div class="result-card p-3 h-100">
+                                <span class="text-uppercase small fw-bold text-muted">Elapsed</span>
+                                <div class="result-value" id="elapsed-weeks">0.0</div>
+                                <span class="small text-muted">Weeks</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="result-card p-3 h-100 border-primary shadow-sm">
+                                <span class="text-uppercase small fw-bold text-teal-700">Remaining</span>
+                                <div class="result-value" id="remaining-weeks">0.0</div>
+                                <span class="small text-muted">Weeks Left</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="result-card p-3 h-100">
+                                <span class="text-uppercase small fw-bold text-muted">Completed</span>
+                                <div class="result-value" id="completion-percentage">0%</div>
+                                <span class="small text-muted">Total Progress</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-end mb-2">
+                            <h6 class="fw-bold m-0"><i class="bi bi-activity me-1"></i> Visual Progress</h6>
+                            <span id="current-week-label" class="badge bg-teal-soft text-teal-700">Week 0</span>
+                        </div>
+                        <div class="progress">
+                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info border-0 shadow-sm rounded-4 d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill fs-4 me-3 text-teal"></i>
+                        <div id="status-message" class="small fw-medium">Loading status...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const MS_PER_DAY = 1000 * 60 * 60 * 24;
+    const DAYS_PER_WEEK = 7;
+
+    function resetCalculator() {
+        document.getElementById('start-date').value = '';
+        document.getElementById('end-date').value = '';
+        document.getElementById('total-weeks').value = 15;
+        calculateCountdown();
+    }
+
+    function calculateCountdown() {
+        const startDateStr = document.getElementById('start-date').value;
+        const endDateStr = document.getElementById('end-date').value;
+        const totalWeeks = parseFloat(document.getElementById('total-weeks').value);
+        const currentDate = new Date();
+        currentDate.setHours(0,0,0,0);
+
+        const emptyState = document.getElementById('empty-state');
+        const resultsDashboard = document.getElementById('results-dashboard');
+        const statusMessageEl = document.getElementById('status-message');
+        const progressBarEl = document.getElementById('progress-bar');
+        const weekLabel = document.getElementById('current-week-label');
+
+        // Professional State Handling: Hide dashboard if inputs are missing
+        if (!startDateStr || !endDateStr) {
+            emptyState.classList.remove('d-none');
+            resultsDashboard.classList.add('d-none');
+            return;
+        }
+
+        emptyState.classList.add('d-none');
+        resultsDashboard.classList.remove('d-none');
+
+        const startDate = new Date(startDateStr);
+        const endDate = new Date(endDateStr);
+
+        // Validation
+        if (startDate >= endDate) {
+            statusMessageEl.innerHTML = "<strong>Error:</strong> The start date must occur before the end date.";
+            updateValues(0, totalWeeks, 0);
+            return;
+        }
+
+        const totalScheduledDays = totalWeeks * DAYS_PER_WEEK;
+        let elapsedWeeks = 0;
+        let completionPercentage = 0;
+        let message = "";
+
+        if (currentDate < startDate) {
+            const diffTime = Math.abs(startDate - currentDate);
+            const daysToStart = Math.ceil(diffTime / MS_PER_DAY);
+            message = `The semester hasn't started yet. Classes begin in <strong>${daysToStart} days</strong>.`;
+            elapsedWeeks = 0;
+            completionPercentage = 0;
+            weekLabel.innerText = "Pre-Semester";
+        } else if (currentDate > endDate) {
+            message = "Congratulations! The semester has officially concluded.";
+            elapsedWeeks = totalWeeks;
+            completionPercentage = 100;
+            weekLabel.innerText = "Term Finished";
+        } else {
+            const diffTime = Math.abs(currentDate - startDate);
+            const elapsedDays = Math.floor(diffTime / MS_PER_DAY) + 1;
+            
+            elapsedWeeks = elapsedDays / DAYS_PER_WEEK;
+            completionPercentage = Math.min(100, (elapsedDays / totalScheduledDays) * 100);
+            
+            const currentWeek = Math.ceil(elapsedWeeks);
+            weekLabel.innerText = `Currently in Week ${currentWeek}`;
+            message = `You are performing well! There are <strong>${(totalWeeks - elapsedWeeks).toFixed(1)} weeks</strong> remaining until the end of the term.`;
+        }
+
+        updateValues(elapsedWeeks, totalWeeks - elapsedWeeks, completionPercentage);
+        statusMessageEl.innerHTML = message;
+    }
+
+    function updateValues(elapsed, remaining, percent) {
+        document.getElementById('elapsed-weeks').innerText = elapsed.toFixed(1);
+        document.getElementById('remaining-weeks').innerText = Math.max(0, remaining).toFixed(1);
+        document.getElementById('completion-percentage').innerText = percent.toFixed(1) + '%';
+        
+        const bar = document.getElementById('progress-bar');
+        bar.style.width = percent + '%';
+        bar.innerText = percent >= 10 ? percent.toFixed(1) + '%' : '';
+    }
+</script>
+{% endblock %}

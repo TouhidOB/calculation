@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Concrete Delivery Time Calculator{% endblock %}
+
+{% block meta_description %}Estimate the total volume, number of trucks, and total time required for a concrete pour based on area, depth, and your crew's pour rate. {% endblock %}
+
+{% block meta_keywords %}concrete delivery time, concrete volume calculator, pour rate, truck capacity, cubic yards, concrete standby fee{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #607D8B; /* Blue Gray for industrial/concrete */
+        border-bottom: 2px solid #607D8B;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FF9800; /* Amber/Orange for time results */
+    }
+
+    .input-group-text {
+        min-width: 100px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #f5f5f5; /* Light grey info box */
+        border: 1px solid #607D8B;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #607D8B;
+    }
+
+    .success-text {
+        color: #4CAF50; /* Green */
+        font-weight: 600;
+    }
+
+    .warning-text {
+        color: #F44336; /* Red */
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🚚 Concrete Delivery Time Calculator</h1>
+    <p class="text-center small-muted">Estimates total volume, number of delivery trucks, and total pour time for your project.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="concrete-time-calculator-form">
+            <h5 class="section-title">1. Slab Dimensions & Volume</h5>
+
+            <!-- Area Length Input (Feet) -->
+            <label for="length-input" class="form-label">Slab Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length (L)</span>
+                <input type="number" id="length-input" class="form-control" name="slabLength" placeholder="e.g., 30" value="30" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Area Width Input (Feet) -->
+            <label for="width-input" class="form-label">Slab Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Width (W)</span>
+                <input type="number" id="width-input" class="form-control" name="slabWidth" placeholder="e.g., 20" value="20" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+
+            <!-- Slab Depth Input (Inches) -->
+            <label for="depth-input" class="form-label">Slab Depth (Thickness)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Depth (D)</span>
+                <input type="number" id="depth-input" class="form-control" name="slabDepth" placeholder="e.g., 4" value="4" min="1" step="0.5" required>
+                <span class="input-group-text">in</span>
+            </div>
+
+            <h5 class="section-title">2. Pour Logistics</h5>
+
+            <!-- Pour Rate Input (Cubic Yards per Hour) -->
+            <label for="pour-rate-input" class="form-label">Estimated Pour/Finish Rate</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Rate</span>
+                <input type="number" id="pour-rate-input" class="form-control" name="pourRate" placeholder="e.g., 10" value="10" min="1" step="0.5" required>
+                <span class="input-group-text">yd³ / hour</span>
+            </div>
+            
+            <!-- Truck Capacity Input (Cubic Yards) -->
+            <label for="truck-capacity-input" class="form-label">Typical Ready-Mix Truck Capacity</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Capacity</span>
+                <input type="number" id="truck-capacity-input" class="form-control" name="truckCapacity" placeholder="e.g., 9" value="9" min="1" step="1" required>
+                <span class="input-group-text">yd³</span>
+            </div>
+            
+            <!-- Unloading Time Limit (Minutes per truck) -->
+            <label for="limit-time-input" class="form-label">Allowed Free Unloading Time per Truck</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Limit</span>
+                <input type="number" id="limit-time-input" class="form-control" name="unloadingLimit" placeholder="e.g., 60" value="60" min="10" step="5" required>
+                <span class="input-group-text">minutes</span>
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #607D8B; border-color: #607D8B;" type="submit">Calculate Time & Trucks</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-info" id="time-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Pour Summary & Risk Analysis</h5>
+        <table class="table table-bordered mt-2 d-none" id="time-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #607D8B; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="time-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const CUBIC_FEET_PER_CUBIC_YARD = 27;
+    const INCHES_PER_FOOT = 12;
+    const CONCRETE_WASTE_FACTOR = 1.05; // 5% extra for waste/spillage/subgrade variability
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('time-result');
+        const table = document.getElementById('time-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('time-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-info', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-info');
+            
+            // Primary results
+            res.innerHTML = `
+**Logistics Summary:**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span class="result-value">${metrics.numTrucks}</span><br>
+        <span class="small text-muted">Total Trucks Required</span>
+    </div>
+    <div class="text-center">
+        <span class="result-value">${metrics.totalVolumeYards.toFixed(2)}</span><br>
+        <span class="small text-muted">Total Volume (yd³)</span>
+    </div>
+</div>
+`;
+            
+            // Risk assessment calculation
+            const timeDifference = metrics.totalAllowedTime - metrics.totalActualPourTime;
+            let riskAssessment = '';
+            
+            if (timeDifference > 10) {
+                riskAssessment = `<span class="success-text">Low Risk</span> - You have ${timeDifference.toFixed(0)} minutes of buffer time.`;
+            } else if (timeDifference >= 0) {
+                riskAssessment = `<span class="success-text">Moderate Risk</span> - You have limited buffer time (${timeDifference.toFixed(0)} min). Keep the pour moving!`;
+            } else {
+                riskAssessment = `<span class="warning-text">HIGH STANDBY RISK</span> - Your pour time exceeds the allowed limit by ${Math.abs(timeDifference).toFixed(0)} minutes. Expect standby fees.`;
+            }
+
+
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Concrete Volume (Incl. Waste)</td><td>**${metrics.totalVolumeYards.toFixed(2)} yd³**</td></tr>
+            <tr><td>Number of Full Trucks</td><td>**${metrics.numTrucks} Pcs**</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Time Analysis**</td></tr>
+            <tr><td>Estimated Total Pour Time</td><td>${(metrics.totalActualPourTime / 60).toFixed(1)} hours (${metrics.totalActualPourTime.toFixed(0)} min)</td></tr>
+            <tr><td>Actual Time to Unload One Truck</td><td>${metrics.actualTimePerTruck.toFixed(0)} minutes</td></tr>
+            <tr><td>Total Allowed Unloading Time (Free)</td><td>${metrics.totalAllowedTime.toFixed(0)} minutes</td></tr>
+            <tr><td>**Risk Assessment**</td><td>${riskAssessment}</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Summary**</td></tr>
+            <tr><td>Slab Area</td><td>${metrics.areaSqFt.toFixed(0)} sq ft</td></tr>
+            <tr><td>Pour Rate</td><td>${metrics.pourRate} yd³/hr</td></tr>
+            <tr><td>Truck Capacity</td><td>${metrics.truckCapacity} yd³</td></tr>
+            <tr><td>Free Unloading Limit</td><td>${metrics.unloadingLimit} min/truck</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('concrete-time-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const slabLength = parseFloat(form.elements.slabLength.value); // L (ft)
+        const slabWidth = parseFloat(form.elements.slabWidth.value); // W (ft)
+        const slabDepth = parseFloat(form.elements.slabDepth.value); // D (in)
+        const pourRate = parseFloat(form.elements.pourRate.value); // R (yd³/hr)
+        const truckCapacity = parseFloat(form.elements.truckCapacity.value); // T_cap (yd³)
+        const unloadingLimit = parseFloat(form.elements.unloadingLimit.value); // T_limit (min)
+        
+        // Basic validation
+        if (isNaN(slabLength) || slabLength <= 0 || isNaN(slabWidth) || slabWidth <= 0 || 
+            isNaN(slabDepth) || slabDepth <= 0 || isNaN(pourRate) || pourRate <= 0 || 
+            isNaN(truckCapacity) || truckCapacity <= 0 || isNaN(unloadingLimit) || unloadingLimit <= 0) 
+        {
+            displayResult(true, "Please ensure all input fields are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Total Volume ---
+            const areaSqFt = slabLength * slabWidth;
+            const depthFt = slabDepth / INCHES_PER_FOOT;
+            const theoreticalVolumeCuFt = areaSqFt * depthFt;
+            const theoreticalVolumeYards = theoreticalVolumeCuFt / CUBIC_FEET_PER_CUBIC_YARD;
+            
+            // Total volume with waste factor (what you order)
+            const totalVolumeYards = theoreticalVolumeYards * CONCRETE_WASTE_FACTOR;
+
+            // --- 2. Calculate Trucks Needed ---
+            const numTrucks = Math.ceil(totalVolumeYards / truckCapacity);
+            
+            // --- 3. Calculate Actual Pour Time (based on your crew's speed) ---
+            // Time (Hours) = Volume (Yards) / Rate (Yards/Hour)
+            const totalActualPourTimeHours = totalVolumeYards / pourRate;
+            const totalActualPourTime = totalActualPourTimeHours * 60; // Total time in minutes
+
+            // --- 4. Calculate Time per Truck & Allowed Time ---
+            // Time (Minutes) per Truck = (Truck Capacity / Pour Rate) * 60
+            const actualTimePerTruck = (truckCapacity / pourRate) * 60;
+
+            // Total Allowed Time = Number of Trucks * Limit per Truck
+            const totalAllowedTime = numTrucks * unloadingLimit;
+
+            // 5. Display results
+            const metrics = {
+                slabLength,
+                slabWidth,
+                slabDepth,
+                pourRate,
+                truckCapacity,
+                unloadingLimit,
+                areaSqFt,
+                totalVolumeYards,
+                numTrucks,
+                totalActualPourTime,
+                actualTimePerTruck,
+                totalAllowedTime
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('time-result').classList.add('d-none');
+        document.getElementById('time-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

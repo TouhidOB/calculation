@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Group Project Contribution Tracker{% endblock %}
+
+{% block meta_description %}Track and visualize team member contributions (logged hours and percentage) against a total project estimate in real-time.{% endblock %}
+
+{% block meta_keywords %}group project, team contribution, workload equity, logged hours, firestore, real-time tracking{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, updateDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+    let app, db, auth, currentProjectRef, currentUserId;
+    const PROJECT_COLLECTION_NAME = 'project_contributions';
+    const PROJECT_DOC_ID = 'main_project_tracker'; 
+
+    const projectData = {
+        projectName: '',
+        totalEstimatedHours: 0,
+        ownerId: '',
+        members: [] // Starts empty for professional use
+    };
+
+    async function initializeFirebase() {
+        if (!firebaseConfig) return;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            await setPersistence(auth, browserSessionPersistence);
+            if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
+            else await signInAnonymously(auth);
+
+            currentUserId = auth.currentUser?.uid || crypto.randomUUID();
+            document.getElementById('user-id-display').textContent = currentUserId.substring(0, 8);
+
+            const projectPath = `artifacts/${appId}/public/data/${PROJECT_COLLECTION_NAME}/${PROJECT_DOC_ID}`;
+            currentProjectRef = doc(db, projectPath);
+
+            onSnapshot(currentProjectRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    Object.assign(projectData, docSnap.data());
+                    updateUI(projectData);
+                } else {
+                    projectData.ownerId = currentUserId;
+                    setDoc(currentProjectRef, projectData).then(() => updateUI(projectData));
+                }
+            });
+        } catch (error) { console.error("Firebase failed:", error); }
+    }
+
+    async function updateProjectDetails() {
+        const newName = document.getElementById('project-name-input').value.trim();
+        const newHours = parseFloat(document.getElementById('total-estimated-hours-input').value) || 0;
+        if (currentProjectRef) {
+            await updateDoc(currentProjectRef, { projectName: newName, totalEstimatedHours: newHours });
+        }
+    }
+    
+    async function updateMemberHours(memberId, newHours) {
+        const idx = projectData.members.findIndex(m => m.id === memberId);
+        if (idx !== -1) {
+            const updatedMembers = [...projectData.members];
+            updatedMembers[idx].loggedHours = newHours;
+            if (currentProjectRef) await updateDoc(currentProjectRef, { members: updatedMembers });
+        }
+    }
+
+    async function addMember() {
+        const name = prompt('Enter team member name:');
+        if (name?.trim()) {
+            const updatedMembers = [...projectData.members, { id: 'm' + Date.now(), name: name.trim(), loggedHours: 0 }];
+            if (currentProjectRef) await updateDoc(currentProjectRef, { members: updatedMembers });
+        }
+    }
+
+    async function removeMember(id) {
+        if (!confirm('Remove this member?')) return;
+        const updatedMembers = projectData.members.filter(m => m.id !== id);
+        if (currentProjectRef) await updateDoc(currentProjectRef, { members: updatedMembers });
+    }
+
+    function updateUI(data) {
+        const { projectName, totalEstimatedHours, members } = data;
+        const totalLogged = members.reduce((sum, m) => sum + m.loggedHours, 0);
+        const completion = totalEstimatedHours > 0 ? (totalLogged / totalEstimatedHours) * 100 : 0;
+
+        document.getElementById('project-name-input').value = projectName;
+        document.getElementById('total-estimated-hours-input').value = totalEstimatedHours;
+        document.getElementById('completion-label').textContent = completion.toFixed(1) + '%';
+        document.getElementById('total-logged-display').textContent = totalLogged.toFixed(1);
+        
+        const pb = document.getElementById('main-progress-bar');
+        pb.style.width = Math.min(100, completion) + '%';
+        pb.className = `progress-bar ${completion > 100 ? 'bg-danger' : 'bg-success'}`;
+
+        const list = document.getElementById('member-list');
+        list.innerHTML = '';
+
+        if (members.length === 0) {
+            list.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted small">No team members added yet. Click "+ Add Member" to start tracking.</td></tr>';
+        }
+
+        members.forEach(m => {
+            const share = totalLogged > 0 ? (m.loggedHours / totalLogged) * 100 : 0;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="align-middle fw-bold">${m.name}</td>
+                <td class="align-middle" style="width: 120px;">
+                    <div class="input-group input-group-sm">
+                        <input type="number" class="form-control text-center" value="${m.loggedHours}" onchange="window.updateMemberHours('${m.id}', parseFloat(this.value)||0)">
+                        <span class="input-group-text">hr</span>
+                    </div>
+                </td>
+                <td class="align-middle text-center small fw-bold">${share.toFixed(1)}%</td>
+                <td class="align-middle">
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" style="width: ${share}%"></div>
+                    </div>
+                </td>
+                <td class="align-middle text-end">
+                    <button class="btn btn-link btn-sm text-danger p-0" onclick="window.removeMember('${m.id}')"><i class="bi bi-trash3"></i></button>
+                </td>
+            `;
+            list.appendChild(tr);
+        });
+
+        // Equity Score
+        let score = 'N/A';
+        if (members.length > 1 && totalLogged > 0) {
+            const mean = totalLogged / members.length;
+            const stdDev = Math.sqrt(members.reduce((s, m) => s + Math.pow(m.loggedHours - mean, 2), 0) / members.length);
+            score = ((stdDev / mean) * 100).toFixed(1) + '%';
+        }
+        document.getElementById('equity-score-display').textContent = score;
+    }
+
+    window.updateProjectDetails = updateProjectDetails;
+    window.updateMemberHours = updateMemberHours;
+    window.addMember = addMember;
+    window.removeMember = removeMember;
+    window.onload = initializeFirebase;
+</script>
+
+<style>
+    :root { --bs-primary-rgb: 13, 110, 253; }
+    body { background-color: #f4f7f6; }
+    .stat-card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .progress { border-radius: 50px; background-color: #e9ecef; }
+    .table thead th { background-color: #f8f9fa; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; color: #6c757d; border-top: none; }
+    .form-control:focus { box-shadow: none; border-color: #0d6efd; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold display-6"><i class="bi bi-people-fill text-primary me-2"></i>Project Contribution Tracker</h1>
+        <p class="text-muted">Real-time collaborative workload monitoring for academic and professional teams.</p>
+    </div>
+
+    
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card stat-card h-100 p-4">
+                <div class="row g-3 align-items-end mb-4">
+                    <div class="col-md-7">
+                        <label class="form-label small fw-bold text-uppercase">Project Title</label>
+                        <input type="text" id="project-name-input" onchange="updateProjectDetails()" class="form-control form-control-lg border-0 bg-light fw-bold" placeholder="Enter Project Name...">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-bold text-uppercase">Target Hours</label>
+                        <div class="input-group input-group-lg">
+                            <input type="number" id="total-estimated-hours-input" onchange="updateProjectDetails()" class="form-control border-0 bg-light text-center" placeholder="0">
+                            <span class="input-group-text border-0 bg-light small">hrs</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0 text-uppercase small text-muted">Team Workload Distribution</h6>
+                    <button onclick="addMember()" class="btn btn-sm btn-primary rounded-pill px-3"><i class="bi bi-person-plus-fill me-1"></i> Add Member</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Hours</th>
+                                <th class="text-center">Share</th>
+                                <th>Visual</th>
+                                <th class="text-end"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="member-list">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="vstack gap-4">
+                <div class="card stat-card border-start border-4 border-success p-4 text-center">
+                    <span class="text-uppercase small fw-bold text-muted mb-2">Project Completion</span>
+                    <h2 class="fw-black mb-3" id="completion-label">0.0%</h2>
+                    <div class="progress" style="height: 10px;">
+                        <div id="main-progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="card stat-card border-start border-4 border-info p-4 text-center">
+                    <span class="text-uppercase small fw-bold text-muted mb-1">Workload Equity Score</span>
+                    <h2 class="fw-black mb-1" id="equity-score-display">N/A</h2>
+                    <p class="text-muted extra-small mb-0">Lower % indicates more balanced contribution.</p>
+                </div>
+
+                <div class="card stat-card bg-dark text-white p-4 text-center">
+                    <span class="text-uppercase small fw-bold text-white-50 mb-1">Total Hours Logged</span>
+                    <h2 class="fw-black mb-0 text-white" id="total-logged-display">0.0</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert bg-white border shadow-sm rounded-4 d-flex align-items-center" role="alert">
+        <div class="bg-primary-subtle p-2 rounded-circle me-3">
+            <i class="bi bi-cloud-check-fill text-primary"></i>
+        </div>
+        <div class="small">
+            <strong>Collaboration Active:</strong> Your unique Session ID is <span class="badge bg-secondary" id="user-id-display">...</span>. Anyone visiting this page will see updates in real-time.
+        </div>
+    </div>
+</div>
+{% endblock %}

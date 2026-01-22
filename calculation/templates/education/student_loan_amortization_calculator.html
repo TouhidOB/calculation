@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Student Loan Amortization Calculator{% endblock %}
+
+{% block meta_description %}Calculate your monthly student loan payments, total interest, and full repayment schedule based on principal, interest rate, and term length.{% endblock %}
+
+{% block meta_keywords %}student loan calculator, amortization, monthly payment, interest rate, loan term, total interest paid{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e0e0e0;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        color: #2e7d32; /* Financial Green */
+        border-bottom: 2px solid #f1f8e9;
+        padding-bottom: 8px;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        min-width: 50px;
+        justify-content: center;
+    }
+
+    .result-box {
+        background-color: #f1f8e9;
+        border: 1px solid #c8e6c9;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        height: 100%;
+    }
+
+    .result-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #555;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .result-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #1b5e20;
+    }
+    
+    .amortization-table-container {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+
+    .amortization-table thead th {
+        background-color: #f8f9fa;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-top: 0;
+    }
+
+    .chart-wrapper {
+        position: relative;
+        margin-bottom: 30px;
+        background: #fafafa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">💸 Student Loan Repayment Calculator</h1>
+        <p class="text-muted">Enter your loan details to view your monthly payment and interest breakdown.</p>
+    </div>
+
+    <div class="calc-wrapper mx-auto" style="max-width: 900px;">
+        <form id="loan-calculator-form">
+            <h5 class="section-title">Loan Details</h5>
+            
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Principal Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="principal" placeholder="e.g. 30000" min="100" step="100" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Interest Rate</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="rate" placeholder="e.g. 5.5" min="0.1" max="30" step="0.01" required>
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Loan Term</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="term" placeholder="e.g. 10" min="1" max="40" step="1" required>
+                        <span class="input-group-text">Yrs</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button class="btn btn-success btn-lg flex-grow-1 shadow-sm" type="submit">Calculate Repayment Plan</button>
+                <button class="btn btn-outline-secondary btn-lg px-4" type="button" id="reset-btn">Reset</button>
+            </div>
+        </form>
+
+        <div id="results-container" class="mt-5 d-none">
+            <h5 class="section-title">Loan Summary</h5>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="result-box">
+                        <div class="result-label">Monthly Payment</div>
+                        <div class="result-value" id="monthly-payment">$0.00</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="result-box">
+                        <div class="result-label">Total Interest</div>
+                        <div class="result-value" id="total-interest">$0.00</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="result-box">
+                        <div class="result-label">Total Payment</div>
+                        <div class="result-value" id="total-cost">$0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="section-title">Payment Allocation</h5>
+            <p class="text-muted small">This chart shows how your payments shift from interest to principal over time.</p>
+            
+            
+
+            <div class="chart-wrapper">
+                <canvas id="amortization-chart"></canvas>
+            </div>
+
+            <h5 class="section-title">Amortization Table</h5>
+            <div class="amortization-table-container mt-3">
+                <table class="table table-hover table-sm amortization-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th class="text-end">Payment</th>
+                            <th class="text-end">Principal</th>
+                            <th class="text-end">Interest</th>
+                            <th class="text-end">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-body"></tbody>
+                </table>
+            </div>
+            <p class="small text-muted mt-2 text-center italic">Showing a summarized 6-month interval schedule.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let amortizationChart = null;
+
+    function formatCurrency(num) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency', currency: 'USD'
+        }).format(num);
+    }
+
+    function calculateLoan(e) {
+        if (e) e.preventDefault();
+
+        const P = parseFloat(document.getElementById('principal').value);
+        const annualRate = parseFloat(document.getElementById('rate').value);
+        const years = parseFloat(document.getElementById('term').value);
+
+        if (!P || !annualRate || !years) return;
+
+        const i = (annualRate / 100) / 12;
+        const n = years * 12;
+
+        // Amortization Formula: M = P [ i(1 + i)^n / ((1 + i)^n - 1) ]
+        const M = P * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
+
+        let balance = P;
+        let totalInterest = 0;
+        const schedule = [];
+        const chartLabels = [];
+        const chartInterest = [];
+        const chartPrincipal = [];
+
+        for (let m = 1; m <= n; m++) {
+            const interestM = balance * i;
+            const principalM = M - interestM;
+            balance -= principalM;
+            totalInterest += interestM;
+
+            if (m % 6 === 0 || m === n || m === 1) {
+                schedule.push({
+                    month: m,
+                    payment: M,
+                    principal: principalM,
+                    interest: interestM,
+                    balance: Math.max(0, balance)
+                });
+            }
+
+            // Chart data: Yearly snapshots
+            if (m % 12 === 0 || m === n) {
+                chartLabels.push(`Year ${Math.ceil(m / 12)}`);
+                chartInterest.push(interestM);
+                chartPrincipal.push(principalM);
+            }
+        }
+
+        displayResults(M, totalInterest, P + totalInterest, schedule, chartLabels, chartInterest, chartPrincipal);
+    }
+
+    function displayResults(monthly, interest, total, schedule, labels, cInt, cPri) {
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('monthly-payment').textContent = formatCurrency(monthly);
+        document.getElementById('total-interest').textContent = formatCurrency(interest);
+        document.getElementById('total-cost').textContent = formatCurrency(total);
+
+        const body = document.getElementById('schedule-body');
+        body.innerHTML = '';
+        schedule.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.month}</td>
+                <td class="text-end">${formatCurrency(row.payment)}</td>
+                <td class="text-end text-success">${formatCurrency(row.principal)}</td>
+                <td class="text-end text-danger">${formatCurrency(row.interest)}</td>
+                <td class="text-end fw-bold">${formatCurrency(row.balance)}</td>
+            `;
+            body.appendChild(tr);
+        });
+
+        updateChart(labels, cInt, cPri);
+        window.scrollTo({ top: document.getElementById('results-container').offsetTop - 50, behavior: 'smooth' });
+    }
+
+    function updateChart(labels, interestData, principalData) {
+        const ctx = document.getElementById('amortization-chart').getContext('2d');
+        if (amortizationChart) amortizationChart.destroy();
+
+        amortizationChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Principal', data: principalData, backgroundColor: '#4caf50' },
+                    { label: 'Interest', data: interestData, backgroundColor: '#ff5252' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    document.getElementById('loan-calculator-form').addEventListener('submit', calculateLoan);
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        document.getElementById('loan-calculator-form').reset();
+        document.getElementById('results-container').classList.add('d-none');
+        if (amortizationChart) amortizationChart.destroy();
+    });
+</script>
+{% endblock %}

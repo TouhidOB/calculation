@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Semester Credit Hour & Workload Calculator{% endblock %}
+
+{% block meta_description %}Calculate total semester credit hours and estimate the total weekly study time commitment for your courses.{% endblock %}
+
+{% block meta_keywords %}credit hour calculator, semester workload, study time estimator, college credits, course planning{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #dee2e6;
+    }
+
+    .course-card {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.2s ease;
+    }
+
+    .course-card:hover {
+        border-color: #0d6efd;
+        background-color: #fff;
+    }
+
+    .stat-card {
+        background: #e7f1ff;
+        border: 1px solid #b6d4fe;
+        border-radius: 12px;
+        padding: 25px;
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #495057;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #0d6efd;
+    }
+
+    .empty-state {
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 40px;
+        color: #6c757d;
+        text-align: center;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 576px) {
+        .stat-value { font-size: 1.8rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">🎓 Semester Workload Calculator</h1>
+        <p class="text-muted">Plan your semester by estimating total credits and weekly study hours.</p>
+    </div>
+
+    
+
+    <div class="calc-wrapper mx-auto" style="max-width: 900px;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0">Course List</h5>
+            <button id="add-course-btn" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-lg"></i> Add New Course
+            </button>
+        </div>
+
+        <div id="course-list">
+            <div class="empty-state" id="empty-msg">
+                <i class="bi bi-journal-plus fs-1 d-block mb-2"></i>
+                No courses added yet. Click "+ Add New Course" to begin your estimate.
+            </div>
+        </div>
+
+        <div class="alert alert-light border mt-4 small text-muted">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Guideline:</strong> Standard academic practice suggests <strong>2-3 hours</strong> of independent study for every 1 credit hour.
+        </div>
+
+        <hr class="my-5">
+
+        <h5 class="fw-bold mb-4">Semester Summary</h5>
+        <div class="row g-4">
+            <div class="col-sm-6">
+                <div class="stat-card">
+                    <div class="stat-label">Total Credits</div>
+                    <div class="stat-value" id="total-credits">0.0</div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="stat-card">
+                    <div class="stat-label">Weekly Time Commitment</div>
+                    <div class="stat-value text-danger" id="total-hours">0.0</div>
+                    <div class="small fw-bold text-muted mt-1">Hours / Week</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <button class="btn btn-link text-decoration-none text-secondary" onclick="resetAll()">
+                <i class="bi bi-trash"></i> Reset All Data
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const courseListEl = document.getElementById('course-list');
+    const addCourseBtn = document.getElementById('add-course-btn');
+    const totalCreditsEl = document.getElementById('total-credits');
+    const totalHoursEl = document.getElementById('total-hours');
+    const emptyMsg = document.getElementById('empty-msg');
+
+    let courseCounter = 0;
+
+    function calculateTotals() {
+        let totalCredits = 0;
+        let totalHours = 0;
+
+        const creditInputs = document.querySelectorAll('.input-credit-hours');
+        const studyInputs = document.querySelectorAll('.input-study-hours');
+
+        creditInputs.forEach(input => {
+            totalCredits += parseFloat(input.value) || 0;
+        });
+
+        studyInputs.forEach(input => {
+            totalHours += parseFloat(input.value) || 0;
+        });
+
+        totalCreditsEl.textContent = totalCredits.toFixed(1);
+        totalHoursEl.textContent = (totalCredits + totalHours).toFixed(1); 
+        // Note: Total hours usually includes Class Time (Credits) + Study Time
+    }
+
+    function addCourse() {
+        // Remove empty state message
+        if (emptyMsg) emptyMsg.style.display = 'none';
+        
+        courseCounter++;
+        const rowId = `course-${courseCounter}`;
+
+        const newCard = document.createElement('div');
+        newCard.className = 'course-card animate__animated animate__fadeInUp';
+        newCard.id = rowId;
+        newCard.innerHTML = `
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold">Course Title</label>
+                    <input type="text" class="form-control" placeholder="e.g. Organic Chemistry">
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-bold">Credits</label>
+                    <input type="number" class="form-control input-credit-hours text-center" 
+                           min="0" step="0.5" value="3.0" oninput="calculateTotals()">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small fw-bold">Study Hrs (Out-of-class)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control input-study-hours text-center" 
+                               min="0" step="1" value="6.0" oninput="calculateTotals()">
+                        <span class="input-group-text">hrs</span>
+                    </div>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="button" class="btn btn-outline-danger" onclick="removeCourse('${rowId}')">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        courseListEl.appendChild(newCard);
+        calculateTotals();
+    }
+
+    function removeCourse(rowId) {
+        const el = document.getElementById(rowId);
+        if (el) {
+            el.remove();
+            calculateTotals();
+        }
+        
+        // Show empty message if all courses removed
+        if (document.querySelectorAll('.course-card').length === 0) {
+            emptyMsg.style.display = 'block';
+        }
+    }
+
+    function resetAll() {
+        if(confirm("Are you sure you want to clear all courses?")) {
+            courseListEl.innerHTML = '';
+            courseListEl.appendChild(emptyMsg);
+            emptyMsg.style.display = 'block';
+            calculateTotals();
+        }
+    }
+
+    addCourseBtn.addEventListener('click', addCourse);
+
+    // Page loads empty for professional use
+    window.addEventListener('load', () => {
+        calculateTotals();
+    });
+</script>
+{% endblock %}

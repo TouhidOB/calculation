@@ -34,7 +34,7 @@ def extract_urls(urlpatterns, prefix=''):
 
 class GlobalStaticSitemap(Sitemap):
     priority = 0.8
-    changefreq = "weekly"
+    changefreq = "daily"
 
     def items(self):
         return get_all_named_urls()

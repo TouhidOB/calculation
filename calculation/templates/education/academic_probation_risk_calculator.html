@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Probation Risk Calculator{% endblock %}
+
+{% block meta_description %}Calculate your projected GPA and assess the risk of academic probation based on current standing and target grades.{% endblock %}
+
+{% block meta_keywords %}GPA calculator, academic probation risk, credit hours, projected GPA, academic planning, college grades{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 25, 135, 84; /* Success Green */
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #dee2e6;
+    }
+
+    .input-section {
+        background-color: #fcfdfd;
+        border-right: 1px solid #e9ecef;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #495057;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .course-row {
+        background-color: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 0.75rem;
+        transition: all 0.2s ease;
+    }
+
+    .course-row:hover {
+        border-color: #198754;
+        background-color: #f8fff9;
+    }
+
+    .result-box {
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 2px solid #e9ecef;
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #212529;
+    }
+
+    /* Risk Status Styles */
+    .status-low { border-color: #a3cfbb !important; background-color: #f1f9f5; color: #0f5132; }
+    .status-medium { border-color: #ffe69c !important; background-color: #fffcf2; color: #664d03; }
+    .status-high { border-color: #f1aeb5 !important; background-color: #fff8f8; color: #842029; }
+
+    .remove-btn {
+        color: #dc3545;
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 1.2rem;
+    }
+    
+    .remove-btn:hover { color: #a52834; }
+
+    .placeholder-view {
+        padding: 4rem 2rem;
+        text-align: center;
+        color: #adb5bd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-shield-exclamation text-success me-2"></i>Probation Risk Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Institutional "Good Standing" usually requires a 2.0 GPA. Use this tool to project your final cumulative standing based on your current grades and target term performance.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-card overflow-hidden mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-6 input-section p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark">1. Current Standing</h5>
+                <div class="row g-3 mb-5">
+                    <div class="col-md-6">
+                        <label class="form-label">Cumulative GPA</label>
+                        <input type="number" id="current-gpa" class="form-control" step="0.01" placeholder="e.g. 3.25">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Total Credits Earned</label>
+                        <input type="number" id="current-credits" class="form-control" placeholder="e.g. 45">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-dark">2. Current Term</h5>
+                    <button id="add-course-btn" class="btn btn-sm btn-outline-success rounded-pill">
+                        <i class="bi bi-plus-circle me-1"></i>Add Course
+                    </button>
+                </div>
+
+                <div id="course-list" class="vstack gap-2">
+                    </div>
+            </div>
+
+            <div class="col-lg-6 p-4 p-md-5 bg-white d-flex align-items-center">
+                
+                <div id="initial-placeholder" class="placeholder-view w-100">
+                    <i class="bi bi-calculator display-1 mb-3"></i>
+                    <h4 class="fw-bold">Ready to Project</h4>
+                    <p class="small">Enter your cumulative GPA and at least one course to see your risk assessment.</p>
+                </div>
+
+                <div id="results-display" class="w-100 d-none">
+                    <h5 class="fw-bold mb-4 text-dark text-center text-lg-start">3. Projected Standing</h5>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="result-box">
+                                <span class="form-label mb-2 d-block">Term GPA</span>
+                                <div class="result-value text-success" id="term-gpa">0.00</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="result-box">
+                                <span class="form-label mb-2 d-block">Cumulative GPA</span>
+                                <div class="result-value" id="cumulative-gpa">0.00</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="result-box py-4" id="risk-box">
+                                <span class="form-label mb-2 d-block">Academic Risk Assessment</span>
+                                <div class="h4 fw-bold mb-1" id="risk-text">---</div>
+                                <p class="small text-muted mb-0" id="risk-desc">Based on a 2.0 minimum threshold.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border small text-muted">
+                        <i class="bi bi-info-circle me-1"></i> This projection is for planning purposes only. Final standing is determined by your University Registrar.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const GRADE_POINTS = {
+        'A': 4.0, 'A-': 3.7, 'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+        'C+': 2.3, 'C': 2.0, 'C-': 1.7, 'D+': 1.3, 'D': 1.0, 'F': 0.0
+    };
+
+    let courseCount = 0;
+
+    function createCourseRow() {
+        courseCount++;
+        const row = document.createElement('div');
+        row.className = 'course-row p-3 mb-2';
+        row.id = `row-${courseCount}`;
+        row.innerHTML = `
+            <div class="row g-2 align-items-center">
+                <div class="col-7">
+                    <label class="small text-muted d-block d-md-none">Course</label>
+                    <input type="text" class="form-control form-control-sm border-0 bg-transparent" placeholder="Course Name">
+                </div>
+                <div class="col-2">
+                    <input type="number" class="form-control form-control-sm credit-input" placeholder="Hrs" min="0" max="6">
+                </div>
+                <div class="col-2">
+                    <select class="form-select form-select-sm grade-select">
+                        ${Object.keys(GRADE_POINTS).map(g => `<option value="${g}">${g}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-1 text-end">
+                    <button class="remove-btn" onclick="removeRow(${courseCount})"><i class="bi bi-x-circle-fill"></i></button>
+                </div>
+            </div>
+        `;
+        document.getElementById('course-list').appendChild(row);
+        
+        // Attach listeners to new elements
+        row.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('input', calculateRisk);
+        });
+    }
+
+    function removeRow(id) {
+        document.getElementById(`row-${id}`).remove();
+        calculateRisk();
+    }
+
+    function calculateRisk() {
+        const curGPA = parseFloat(document.getElementById('current-gpa').value) || 0;
+        const curCredits = parseFloat(document.getElementById('current-credits').value) || 0;
+        
+        const rows = document.querySelectorAll('.course-row');
+        let termPoints = 0;
+        let termCredits = 0;
+
+        rows.forEach(row => {
+            const credits = parseFloat(row.querySelector('.credit-input').value) || 0;
+            const grade = row.querySelector('.grade-select').value;
+            termCredits += credits;
+            termPoints += (credits * GRADE_POINTS[grade]);
+        });
+
+        const placeholder = document.getElementById('initial-placeholder');
+        const results = document.getElementById('results-display');
+
+        // Professional Clean Slate Logic: Show results only if basic data is present
+        if (curCredits === 0 && termCredits === 0) {
+            placeholder.classList.remove('d-none');
+            results.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        results.classList.remove('d-none');
+
+        const termGPA = termCredits > 0 ? termPoints / termCredits : 0;
+        const cumGPA = (curCredits + termCredits) > 0 ? 
+            ((curGPA * curCredits) + termPoints) / (curCredits + termCredits) : 0;
+
+        document.getElementById('term-gpa').textContent = termGPA.toFixed(2);
+        document.getElementById('cumulative-gpa').textContent = cumGPA.toFixed(2);
+
+        // Risk Assessment
+        const riskBox = document.getElementById('risk-box');
+        const riskText = document.getElementById('risk-text');
+        const cumDisplay = document.getElementById('cumulative-gpa');
+        
+        riskBox.classList.remove('status-low', 'status-medium', 'status-high');
+
+        if (cumGPA >= 3.0) {
+            riskBox.classList.add('status-low');
+            riskText.textContent = "Low Risk: Good Standing";
+            cumDisplay.style.color = "#198754";
+        } else if (cumGPA >= 2.1) {
+            riskBox.classList.add('status-low');
+            riskText.textContent = "Maintain: Safe Standing";
+            cumDisplay.style.color = "#198754";
+        } else if (cumGPA >= 2.0) {
+            riskBox.classList.add('status-medium');
+            riskText.textContent = "Warning: Near Probation";
+            cumDisplay.style.color = "#856404";
+        } else {
+            riskBox.classList.add('status-high');
+            riskText.textContent = "High Risk: Probation Probable";
+            cumDisplay.style.color = "#dc3545";
+        }
+    }
+
+    document.getElementById('add-course-btn').addEventListener('click', createCourseRow);
+    document.getElementById('current-gpa').addEventListener('input', calculateRisk);
+    document.getElementById('current-credits').addEventListener('input', calculateRisk);
+
+    window.onload = () => {
+        // Start empty for professional visitor use
+        calculateRisk();
+    };
+</script>
+{% endblock %}

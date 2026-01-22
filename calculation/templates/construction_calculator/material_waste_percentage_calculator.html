@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Material Waste Percentage Calculator{% endblock %}
+
+{% block meta_description %}Calculate the actual percentage of material waste on a construction or fabrication project by comparing the amount purchased against the amount used. {% endblock %}
+
+{% block meta_keywords %}material waste calculator, waste percentage, material efficiency, construction budgeting, overage calculation, purchasing efficiency{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #4CAF50; /* Green for efficiency/sustainability */
+        border-bottom: 2px solid #4CAF50;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFEB3B; /* Yellow for attention/warning */
+    }
+
+    .input-group-text {
+        min-width: 130px;
+        justify-content: center;
+        background-color: #f1f8e9;
+        font-weight: 600;
+        color: #4CAF50;
+    }
+
+    .info-box {
+        background-color: #e8f5e9; /* Light green info box */
+        border: 1px solid #4CAF50;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #D32F2F; /* Red for high waste or key result */
+    }
+
+    .waste-percent {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #D32F2F;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">♻️ Material Waste Percentage Calculator</h1>
+    <p class="text-center small-muted">Determine the actual waste rate by comparing the materials purchased against the amount actually installed.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="waste-calculator-form">
+            <h5 class="section-title">1. Material Details</h5>
+
+            <!-- Material Name Input -->
+            <label for="material-name-input" class="form-label">Material Name (Optional)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Material</span>
+                <input type="text" id="material-name-input" class="form-control" name="materialName" placeholder="e.g., Drywall Sheets, Linear Feet of Lumber" value="Sq Ft of Tile">
+            </div>
+
+            <!-- Unit of Measure -->
+            <label for="unit-input" class="form-label">Unit of Measure</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Unit</span>
+                <input type="text" id="unit-input" class="form-control" name="unit" placeholder="e.g., linear feet, sheets, square yards" value="sq ft" required>
+            </div>
+
+
+            <h5 class="section-title">2. Usage Amounts (in the Unit of Measure above)</h5>
+
+            <!-- Purchased Amount Input -->
+            <label for="purchased-input" class="form-label">Total Material Purchased</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Purchased</span>
+                <input type="number" id="purchased-input" class="form-control" name="purchasedAmount" placeholder="e.g., 120" value="120" min="1" step="0.1" required>
+                <span class="input-group-text" id="purchased-unit">sq ft</span>
+            </div>
+            
+            <!-- Used/Installed Amount Input -->
+            <label for="used-input" class="form-label">Total Material Used/Installed</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Used/Installed</span>
+                <input type="number" id="used-input" class="form-control" name="usedAmount" placeholder="e.g., 108" value="108" min="1" step="0.1" required>
+                <span class="input-group-text" id="used-unit">sq ft</span>
+            </div>
+            
+            <div class="info-box">
+                **Note:** The Purchased Amount must be greater than or equal to the Used/Installed Amount for the calculation to be valid. The remaining material (Purchased - Used) is considered **Waste**.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #4CAF50; border-color: #4CAF50;" type="submit">Calculate Waste Percentage</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="waste-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Waste Analysis Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="waste-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #4CAF50; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="waste-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to update the units displayed next to the input fields
+    function updateUnits(unit) {
+        document.getElementById('purchased-unit').textContent = unit;
+        document.getElementById('used-unit').textContent = unit;
+    }
+
+    // Listener for unit input change
+    document.getElementById('unit-input').addEventListener('input', function(e) {
+        const unit = e.target.value.trim() || 'Units';
+        updateUnits(unit);
+    });
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('waste-result');
+        const table = document.getElementById('waste-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('waste-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Waste Percentage
+            res.innerHTML = `
+**Calculated Waste Percentage for ${metrics.materialName}:**
+<div class="text-center mt-3 mb-2">
+    <span class="waste-percent">${metrics.wastePercent.toFixed(2)}%</span>
+</div>
+<p class="small text-center mt-2">This is the amount of material wasted relative to the total amount purchased.</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Material Waste Percentage**</td><td>**${metrics.wastePercent.toFixed(2)}%**</td></tr>
+            <tr><td>Total Waste Amount</td><td>${metrics.wasteAmount.toFixed(1)} ${metrics.unit}</td></tr>
+            <tr><td>Purchased Amount</td><td>${metrics.purchasedAmount.toFixed(1)} ${metrics.unit}</td></tr>
+            <tr><td>Used/Installed Amount</td><td>${metrics.usedAmount.toFixed(1)} ${metrics.unit}</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Analysis**</td></tr>
+            <tr><td>Waste Ratio (Waste / Purchased)</td><td>${(metrics.wasteAmount / metrics.purchasedAmount).toFixed(4)}</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('waste-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const materialName = form.elements.materialName.value.trim() || 'Material';
+        const unit = form.elements.unit.value.trim() || 'Units';
+        const purchasedAmount = parseFloat(form.elements.purchasedAmount.value);
+        const usedAmount = parseFloat(form.elements.usedAmount.value);
+        
+        // Basic validation
+        if (isNaN(purchasedAmount) || purchasedAmount <= 0 || 
+            isNaN(usedAmount) || usedAmount < 0) 
+        {
+            displayResult(true, "Please ensure Purchased Amount is a positive number and Used Amount is a non-negative number.");
+            return;
+        }
+
+        if (usedAmount > purchasedAmount) {
+            displayResult(true, "The Used/Installed Amount cannot be greater than the Purchased Amount. Please check your data.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Waste Amount ---
+            const wasteAmount = purchasedAmount - usedAmount;
+
+            // --- 2. Calculate Waste Percentage ---
+            // Formula: (Waste Amount / Purchased Amount) * 100
+            const wastePercent = (wasteAmount / purchasedAmount) * 100;
+            
+            // 3. Display results
+            const metrics = {
+                materialName,
+                unit,
+                purchasedAmount,
+                usedAmount,
+                wasteAmount,
+                wastePercent
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to initialize units and ensure initial hidden state
+    window.onload = function() {
+        // Initialize units based on default input value
+        updateUnits(document.getElementById('unit-input').value.trim() || 'Units');
+        
+        document.getElementById('waste-result').classList.add('d-none');
+        document.getElementById('waste-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

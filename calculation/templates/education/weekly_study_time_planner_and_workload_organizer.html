@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Weekly Study Time Planner & Workload Organizer{% endblock %}
+
+{% block meta_description %}Allocate and manage your weekly study hours. Calculate your planned hours vs. available time for effective academic scheduling.{% endblock %}
+
+{% block meta_keywords %}study planner, weekly schedule, time management, academic organizer, study hours calculator{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #dee2e6;
+    }
+
+    .subject-card {
+        background-color: #f8fff9;
+        border: 1px solid #d1e7dd;
+        border-left: 5px solid #198754;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .subject-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.1);
+    }
+
+    .stat-card {
+        border-radius: 12px;
+        padding: 25px;
+        text-align: center;
+        height: 100%;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .empty-state {
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 50px;
+        color: #adb5bd;
+        text-align: center;
+    }
+
+    .input-group-text {
+        background-color: #fff;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 576px) {
+        .stat-value { font-size: 1.7rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">📅 Weekly Study Time Planner</h1>
+        <p class="text-muted">Balance your academic tasks against your total available hours.</p>
+    </div>
+
+    
+
+    <div class="calc-wrapper mx-auto" style="max-width: 950px;">
+        
+        <h5 class="fw-bold mb-4 border-bottom pb-2">1. Your Weekly Capacity</h5>
+        <div class="row mb-5">
+            <div class="col-md-6 col-lg-4">
+                <label for="available-hours" class="form-label fw-semibold">Total Available Study Hours:</label>
+                <div class="input-group">
+                    <input 
+                        type="number" 
+                        id="available-hours" 
+                        class="form-control form-control-lg border-primary text-primary fw-bold" 
+                        min="0" 
+                        max="168"
+                        step="1" 
+                        value="40"
+                        oninput="updateBalance()"
+                    >
+                    <span class="input-group-text">hours / week</span>
+                </div>
+                <div class="form-text">e.g., Total time after work/sleep/commute.</div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0 border-bottom pb-2 flex-grow-1">2. Planned Study Tasks</h5>
+            <button id="add-subject-btn" class="btn btn-success shadow-sm ms-3">
+                <i class="bi bi-plus-circle me-1"></i> Add Task
+            </button>
+        </div>
+        
+        <div id="subject-list">
+            <div class="empty-state" id="empty-msg">
+                <i class="bi bi-calendar-event fs-1 d-block mb-3"></i>
+                <p class="mb-0">Your planner is currently empty.</p>
+                <small>Click "Add Task" to start allocating your study hours.</small>
+            </div>
+        </div>
+
+        <h5 class="fw-bold mt-5 mb-4 border-bottom pb-2">3. Workload Summary</h5>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card bg-light">
+                    <div class="stat-label">Planned Hours</div>
+                    <div class="stat-value text-dark" id="total-planned-hours">0.0</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card bg-light">
+                    <div class="stat-label">Available Hours</div>
+                    <div class="stat-value text-primary" id="total-available-display">40.0</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card" id="balance-card" style="background-color: #fff3cd;">
+                    <div class="stat-label">Weekly Balance</div>
+                    <div class="stat-value" id="workload-balance">40.0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-5">
+            <button class="btn btn-link text-muted text-decoration-none" onclick="resetAll()">
+                <i class="bi bi-trash"></i> Reset Planner
+            </button>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const subjectListEl = document.getElementById('subject-list');
+    const addSubjectBtn = document.getElementById('add-subject-btn');
+    const availableHoursInput = document.getElementById('available-hours');
+    const totalPlannedHoursEl = document.getElementById('total-planned-hours');
+    const totalAvailableHoursDisplayEl = document.getElementById('total-available-display');
+    const workloadBalanceEl = document.getElementById('workload-balance');
+    const balanceCard = document.getElementById('balance-card');
+    const emptyMsg = document.getElementById('empty-msg');
+
+    let subjectCounter = 0;
+
+    function updateBalance() {
+        // Calculate Planned
+        let totalPlanned = 0;
+        const hourInputs = document.querySelectorAll('.input-subject-hours');
+        hourInputs.forEach(input => {
+            totalPlanned += parseFloat(input.value) || 0;
+        });
+
+        // Get Available
+        const availableHours = parseFloat(availableHoursInput.value) || 0;
+        
+        // Calculate Balance
+        const balance = availableHours - totalPlanned;
+
+        // Update Displays
+        totalPlannedHoursEl.textContent = totalPlanned.toFixed(1);
+        totalAvailableHoursDisplayEl.textContent = availableHours.toFixed(1);
+        workloadBalanceEl.textContent = balance.toFixed(1);
+
+        // Update Balance UI Colors
+        if (balance < 0) {
+            balanceCard.style.backgroundColor = '#f8d7da';
+            workloadBalanceEl.className = 'stat-value text-danger';
+        } else if (balance === 0) {
+            balanceCard.style.backgroundColor = '#e2e3e5';
+            workloadBalanceEl.className = 'stat-value text-secondary';
+        } else {
+            balanceCard.style.backgroundColor = '#d1e7dd';
+            workloadBalanceEl.className = 'stat-value text-success';
+        }
+    }
+
+    function addSubject() {
+        if (emptyMsg) emptyMsg.style.display = 'none';
+
+        subjectCounter++;
+        const rowId = `subject-${subjectCounter}`;
+
+        const newCard = document.createElement('div');
+        newCard.className = 'subject-card';
+        newCard.id = rowId;
+        newCard.innerHTML = `
+            <div class="row g-3 align-items-end">
+                <div class="col-md-7 col-lg-8">
+                    <label class="form-label small fw-bold text-muted">Task / Subject Name</label>
+                    <input type="text" class="form-control" placeholder="e.g., Chemistry Lab Prep or Library Research">
+                </div>
+                <div class="col-8 col-md-3 col-lg-3">
+                    <label class="form-label small fw-bold text-muted">Weekly Hours</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control input-subject-hours text-center" 
+                               min="0" step="0.5" value="0.0" oninput="updateBalance()">
+                        <span class="input-group-text">hrs</span>
+                    </div>
+                </div>
+                <div class="col-4 col-md-2 col-lg-1 text-end">
+                    <button type="button" class="btn btn-outline-danger w-100" onclick="removeSubject('${rowId}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        subjectListEl.appendChild(newCard);
+        updateBalance();
+    }
+
+    function removeSubject(rowId) {
+        const row = document.getElementById(rowId);
+        if (row) {
+            row.remove();
+            updateBalance();
+        }
+        
+        if (document.querySelectorAll('.subject-card').length === 0) {
+            emptyMsg.style.display = 'block';
+        }
+    }
+
+    function resetAll() {
+        if (confirm("Reset the planner and clear all tasks?")) {
+            subjectListEl.innerHTML = '';
+            subjectListEl.appendChild(emptyMsg);
+            emptyMsg.style.display = 'block';
+            availableHoursInput.value = 40;
+            updateBalance();
+        }
+    }
+
+    addSubjectBtn.addEventListener('click', addSubject);
+
+    // Initialize with professional empty state
+    window.onload = () => {
+        updateBalance();
+    };
+</script>
+{% endblock %}

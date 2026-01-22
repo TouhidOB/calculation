@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Post Hole Concrete Calculator{% endblock %}
+
+{% block meta_description %}Calculate the precise volume and material quantities (cement bags, sand, aggregate) required for fence, deck, or mailbox post footings based on hole and post dimensions. {% endblock %}
+
+{% block meta_keywords %}post hole volume, concrete calculator, fence post concrete, deck footing, cement bag estimate, cubic feet, cubic yards, post displacement{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #546E7A; /* Darker Blue-Grey for Structures/Footings */
+        border-bottom: 2px solid #546E7A;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #4CAF50; /* Green for key results/success */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #e3f2fd; /* Light blue info box */
+        border: 1px solid #546E7A;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🕳️ Post Hole Concrete Calculator</h1>
+    <p class="text-center small-muted">Calculates the total concrete volume and material requirements (C:S:G) for multiple post holes.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="post-hole-form">
+            <h5 class="section-title">1. Post Hole Dimensions (Inches)</h5>
+
+            <!-- Hole Diameter Input -->
+            <label for="hole-diameter-input" class="form-label">Hole Diameter (D_H)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Hole Diameter</span>
+                <input type="number" id="hole-diameter-input" class="form-control" name="holeDiameter" placeholder="e.g., 12" value="10" min="1" step="1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <!-- Hole Depth Input -->
+            <label for="hole-depth-input" class="form-label">Hole Depth (L_H)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Hole Depth</span>
+                <input type="number" id="hole-depth-input" class="form-control" name="holeDepth" placeholder="e.g., 36" value="36" min="1" step="1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <h5 class="section-title">2. Post Dimensions (Inches)</h5>
+
+            <!-- Post Shape Selector -->
+            <label for="post-shape-select" class="form-label">Post Shape</label>
+            <select class="form-select mb-3" id="post-shape-select" name="postShape">
+                <option value="square">Square Post</option>
+                <option value="round">Round Post</option>
+            </select>
+            
+            <!-- Post Size Input (Square side or Round diameter) -->
+            <label for="post-size-input" class="form-label" id="post-size-label">Post Side (S)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="post-size-unit-text">Side (S)</span>
+                <input type="number" id="post-size-input" class="form-control" name="postSize" placeholder="e.g., 4 (for 4x4)" value="4" min="0.1" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+            
+            <h5 class="section-title">3. Quantity & Mix Details</h5>
+
+            <!-- Quantity Input (Number of Posts) -->
+            <label for="quantity-input" class="form-label">Number of Posts (Quantity)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Quantity</span>
+                <input type="number" id="quantity-input" class="form-control" name="quantity" placeholder="e.g., 10" value="1" min="1" step="1" required>
+                <span class="input-group-text">Pcs</span>
+            </div>
+
+            <div class="info-box">
+                **Material Estimate:** Assumes a standard **1:2:3 (C:S:G)** concrete ratio and a 1 ft³ cement bag. Volumes include a 1.54 dry volume factor.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #546E7A; border-color: #546E7A;" type="submit">Calculate Concrete Needs</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-success" id="post-result"></div>
+
+        <h5 class="section-title d-none" id="volume-title">Total Required Concrete Volume</h5>
+        <table class="table table-bordered mt-2 d-none" id="volume-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #546E7A; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="volume-body"></tbody>
+        </table>
+        
+        <h5 class="section-title d-none" id="mix-title">Estimated Dry Materials (1:2:3 Mix)</h5>
+        <table class="table table-bordered mt-2 d-none" id="mix-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #546E7A; color: white;">
+                    <th>Material</th>
+                    <th>Cubic Feet (CF)</th>
+                    <th>Cubic Yards (CY)</th>
+                </tr>
+            </thead>
+            <tbody id="mix-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const CUBIC_INCHES_PER_CF = 1728; // 12 * 12 * 12
+    const CU_FT_PER_CU_YD = 27;
+    
+    // Concrete Mix Constants (Assumed for estimation based on 1:2:3 ratio)
+    const CEMENT_RATIO = 1;
+    const SAND_RATIO = 2;
+    const GRAVEL_RATIO = 3;
+    const TOTAL_MIX_PARTS = CEMENT_RATIO + SAND_RATIO + GRAVEL_RATIO; // 6
+    const DRY_VOLUME_FACTOR = 1.54; 
+    const CEMENT_BAG_VOLUME_CF = 1.0; // Assuming a 1 cubic foot bag of cement
+
+    // Helper function to update input labels based on post shape
+    document.getElementById('post-shape-select').addEventListener('change', function() {
+        const shape = this.value;
+        const label = document.getElementById('post-size-label');
+        const unitText = document.getElementById('post-size-unit-text');
+        
+        if (shape === 'square') {
+            label.textContent = 'Post Side (S)';
+            unitText.textContent = 'Side (S)';
+        } else {
+            label.textContent = 'Post Diameter (D_P)';
+            unitText.textContent = 'Diameter (D_P)';
+        }
+    });
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('post-result');
+        const volTable = document.getElementById('volume-table');
+        const volTitle = document.getElementById('volume-title');
+        const volBody = document.getElementById('volume-body');
+        const mixTable = document.getElementById('mix-table');
+        const mixTitle = document.getElementById('mix-title');
+        const mixBody = document.getElementById('mix-body');
+
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-success', 'alert-danger');
+        volTable.classList.add('d-none');
+        volTitle.classList.add('d-none');
+        mixTable.classList.add('d-none');
+        mixTitle.classList.add('d-none');
+        volBody.innerHTML = '';
+        mixBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-success');
+            
+            // Primary result: Bags of Cement and Total Volume
+            res.innerHTML = `
+**Total Concrete Required for ${metrics.quantity} Posts:**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span style="font-size:2rem; color:#546E7A; font-weight:bold;">${metrics.cementBagsNeeded}</span><br>
+        <span class="small text-muted">Bags of Cement (1 ft³ bag)</span>
+    </div>
+    <div class="text-center">
+        <span style="font-size:2rem; color:#546E7A; font-weight:bold;">${metrics.totalNetVolumeCY.toFixed(3)}</span><br>
+        <span class="small text-muted">Cubic Yards of Wet Concrete</span>
+    </div>
+</div>
+`;
+            
+            // --- Volume Table ---
+            volBody.innerHTML = `
+            <tr><td>Volume Per Post (Wet)</td><td>${metrics.netVolumeCF_perPost.toFixed(3)} CF</td></tr>
+            <tr><td>Total Concrete Volume (Wet)</td><td>**${metrics.totalNetVolumeCF.toFixed(3)} CF**</td></tr>
+            <tr><td>Total Concrete Volume (Wet)</td><td>**${metrics.totalNetVolumeCY.toFixed(3)} CY**</td></tr>
+            `;
+            volTable.classList.remove('d-none');
+            volTitle.classList.remove('d-none');
+
+            // --- Mix Table ---
+            mixBody.innerHTML = `
+            <tr><td>Cement (Bags)</td><td>**${metrics.cementBagsNeeded} Bags**</td><td>--</td></tr>
+            <tr><td>Cement (Loose Volume)</td><td>${metrics.cementVolumeCF.toFixed(3)} CF</td><td>${metrics.cementVolumeCY.toFixed(3)} CY</td></tr>
+            <tr><td>Sand (Fine Aggregate)</td><td>${metrics.sandVolumeCF.toFixed(3)} CF</td><td>${metrics.sandVolumeCY.toFixed(3)} CY</td></tr>
+            <tr><td>Gravel (Coarse Aggregate)</td><td>${metrics.gravelVolumeCF.toFixed(3)} CF</td><td>${metrics.gravelVolumeCY.toFixed(3)} CY</td></tr>
+            `;
+            mixTable.classList.remove('d-none');
+            mixTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('post-hole-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values (all in inches except quantity)
+        const holeDiameter = parseFloat(form.elements.holeDiameter.value); // D_H (in)
+        const holeDepth = parseFloat(form.elements.holeDepth.value); // L_H (in)
+        const postShape = form.elements.postShape.value; // 'square' or 'round'
+        const postSize = parseFloat(form.elements.postSize.value); // S or D_P (in)
+        const quantity = parseInt(form.elements.quantity.value); // pcs
+        
+        // Basic validation
+        if (isNaN(holeDiameter) || holeDiameter <= 0 || isNaN(holeDepth) || holeDepth <= 0 || 
+            isNaN(postSize) || postSize <= 0 || isNaN(quantity) || quantity <= 0) 
+        {
+            displayResult(true, "Please ensure all dimensions and quantity are valid positive numbers.");
+            return;
+        }
+
+        if (postSize >= holeDiameter) {
+             displayResult(true, `Post size (${postSize} in) must be smaller than the hole diameter (${holeDiameter} in).`);
+             return;
+        }
+
+        try {
+            // --- 1. Calculate Volume Per Post (in Cubic Inches) ---
+
+            // Hole Volume (Cylinder: V = pi * r^2 * L)
+            const holeRadius = holeDiameter / 2;
+            const holeVolumeInches3 = Math.PI * Math.pow(holeRadius, 2) * holeDepth;
+
+            // Post Volume (Displaced Volume)
+            let postVolumeInches3;
+            if (postShape === 'square') {
+                // Square Prism: V = S * S * L
+                postVolumeInches3 = Math.pow(postSize, 2) * holeDepth;
+            } else { // 'round'
+                // Cylinder: V = pi * r^2 * L
+                const postRadius = postSize / 2;
+                postVolumeInches3 = Math.PI * Math.pow(postRadius, 2) * holeDepth;
+            }
+
+            // Net Concrete Volume Per Post (Wet Volume)
+            const netVolumeInches3_perPost = holeVolumeInches3 - postVolumeInches3;
+            
+            // --- 2. Convert to Usable Units ---
+            
+            // Per Post
+            const netVolumeCF_perPost = netVolumeInches3_perPost / CUBIC_INCHES_PER_CF;
+
+            // Total Volume (Wet)
+            const totalNetVolumeCF = netVolumeCF_perPost * quantity;
+            const totalNetVolumeCY = totalNetVolumeCF / CU_FT_PER_CU_YD;
+
+            // --- 3. Estimate Dry Materials (Based on 1:2:3 Mix) ---
+
+            // Required dry volume of loose materials (CF)
+            // This is the volume before bulking/compaction
+            const requiredDryVolumeCF = totalNetVolumeCF * DRY_VOLUME_FACTOR;
+            
+            // Calculate individual dry volumes (CF)
+            const cementVolumeCF = requiredDryVolumeCF * (CEMENT_RATIO / TOTAL_MIX_PARTS);
+            const sandVolumeCF = requiredDryVolumeCF * (SAND_RATIO / TOTAL_MIX_PARTS);
+            const gravelVolumeCF = requiredDryVolumeCF * (GRAVEL_RATIO / TOTAL_MIX_PARTS);
+
+            // Calculate cement bags (rounded up)
+            const cementBagsNeeded = Math.ceil(cementVolumeCF / CEMENT_BAG_VOLUME_CF);
+
+            // Convert material volumes to CY
+            const cementVolumeCY = cementVolumeCF / CU_FT_PER_CU_YD;
+            const sandVolumeCY = sandVolumeCF / CU_FT_PER_CU_YD;
+            const gravelVolumeCY = gravelVolumeCF / CU_FT_PER_CU_YD;
+
+
+            // 4. Display results
+            const metrics = {
+                holeDiameter, holeDepth, postSize, postShape, quantity,
+                netVolumeCF_perPost, totalNetVolumeCF, totalNetVolumeCY,
+                cementBagsNeeded,
+                cementVolumeCF, sandVolumeCF, gravelVolumeCF,
+                cementVolumeCY, sandVolumeCY, gravelVolumeCY
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('post-result').classList.add('d-none');
+        document.getElementById('volume-table').classList.add('d-none');
+        document.getElementById('volume-title').classList.add('d-none');
+        document.getElementById('mix-table').classList.add('d-none');
+        document.getElementById('mix-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}529 College Savings Plan Calculator{% endblock %}
+
+{% block meta_description %}Project the future value of your 529 college savings plan and compare it against the expected cost of college, considering inflation and returns.{% endblock %}
+
+{% block meta_keywords %}529 plan, college savings, future value, tuition calculator, investment growth, education savings{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e0e0e0;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 10px;
+        margin-bottom: 15px;
+        color: #0056b3;
+        border-bottom: 2px solid #f0f7ff;
+        padding-bottom: 8px;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        min-width: 50px;
+        justify-content: center;
+    }
+
+    .result-box {
+        background-color: #f8fbff;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid #e1efff;
+        height: 100%;
+    }
+
+    .result-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .result-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+    }
+    
+    .savings-result-positive { color: #28a745; }
+    .savings-result-negative { color: #dc3545; }
+
+    .summary-alert {
+        font-size: 1.1rem;
+        padding: 20px;
+        border-radius: 10px;
+        border: none;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+    }
+
+    @media (max-width: 767px) {
+        .result-value { font-size: 1.3rem; }
+        .calc-wrapper { padding: 20px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">🏦 529 College Savings Plan Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Estimate the future value of your education investments and see how they stack up against the rising costs of tuition and room & board.
+        </p>
+    </div>
+
+    <div class="calc-wrapper mx-auto" style="max-width: 900px;">
+        <form id="savings-calculator-form">
+            
+            <h5 class="section-title">Current Savings & Contributions</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Current 529 Balance</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="initial_deposit" placeholder="e.g. 5000" min="0" step="100" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Monthly Contribution</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="monthly_contribution" placeholder="e.g. 250" min="0" step="25" required>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="section-title">Projection Assumptions</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Years Until College</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="years_until_enrollment" placeholder="e.g. 15" min="1" max="25" required>
+                        <span class="input-group-text text-muted small">Yrs</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Estimated Return</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="rate_of_return" placeholder="e.g. 6.0" min="0.1" max="15" step="0.1" required>
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Tuition Inflation</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="inflation_rate" placeholder="e.g. 4.0" min="0.1" max="10" step="0.1" required>
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <h5 class="section-title">Estimated College Costs</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold">Annual Cost of College <small>(Today's Dollars)</small></label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="current_annual_cost" placeholder="e.g. 30000" min="1000" step="500" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Years in College</label>
+                    <select class="form-select" id="college_duration">
+                        <option value="2">2 Years (Associate)</option>
+                        <option value="4" selected>4 Years (Bachelor)</option>
+                        <option value="6">6 Years (Graduate)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-lg flex-grow-1 shadow-sm" type="submit">Project Savings and Cost</button>
+                <button class="btn btn-outline-secondary btn-lg px-4" type="button" id="reset-btn">Reset</button>
+            </div>
+        </form>
+
+        <div id="results-container" class="mt-5 d-none">
+            <h5 class="section-title">Projection Results</h5>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="result-box shadow-sm">
+                        <div class="result-label">Total Saved</div>
+                        <div class="result-value text-primary" id="total-saved">$0</div>
+                        <p class="small text-muted mb-0">At enrollment</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="result-box shadow-sm">
+                        <div class="result-label">Future College Cost</div>
+                        <div class="result-value text-danger" id="total-cost">$0</div>
+                        <p class="small text-muted mb-0">Total program cost</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="result-box shadow-sm">
+                        <div class="result-label">Growth Earned</div>
+                        <div class="result-value savings-result-positive" id="total-interest">$0</div>
+                        <p class="small text-muted mb-0">Earnings on investment</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert summary-alert text-center mb-4" id="summary-message"></div>
+
+            <h5 class="section-title">Growth vs. Cost Breakdown</h5>
+            
+            <div class="mt-4" style="height: 300px;">
+                <canvas id="comparison-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let comparisonChart = null;
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency', currency: 'USD',
+            minimumFractionDigits: 0, maximumFractionDigits: 0,
+        }).format(amount);
+    }
+
+    function calculateSavings(e) {
+        if (e) e.preventDefault();
+
+        const P = parseFloat(document.getElementById('initial_deposit').value) || 0;
+        const PMT = parseFloat(document.getElementById('monthly_contribution').value) || 0;
+        const Y_until = parseFloat(document.getElementById('years_until_enrollment').value);
+        const D_duration = parseFloat(document.getElementById('college_duration').value);
+        const R_return = parseFloat(document.getElementById('rate_of_return').value) / 100;
+        const I_inflation = parseFloat(document.getElementById('inflation_rate').value) / 100;
+        const C_current = parseFloat(document.getElementById('current_annual_cost').value);
+        
+        if (Y_until < 1 || C_current < 1) return;
+
+        // Calculate Savings
+        const R_monthly = R_return / 12;
+        const M_total = Y_until * 12;
+        const fvInitial = P * Math.pow(1 + R_return, Y_until);
+        const fvContributions = R_monthly === 0 ? PMT * M_total : PMT * (Math.pow(1 + R_monthly, M_total) - 1) / R_monthly;
+        
+        const totalSaved = fvInitial + fvContributions;
+        const totalPrincipal = P + (PMT * M_total);
+        const totalInterest = totalSaved - totalPrincipal;
+        
+        // Calculate College Cost
+        let totalCost = 0;
+        for (let k = 0; k < D_duration; k++) {
+            totalCost += C_current * Math.pow(1 + I_inflation, Y_until + k);
+        }
+
+        const netDifference = totalSaved - totalCost;
+
+        // Update UI
+        document.getElementById('results-container').classList.remove('d-none');
+        document.getElementById('total-saved').textContent = formatCurrency(totalSaved);
+        document.getElementById('total-cost').textContent = formatCurrency(totalCost);
+        document.getElementById('total-interest').textContent = formatCurrency(totalInterest);
+        
+        const summaryEl = document.getElementById('summary-message');
+        summaryEl.classList.remove('alert-success', 'alert-danger', 'alert-warning');
+        
+        if (netDifference >= 0) {
+            summaryEl.classList.add('alert-success');
+            summaryEl.innerHTML = `<strong>Congratulations!</strong> You are on track to have a surplus of <span class="fw-bold">${formatCurrency(netDifference)}</span>.`;
+        } else {
+            summaryEl.classList.add('alert-warning');
+            summaryEl.innerHTML = `<strong>Planning Tip:</strong> You may face a shortfall of <span class="fw-bold">${formatCurrency(Math.abs(netDifference))}</span>. Consider increasing monthly contributions or seeking additional aid.`;
+        }
+
+        updateChart(totalSaved, totalCost);
+        window.scrollTo({ top: document.getElementById('results-container').offsetTop - 50, behavior: 'smooth' });
+    }
+
+    function updateChart(totalSaved, totalCost) {
+        const ctx = document.getElementById('comparison-chart').getContext('2d');
+        if (comparisonChart) comparisonChart.destroy();
+
+        comparisonChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Projected Totals'],
+                datasets: [
+                    { label: 'Total 529 Savings', data: [totalSaved], backgroundColor: '#007bff' },
+                    { label: 'Projected College Cost', data: [totalCost], backgroundColor: '#dc3545' }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { 
+                    x: { beginAtZero: true, ticks: { callback: v => formatCurrency(v) } } 
+                },
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    document.getElementById('savings-calculator-form').addEventListener('submit', calculateSavings);
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        document.getElementById('savings-calculator-form').reset();
+        document.getElementById('results-container').classList.add('d-none');
+        if (comparisonChart) comparisonChart.destroy();
+    });
+</script>
+{% endblock %}

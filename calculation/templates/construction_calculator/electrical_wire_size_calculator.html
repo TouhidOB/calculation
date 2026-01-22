@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}Electrical Wire Size (AWG) Calculator{% endblock %}
+
+{% block meta_description %}Determine the minimum safe AWG wire size required for a circuit based on current (amps), distance, voltage, and acceptable voltage drop. {% endblock %}
+
+{% block meta_keywords %}wire size calculator, AWG gauge, voltage drop, amperage capacity, NEC standards, electrical safety, circuit sizing{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #FFC107; /* Amber/Gold for Electricity/Warning */
+        border-bottom: 2px solid #FFC107;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #2196F3; /* Blue for Information */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #fffde7;
+        font-weight: 600;
+        color: #FFC107;
+    }
+
+    .info-box {
+        background-color: #fff8e1; /* Very light yellow info box */
+        border: 1px solid #FFC107;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #03A9F4; /* Blue for clarity */
+    }
+    
+    .awg-recommendation {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #D32F2F; /* Red for safety critical result */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">⚡ Electrical Wire Size (AWG) Calculator</h1>
+    <p class="text-center small-muted">Determine the minimum safe wire gauge based on circuit load, distance, and voltage drop requirements.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="wire-size-calculator-form">
+            <h5 class="section-title">1. Circuit Load and Voltage</h5>
+
+            <!-- Amperage Input -->
+            <label for="amps-input" class="form-label">Maximum Circuit Current (Amps)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Current (I)</span>
+                <input type="number" id="amps-input" class="form-control" name="amps" placeholder="e.g., 20" value="20" min="1" step="0.5" required>
+                <span class="input-group-text">Amps</span>
+            </div>
+            
+            <!-- Voltage Input -->
+            <label for="voltage-select" class="form-label">Circuit Voltage</label>
+            <select class="form-select mb-3" id="voltage-select" name="voltage">
+                <option value="120" selected>120 V (Standard Residential Circuit)</option>
+                <option value="240">240 V (Major Appliances/HVAC)</option>
+            </select>
+
+            <h5 class="section-title">2. Distance and Tolerance</h5>
+            
+            <!-- Distance Input -->
+            <label for="distance-input" class="form-label">One-Way Distance from Source to Load</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Distance (L)</span>
+                <input type="number" id="distance-input" class="form-control" name="distance" placeholder="e.g., 75" value="75" min="1" step="1" required>
+                <span class="input-group-text">Feet</span>
+            </div>
+
+            <!-- Voltage Drop Tolerance -->
+            <label for="drop-select" class="form-label">Maximum Acceptable Voltage Drop</label>
+            <select class="form-select mb-3" id="drop-select" name="maxDropPercent">
+                <option value="3.0" selected>3.0% (Common Residential/Lighting)</option>
+                <option value="2.0">2.0% (Sensitive Electronics/Long Runs)</option>
+                <option value="5.0">5.0% (Motors/Short Runs)</option>
+            </select>
+            
+            <div class="info-box">
+                **Two Factors Determine Size:** 1. The maximum current (Amperage Capacity), and 2. The maximum acceptable Voltage Drop (Efficiency). The calculator recommends the *larger* of the two required gauges.
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #FFC107; border-color: #FFC107; color: #333;" type="submit">Calculate Required AWG Wire Size</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-info" id="wire-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="wire-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #FFC107; color: #333;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="wire-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants for Wire Sizing
+    
+    // NEC Amperage Capacity (for Copper wire, 75°C terminal rating, non-continuous load)
+    // Used for initial sizing based on current only.
+    const AWG_AMP_CAPACITY = {
+        '14 AWG': 15,
+        '12 AWG': 20,
+        '10 AWG': 30,
+        '8 AWG': 40,
+        '6 AWG': 55,
+        '4 AWG': 70,
+        '3 AWG': 85,
+        '2 AWG': 95,
+        '1 AWG': 110,
+        '1/0 AWG': 125, // Note: AWG sizes go 1, 1/0, 2/0...
+        '2/0 AWG': 145,
+        '3/0 AWG': 165,
+        '4/0 AWG': 195
+    };
+    
+    // K-Factor (Resistance Constant) for Copper wire (approximate at 75°C)
+    // Used in the Voltage Drop formula: VD = (2 * K * I * L) / CMA
+    // K is typically 12.9 ohms-CM/ft for 75°C copper
+    const K_COPPER = 12.9; 
+
+    // Circular Mil Area (CMA) for common AWG sizes
+    // Used in Voltage Drop formula to calculate the necessary wire size.
+    const AWG_CMA = {
+        '14 AWG': 4110,
+        '12 AWG': 6530,
+        '10 AWG': 10380,
+        '8 AWG': 16510,
+        '6 AWG': 26240,
+        '4 AWG': 41740,
+        '3 AWG': 52620,
+        '2 AWG': 66360,
+        '1 AWG': 83690,
+        '1/0 AWG': 105600,
+        '2/0 AWG': 133100,
+        '3/0 AWG': 167800,
+        '4/0 AWG': 211600
+    };
+
+    // Helper function to find the minimum AWG (smallest number, i.e., thickest wire) based on amps
+    function getAWGbyAmperage(amps) {
+        let requiredAWG = 'N/A';
+        for (const [awg, capacity] of Object.entries(AWG_AMP_CAPACITY)) {
+            if (amps <= capacity) {
+                requiredAWG = awg;
+                break;
+            }
+        }
+        return requiredAWG;
+    }
+
+    // Helper function to find the minimum AWG based on required Circular Mil Area (CMA)
+    function getAWGbyCMA(requiredCMA) {
+        let requiredAWG = 'N/A';
+        // Need to iterate in order from largest to smallest AWG (smallest CMA to largest CMA)
+        const sortedCMA = Object.entries(AWG_CMA).sort((a, b) => a[1] - b[1]);
+
+        for (const [awg, cma] of sortedCMA) {
+            if (requiredCMA <= cma) {
+                requiredAWG = awg;
+                break;
+            }
+        }
+        return requiredAWG;
+    }
+
+    // Function to map an AWG string (e.g., '10 AWG') to an index for comparison
+    function getAWGIndex(awg) {
+        const order = Object.keys(AWG_AMP_CAPACITY);
+        return order.indexOf(awg);
+    }
+    
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('wire-result');
+        const table = document.getElementById('wire-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('wire-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger', 'alert-info');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-info');
+            
+            // Primary result: Recommended AWG
+            res.innerHTML = `
+**Minimum Required Wire Size:**
+<div class="text-center mt-3 mb-2">
+    <span class="awg-recommendation">${metrics.recommendedAWG}</span><br>
+    <span class="small text-muted">This is the largest (thickest) gauge required by either factor.</span>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Recommended Final AWG Size**</td><td>**${metrics.recommendedAWG}**</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Voltage Drop Analysis**</td></tr>
+            <tr><td>Maximum Allowed Voltage Drop</td><td>${metrics.maxDropVolts.toFixed(2)} Volts (${metrics.maxDropPercent}%)</td></tr>
+            <tr><td>Required CMA (Circular Mils Area)</td><td>${metrics.requiredCMA.toFixed(0)} CM</td></tr>
+            <tr><td>Minimum AWG for Drop Tolerance</td><td>${metrics.awgByDrop}</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Amperage Capacity Analysis**</td></tr>
+            <tr><td>Circuit Current</td><td>${metrics.amps} Amps</td></tr>
+            <tr><td>Minimum AWG for Amperage</td><td>${metrics.awgByAmp}</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Values**</td></tr>
+            <tr><td>Voltage</td><td>${metrics.voltage} V</td></tr>
+            <tr><td>Distance (One-Way)</td><td>${metrics.distance} ft</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('wire-size-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const amps = parseFloat(form.elements.amps.value);
+        const voltage = parseInt(form.elements.voltage.value, 10);
+        const distance = parseFloat(form.elements.distance.value);
+        const maxDropPercent = parseFloat(form.elements.maxDropPercent.value);
+        
+        // Basic validation
+        if (isNaN(amps) || amps <= 0 || isNaN(distance) || distance <= 0) 
+        {
+            displayResult(true, "Please ensure Current (Amps) and Distance (Feet) are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Sizing by Amperage Capacity (Heat/Safety) ---
+            const awgByAmp = getAWGbyAmperage(amps);
+            if (awgByAmp === 'N/A') {
+                 throw new Error(`Current (${amps}A) exceeds the capacity of common residential/light commercial wire sizes (4/0 AWG). Consult a professional.`);
+            }
+
+            // --- 2. Sizing by Voltage Drop (Efficiency) ---
+
+            // Calculate Maximum Allowed Voltage Drop in Volts
+            const maxDropVolts = (maxDropPercent / 100) * voltage;
+            
+            // Voltage Drop Formula (rearranged to solve for required Circular Mil Area, CMA)
+            // CMA = (2 * K * I * L) / VD
+            const requiredCMA = (2 * K_COPPER * amps * distance) / maxDropVolts;
+
+            // Find the minimum AWG (thickest wire) required to meet the CMA requirement
+            const awgByDrop = getAWGbyCMA(requiredCMA);
+            if (awgByDrop === 'N/A') {
+                throw new Error("Calculated CMA is too high for common wire sizes (4/0 AWG). Consider reducing distance or drop tolerance.");
+            }
+            
+            // --- 3. Final Recommendation ---
+            // Compare the two required gauges (AWG by Amps vs. AWG by Drop)
+            const ampIndex = getAWGIndex(awgByAmp);
+            const dropIndex = getAWGIndex(awgByDrop);
+            
+            // The required AWG is the one with the larger index (meaning smaller number, thicker wire)
+            const recommendedAWG = (ampIndex > dropIndex) ? awgByAmp : awgByDrop;
+            
+            if (getAWGIndex(recommendedAWG) === -1) {
+                 throw new Error("Final recommended wire size is outside common residential range. Consult a master electrician.");
+            }
+
+            // 4. Display results
+            const metrics = {
+                amps, voltage, distance, maxDropPercent,
+                maxDropVolts, requiredCMA,
+                awgByAmp, awgByDrop,
+                recommendedAWG
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, error.message);
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('wire-result').classList.add('d-none');
+        document.getElementById('wire-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

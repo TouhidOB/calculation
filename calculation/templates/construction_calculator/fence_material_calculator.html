@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Fence Material Calculator (Posts, Rails, Pickets){% endblock %}
+
+{% block meta_description %}Calculate the exact number of fence posts, total linear feet of rails, and the number of pickets required based on fence length, height, post spacing, and waste factor.{% endblock %}
+
+{% block meta_keywords %}fence calculator, fence posts, fence rails, fence pickets, linear feet, construction estimate, post spacing{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #00897B; /* Teal/Blue-Green for Outdoor Structures */
+        border-bottom: 2px solid #00897B;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #6D4C41; /* Wood Brown for final result */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .unit-input-label {
+        font-size: 0.85rem;
+        font-style: italic;
+        color: #6c757d;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .info-box {
+        background-color: #e0f2f1; /* Light teal info box */
+        border: 1px solid #00897B;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🔨 Fence Material Calculator</h1>
+    <p class="text-center small-muted">Determine the number of posts, total linear feet of rails, and total pickets needed for a new fence.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="fence-form">
+            <h5 class="section-title">1. Fence Dimensions (in Feet)</h5>
+
+            <!-- Length Input (Feet) -->
+            <label for="fence-length-input" class="form-label">Total Fence Length (Perimeter)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Total Run</span>
+                <input type="number" id="fence-length-input" class="form-control" name="fenceLength" placeholder="Total Length (e.g., 100)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Height Input (Feet) -->
+            <label for="fence-height-input" class="form-label">Picket Height</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Height</span>
+                <input type="number" id="fence-height-input" class="form-control" name="fenceHeight" placeholder="Height (e.g., 6)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <h5 class="section-title">2. Structure & Picket Details</h5>
+
+            <!-- Post Spacing Input (Feet) -->
+            <label for="post-spacing-input" class="form-label">Post Spacing (Center-to-Center)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Post Spacing</span>
+                <input type="number" id="post-spacing-input" class="form-control" name="postSpacing" placeholder="Spacing (e.g., 8)" value="8" min="4" step="1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Rails per Section Input -->
+            <label for="rails-per-section-input" class="form-label">Horizontal Rails Per Section</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Rails</span>
+                <input type="number" id="rails-per-section-input" class="form-control" name="railsPerSection" placeholder="Typically 2 or 3" value="3" min="1" step="1" required>
+                <span class="input-group-text">per section</span>
+            </div>
+            
+            <hr>
+            
+            <!-- Picket Actual Width Input (Inches) -->
+            <label for="picket-width-input" class="form-label">Actual Picket Width</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Picket Width</span>
+                <input type="number" id="picket-width-input" class="form-control" name="picketWidth" placeholder="e.g., 5.5 for a 6-inch board" value="5.5" min="1" step="0.1" required>
+                <span class="input-group-text">in</span>
+            </div>
+
+            <!-- Picket Gap Input (Inches) -->
+            <label for="picket-gap-input" class="form-label">Gap Between Pickets</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Gap Size</span>
+                <input type="number" id="picket-gap-input" class="form-control" name="picketGap" placeholder="e.g., 0.125 or 0 (privacy fence)" value="0.125" min="0" step="0.01" required>
+                <span class="input-group-text">in</span>
+            </div>
+
+            <h5 class="section-title">3. Waste Allowance</h5>
+
+            <!-- Waste Percentage Input -->
+            <label for="waste-input" class="form-label">Waste/Cut Allowance</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Waste Factor</span>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 10" value="10" min="0" max="25" step="1" required>
+                <span class="input-group-text">%</span>
+            </div>
+
+            <button class="btn btn-info btn-lg w-100 mt-4" type="submit">Calculate Fence Materials</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="fence-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="fence-table">
+            <thead>
+                <tr class="table-info">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="fence-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const INCHES_PER_FOOT = 12;
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('fence-result');
+        const table = document.getElementById('fence-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('fence-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            
+            // Primary result: Posts and Pickets
+            res.innerHTML = `
+**Total Materials to Purchase (Rounded Up):**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span style="font-size:2rem; color:#00897B; font-weight:bold;">${metrics.postCount}</span><br>
+        <span class="small text-muted">Posts</span>
+    </div>
+    <div class="text-center">
+        <span style="font-size:2rem; color:#00897B; font-weight:bold;">${metrics.finalPicketCount}</span><br>
+        <span class="small text-muted">Pickets</span>
+    </div>
+</div>
+<p class="text-center mt-3 mb-0">You will also need **${metrics.finalRailLF.toFixed(1)} LF** of Rail Material.</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Posts Needed</td><td>**${metrics.postCount} Posts**</td></tr>
+            <tr><td>Total Pickets Needed (Rounded Up)</td><td>**${metrics.finalPicketCount} Pickets**</td></tr>
+            <tr><td>Total Rail Linear Feet (with waste)</td><td>**${metrics.finalRailLF.toFixed(1)} LF**</td></tr>
+            <tr><td>Total Linear Feet of Pickets (for pricing)</td><td>${metrics.totalPicketLF.toFixed(1)} LF</td></tr>
+            <tr><td>Total Rail Sections</td><td>${metrics.railSections} Sections</td></tr>
+            <tr><td>Waste Percentage Applied</td><td>${(metrics.wasteFactorUsed * 100).toFixed(1)}%</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('fence-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const fenceLength = parseFloat(form.elements.fenceLength.value);
+        const postSpacing = parseFloat(form.elements.postSpacing.value);
+        const fenceHeight = parseFloat(form.elements.fenceHeight.value);
+        const picketWidth = parseFloat(form.elements.picketWidth.value); // Actual width in inches
+        const picketGap = parseFloat(form.elements.picketGap.value); // Gap in inches
+        const railsPerSection = parseInt(form.elements.railsPerSection.value);
+        const wastePercent = parseFloat(form.elements.wastePercent.value);
+        
+        // Basic validation
+        if (isNaN(fenceLength) || fenceLength <= 0 || isNaN(postSpacing) || postSpacing <= 0 || isNaN(fenceHeight) || fenceHeight <= 0 || isNaN(picketWidth) || picketWidth <= 0 || isNaN(picketGap) || picketGap < 0 || isNaN(railsPerSection) || railsPerSection < 1 || isNaN(wastePercent) || wastePercent < 0) {
+            displayResult(true, "Please ensure all dimensions are positive numbers, and the gap/waste is non-negative.");
+            return;
+        }
+
+        try {
+            // 1. POST COUNT
+            // Posts = (Total Length / Spacing) + 1 (for the end post)
+            const postCount = Math.ceil(fenceLength / postSpacing) + 1;
+
+            // 2. RAIL CALCULATION
+            // Number of Sections = (Total Length / Spacing), rounded up to get section quantity
+            const railSections = Math.ceil(fenceLength / postSpacing);
+            // Total Rail Pieces needed (no waste) = Sections * Rails Per Section * Section Length
+            // Assuming rails are bought in lengths equal to the post spacing
+            const totalRailPiecesNoWaste = railSections * railsPerSection;
+            // Total Linear Feet of Railing (No Waste) = Total Pieces * Spacing
+            const totalRailLFNoWaste = totalRailPiecesNoWaste * postSpacing;
+
+
+            // 3. PICKET CALCULATION
+            // Picket coverage includes the board + the gap in inches
+            const picketCoverageInches = picketWidth + picketGap;
+            
+            // Total Pickets Needed (No Waste) = (Total Length in Inches) / (Picket Coverage in Inches)
+            const totalLengthInches = fenceLength * INCHES_PER_FOOT;
+            const totalPicketsNeededNoWaste = Math.ceil(totalLengthInches / picketCoverageInches);
+            
+            // Total Linear Feet of Pickets (for calculating price)
+            const totalPicketLF = totalPicketsNeededNoWaste * fenceHeight;
+
+            
+            // 4. APPLY WASTE FACTOR
+            // Convert Waste Percentage to Factor (e.g., 10% -> 1.10)
+            const wasteFactor = 1 + (wastePercent / 100);
+
+            // Apply waste only to the material (Rails and Pickets)
+            const finalPicketCount = Math.ceil(totalPicketsNeededNoWaste * wasteFactor);
+            const finalRailLF = totalRailLFNoWaste * wasteFactor;
+            
+            
+            // 5. Display results
+            const metrics = {
+                postCount,
+                finalPicketCount,
+                finalRailLF,
+                totalPicketLF,
+                railSections,
+                wasteFactorUsed: wasteFactor - 1
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('fence-result').classList.add('d-none');
+        document.getElementById('fence-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

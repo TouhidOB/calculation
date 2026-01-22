@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Citation Generator (APA/MLA){% endblock %}
+
+{% block meta_description %}Generate correctly formatted APA and MLA citations for common sources like books and websites instantly.{% endblock %}
+
+{% block meta_keywords %}citation generator, APA, MLA, bibliography, reference generator, website citation, book citation{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Styling for the Citation Generator */
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e0e0e0;
+    }
+
+    .form-section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 20px;
+        color: #28a745;
+        border-bottom: 2px solid #f1f3f5;
+        padding-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-section-title i { margin-right: 10px; }
+
+    .output-box {
+        background-color: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .output-box.has-content {
+        background-color: #eaf7ed;
+        border: 2px solid #28a745;
+    }
+    
+    .output-citation {
+        font-family: 'Georgia', serif;
+        font-size: 1.15rem;
+        line-height: 1.6;
+        padding-left: 30px;
+        text-indent: -30px;
+        color: #212529;
+    }
+
+    .in-text-display {
+        background: #fff;
+        padding: 10px 15px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        font-family: 'Courier New', Courier, monospace;
+        display: inline-block;
+    }
+
+    .input-group-text {
+        min-width: 140px;
+        background-color: #f8f9fa;
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .form-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 15px;
+    }
+
+    .empty-state {
+        text-align: center;
+        color: #adb5bd;
+        padding: 20px 0;
+    }
+
+    /* Animation for generated content */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-result { animation: fadeIn 0.4s ease-out; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">📚 Academic Citation Generator</h1>
+        <p class="text-muted">Create perfectly formatted bibliography entries in seconds.</p>
+    </div>
+
+    
+
+    <div class="calc-wrapper mx-auto" style="max-width: 900px;">
+        <form id="citation-form">
+            <div class="row g-4 mb-2">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">1. Select Style</label>
+                    <select class="form-select" id="citation_style">
+                        <option value="APA">APA (7th Ed.)</option>
+                        <option value="MLA">MLA (9th Ed.)</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">2. Source Type</label>
+                    <select class="form-select" id="source_type">
+                        <option value="Website">Website / Article</option>
+                        <option value="Book">Book / Textbook</option>
+                    </select>
+                </div>
+            </div>
+
+            <h5 class="form-section-title">3. Source Details</h5>
+            
+            <div id="dynamic-inputs">
+                </div>
+            
+            <div class="mt-4">
+                <button class="btn btn-success btn-lg w-100 shadow-sm" type="button" id="generate-btn">
+                    Generate Formatting
+                </button>
+            </div>
+        </form>
+
+        <div class="output-box" id="output-box">
+            <div id="output-placeholder" class="empty-state">
+                <i class="bi bi-info-circle mb-2 d-block fs-2"></i>
+                Fill in the details above to generate your citation.
+            </div>
+
+            <div id="result-container" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-success fw-bold text-uppercase small mb-0">Full Reference:</h6>
+                    <button class="btn btn-link btn-sm text-decoration-none p-0" id="copy-btn">
+                        <i class="bi bi-clipboard"></i> Copy Citation
+                    </button>
+                </div>
+                <div class="output-citation mb-4" id="generated-citation"></div>
+                
+                <h6 class="text-success fw-bold text-uppercase small mb-2">In-Text Citation:</h6>
+                <div class="in-text-display mb-0" id="intext-citation"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const sourceFields = {
+        'Website': [
+            { id: 'author_last', label: 'Last Name', placeholder: 'e.g. Smith', required: false },
+            { id: 'author_first', label: 'First Name', placeholder: 'e.g. John', required: false },
+            { id: 'year', label: 'Year', placeholder: '2024', required: true, type: 'number' },
+            { id: 'month', label: 'Month', placeholder: 'Jan', required: false },
+            { id: 'day', label: 'Day', placeholder: '15', required: false, type: 'number' },
+            { id: 'title', label: 'Page Title', placeholder: 'The Impact of AI', required: true },
+            { id: 'site_name', label: 'Website Name', placeholder: 'Science Today', required: true },
+            { id: 'url', label: 'URL', placeholder: 'https://...', required: true, type: 'url' }
+        ],
+        'Book': [
+            { id: 'author_last', label: 'Last Name', placeholder: 'e.g. Orwell', required: true },
+            { id: 'author_first', label: 'First Name', placeholder: 'e.g. George', required: true },
+            { id: 'year', label: 'Year', placeholder: '1949', required: true, type: 'number' },
+            { id: 'title', label: 'Book Title', placeholder: '1984', required: true },
+            { id: 'publisher', label: 'Publisher', placeholder: 'Secker & Warburg', required: true },
+        ]
+    };
+
+    const dynamicInputsEl = document.getElementById('dynamic-inputs');
+    const styleSelect = document.getElementById('citation_style');
+    const typeSelect = document.getElementById('source_type');
+    const generateBtn = document.getElementById('generate-btn');
+    const outputBox = document.getElementById('output-box');
+    const resultContainer = document.getElementById('result-container');
+    const placeholder = document.getElementById('output-placeholder');
+
+    function renderInputs() {
+        const fields = sourceFields[typeSelect.value];
+        dynamicInputsEl.innerHTML = fields.map(f => `
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text small">${f.label}${f.required ? '*' : ''}</span>
+                    <input type="${f.type || 'text'}" class="form-control" id="${f.id}" placeholder="${f.placeholder}">
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function capitalize(str) {
+        return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+    }
+
+    function generate() {
+        const type = typeSelect.value;
+        const style = styleSelect.value;
+        const data = {};
+        
+        sourceFields[type].forEach(f => {
+            data[f.id] = document.getElementById(f.id).value.trim();
+        });
+
+        // Validation Check
+        const missing = sourceFields[type].filter(f => f.required && !data[f.id]);
+        if (missing.length > 0) {
+            alert('Please fill in the required fields marked with (*)');
+            return;
+        }
+
+        let reference = '';
+        let intext = '';
+
+        if (style === 'APA') {
+            const author = data.author_last ? `${data.author_last}, ${data.author_first.charAt(0)}.` : data.site_name;
+            const date = data.year ? `(${data.year}${data.month ? ', ' + data.month : ''}${data.day ? ' ' + data.day : ''})` : '(n.d.)';
+            
+            intext = `(${data.author_last || data.site_name}, ${data.year || 'n.d.'})`;
+
+            if (type === 'Website') {
+                reference = `${author} ${date}. <i>${data.title}</i>. ${data.site_name}. ${data.url}`;
+            } else {
+                reference = `${author} (${data.year}). <i>${data.title}</i>. ${data.publisher}.`;
+            }
+        } else { // MLA
+            const author = data.author_last ? `${data.author_last}, ${data.author_first}.` : `${data.site_name}.`;
+            intext = `(${data.author_last || data.site_name})`;
+
+            if (type === 'Website') {
+                const date = data.day ? `${data.day} ${data.month} ${data.year}` : data.year;
+                reference = `${author} "${data.title}." <i>${data.site_name}</i>, ${date}, ${data.url}.`;
+            } else {
+                reference = `${author} <i>${data.title}</i>, ${data.publisher}, ${data.year}.`;
+            }
+        }
+
+        // Display results
+        placeholder.style.display = 'none';
+        resultContainer.style.display = 'block';
+        resultContainer.classList.add('animate-result');
+        outputBox.classList.add('has-content');
+        document.getElementById('generated-citation').innerHTML = reference;
+        document.getElementById('intext-citation').innerText = intext;
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('generated-citation').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById('copy-btn');
+            btn.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+            setTimeout(() => btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy Citation', 2000);
+        });
+    }
+
+    // Init
+    typeSelect.addEventListener('change', renderInputs);
+    styleSelect.addEventListener('change', () => { if(resultContainer.style.display === 'block') generate(); });
+    generateBtn.addEventListener('click', generate);
+    document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
+
+    window.onload = renderInputs;
+</script>
+{% endblock %}

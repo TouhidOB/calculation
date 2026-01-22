@@ -51,6 +51,11 @@ INSTALLED_APPS = [
     'date_time',
     'garments_calculator',
     'construction_calculator',
+
+    'education',
+    'conversion_calculator',
+    'real_estate_calculator',
+    'vehicle_calculator',
 ]
 
 MIDDLEWARE = [

@@ -53,22 +53,174 @@ savings calculator{% endblock %}
         <div id="result" class="alert alert-info mt-4 d-none"></div>
     </div>
 
-    <div class="mt-4 p-3 bg-white rounded shadow-sm">
-        <h3>How This Budget Calculation Works</h3>
-        <p>We calculate your monthly savings using a simple formula:</p>
+    <div class="mt-5 p-4 bg-white rounded shadow-sm">
+        <h2>Budget Calculator</h2>
+        <p>A budget calculator is a simple financial tool that helps you plan and manage your personal finances by comparing how much money you earn with how much you spend. It shows whether you are saving money, breaking even, or overspending.</p>
 
-        <pre>Savings = Total Income − Total Expenses</pre>
-
+        <h3>How This Budget Calculator Works</h3>
+        <p>Smart financial planning starts with accurate data. This budget calculator uses the foundational cash flow formula used by financial planners to instantly assess your financial health:</p>
+        <div class="alert alert-light border text-center fw-bold">
+            Net Savings = Total Net Income − (Fixed Expenses + Variable Spending)
+        </div>
+        <p>Based on the result, your finances fall into one of three categories:</p>
         <ul>
-            <li>If Savings > 0 → You are managing finances well ✅</li>
-            <li>If Savings = 0 → You're breaking even ⚖️</li>
-            <li>If Savings < 0 → You are overspending ❌</li>
+            <li><strong>Surplus (Positive Cash Flow)</strong>: You are spending less than you earn. This extra money should be used for debt repayment, emergency savings, or investing.</li>
+            <li><strong>Break-Even</strong>: You are spending exactly what you earn. While stable, this situation leaves little room for emergencies or unexpected expenses.</li>
+            <li><strong>Deficit (Negative Cash Flow)</strong>: You are spending more than you earn. Immediate action is needed to reduce expenses or increase income.</li>
         </ul>
 
-        <h4>Financial Tip</h4>
-        <p>A good rule of thumb is the <strong>50/30/20 rule</strong>:
-            <br>50% Needs, 30% Wants, 20% Savings.
-        </p>
+        <h3>Step 1: Analyze Your Income</h3>
+        <p>Income is the foundation of any successful budget. To create an accurate plan, it is essential to understand the difference between gross income and net income.</p>
+        
+        <h4>Why Net Income Matters More</h4>
+        <p>Many people budget based on their gross salary, but effective budgeting should always be based on net income — the money that actually reaches your bank account after taxes, insurance, and retirement contributions.</p>
+        
+        <h4>Common Income Sources</h4>
+        <ul>
+            <li><strong>Primary Income:</strong> Salary, wages, or business income</li>
+            <li><strong>Secondary Income:</strong> Freelancing, side jobs, or rental income</li>
+            <li><strong>Passive Income:</strong> Dividends, interest, or royalties</li>
+        </ul>
+
+        <div class="alert alert-info">
+            <strong>Pro Tip:</strong> If your income fluctuates, calculate your average income over the past six months and base your budget on the lowest month. This creates a financial safety buffer. For more accurate planning, use tools like a Salary to Hourly Calculator or Net Worth Calculator.
+        </div>
+
+        <h3>Step 2: Master Your Expenses (Budget Benchmarks)</h3>
+        <p>Expenses determine whether a budget succeeds or fails. Financial experts recommend using percentage benchmarks to maintain balance and avoid overspending.</p>
+
+        <h4>Recommended Expense Allocation</h4>
+        <table class="table table-bordered table-striped mt-3">
+            <thead class="table-light">
+                <tr>
+                    <th>Expense Category</th>
+                    <th>Recommended %</th>
+                    <th>Actionable Goal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Housing</td>
+                    <td>25%–30%</td>
+                    <td>Rent or mortgage plus utilities</td>
+                </tr>
+                <tr>
+                    <td>Food & Dining</td>
+                    <td>10%–15%</td>
+                    <td>Groceries and eating out combined</td>
+                </tr>
+                <tr>
+                    <td>Transportation</td>
+                    <td>10%–15%</td>
+                    <td>Car payment, fuel, insurance, repairs</td>
+                </tr>
+                <tr>
+                    <td>Savings / Debt</td>
+                    <td>20%+</td>
+                    <td>Pay yourself first</td>
+                </tr>
+                <tr>
+                    <td>Utilities</td>
+                    <td>5%–10%</td>
+                    <td>Electricity, water, internet, phone</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>Debt Repayment Guidelines</h4>
+        <p>Ideally, non-mortgage debt payments should remain under 15% of income. If debt exceeds 20%, consider using the avalanche method, which prioritizes paying off the highest-interest debt first. A Debt Payoff Calculator can help assess your situation.</p>
+
+        <h4>Housing Costs (The 30% Rule)</h4>
+        <p>Housing is usually the largest monthly expense. Standard guidelines suggest keeping total housing costs below 30% of gross monthly income.</p>
+        <ul>
+            <li><strong>Renters:</strong> If rent exceeds this range, consider adjusting your target price.</li>
+            <li><strong>Homeowners:</strong> Include maintenance costs (about 1% of home value per year) when budgeting.</li>
+        </ul>
+        <p>Comparing scenarios using affordability tools can help keep housing costs manageable.</p>
+
+        <h4>Transportation & Commuting Costs</h4>
+        <p>Transportation expenses are often underestimated. While car payments are fixed, fuel, maintenance, and repairs vary month to month. In high-cost urban areas, using public transportation can reduce transportation expenses to under 5% of income. Reviewing commuting choices regularly helps uncover savings opportunities.</p>
+
+        <h3>Step 3: Choose a Budgeting Strategy</h3>
+        <p>A calculator provides numbers, but a budgeting strategy builds habits. Choose the approach that best fits your lifestyle.</p>
+
+        <h4>1. The 50/30/20 Rule (Best for Beginners)</h4>
+        <p>A simple and widely used framework:</p>
+        <ul>
+            <li><strong>50% Needs:</strong> Housing, utilities, groceries</li>
+            <li><strong>30% Wants:</strong> Dining, entertainment, subscriptions</li>
+            <li><strong>20% Savings:</strong> Emergency fund, debt repayment, investments</li>
+        </ul>
+
+        <h4>2. Zero-Based Budgeting (Best for Debt Reduction)</h4>
+        <p>In this method, every dollar is assigned a purpose before the month begins:</p>
+        <div class="text-center fw-bold my-2">Income − Expenses = $0</div>
+        <p>This approach encourages accountability and works well for aggressive debt payoff or goal-driven saving.</p>
+
+        <h4>3. The Envelope System (Best for Overspenders)</h4>
+        <p>Cash is allocated into envelopes for variable categories like groceries or entertainment. Once an envelope is empty, spending stops. This system creates strong spending awareness.</p>
+
+        <h3>Why Budgets Fail (And How to Fix Them)</h3>
+        <p>Behavioral finance research shows many people struggle with budgeting due to mindset and planning gaps.</p>
+        
+        <h4>Common Budgeting Challenges</h4>
+        <ul>
+            <li><strong>The “What-If” Trap:</strong> Ignoring irregular expenses. <br><em>Solution:</em> Build an emergency fund covering 3–6 months of expenses.</li>
+            <li><strong>Lifestyle Creep:</strong> Spending increases as income rises. <br><em>Solution:</em> Increase savings, not discretionary spending.</li>
+            <li><strong>Tracking Fatigue:</strong> Burnout from tracking every expense. <br><em>Solution:</em> Automate savings and transfers on payday.</li>
+        </ul>
+
+        <h3>Frequently Asked Questions (FAQs)</h3>
+        <div class="accordion" id="budgetFaq">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        What is the 50/30/20 budget rule?
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#budgetFaq">
+                    <div class="accordion-body">
+                        It divides after-tax income into 50% for needs, 30% for wants, and 20% for savings or debt repayment to balance spending and financial growth.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingTwo">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        How do I calculate my debt-to-income (DTI) ratio?
+                    </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#budgetFaq">
+                    <div class="accordion-body">
+                        Divide your total monthly debt payments by your gross monthly income. A DTI under 36% is generally considered healthy.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingThree">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        Should I budget using gross or net income?
+                    </button>
+                </h2>
+                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#budgetFaq">
+                    <div class="accordion-body">
+                        Always budget using net income, as it reflects the money you can actually spend and save.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingFour">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                        What is the golden rule of budgeting?
+                    </button>
+                </h2>
+                <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#budgetFaq">
+                    <div class="accordion-body">
+                        The golden rule is simple: spend less than you earn. The difference between income and expenses is what builds long-term financial security.
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

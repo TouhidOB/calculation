@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Water Heater Size Calculator (First Hour Rating){% endblock %}
+
+{% block meta_description %}Calculate the required water heater size (gallons or GPM) based on household size and simultaneous peak hot water demand. {% endblock %}
+
+{% block meta_keywords %}water heater size, first hour rating, FHR, tankless GPM, hot water demand, gallon capacity, sizing calculator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #4CAF50; /* Green for Efficiency/Sustained Supply */
+        border-bottom: 2px solid #4CAF50;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #009688; /* Teal for Results */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #e8f5e9;
+        font-weight: 600;
+        color: #4CAF50;
+    }
+
+    .info-box {
+        background-color: #f1f8e9; /* Lightest green info box */
+        border: 1px solid #4CAF50;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #FF9800; /* Amber for the primary value */
+    }
+    
+    .fhr-recommendation {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #009688; /* Teal for the critical recommendation */
+    }
+    
+    .appliance-guide td:first-child {
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🛁 Water Heater Size Calculator</h1>
+    <p class="text-center small-muted">Calculate the required First Hour Rating (FHR) or Tankless flow rate based on peak demand.</p>
+    [Image of water heater showing cold water inlet, hot water outlet, and burner]
+
+    <div class="calc-wrapper">
+
+        <form id="water-heater-calculator-form">
+            <h5 class="section-title">1. Household Size and Peak Use</h5>
+
+            <!-- Number of People -->
+            <label for="people-input" class="form-label">Number of People in Household</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">People</span>
+                <input type="number" id="people-input" class="form-control" name="people" placeholder="e.g., 4" value="4" min="1" step="1" required>
+            </div>
+            
+            <!-- Simultaneous Use Multiplier -->
+            <label for="simultaneous-select" class="form-label">Peak Usage Style (How many simultaneously?)</label>
+            <select class="form-select mb-3" id="simultaneous-select" name="peakMultiplier">
+                <!-- Multipliers are based on assumed usage overlap -->
+                <option value="1.0">Low (Staggered use, few simultaneous activities)</option>
+                <option value="1.2" selected>Average (Standard morning/evening routine overlap)</option>
+                <option value="1.5">High (Multiple bathrooms/appliances used at once)</option>
+            </select>
+
+            <h5 class="section-title">2. Hot Water Demand by Fixture (GPM)</h5>
+            
+            <div class="info-box">
+                **Peak Demand Calculation:** To calculate the maximum flow rate needed for a tankless heater (GPM), select the fixtures that will run **at the same time** during your busiest hour (e.g., morning).
+            </div>
+
+            <!-- Peak GPM Checkboxes -->
+            <label class="form-label mt-3">Select **Simultaneous** Fixtures to Determine Peak GPM:</label>
+            <div class="appliance-guide p-3 border rounded">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="2.5" id="shower1" checked>
+                    <label class="form-check-label" for="shower1">Shower Head 1 (2.5 GPM)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="2.5" id="shower2">
+                    <label class="form-check-label" for="shower2">Shower Head 2 (2.5 GPM)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1.5" id="sinkKitchen">
+                    <label class="form-check-label" for="sinkKitchen">Kitchen Sink (1.5 GPM)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1.0" id="sinkBathroom">
+                    <label class="form-check-label" for="sinkBathroom">Bathroom Sink (1.0 GPM)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="2.0" id="washer">
+                    <label class="form-check-label" for="washer">Washing Machine (2.0 GPM)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1.5" id="dishwasher">
+                    <label class="form-check-label" for="dishwasher">Dishwasher (1.5 GPM)</label>
+                </div>
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #4CAF50; border-color: #4CAF50;" type="submit">Calculate Required Heater Size</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-info" id="heater-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Sizing Results Breakdown</h5>
+        <table class="table table-bordered mt-2 d-none" id="heater-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #4CAF50; color: white;">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="heater-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Constants ---
+    
+    // Base FHR (First Hour Rating) approximation based on people and general consumption
+    // This is a simplified table, actual FHR depends on tank size AND recovery rate.
+    // Values are FHR in gallons.
+    const FHR_GUIDE = {
+        1: 25, // 1 person
+        2: 35, // 2 people
+        3: 45, // 3 people
+        4: 55, // 4 people
+        5: 65, // 5 people
+        6: 75, // 6 people
+        7: 85, // 7 people
+        8: 95  // 8 people
+    };
+
+    // Function to calculate FHR based on people and peak multiplier
+    function calculateFHR(people, multiplier) {
+        // Use the guide for the base number of people
+        let baseFHR = FHR_GUIDE[people] || (people > 8 ? 95 + (people - 8) * 10 : 25);
+        
+        // Apply the peak usage multiplier
+        return Math.ceil(baseFHR * multiplier);
+    }
+    
+    // Function to calculate the sum of selected GPMs
+    function calculatePeakGPM() {
+        let totalGPM = 0;
+        const checkboxes = document.querySelectorAll('#water-heater-calculator-form input[type="checkbox"]:checked');
+        
+        checkboxes.forEach(checkbox => {
+            totalGPM += parseFloat(checkbox.value);
+        });
+        
+        return totalGPM;
+    }
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('heater-result');
+        const table = document.getElementById('heater-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('heater-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger', 'alert-info', 'alert-success');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+        res.classList.add('alert-info');
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            // Primary result
+            res.innerHTML = `
+**Required Water Heater Sizing:**
+<div class="d-flex justify-content-around align-items-center mt-3">
+    <div class="text-center">
+        <span class="fhr-recommendation">${metrics.requiredFHR}</span><br>
+        <span class="small text-muted">Gallon FHR (For Tank Models)</span>
+    </div>
+    <div class="text-center">
+        <span class="fhr-recommendation">${metrics.requiredGPM.toFixed(1)}</span><br>
+        <span class="small text-muted">GPM Flow Rate (For Tankless Models)</span>
+    </div>
+</div>
+<p class="small text-center mt-3 mb-0">
+    **FHR (First Hour Rating)** is the standard sizing metric for tank heaters.
+</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>**Required First Hour Rating (FHR)**</td><td>**${metrics.requiredFHR} Gallons**</td></tr>
+            <tr><td>**Required Peak Flow Rate**</td><td>**${metrics.requiredGPM.toFixed(1)} GPM**</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Input Values**</td></tr>
+            <tr><td>Household Size</td><td>${metrics.people} People</td></tr>
+            <tr><td>Peak Usage Multiplier</td><td>x ${metrics.peakMultiplier.toFixed(1)}</td></tr>
+            <tr><td>Simultaneous Fixture Demand (GPM)</td><td>${metrics.rawPeakGPM.toFixed(1)} GPM</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('water-heater-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const people = parseInt(form.elements.people.value, 10);
+        const peakMultiplier = parseFloat(form.elements.peakMultiplier.value);
+        
+        // Basic validation
+        if (isNaN(people) || people <= 0) 
+        {
+            displayResult(true, "Please ensure the number of people in the household is valid.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Required FHR (for Tank Heaters) ---
+            const requiredFHR = calculateFHR(people, peakMultiplier);
+
+            // --- 2. Calculate Peak Flow Rate (for Tankless Heaters) ---
+            const rawPeakGPM = calculatePeakGPM(); 
+            // Tankless sizing needs minimal adjustment, as it measures instantaneous flow
+            const requiredGPM = rawPeakGPM; 
+            
+            if (requiredFHR <= 0 || requiredGPM <= 0) {
+                displayResult(true, "Calculated requirement is zero or negative. Check inputs.");
+                return;
+            }
+
+            // 3. Display results
+            const metrics = {
+                people,
+                peakMultiplier,
+                rawPeakGPM,
+                requiredFHR,
+                requiredGPM
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('heater-result').classList.add('d-none');
+        document.getElementById('heater-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}ACT to SAT Score Converter{% endblock %}
+
+{% block meta_description %}Quickly convert between ACT Composite scores and SAT Total scores (Math + EBRW) using official concordance data.{% endblock %}
+
+{% block meta_keywords %}ACT to SAT conversion, score concordance, college admissions test, SAT Math, SAT EBRW, ACT Composite{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #dee2e6;
+    }
+
+    .input-card {
+        border-radius: 12px;
+        padding: 25px;
+        height: 100%;
+        transition: transform 0.2s ease;
+    }
+
+    .sat-card {
+        background-color: #f0f7ff;
+        border: 2px solid #0d6efd;
+    }
+
+    .act-card {
+        background-color: #fff0f6;
+        border: 2px solid #d63384;
+    }
+
+    .result-display-area {
+        background-color: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .result-value {
+        font-size: 4rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 30px 0;
+        color: #6c757d;
+        font-weight: bold;
+    }
+
+    .divider::before, .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .divider:not(:empty)::before { margin-right: .5em; }
+    .divider:not(:empty)::after { margin-left: .5em; }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">🔄 ACT ↔ SAT Score Converter</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">
+            Compare your scores using the official concordance tables. Enter your score in one side to see the equivalent on the other.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-wrapper mx-auto" style="max-width: 900px;">
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="input-card sat-card">
+                    <h5 class="fw-bold text-primary mb-3 text-center"><i class="bi bi-pencil-square me-2"></i>SAT Scores</h5>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Math (200-800)</label>
+                        <input type="number" id="sat-math" class="form-control form-control-lg text-center" placeholder="---" oninput="handleSatInput()">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">EBRW (200-800)</label>
+                        <input type="number" id="sat-ebrw" class="form-control form-control-lg text-center" placeholder="---" oninput="handleSatInput()">
+                    </div>
+                    <div class="text-center mt-3 pt-2 border-top border-primary border-opacity-25">
+                        <span class="text-muted small">SAT Total:</span>
+                        <div class="h4 fw-bold text-primary mb-0" id="sat-total-text">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="input-card act-card">
+                    <h5 class="fw-bold text-danger mb-3 text-center"><i class="bi bi-lightning-fill me-2"></i>ACT Score</h5>
+                    <div class="mb-4 pt-2">
+                        <label class="form-label small fw-bold">Composite (1-36)</label>
+                        <input type="number" id="act-composite" class="form-control form-control-lg text-center" placeholder="---" oninput="handleActInput()">
+                    </div>
+                    <div class="text-center mt-5 pt-4 border-top border-danger border-opacity-25">
+                        <span class="text-muted small">ACT Composite:</span>
+                        <div class="h4 fw-bold text-danger mb-0" id="act-composite-text">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider">CONVERSION RESULT</div>
+
+        <div class="result-display-area" id="result-box">
+            <div id="empty-state">
+                <i class="bi bi-calculator fs-1 text-muted d-block mb-2"></i>
+                <p class="text-muted mb-0">Enter a score above to see the equivalent conversion.</p>
+            </div>
+            <div id="calculation-state" style="display: none;">
+                <span class="text-uppercase fw-bold text-muted small" id="result-label">Equivalent ACT Score</span>
+                <div class="result-value" id="final-score-value">--</div>
+                <p class="mt-2 text-dark fw-medium" id="final-score-range"></p>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <button class="btn btn-link text-muted text-decoration-none" onclick="resetConverter()">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset Converter
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Concordance Data
+    const concordanceTable = {
+        1600: 36, 1590: 36, 1580: 36, 1570: 36, 1560: 35, 1550: 35, 1540: 34, 1530: 34, 1520: 34, 1510: 33,
+        1500: 33, 1490: 33, 1480: 33, 1470: 32, 1460: 32, 1450: 32, 1440: 32, 1430: 31, 1420: 31, 1410: 31,
+        1400: 30, 1390: 30, 1380: 30, 1370: 30, 1360: 29, 1350: 29, 1340: 29, 1330: 28, 1320: 28, 1310: 28,
+        1300: 27, 1290: 27, 1280: 27, 1270: 26, 1260: 26, 1250: 26, 1240: 26, 1230: 25, 1220: 25, 1210: 25,
+        1200: 24, 1190: 24, 1180: 24, 1170: 24, 1160: 23, 1150: 23, 1140: 23, 1130: 23, 1120: 22, 1110: 22,
+        1100: 22, 1090: 21, 1080: 21, 1070: 21, 1060: 21, 1050: 20, 1040: 20, 1030: 20, 1020: 19, 1010: 19,
+        1000: 19, 990: 19, 980: 18, 970: 18, 960: 18, 950: 18, 940: 17, 930: 17, 920: 17, 910: 17, 900: 16,
+        890: 16, 880: 16, 870: 15, 860: 15, 850: 15, 840: 14, 830: 14, 820: 14, 810: 14, 800: 13, 790: 13,
+        780: 13, 770: 12, 760: 12, 750: 12, 740: 12, 730: 11, 720: 11, 710: 11, 700: 10, 690: 10, 680: 10,
+        670: 10, 660: 9, 650: 9, 640: 9, 630: 9, 620: 8, 610: 8, 600: 8, 590: 8, 580: 7, 570: 7, 560: 7,
+        550: 7, 540: 6, 530: 6, 520: 6, 510: 6, 500: 5, 490: 5, 480: 5, 470: 5, 460: 4, 450: 4, 440: 4,
+        430: 4, 420: 3, 410: 3, 400: 3, 390: 3, 380: 2, 370: 2, 360: 2, 350: 2, 340: 1, 330: 1, 320: 1,
+        310: 1, 300: 1, 290: 1, 280: 1, 270: 1, 260: 1, 250: 1, 240: 1, 230: 1, 220: 1, 210: 1, 200: 1
+    };
+
+    const inverseConcordance = {};
+    for (let sat = 1600; sat >= 400; sat -= 10) {
+        const act = concordanceTable[sat];
+        if (!inverseConcordance[act]) inverseConcordance[act] = { min: sat, max: sat };
+        else inverseConcordance[act].min = sat;
+    }
+
+    const elements = {
+        satMath: document.getElementById('sat-math'),
+        satEbrw: document.getElementById('sat-ebrw'),
+        satTotalText: document.getElementById('sat-total-text'),
+        actComp: document.getElementById('act-composite'),
+        actTotalText: document.getElementById('act-composite-text'),
+        emptyState: document.getElementById('empty-state'),
+        calcState: document.getElementById('calculation-state'),
+        resultLabel: document.getElementById('result-label'),
+        finalVal: document.getElementById('final-score-value'),
+        finalRange: document.getElementById('final-score-range'),
+        resultBox: document.getElementById('result-box')
+    };
+
+    function showResult() {
+        elements.emptyState.style.display = 'none';
+        elements.calcState.style.display = 'block';
+        elements.resultBox.style.borderStyle = 'solid';
+    }
+
+    function handleSatInput() {
+        elements.actComp.value = '';
+        elements.actTotalText.innerText = '0';
+        
+        let m = parseInt(elements.satMath.value) || 0;
+        let e = parseInt(elements.satEbrw.value) || 0;
+        let total = m + e;
+        elements.satTotalText.innerText = total;
+
+        if (total >= 400) {
+            showResult();
+            const rounded = Math.min(1600, Math.max(400, Math.round(total / 10) * 10));
+            const act = concordanceTable[rounded];
+            elements.resultLabel.innerText = "Equivalent ACT Score";
+            elements.finalVal.innerText = act;
+            elements.finalVal.className = "result-value text-danger";
+            elements.finalRange.innerText = `Based on a total SAT score of ${total}`;
+        }
+    }
+
+    function handleActInput() {
+        elements.satMath.value = '';
+        elements.satEbrw.value = '';
+        elements.satTotalText.innerText = '0';
+
+        let act = parseInt(elements.actComp.value) || 0;
+        elements.actTotalText.innerText = act > 36 ? 36 : act;
+
+        if (act >= 1 && act <= 36) {
+            showResult();
+            const range = inverseConcordance[act];
+            elements.resultLabel.innerText = "Equivalent SAT Total Range";
+            elements.finalVal.innerText = `${range.min}-${range.max}`;
+            elements.finalVal.className = "result-value text-primary";
+            elements.finalRange.innerText = `Equivalent SAT total score range for an ACT of ${act}`;
+        }
+    }
+
+    function resetConverter() {
+        elements.satMath.value = '';
+        elements.satEbrw.value = '';
+        elements.actComp.value = '';
+        elements.satTotalText.innerText = '0';
+        elements.actTotalText.innerText = '0';
+        elements.emptyState.style.display = 'block';
+        elements.calcState.style.display = 'none';
+        elements.resultBox.style.borderStyle = 'dashed';
+    }
+</script>
+{% endblock %}

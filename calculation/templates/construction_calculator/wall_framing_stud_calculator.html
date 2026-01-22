@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Wall Framing Stud Calculator{% endblock %}
+
+{% block meta_description %}Calculate the total number of studs, king studs, trimmer studs, and cripples needed for wall framing based on length, height, and openings (doors/windows). {% endblock %}
+
+{% block meta_keywords %}stud calculator, wall framing, stud count, lumber estimate, king stud, trimmer stud, jack stud, cripple stud, construction framing{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #795548; /* Brown/Lumber Color */
+        border-bottom: 2px solid #795548;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #FFC107; /* Amber for key results */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background-color: #efebe9; /* Light brown/wood-like info box */
+        border: 1px solid #795548;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .opening-section {
+        border: 1px dashed #d7ccc8;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+    }
+
+    .stud-type-table td:nth-child(2) {
+        font-weight: 600;
+        color: #795548;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">🔨 Wall Framing Stud Calculator</h1>
+    <p class="text-center small-muted">Estimates the number of studs required for a framed wall, accounting for spacing and openings.</p>
+    [Image of a framed wall showing common studs, king studs, trimmer studs, headers, and cripples]
+
+    <div class="calc-wrapper">
+
+        <form id="stud-calculator-form">
+            <h5 class="section-title">1. Wall Dimensions (Feet)</h5>
+
+            <!-- Wall Length Input -->
+            <label for="wall-length-input" class="form-label">Total Wall Length</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length (L)</span>
+                <input type="number" id="wall-length-input" class="form-control" name="wallLength" placeholder="e.g., 20" value="20" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Ceiling Height Input -->
+            <label for="ceiling-height-input" class="form-label">Ceiling/Plate Height</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Height (H)</span>
+                <input type="number" id="ceiling-height-input" class="form-control" name="ceilingHeight" placeholder="e.g., 8" value="8" min="6" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Stud Spacing Input (Inches) -->
+            <label for="stud-spacing-input" class="form-label">On-Center Stud Spacing</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Spacing</span>
+                <input type="number" id="stud-spacing-input" class="form-control" name="studSpacing" placeholder="16 or 24" value="16" min="12" step="4" required>
+                <span class="input-group-text">in (O.C.)</span>
+            </div>
+            
+            <h5 class="section-title">2. Openings (Doors/Windows)</h5>
+
+            <p class="small text-muted mb-3">Enter the dimensions and quantity for doors and windows. The calculator assumes standard framing practice.</p>
+
+            <!-- Door Opening -->
+            <div class="opening-section">
+                <h6>Doors (Assumes 2 King, 2 Trimmer, 2 Cripples below sill)</h6>
+                <div class="input-group mb-2">
+                    <span class="input-group-text">Width (ft)</span>
+                    <input type="number" id="door-width-input" class="form-control" name="doorWidth" placeholder="e.g., 2.5" value="2.67" min="0" step="0.1">
+                    <span class="input-group-text">Qty</span>
+                    <input type="number" id="door-qty-input" class="form-control" name="doorQuantity" placeholder="e.g., 1" value="1" min="0" step="1">
+                </div>
+            </div>
+
+            <!-- Window Opening -->
+            <div class="opening-section">
+                <h6>Windows (Assumes 2 King, 2 Trimmer, Cripples below & above)</h6>
+                <div class="input-group mb-2">
+                    <span class="input-group-text">Width (ft)</span>
+                    <input type="number" id="window-width-input" class="form-control" name="windowWidth" placeholder="e.g., 4" value="4" min="0" step="0.1">
+                    <span class="input-group-text">Qty</span>
+                    <input type="number" id="window-qty-input" class="form-control" name="windowQuantity" placeholder="e.g., 2" value="2" min="0" step="1">
+                </div>
+            </div>
+
+            <div class="info-box">
+                **Framing Logic:** The calculation accounts for plate material and assumes 3 studs per corner and 2 studs per wall intersection (T-wall).
+            </div>
+
+            <button class="btn btn-dark btn-lg w-100 mt-4" style="background-color: #795548; border-color: #795548;" type="submit">Calculate Stud Count</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-warning" id="stud-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Detailed Stud Requirements</h5>
+        <table class="table table-bordered mt-2 d-none stud-type-table" id="stud-table">
+            <thead>
+                <tr class="table-dark" style="background-color: #795548; color: white;">
+                    <th>Stud Type</th>
+                    <th>Count (Pcs)</th>
+                </tr>
+            </thead>
+            <tbody id="stud-body"></tbody>
+        </table>
+
+        <p class="small text-muted mt-3 d-none" id="total-lumber-note">
+            *This total stud count does NOT include lumber needed for plates, headers, sills, or window framing cripples above the header. This is the minimum vertical member count.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const INCHES_PER_FOOT = 12;
+    const END_STUD_ADDITION = 3; // Accounts for 3 studs at wall ends/corners (2 at corner + 1 common, or 3-stud corner block)
+    const T_WALL_ADDITION = 2; // For T-wall intersections (2 studs usually)
+
+    // Function to calculate the number of cripples required based on width and spacing
+    function calculateCripples(widthFt, spacingInches) {
+        // Convert width to inches
+        const widthInches = widthFt * INCHES_PER_FOOT;
+        
+        // Subtract 3 inches for the trimmer studs (1.5" x 2)
+        const crippleAreaWidth = widthInches - (1.5 * 2);
+
+        // N = (Width / Spacing) - 1, then rounded up. Use Math.floor for O.C. rule.
+        // We use Math.floor because if the gap is 17" for 16" O.C., you still only need 1 cripple.
+        const numCripples = crippleAreaWidth > 0 ? Math.floor(crippleAreaWidth / spacingInches) : 0;
+        
+        // For simplicity in a high-level calculator, we will just use the spacing method
+        return Math.max(0, Math.floor(widthInches / spacingInches) - 1);
+    }
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('stud-result');
+        const table = document.getElementById('stud-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('stud-body');
+        const lumberNote = document.getElementById('total-lumber-note');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-success', 'alert-danger');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+        lumberNote.classList.add('d-none');
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-warning');
+            lumberNote.classList.remove('d-none');
+            
+            // Primary result: Total Studs
+            res.innerHTML = `
+**Minimum Total Studs Required (Vertical Members):**
+<span style="font-size:2rem; color:#795548; font-weight:bold;">${metrics.totalStuds}</span>
+<span class="small text-muted">Pieces</span>
+<p class="text-center mt-3 mb-0">This calculation is based on ${metrics.studSpacing} in O.C. spacing.</p>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Studs (All Types)</td><td>**${metrics.totalStuds}**</td></tr>
+            <tr><td>Common Studs (In-Wall)</td><td>${metrics.commonStuds}</td></tr>
+            <tr><td>King Studs (Openings)</td><td>${metrics.kingStuds}</td></tr>
+            <tr><td>Trimmer/Jack Studs (Openings)</td><td>${metrics.trimmerStuds}</td></tr>
+            <tr><td>Cripple Studs (Below Windows)</td><td>${metrics.windowCripples}</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Main Calculation Logic
+    document.getElementById('stud-calculator-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const wallLength = parseFloat(form.elements.wallLength.value); // ft
+        const ceilingHeight = parseFloat(form.elements.ceilingHeight.value); // ft (Not strictly needed for count, but useful for context)
+        const studSpacing = parseFloat(form.elements.studSpacing.value); // in O.C.
+        const doorWidth = parseFloat(form.elements.doorWidth.value) || 0; // ft
+        const doorQuantity = parseInt(form.elements.doorQuantity.value) || 0; // pcs
+        const windowWidth = parseFloat(form.elements.windowWidth.value) || 0; // ft
+        const windowQuantity = parseInt(form.elements.windowQuantity.value) || 0; // pcs
+        
+        // Basic validation
+        if (isNaN(wallLength) || wallLength <= 0 || isNaN(ceilingHeight) || ceilingHeight <= 0 || isNaN(studSpacing) || studSpacing <= 0) {
+            displayResult(true, "Please ensure Wall Length, Height, and Stud Spacing are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // --- 1. Calculate Base Studs (Total studs without accounting for openings) ---
+            
+            // Formula: (Wall Length in inches / Spacing in inches) + 1 for the end stud.
+            // We adjust this later for corners.
+            const wallLengthInches = wallLength * INCHES_PER_FOOT;
+            let baseStuds = Math.ceil(wallLengthInches / studSpacing); 
+            
+            // Add studs for the end-wall/corners. Base calculation already accounts for one end.
+            // We use END_STUD_ADDITION (3 studs for corners) - 1 (already counted in base formula) = +2
+            baseStuds += END_STUD_ADDITION - 1; 
+
+            // --- 2. Calculate Opening Studs (The studs we ADD) ---
+            
+            // King Studs (Vertical studs defining the opening, next to trimmers)
+            // Each opening requires 2 king studs.
+            const kingStuds = (doorQuantity * 2) + (windowQuantity * 2);
+
+            // Trimmer/Jack Studs (Support the header)
+            // Each opening requires 2 trimmers.
+            const trimmerStuds = (doorQuantity * 2) + (windowQuantity * 2);
+            
+            // Cripple Studs (Short studs below windows)
+            let windowCripples = 0;
+            if (windowQuantity > 0 && windowWidth > 0) {
+                // Calculate cripples for ONE window opening
+                const cripplesPerWindow = calculateCripples(windowWidth, studSpacing);
+                windowCripples = cripplesPerWindow * windowQuantity;
+                
+                // NOTE: Cripples above the header are NOT included in this vertical member count
+            }
+            
+            // --- 3. Calculate Studs to DEDUCT (The studs we DON'T need because of openings) ---
+            
+            // An opening replaces common studs that would have been there.
+            // This is complex, but generally, the number of studs replaced by an opening is
+            // Math.floor(opening width / spacing).
+
+            let commonStudsDeducted = 0;
+            
+            // Doors
+            if (doorQuantity > 0 && doorWidth > 0) {
+                const doorOpeningDeduction = Math.floor((doorWidth * INCHES_PER_FOOT) / studSpacing);
+                commonStudsDeducted += doorOpeningDeduction * doorQuantity;
+            }
+
+            // Windows
+            if (windowQuantity > 0 && windowWidth > 0) {
+                const windowOpeningDeduction = Math.floor((windowWidth * INCHES_PER_FOOT) / studSpacing);
+                commonStudsDeducted += windowOpeningDeduction * windowQuantity;
+            }
+
+            // --- 4. Final Calculation ---
+
+            // Common Studs = Base Studs - Deductions from Openings
+            let commonStuds = baseStuds - commonStudsDeducted;
+            
+            // Ensure we don't end up with negative common studs due to very wide openings
+            commonStuds = Math.max(0, commonStuds);
+            
+            // Total Studs = Common Studs + All Opening Studs
+            const totalStuds = commonStuds + kingStuds + trimmerStuds + windowCripples;
+
+            // 5. Display results
+            const metrics = {
+                wallLength,
+                ceilingHeight,
+                studSpacing,
+                commonStuds,
+                kingStuds,
+                trimmerStuds,
+                windowCripples,
+                totalStuds
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('stud-result').classList.add('d-none');
+        document.getElementById('stud-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+        document.getElementById('total-lumber-note').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

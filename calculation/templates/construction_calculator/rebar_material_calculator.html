@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Rebar Material Calculator (Linear Feet & Bars){% endblock %}
+
+{% block meta_description %}Calculate the total linear feet and number of individual rebar pieces needed for a concrete slab or footing based on area, spacing, and bar length. {% endblock %}
+
+{% block meta_keywords %}rebar calculator, reinforcement bar, concrete reinforcement, linear feet, bar spacing, construction estimate, waste factor{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        color: #795548; /* Brown/Earth Tone for Concrete/Structure */
+        border-bottom: 2px solid #795548;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .result-alert {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-left: 5px solid #00BCD4; /* Cyan/Steel color for final result contrast */
+    }
+
+    .input-group-text {
+        min-width: 120px;
+        justify-content: center;
+        background-color: #f7f7f7;
+        font-weight: 600;
+    }
+
+    .unit-input-label {
+        font-size: 0.85rem;
+        font-style: italic;
+        color: #6c757d;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .spacing-group {
+        border-top: 1px dashed #ccc;
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-4 text-center">⛓️ Rebar Material Calculator</h1>
+    <p class="text-center small-muted">Estimates the rebar needed for concrete slabs, footings, or walls.</p>
+    
+
+    <div class="calc-wrapper">
+
+        <form id="rebar-form">
+            <h5 class="section-title">1. Concrete Area Dimensions (in Feet)</h5>
+
+            <!-- Area Length Input (Feet) -->
+            <label for="area-length-input" class="form-label">Area Length (Longest Dimension)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Length (L)</span>
+                <input type="number" id="area-length-input" class="form-control" name="areaLength" placeholder="Length (e.g., 40)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <!-- Area Width Input (Feet) -->
+            <label for="area-width-input" class="form-label">Area Width (Shortest Dimension)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Width (W)</span>
+                <input type="number" id="area-width-input" class="form-control" name="areaWidth" placeholder="Width (e.g., 20)" min="1" step="0.1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <h5 class="section-title">2. Rebar Details & Spacing (in Inches)</h5>
+            
+            <div class="spacing-group">
+                <!-- Spacing Input (Inches) -->
+                <label for="spacing-input" class="form-label">Center-to-Center Spacing (Both Directions)</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Spacing</span>
+                    <input type="number" id="spacing-input" class="form-control" name="spacing" placeholder="e.g., 18" value="18" min="4" step="1" required>
+                    <span class="input-group-text">in</span>
+                </div>
+                <span class="unit-input-label">This applies to both the longitudinal and transverse directions.</span>
+            </div>
+
+            <!-- Bar Length Input (Feet) -->
+            <label for="bar-length-input" class="form-label">Standard Bar Length (To be Purchased)</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Bar Length</span>
+                <input type="number" id="bar-length-input" class="form-control" name="barLength" placeholder="e.g., 20" value="20" min="10" step="1" required>
+                <span class="input-group-text">ft</span>
+            </div>
+            
+            <h5 class="section-title">3. Waste Allowance</h5>
+
+            <!-- Waste Percentage Input -->
+            <label for="waste-input" class="form-label">Waste/Cut Allowance</label>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Waste Factor</span>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5-10" value="7" min="0" max="25" step="1" required>
+                <span class="input-group-text">%</span>
+            </div>
+
+            <button class="btn btn-info btn-lg w-100 mt-4" type="submit">Calculate Rebar Needs</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert alert-info" id="rebar-result"></div>
+
+        <h5 class="section-title d-none" id="table-title">Calculation Summary</h5>
+        <table class="table table-bordered mt-2 d-none" id="rebar-table">
+            <thead>
+                <tr class="table-info">
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="rebar-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Constants
+    const INCHES_PER_FOOT = 12;
+
+    // Function to display errors or results
+    function displayResult(isError, message, metrics) {
+        const res = document.getElementById('rebar-result');
+        const table = document.getElementById('rebar-table');
+        const tableTitle = document.getElementById('table-title');
+        const tableBody = document.getElementById('rebar-body');
+
+        // Hide and reset classes
+        res.classList.remove('d-none', 'alert-warning', 'alert-danger', 'alert-info');
+        table.classList.add('d-none');
+        tableTitle.classList.add('d-none');
+        tableBody.innerHTML = '';
+
+        if (isError) {
+            res.classList.add('alert-danger');
+            res.innerHTML = `**Calculation Error:** ${message}`;
+        } else {
+            res.classList.add('alert-info');
+            
+            // Primary result: Linear Feet and Bars
+            res.innerHTML = `
+**Total Materials to Purchase (Rounded Up):**
+<div class="d-flex justify-content-around mt-3">
+    <div class="text-center">
+        <span style="font-size:2rem; color:#795548; font-weight:bold;">${metrics.totalLinearFeet.toFixed(1)}</span><br>
+        <span class="small text-muted">Linear Feet (LF)</span>
+    </div>
+    <div class="text-center">
+        <span style="font-size:2rem; color:#795548; font-weight:bold;">${metrics.finalBars}</span><br>
+        <span class="small text-muted">Individual Bars</span>
+    </div>
+</div>
+`;
+            
+            // Populate and show the detailed table
+            let tableRows = `
+            <tr><td>Total Individual Bars (Rounded Up)</td><td>**${metrics.finalBars} Bars**</td></tr>
+            <tr><td>Total Linear Feet (LF) Required</td><td>**${metrics.totalLinearFeet.toFixed(1)} LF**</td></tr>
+            <tr><td>Total Area Size</td><td>${metrics.areaSize.toFixed(1)} sq ft</td></tr>
+            <tr><td colspan="2" class="text-center table-active">**Rebar Count Breakdown**</td></tr>
+            <tr><td>Bars in Long Direction (L)</td><td>${metrics.barsInLongDirection} Bars (run along W)</td></tr>
+            <tr><td>Bars in Short Direction (W)</td><td>${metrics.barsInShortDirection} Bars (run along L)</td></tr>
+            <tr><td>Linear Feet (No Waste)</td><td>${metrics.linearFeetNoWaste.toFixed(1)} LF</td></tr>
+            <tr><td>Waste Percentage Applied</td><td>${(metrics.wasteFactorUsed * 100).toFixed(1)}%</td></tr>
+            `;
+            
+            tableBody.innerHTML = tableRows;
+            table.classList.remove('d-none');
+            tableTitle.classList.remove('d-none');
+        }
+    }
+
+    // Function to calculate number of bars required based on opposite dimension and spacing
+    function calculateBarCount(oppositeDimensionFeet, spacingInches) {
+        // Calculate the number of spaces first
+        const oppositeDimensionInches = oppositeDimensionFeet * INCHES_PER_FOOT;
+        const numberOfSpaces = oppositeDimensionInches / spacingInches;
+        
+        // Number of bars = number of spaces + 1 (for the end bars)
+        // We use Math.floor and add 1 because you start with 1 bar and place another bar every 'spacing' distance.
+        // For example, 10 ft span with 1 ft spacing (12 inches) means 10 spaces, requiring 11 bars.
+        return Math.floor(numberOfSpaces) + 1;
+    }
+
+
+    // Main Calculation Logic
+    document.getElementById('rebar-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        
+        // Input values
+        const areaLength = parseFloat(form.elements.areaLength.value); // ft
+        const areaWidth = parseFloat(form.elements.areaWidth.value); // ft
+        const spacing = parseFloat(form.elements.spacing.value); // in
+        const barLength = parseFloat(form.elements.barLength.value); // ft (purchase length)
+        const wastePercent = parseFloat(form.elements.wastePercent.value); // %
+        
+        // Basic validation
+        if (isNaN(areaLength) || areaLength <= 0 || isNaN(areaWidth) || areaWidth <= 0 || isNaN(spacing) || spacing <= 0 || isNaN(barLength) || barLength <= 0 || isNaN(wastePercent) || wastePercent < 0) {
+            displayResult(true, "Please ensure all dimensions and factors are valid positive numbers.");
+            return;
+        }
+
+        try {
+            // 1. Calculate Area
+            const areaSize = areaLength * areaWidth; // sq ft
+
+            // 2. Calculate the number of bars running in the short direction (Width)
+            // These bars have length L (areaLength) and are spaced across W (areaWidth)
+            const barsInShortDirection = calculateBarCount(areaWidth, spacing);
+            
+            // 3. Calculate the number of bars running in the long direction (Length)
+            // These bars have length W (areaWidth) and are spaced across L (areaLength)
+            const barsInLongDirection = calculateBarCount(areaLength, spacing);
+
+            // 4. Calculate Total Linear Feet (No Waste)
+            // Total LF = (Bars in Long Direction * Length of Area) + (Bars in Short Direction * Width of Area)
+            const linearFeetNoWaste = (barsInShortDirection * areaLength) + (barsInLongDirection * areaWidth);
+
+            // 5. Apply Waste Factor
+            const wasteFactor = 1 + (wastePercent / 100);
+            const totalLinearFeet = linearFeetNoWaste * wasteFactor; // LF
+
+            // 6. Calculate Total Individual Bars to Buy (round up to ensure coverage)
+            // Total Individual Bars = Total Linear Feet / Length of Bar to be purchased
+            const individualBars = totalLinearFeet / barLength;
+            const finalBars = Math.ceil(individualBars);
+
+            
+            // 7. Display results
+            const metrics = {
+                areaSize,
+                barsInShortDirection,
+                barsInLongDirection,
+                linearFeetNoWaste,
+                totalLinearFeet,
+                finalBars,
+                wasteFactorUsed: wasteFactor - 1
+            };
+            displayResult(false, "", metrics);
+
+        } catch (error) {
+            console.error("Calculation Error:", error);
+            displayResult(true, "An unexpected error occurred during the calculation.");
+        }
+    });
+
+    // Run once on load to ensure initial hidden state
+    window.onload = function() {
+        document.getElementById('rebar-result').classList.add('d-none');
+        document.getElementById('rebar-table').classList.add('d-none');
+        document.getElementById('table-title').classList.add('d-none');
+    };
+</script>
+{% endblock %}
+

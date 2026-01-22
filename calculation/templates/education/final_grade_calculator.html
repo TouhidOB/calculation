@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block title %}Course Final Grade Calculator{% endblock %}
+
+{% block meta_description %}Determine the minimum score needed on your final exam or assignment to achieve your desired overall course grade percentage.{% endblock %}
+
+{% block meta_keywords %}final grade calculator, course grade, target score, minimum grade, weighted average{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        color: #0d6efd;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 5px;
+    }
+
+    .grade-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 12px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background-color: #ffffff;
+        transition: all 0.2s;
+    }
+
+    .grade-row:hover {
+        border-color: #0d6efd;
+        background-color: #f8fbff;
+    }
+
+    .grade-row input {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .remove-btn {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .result-alert {
+        white-space: pre-wrap;
+        font-size: 1.1rem;
+        border-radius: 12px;
+    }
+
+    #required-grade {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-top: 10px;
+    }
+
+    .input-group-text {
+        background-color: #f1f3f5;
+        font-weight: 600;
+    }
+
+    .chart-container {
+        position: relative;
+        margin: auto;
+        height: 300px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="display-5 fw-bold">🎯 Final Grade Target Calculator</h1>
+        <p class="text-muted">Enter your assignments and weights to see exactly what you need on your final exam.</p>
+    </div>
+
+    <div class="calc-wrapper mx-auto" style="max-width: 800px;">
+        <form id="final-grade-form">
+            <h5 class="section-title">Step 1: Current Coursework</h5>
+            <div class="row g-2 mb-2 text-muted small fw-bold text-uppercase">
+                <div class="col-5">Assignment Name</div>
+                <div class="col-3">Score (%)</div>
+                <div class="col-3">Weight (%)</div>
+                <div class="col-1"></div>
+            </div>
+            
+            <div id="grade-list">
+                </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" type="button" id="add-grade-btn">
+                    + Add Assignment
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="reset-btn">
+                    Reset All
+                </button>
+            </div>
+
+            <h5 class="section-title">Step 2: Final Goal</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Final Exam Weight (%)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="final_weight" placeholder="e.g. 25" min="0" max="100" step="0.1" required>
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Target Course Grade (%)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="target_grade" placeholder="e.g. 90" min="0" max="100" step="0.1" required>
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100 mt-3 shadow-sm" type="submit">Calculate Required Score</button>
+        </form>
+
+        <div class="alert mt-4 d-none result-alert text-center animate__animated animate__fadeIn" id="grade-result"></div>
+
+        <div id="summary-section" class="d-none">
+            <h5 class="section-title">Analysis Summary</h5>
+            <table class="table table-hover border">
+                <tbody id="grade-body"></tbody>
+            </table>
+            
+            <div class="chart-container mt-4">
+                <canvas id="grade-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let gradeChart = null;
+
+    /**
+     * Create a new empty assignment row
+     */
+    function createGradeRow(name = '', score = '', weight = '') {
+        const row = document.createElement('div');
+        row.className = 'grade-row';
+        row.innerHTML = `
+            <div class="col-5">
+                <input type="text" class="form-control" placeholder="e.g. Midterm" value="${name}">
+            </div>
+            <div class="col-3">
+                <div class="input-group">
+                    <input type="number" class="form-control assignment-score" placeholder="Score" min="0" max="200" step="0.1" value="${score}">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="input-group">
+                    <input type="number" class="form-control assignment-weight" placeholder="Weight" min="0" max="100" step="0.1" value="${weight}">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+            <div class="col-1 text-end">
+                <button type="button" class="btn btn-outline-danger remove-btn" title="Remove">&times;</button>
+            </div>
+        `;
+
+        row.querySelector('.remove-btn').addEventListener('click', () => {
+            row.remove();
+            autoCalculate();
+        });
+
+        row.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', autoCalculate);
+        });
+
+        return row;
+    }
+
+    /**
+     * Helper to trigger calculation automatically on input
+     */
+    function autoCalculate() {
+        const finalWeight = document.getElementById('final_weight').value;
+        const targetGrade = document.getElementById('target_grade').value;
+        
+        // Only trigger if essential goal data is present
+        if (finalWeight && targetGrade) {
+            calculateFinalGrade();
+        }
+    }
+
+    /**
+     * Primary Logic
+     */
+    function calculateFinalGrade(e) {
+        if (e) e.preventDefault();
+        
+        const resultDiv = document.getElementById('grade-result');
+        const summarySection = document.getElementById('summary-section');
+        const finalWeight = parseFloat(document.getElementById('final_weight').value);
+        const targetGrade = parseFloat(document.getElementById('target_grade').value);
+
+        // Validation gatekeeper
+        if (isNaN(finalWeight) || isNaN(targetGrade)) {
+            hideResults();
+            return;
+        }
+
+        const gradeRows = document.querySelectorAll('#grade-list .grade-row');
+        let currentTotalWeight = 0;
+        let currentEarnedPoints = 0;
+        let errors = [];
+
+        gradeRows.forEach((row, index) => {
+            const s = parseFloat(row.querySelector('.assignment-score').value);
+            const w = parseFloat(row.querySelector('.assignment-weight').value);
+            
+            if (!isNaN(s) && !isNaN(w)) {
+                currentEarnedPoints += (s / 100) * w;
+                currentTotalWeight += w;
+            }
+        });
+
+        const totalWeight = currentTotalWeight + finalWeight;
+        
+        if (totalWeight > 100.001) {
+            displayError(`Total weight (${totalWeight.toFixed(1)}%) exceeds 100%. Please adjust.`);
+            return;
+        }
+
+        // Calculation: (Target - Earned) / FinalWeight * 100
+        const pointsNeeded = targetGrade - currentEarnedPoints;
+        const requiredGrade = (pointsNeeded / finalWeight) * 100;
+        
+        displayResults(requiredGrade, targetGrade, currentEarnedPoints, finalWeight, currentTotalWeight, totalWeight);
+    }
+
+    function displayResults(required, target, earned, fWeight, cWeight, tWeight) {
+        const resultDiv = document.getElementById('grade-result');
+        const summarySection = document.getElementById('summary-section');
+        
+        resultDiv.classList.remove('d-none', 'alert-danger', 'alert-success', 'alert-primary');
+        summarySection.classList.remove('d-none');
+
+        let msg = '';
+        let colorClass = '';
+
+        if (required <= 0) {
+            msg = `Great news! You already reached your goal. You need a **0%** on the final.`;
+            colorClass = 'alert-success';
+        } else if (required > 100) {
+            msg = `A target of ${target}% is mathematically impossible with this final's weight. Max possible: ${(earned + fWeight).toFixed(2)}%`;
+            colorClass = 'alert-danger';
+        } else {
+            msg = `To finish with **${target}%**, you need a minimum score of:`;
+            colorClass = 'alert-primary';
+        }
+
+        resultDiv.classList.add(colorClass);
+        resultDiv.innerHTML = `
+            ${msg}
+            <div id="required-grade">${required > 100 ? 'N/A' : Math.max(0, required).toFixed(2) + '%'}</div>
+            <p class="mb-0 small opacity-75">Final Exam constitutes ${fWeight}% of your grade.</p>
+        `;
+
+        updateTableAndChart(cWeight, fWeight, tWeight);
+    }
+
+    function updateTableAndChart(cWeight, fWeight, tWeight) {
+        const tableBody = document.getElementById('grade-body');
+        tableBody.innerHTML = `
+            <tr><td>Completed Weight</td><td class="text-end">${cWeight.toFixed(1)}%</td></tr>
+            <tr><td>Final Exam Weight</td><td class="text-end">${fWeight.toFixed(1)}%</td></tr>
+            <tr class="table-light fw-bold"><td>Total Accounted For</td><td class="text-end">${tWeight.toFixed(1)}%</td></tr>
+        `;
+
+        const ctx = document.getElementById('grade-chart').getContext('2d');
+        if (gradeChart) gradeChart.destroy();
+        
+        gradeChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Final Exam', 'Remaining'],
+                datasets: [{
+                    data: [cWeight, fWeight, Math.max(0, 100 - tWeight)],
+                    backgroundColor: ['#0d6efd', '#ffc107', '#e9ecef']
+                }]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function displayError(message) {
+        const res = document.getElementById('grade-result');
+        res.classList.remove('d-none', 'alert-success', 'alert-primary');
+        res.classList.add('alert-danger');
+        res.innerHTML = `<strong>Error:</strong> ${message}`;
+        document.getElementById('summary-section').classList.add('d-none');
+    }
+
+    function hideResults() {
+        document.getElementById('grade-result').classList.add('d-none');
+        document.getElementById('summary-section').classList.add('d-none');
+    }
+
+    // --- Initialization ---
+
+    document.getElementById('add-grade-btn').addEventListener('click', () => {
+        document.getElementById('grade-list').appendChild(createGradeRow());
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        if(confirm("Clear all entries?")) {
+            document.getElementById('grade-list').innerHTML = '';
+            document.getElementById('grade-list').appendChild(createGradeRow());
+            document.getElementById('final-grade-form').reset();
+            hideResults();
+        }
+    });
+
+    document.getElementById('final_weight').addEventListener('input', autoCalculate);
+    document.getElementById('target_grade').addEventListener('input', autoCalculate);
+    document.getElementById('final-grade-form').addEventListener('submit', calculateFinalGrade);
+
+    window.addEventListener('load', () => {
+        // Professional empty start with 2 clean rows
+        const list = document.getElementById('grade-list');
+        list.appendChild(createGradeRow());
+        list.appendChild(createGradeRow());
+    });
+</script>
+{% endblock %}

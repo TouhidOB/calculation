@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Paragraph Structure Planner (TEAL/PEEL){% endblock %}
+
+{% block meta_description %}Plan structured paragraphs using the Topic, Evidence, Analysis, Link (TEAL) framework and estimate word count distribution.{% endblock %}
+
+{% block meta_keywords %}paragraph structure, TEAL method, PEEL writing, academic writing, word count planner, writing tool{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    .calc-wrapper {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #dee2e6;
+    }
+
+    .section-card {
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 1rem;
+        transition: transform 0.2s ease;
+        border-left: 6px solid #dee2e6;
+    }
+
+    .section-card:hover { transform: translateX(5px); }
+
+    /* TEAL Color Coding */
+    .border-topic { border-color: #dc3545 !important; background-color: #fff5f5; }
+    .border-evidence { border-color: #ffc107 !important; background-color: #fffbeb; }
+    .border-analysis { border-color: #0d6efd !important; background-color: #f0f7ff; }
+    .border-link { border-color: #198754 !important; background-color: #f0fff4; }
+
+    .stat-display {
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        padding: 25px;
+        text-align: center;
+        border: 1px solid #dee2e6;
+    }
+
+    .display-value {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #212529;
+    }
+
+    .progress { height: 35px; border-radius: 8px; overflow: hidden; }
+    .progress-bar { font-weight: bold; font-size: 0.85rem; }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">📝 Paragraph Structure Planner</h1>
+        <p class="text-muted mx-auto" style="max-width: 700px;">
+            Master the TEAL (Topic, Evidence, Analysis, Link) framework. Balance your academic arguments by visualizing word count distribution.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-wrapper mx-auto" style="max-width: 1100px;">
+        <div class="row g-4">
+            
+            <div class="col-lg-4">
+                <div class="p-4 bg-light rounded-3 border h-100">
+                    <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-bullseye me-2"></i>Writing Goal</h5>
+                    
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase">Target Total Word Count</label>
+                        <div class="input-group input-group-lg">
+                            <input type="number" id="target-word-count" class="form-control" placeholder="e.g. 150" oninput="calculate()">
+                            <span class="input-group-text bg-white text-muted">words</span>
+                        </div>
+                        <p class="text-muted small mt-2">Recommended for academic paragraphs: 150-250 words.</p>
+                    </div>
+
+                    <div class="stat-display mb-4">
+                        <div class="text-uppercase small fw-bold text-muted mb-2">Estimated Total</div>
+                        <div class="display-value" id="total-words-display">0</div>
+                        <div id="status-badge" class="mt-3"></div>
+                    </div>
+
+                    <div class="alert alert-info border-0 shadow-sm small">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>Pro Tip:</strong> Your <b>Analysis</b> should generally be the longest part of your paragraph.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div id="empty-state" class="text-center py-5 border rounded bg-light border-dashed">
+                    <i class="bi bi-pencil-square fs-1 text-muted mb-3 d-block"></i>
+                    <h4 class="fw-bold text-muted">Define Your Target First</h4>
+                    <p class="text-muted">Enter a target word count in the sidebar to begin structuring your paragraph.</p>
+                </div>
+
+                <div id="planner-content" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-end mb-3">
+                        <h5 class="fw-bold m-0 text-uppercase small letter-spacing-1">TEAL Distribution</h5>
+                        <span class="text-muted small">Adjust word counts for each segment:</span>
+                    </div>
+
+                    <div class="section-card border-topic">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="fw-bold text-danger mb-1">T: Topic Sentence</h6>
+                                <p class="small text-muted mb-0">States the main point or argument of the paragraph.</p>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Words</span>
+                                    <input type="number" id="t-words" class="form-control text-center fw-bold" value="25" oninput="calculate()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card border-evidence">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="fw-bold text-warning-emphasis mb-1">E: Evidence / Example</h6>
+                                <p class="small text-muted mb-0">Quotes, statistics, or facts that support your Topic Sentence.</p>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Words</span>
+                                    <input type="number" id="e-words" class="form-control text-center fw-bold" value="40" oninput="calculate()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card border-analysis">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="fw-bold text-primary mb-1">A: Analysis / Explanation</h6>
+                                <p class="small text-muted mb-0">Explains <i>why</i> the evidence supports the point.</p>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Words</span>
+                                    <input type="number" id="a-words" class="form-control text-center fw-bold" value="70" oninput="calculate()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card border-link">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="fw-bold text-success mb-1">L: Link / Transition</h6>
+                                <p class="small text-muted mb-0">Wraps up the idea and links to the next paragraph.</p>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Words</span>
+                                    <input type="number" id="l-words" class="form-control text-center fw-bold" value="15" oninput="calculate()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-bold small text-uppercase">Visual Balance Breakdown</span>
+                            <span id="percent-complete" class="small fw-bold"></span>
+                        </div>
+                        <div class="progress shadow-sm">
+                            <div id="bar-t" class="progress-bar bg-danger" role="progressbar">T</div>
+                            <div id="bar-e" class="progress-bar bg-warning text-dark" role="progressbar">E</div>
+                            <div id="bar-a" class="progress-bar bg-primary" role="progressbar">A</div>
+                            <div id="bar-l" class="progress-bar bg-success" role="progressbar">L</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculate() {
+        const target = parseFloat(document.getElementById('target-word-count').value);
+        
+        const t = parseFloat(document.getElementById('t-words').value) || 0;
+        const e = parseFloat(document.getElementById('e-words').value) || 0;
+        const a = parseFloat(document.getElementById('a-words').value) || 0;
+        const l = parseFloat(document.getElementById('l-words').value) || 0;
+
+        const emptyState = document.getElementById('empty-state');
+        const plannerContent = document.getElementById('planner-content');
+        const totalDisplay = document.getElementById('total-words-display');
+        const badge = document.getElementById('status-badge');
+
+        if (!target || target <= 0) {
+            emptyState.style.display = 'block';
+            plannerContent.style.display = 'none';
+            totalDisplay.textContent = '0';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        plannerContent.style.display = 'block';
+
+        const total = t + e + a + l;
+        totalDisplay.textContent = total;
+
+        // Visual Progress Bar Logic
+        const barT = document.getElementById('bar-t');
+        const barE = document.getElementById('bar-e');
+        const barA = document.getElementById('bar-a');
+        const barL = document.getElementById('bar-l');
+
+        const pT = (t / total) * 100;
+        const pE = (e / total) * 100;
+        const pA = (a / total) * 100;
+        const pL = (l / total) * 100;
+
+        barT.style.width = pT + '%';
+        barE.style.width = pE + '%';
+        barA.style.width = pA + '%';
+        barL.style.width = pL + '%';
+
+        barT.textContent = pT > 5 ? 'T' : '';
+        barE.textContent = pE > 5 ? 'E' : '';
+        barA.textContent = pA > 5 ? 'A' : '';
+        barL.textContent = pL > 5 ? 'L' : '';
+
+        // Status Feedback
+        const diff = total - target;
+        if (Math.abs(diff) <= 10) {
+            badge.innerHTML = '<span class="badge bg-success">Perfect Length</span>';
+        } else if (diff > 0) {
+            badge.innerHTML = `<span class="badge bg-danger">${diff} Words Over</span>`;
+        } else {
+            badge.innerHTML = `<span class="badge bg-warning text-dark">${Math.abs(diff)} Words Short</span>`;
+        }
+    }
+
+    window.onload = function() {
+        // Run once to check for pre-filled data (if any)
+        calculate();
+    };
+</script>
+{% endblock %}
