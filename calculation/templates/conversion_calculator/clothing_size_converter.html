@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}Clothing Size Converter (S/M/L, Numeric){% endblock %}
+
+{% block meta_description %}Convert apparel sizes instantly between US, UK, EU, and International (S/M/L) standards based on standard body measurements (cm).{% endblock %}
+
+{% block meta_keywords %}clothing size converter, s m l conversion, us to eu clothing size, body measurements, apparel sizing{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #343a40;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        background: #f0f0ff; /* Light purple/lavender theme for apparel */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #9966cc;
+    }
+    
+    .conversion-input-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #6a0dad;
+    }
+
+    .conversion-input-group select,
+    .conversion-input-group input[type="number"] {
+        font-size: 1.1rem;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+    
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #6a0dad; /* Purple theme */
+    }
+    
+    .highlight-item {
+        border-left-color: #6a0dad !important; 
+        background-color: #f7f3ff;
+    }
+    
+    .conversion-button {
+        background-color: #6a0dad;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 20px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #4a007a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">👕 Clothing Size Converter</h1>
+    <p class="small-muted">Convert between **International S/M/L** and common **Numeric** sizing systems based on assumed standard **Chest Measurements**. Results are estimates only.</p>
+    [Image of clothing size conversion chart]
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Select Category</h5>
+
+        <div class="conversion-input-group">
+            <label for="categorySelect">Select Garment/Gender Category</label>
+            <select id="categorySelect" class="form-select">
+                <option value="mens_tops">Men's Tops (Focus on Chest/Shirt Size)</option>
+                <option value="womens_tops">Women's Tops (Focus on Bust Size)</option>
+                <option value="mens_bottoms">Men's Bottoms (Focus on Waist Size)</option>
+                <option value="womens_bottoms">Women's Bottoms (Focus on Hip Size)</option>
+            </select>
+        </div>
+        
+        <h5 class="section-title">Step 2: Input Size</h5>
+
+        <div class="conversion-input-group">
+            <label for="inputValue">Enter Size</label>
+            <div class="d-flex">
+                <input type="text" class="form-control me-2" id="inputValue" placeholder="Enter size (e.g., M, 42, 32)..." autofocus>
+                <select id="unitSelect" class="form-select w-50">
+                    <!-- Options filled by JavaScript -->
+                </select>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" id="convertButton">
+            Convert Size
+        </button>
+
+        <h5 class="section-title mt-4">Step 3: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Select a category, enter a size, and click 'Convert Size'.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Disclaimer:** Due to vanity sizing, cut, and fit, converted sizes are *approximations*. Always prioritize specific brand size charts and actual body measurements (in cm or inches) when available.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- SIZING DATA ---
+    // The chart keys are mapped to their column indices.
+    // Base unit is the body measurement (in CM) for the primary fitting point.
+    
+    const SIZING_TABLES = {
+        // Base measurement: Chest Circumference (cm)
+        mens_tops: {
+            base_unit: 'Chest (cm)',
+            units: [
+                { key: 'cm', name: 'Chest Length', abbr: 'cm' },
+                { key: 'int', name: 'International', abbr: 'S/M/L' },
+                { key: 'us_jacket', name: 'US Jacket Size', abbr: 'US N' }, // e.g., 38, 40
+                { key: 'eu', name: 'EU Size', abbr: 'EU N' }, // e.g., 48, 50, 52
+                { key: 'uk', name: 'UK Size', abbr: 'UK N' }
+            ],
+            // [CM, INT, US_Jacket, EU, UK]
+            chart: [
+                [86, 'XS', 34, 44, 34],
+                [92, 'S', 36, 46, 36],
+                [97, 'M', 38, 48, 38],
+                [102, 'L', 40, 50, 40],
+                [107, 'XL', 42, 52, 42],
+                [112, '2XL', 44, 54, 44],
+                [117, '3XL', 46, 56, 46],
+            ]
+        },
+        
+        // Base measurement: Bust Circumference (cm)
+        womens_tops: {
+            base_unit: 'Bust (cm)',
+            units: [
+                { key: 'cm', name: 'Bust Length', abbr: 'cm' },
+                { key: 'int', name: 'International', abbr: 'S/M/L' },
+                { key: 'us_num', name: 'US Numeric', abbr: 'US N' }, // e.g., 4, 6, 8
+                { key: 'uk', name: 'UK Size', abbr: 'UK N' }, // e.g., 8, 10, 12
+                { key: 'eu', name: 'EU Size', abbr: 'EU N' } // e.g., 34, 36, 38
+            ],
+            // [CM, INT, US_Num, UK, EU]
+            chart: [
+                [83, 'XS', 4, 8, 34],
+                [88, 'S', 6, 10, 36],
+                [93, 'M', 8, 12, 38],
+                [98, 'L', 10, 14, 40],
+                [103, 'XL', 12, 16, 42],
+                [109, '2XL', 14, 18, 44],
+                [115, '3XL', 16, 20, 46],
+            ]
+        },
+
+        // Base measurement: Waist Circumference (cm)
+        mens_bottoms: {
+            base_unit: 'Waist (cm)',
+            units: [
+                { key: 'cm', name: 'Waist Length', abbr: 'cm' },
+                { key: 'us_num', name: 'US/UK Waist', abbr: 'in' }, // e.g., 30, 32 (often in inches)
+                { key: 'eu', name: 'EU Size', abbr: 'EU N' }
+            ],
+            // [CM, US/UK Waist (in), EU]
+            chart: [
+                [76, 30, 46],
+                [81, 32, 48],
+                [86, 34, 50],
+                [91, 36, 52],
+                [96, 38, 54],
+                [101, 40, 56],
+            ]
+        },
+        
+        // Base measurement: Hip Circumference (cm)
+        womens_bottoms: {
+            base_unit: 'Hip (cm)',
+            units: [
+                { key: 'cm', name: 'Hip Length', abbr: 'cm' },
+                { key: 'int', name: 'International', abbr: 'S/M/L' },
+                { key: 'us_num', name: 'US Numeric', abbr: 'US N' },
+                { key: 'uk', name: 'UK Size', abbr: 'UK N' },
+                { key: 'eu', name: 'EU Size', abbr: 'EU N' }
+            ],
+            // [CM (Hip), INT, US_Num, UK, EU]
+            chart: [
+                [92, 'XS', 4, 8, 36],
+                [96, 'S', 6, 10, 38],
+                [100, 'M', 8, 12, 40],
+                [104, 'L', 10, 14, 42],
+                [108, 'XL', 12, 16, 44],
+                [112, '2XL', 14, 18, 46],
+            ]
+        }
+    };
+
+    const categorySelect = document.getElementById('categorySelect');
+    const inputValue = document.getElementById('inputValue');
+    const unitSelect = document.getElementById('unitSelect');
+    const convertButton = document.getElementById('convertButton');
+    const resultsList = document.getElementById('resultsList');
+    
+    let activeCategory = 'mens_tops';
+
+    /**
+     * Finds the index of a unit key within the current chart's units array.
+     */
+    function getUnitIndex(unitKey) {
+        const categoryData = SIZING_TABLES[activeCategory];
+        return categoryData.units.findIndex(u => u.key === unitKey);
+    }
+    
+    /**
+     * Converts the input size/text to the base CM measurement.
+     * @param {string|number} input - The raw input value.
+     * @param {string} fromKey - The key of the source unit.
+     * @returns {number|null} The equivalent measurement in CM, or null if not found.
+     */
+    function convertToBaseCM(input, fromKey) {
+        const categoryData = SIZING_TABLES[activeCategory];
+        const fromIndex = getUnitIndex(fromKey);
+
+        if (fromIndex === -1) return null;
+
+        // Special handling for the base CM unit itself
+        if (fromKey === 'cm') {
+            return parseFloat(input);
+        }
+
+        let inputVal = (typeof input === 'string' && fromKey.includes('int')) 
+                       ? input.toUpperCase() 
+                       : parseFloat(input);
+
+        if (typeof inputVal === 'string') {
+             // Find exact match for S/M/L
+            const row = categoryData.chart.find(r => r[fromIndex] === inputVal);
+            return row ? row[0] : null; // r[0] is the CM base value
+        } else if (!isNaN(inputVal)) {
+            // Find the closest numeric match
+            let minDiff = Infinity;
+            let baseCM = null;
+
+            for (const row of categoryData.chart) {
+                const chartSize = row[fromIndex];
+                const diff = Math.abs(chartSize - inputVal);
+
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    baseCM = row[0];
+                }
+            }
+            // Require a close match (e.g., within 1 unit for most numeric sizes)
+            if (minDiff < 1.5) {
+                return baseCM;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Converts the base CM measurement to a target size.
+     * @param {number} baseCM - The base measurement in CM.
+     * @param {string} toKey - The key of the target unit.
+     * @returns {string|number|null} The converted size/label.
+     */
+    function convertFromBaseCM(baseCM, toKey) {
+        const categoryData = SIZING_TABLES[activeCategory];
+        const toIndex = getUnitIndex(toKey);
+
+        if (toIndex === -1) return null;
+
+        // If converting back to the base CM unit
+        if (toKey === 'cm') {
+            return baseCM.toFixed(1);
+        }
+
+        let minDiff = Infinity;
+        let targetSize = null;
+
+        // Find the CM entry closest to the baseCM value
+        for (const row of categoryData.chart) {
+            const chartCM = row[0];
+            const diff = Math.abs(chartCM - baseCM);
+
+            if (diff < minDiff) {
+                minDiff = diff;
+                targetSize = row[toIndex];
+            }
+        }
+        
+        // Format numeric results to remove unnecessary decimals
+        if (typeof targetSize === 'number') {
+             // Numeric sizes like EU 48 or US 32 should be integers
+            return Number.isInteger(targetSize) ? targetSize.toFixed(0) : targetSize.toFixed(1);
+        }
+        
+        return targetSize;
+    }
+
+
+    /**
+     * Populates the unit dropdown based on the selected category.
+     */
+    function updateUnitDropdown() {
+        const categoryData = SIZING_TABLES[activeCategory];
+        unitSelect.innerHTML = '';
+        categoryData.units.forEach(unit => {
+            const option = document.createElement('option');
+            option.value = unit.key;
+            option.textContent = `${unit.name} (${unit.abbr})`;
+            unitSelect.appendChild(option);
+        });
+        
+        // Set a sensible default input size based on category
+        if (activeCategory === 'mens_tops') {
+             unitSelect.value = 'int';
+             inputValue.value = 'M';
+        } else if (activeCategory === 'womens_tops') {
+            unitSelect.value = 'us_num';
+            inputValue.value = '8';
+        } else if (activeCategory === 'mens_bottoms') {
+            unitSelect.value = 'us_num';
+            inputValue.value = '32';
+        } else if (activeCategory === 'womens_bottoms') {
+            unitSelect.value = 'uk';
+            inputValue.value = '12';
+        }
+    }
+
+    /**
+     * Main conversion logic.
+     */
+    function convertSize() {
+        const inputVal = inputValue.value.trim();
+        const fromKey = unitSelect.value;
+        
+        resultsList.innerHTML = '';
+
+        if (!inputVal) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a size.</div>`;
+            return;
+        }
+
+        // 1. Convert input to Base CM
+        const baseCM = convertToBaseCM(inputVal, fromKey);
+
+        if (baseCM === null) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Error: The size "${inputVal}" is not recognized for the selected category/unit, or is outside the standard range.</div>`;
+            return;
+        }
+        
+        // 2. Display all converted sizes
+        const categoryData = SIZING_TABLES[activeCategory];
+
+        categoryData.units.forEach(unit => {
+            const toKey = unit.key;
+            const convertedSize = convertFromBaseCM(baseCM, toKey);
+            
+            const li = document.createElement('div');
+            li.classList.add('list-group-item');
+            
+            if (fromKey === toKey) {
+                li.classList.add('highlight-item');
+            }
+
+            li.innerHTML = `
+                <span class="unit-name">${unit.name} (${unit.abbr})</span>
+                <span class="unit-value">${convertedSize}</span>
+            `;
+            
+            resultsList.appendChild(li);
+        });
+    }
+
+    // --- Event Listeners and Initialization ---
+
+    categorySelect.addEventListener('change', function() {
+        activeCategory = this.value;
+        updateUnitDropdown();
+    });
+
+    convertButton.addEventListener('click', convertSize);
+    
+    // Set up initial dropdown and perform initial conversion
+    updateUnitDropdown();
+    convertSize();
+
+</script>
+{% endblock %}

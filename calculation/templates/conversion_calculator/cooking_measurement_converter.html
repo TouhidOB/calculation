@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Cooking Measurement Converter (Cups, Spoons, ml){% endblock %}
+
+{% block meta_description %}Convert kitchen volume measurements instantly between Cups, Tablespoons (Tbsp), Teaspoons (tsp), Fluid Ounces (fl oz), and Milliliters (ml).{% endblock %}
+
+{% block meta_keywords %}cooking converter, cups to tablespoons, tsp to ml, fluid ounces, kitchen measurements, volume converter{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #343a40;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        background: #fffbe6; /* Light yellow background for kitchen theme */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #ffcc00; /* Yellow border */
+    }
+    
+    .conversion-input-group .form-control {
+        font-size: 1.25rem;
+        height: auto;
+        padding: 10px;
+        border-right: none;
+        box-shadow: none; 
+    }
+    
+    .conversion-input-group .input-group-text {
+        background: #ffcc00;
+        font-weight: bold;
+        padding: 10px 15px;
+        cursor: pointer; 
+    }
+    
+    .conversion-input-group .dropdown-toggle {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        background-color: #ff9900;
+        color: white;
+    }
+
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #d9534f; /* Red/Orange theme for heat/cooking */
+    }
+    
+    .highlight-item {
+        border-left-color: #d9534f !important; 
+        background-color: #ffeeee;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🥄 Cooking Measurement Converter</h1>
+    <p class="small-muted">Convert **liquid volume** for cooking and baking instantly between US Customary and Metric units. Results update in **real-time**.</p>
+    [Image of kitchen volume measuring cups and spoons]
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Volume and Unit</h5>
+
+        <div class="conversion-input-group">
+            <!-- The main input field for the value -->
+            <input type="number" class="form-control" id="inputValue" placeholder="Enter volume..." min="0" step="any" autofocus>
+
+            <!-- Dropdown for selecting the input unit -->
+            <div class="input-group-append">
+                <button class="btn dropdown-toggle" type="button" id="unitDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Unit
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="unitDropdown">
+                    <li><a class="dropdown-item" href="#" data-unit="ml">Milliliters (ml)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="cup_us">US Cups</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="tbsp_us">US Tablespoons (Tbsp)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="tsp_us">US Teaspoons (tsp)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="floz_us">US Fluid Ounces (fl oz)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="liter">Liters (L)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="pint_us">US Pints</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="quart_us">US Quarts</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <h5 class="section-title mt-4">Step 2: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <!-- Results will be dynamically inserted here -->
+            <div class="alert alert-info" id="initialMessage">Enter a number and select a unit to see conversions.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Standard Definitions Used:** Conversions use the standard US Customary definitions: $1 \text{ US cup} = 236.588 \text{ ml}$, $1 \text{ US Tbsp} \approx 14.787 \text{ ml}$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Base unit: Milliliters (ml)
+    const UNIT_FACTORS = {
+        'ml': { name: 'Milliliters', factor: 1, abbr: 'ml' },
+        'liter': { name: 'Liters', factor: 1000, abbr: 'L' }, // 1 L = 1000 ml
+        
+        // US Customary Liquid Volume
+        'floz_us': { name: 'US Fluid Ounces', factor: 29.5735, abbr: 'fl oz' }, // 1 fl oz = 29.5735 ml
+        'tbsp_us': { name: 'US Tablespoons', factor: 14.7868, abbr: 'Tbsp' }, // 1 Tbsp = 14.7868 ml (1/2 fl oz)
+        'tsp_us': { name: 'US Teaspoons', factor: 4.92892, abbr: 'tsp' }, // 1 tsp = 4.92892 ml (1/3 Tbsp)
+        'cup_us': { name: 'US Cups', factor: 236.588, abbr: 'cups' }, // 1 cup = 236.588 ml (8 fl oz)
+        'pint_us': { name: 'US Pints', factor: 473.176, abbr: 'pints' }, // 1 pint = 473.176 ml (2 cups)
+        'quart_us': { name: 'US Quarts', factor: 946.353, abbr: 'quarts' } // 1 quart = 946.353 ml (2 pints)
+        // Note: Imperial units are intentionally omitted for simplicity in a cooking context, where US units dominate.
+    };
+
+    let activeUnit = 'cup_us'; // Default unit
+    const inputField = document.getElementById('inputValue');
+    const unitDropdown = document.getElementById('unitDropdown');
+    const resultsList = document.getElementById('resultsList');
+    const initialMessage = document.getElementById('initialMessage');
+    
+    // Function to update the dropdown button text
+    function updateDropdownButton(unitKey) {
+        const { name, abbr } = UNIT_FACTORS[unitKey];
+        unitDropdown.textContent = `${name} (${abbr})`;
+    }
+
+    // Function to perform the conversion and update the UI
+    function convertCookingVolume() {
+        const inputValue = parseFloat(inputField.value);
+
+        // Clear previous results
+        resultsList.innerHTML = '';
+        initialMessage.style.display = 'none';
+
+        if (isNaN(inputValue) || inputValue < 0) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a valid, non-negative number.</div>`;
+            return;
+        }
+
+        const fromFactor = UNIT_FACTORS[activeUnit].factor;
+        
+        // 1. Convert the input value to the Base Unit (Milliliters)
+        const baseValueML = inputValue * fromFactor;
+        
+        // 2. Calculate and display all conversions
+        const allUnits = Object.keys(UNIT_FACTORS);
+
+        allUnits.forEach(toUnitKey => {
+            const { name, abbr, factor: toFactor } = UNIT_FACTORS[toUnitKey];
+            
+            // Convert from Base Unit (Milliliters) to the Target Unit
+            const convertedValue = baseValueML / toFactor;
+            
+            const li = document.createElement('div');
+            li.classList.add('list-group-item');
+            
+            // Highlight the active input unit
+            if (activeUnit === toUnitKey) {
+                li.classList.add('highlight-item');
+            }
+
+            // Ensure proper display formatting
+            let displayValue;
+            // Use precise formatting for small units (tsp, tbsp, ml)
+            if (toUnitKey === 'tsp_us' || toUnitKey === 'tbsp_us' || toUnitKey === 'ml') {
+                displayValue = convertedValue.toFixed(2);
+            } else if (Math.abs(convertedValue) < 0.01 && convertedValue !== 0) {
+                 // Use exponential notation for extremely tiny fractions
+                displayValue = convertedValue.toExponential(4);
+            } else {
+                // Default fixed precision for larger units
+                displayValue = convertedValue.toFixed(4);
+            }
+
+            li.innerHTML = `
+                <span class="unit-name">${name} (${abbr})</span>
+                <span class="unit-value">${displayValue}</span>
+            `;
+            
+            resultsList.appendChild(li);
+        });
+    }
+
+    // Event listener for input changes (real-time conversion)
+    inputField.addEventListener('input', convertCookingVolume);
+
+    // Event listener for dropdown unit selection
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newUnit = this.getAttribute('data-unit');
+            activeUnit = newUnit;
+            updateDropdownButton(activeUnit);
+            convertCookingVolume(); // Recalculate with the new unit
+        });
+    });
+
+    // Initial setup: Set default unit and prompt user
+    updateDropdownButton(activeUnit);
+    resultsList.appendChild(initialMessage);
+
+    // Run once on load to show initial unit in the dropdown
+    inputField.value = 1; 
+    convertCookingVolume();
+
+</script>
+{% endblock %}

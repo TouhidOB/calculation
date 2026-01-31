@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Number System Converter (Binary, Decimal, Hex){% endblock %}
+
+{% block meta_description %}Convert numbers instantly between Binary (Base 2), Decimal (Base 10), and Hexadecimal (Base 16).{% endblock %}
+
+{% block meta_keywords %}number system converter, binary to decimal, hex to binary, base converter, radix conversion, computer science{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #343a40;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        background: #f5f5ff; /* Light purple/tech theme */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #6c75fb;
+    }
+    
+    .conversion-input-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #4e5595;
+    }
+
+    .conversion-input-group select,
+    .conversion-input-group input[type="text"] {
+        font-size: 1.1rem;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        text-transform: uppercase; /* Make Hex input look consistent */
+    }
+    
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: 'monospace'; /* Monospace for number systems is critical for legibility */
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #6c75fb; /* Primary theme color */
+    }
+    
+    .highlight-item {
+        border-left-color: #6c75fb !important; 
+        background-color: #f8f8ff;
+    }
+    
+    .conversion-button {
+        background-color: #6c75fb;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 20px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #555bce;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💻 Number System Converter</h1>
+    <p class="small-muted">Convert between Binary (Base 2), Decimal (Base 10), and Hexadecimal (Base 16). </p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Value and Source System</h5>
+
+        <div class="conversion-input-group">
+            <label for="inputValue">Enter Value</label>
+            <div class="d-flex">
+                <input type="text" class="form-control me-2" id="inputValue" placeholder="Enter value (e.g., 1011, 255, FF)" value="1010" autofocus>
+                <select id="unitSelect" class="form-select w-50">
+                    <option value="2">Binary (Base 2)</option>
+                    <option value="10">Decimal (Base 10)</option>
+                    <option value="16">Hexadecimal (Base 16)</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" id="convertButton">
+            Convert Number
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Enter a number and select its base, then click 'Convert Number'.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Note:** Conversion uses standard 32-bit integer limits for large numbers, but JavaScript handles larger numbers as floating-point. The result is calculated using native JavaScript radix methods.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Define the radix for each system
+    const SYSTEMS = {
+        '2': { name: 'Binary', abbr: 'Base 2', radix: 2 },
+        '10': { name: 'Decimal', abbr: 'Base 10', radix: 10 },
+        '16': { name: 'Hexadecimal', abbr: 'Base 16', radix: 16 }
+    };
+    
+    const inputValue = document.getElementById('inputValue');
+    const unitSelect = document.getElementById('unitSelect');
+    const convertButton = document.getElementById('convertButton');
+    const resultsList = document.getElementById('resultsList');
+    
+    /**
+     * Validates the input string against the chosen radix/base.
+     * @param {string} value The input string.
+     * @param {number} radix The base (2, 10, or 16).
+     * @returns {boolean} True if valid, false otherwise.
+     */
+    function isValidInput(value, radix) {
+        if (!value) return false;
+        
+        let pattern;
+        switch (radix) {
+            case 2:
+                // Only 0s and 1s
+                pattern = /^[01]+$/i;
+                break;
+            case 10:
+                // Only digits
+                pattern = /^\d+$/i;
+                break;
+            case 16:
+                // 0-9 and A-F
+                pattern = /^[0-9a-f]+$/i;
+                break;
+            default:
+                return false;
+        }
+        return pattern.test(value);
+    }
+
+    /**
+     * Main conversion logic.
+     */
+    function convertNumber() {
+        // Normalize input: remove spaces and convert hex letters to uppercase for consistency
+        const inputVal = inputValue.value.trim().toUpperCase();
+        const fromRadix = parseInt(unitSelect.value, 10);
+        
+        resultsList.innerHTML = '';
+
+        if (!isValidInput(inputVal, fromRadix)) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a valid ${SYSTEMS[fromRadix].name} number.</div>`;
+            return;
+        }
+
+        // 1. Convert input value to the Base 10 (Decimal)
+        // parseInt handles the conversion from the source base to decimal.
+        const decimalValue = parseInt(inputVal, fromRadix);
+
+        // Check if conversion resulted in a valid number (NaN check)
+        if (isNaN(decimalValue)) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Conversion failed. The number may be too large or the input is malformed.</div>`;
+            return;
+        }
+
+        // 2. Display all converted formats
+        
+        Object.keys(SYSTEMS).forEach(toRadixKey => {
+            const toRadix = parseInt(toRadixKey, 10);
+            const def = SYSTEMS[toRadixKey];
+            
+            // Convert from Base 10 (decimalValue) to the target radix
+            // We use .toString(radix) and uppercase for Hex output consistency
+            let convertedValue = decimalValue.toString(toRadix);
+            if (toRadix === 16) {
+                convertedValue = convertedValue.toUpperCase();
+            }
+
+            const li = document.createElement('div');
+            li.classList.add('list-group-item');
+            
+            // Apply highlight if this is the input unit
+            if (fromRadix === toRadix) {
+                li.classList.add('highlight-item');
+            }
+
+            li.innerHTML = `
+                <span class="unit-name">${def.name} (${def.abbr})</span>
+                <span class="unit-value">${convertedValue}</span>
+            `;
+            
+            resultsList.appendChild(li);
+        });
+    }
+
+    // --- Event Listeners and Initialization ---
+
+    function setupListeners() {
+        // Use 'input' event for real-time responsiveness on text changes
+        inputValue.addEventListener('input', convertNumber);
+        // Use 'change' event for dropdown changes
+        unitSelect.addEventListener('change', convertNumber);
+        convertButton.addEventListener('click', convertNumber);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertNumber(); // Initial conversion run
+    };
+
+</script>
+{% endblock %}

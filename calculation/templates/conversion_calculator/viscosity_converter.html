@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Viscosity Converter (Dynamic & Kinematic){% endblock %}
+
+{% block meta_description %}Convert between Dynamic Viscosity (Pa·s, cP) and Kinematic Viscosity (m²/s, cSt) units.{% endblock %}
+
+{% block meta_keywords %}viscosity converter, dynamic viscosity, kinematic viscosity, pascal second, centipoise, centistokes, fluid dynamics{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #f39c12; /* Fluid Amber/Orange Theme */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #fff8e8; /* Light emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #f39c12; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #d35400;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #f39c12;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #2c3e50; /* Dark text for contrast */
+        word-break: break-all;
+        width: 100%;
+        background-color: #ecf0f1;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #f39c12;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #d35400;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💧 Viscosity Converter</h1>
+    <p class="small-muted">Convert between **Dynamic Viscosity** (Absolute) and **Kinematic Viscosity** units. Note: Dynamic $\leftrightarrow$ Kinematic conversion requires density input (not included here).</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Enter Value and Unit</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Value Input -->
+            <label for="inputValue">Value to Convert</label>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 0.5" value="0.5" min="0" step="any" autofocus>
+            
+            <!-- Unit Select -->
+            <div class="mt-3">
+                <label for="inputUnitSelect">Input Unit (Select the unit of your input)</label>
+                <select id="inputUnitSelect" class="form-select input-field">
+                    <!-- Dynamic Viscosity -->
+                    <optgroup label="Dynamic Viscosity ($\mu$)">
+                        <option value="PaS">Pascal-seconds ($\text{Pa} \cdot \text{s}$)</option>
+                        <option value="cP">Centipoise ($\text{cP}$)</option>
+                    </optgroup>
+                    <!-- Kinematic Viscosity -->
+                    <optgroup label="Kinematic Viscosity ($\nu$)">
+                        <option value="m2S">Square meters per second ($\text{m}^2/\text{s}$)</option>
+                        <option value="cSt">Centistokes ($\text{cSt}$)</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" onclick="convertViscosity()">
+            Convert
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Converted Results</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted values will appear here.</div>
+        </div>
+        
+        <p class="small-muted mt-3">**Note:** Dynamic and Kinematic viscosity are different physical quantities and cannot be directly converted without knowing the fluid's density ($\nu = \mu / \rho$). This tool converts units *within* each type.</p>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    // Dynamic Viscosity: Pa·s to cP
+    const PaS_TO_CP_FACTOR = 1000; // 1 Pa·s = 1000 cP
+    // Kinematic Viscosity: m²/s to cSt
+    const M2S_TO_CST_FACTOR = 1000000; // 1 m²/s = 1,000,000 cSt
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const inputUnitSelect = document.getElementById('inputUnitSelect');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Converts the viscosity value based on the selected unit.
+     */
+    function convertViscosity() {
+        resultsList.innerHTML = '';
+        const value = parseFloat(inputValue.value);
+        const inputUnit = inputUnitSelect.value;
+        
+        if (isNaN(value) || value < 0) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid non-negative number.</div>`;
+            return;
+        }
+
+        let results = [];
+
+        // --- DYNAMIC VISCOSITY CONVERSIONS (Pa·s and cP) ---
+        if (inputUnit === 'PaS' || inputUnit === 'cP') {
+            let PaS_value;
+            
+            if (inputUnit === 'PaS') {
+                PaS_value = value;
+                results.push({ name: 'Input', unit: 'Pa·s', value: value.toFixed(6) });
+            } else { // cP
+                PaS_value = value / PaS_TO_CP_FACTOR;
+                results.push({ name: 'Input', unit: 'cP', value: value.toFixed(6) });
+            }
+            
+            // Output in Pa·s
+            if (inputUnit !== 'PaS') {
+                results.push({ name: 'Pascal-seconds (SI)', unit: 'Pa·s', value: PaS_value.toFixed(10) });
+            }
+            
+            // Output in cP
+            const cP_value = PaS_value * PaS_TO_CP_FACTOR;
+            if (inputUnit !== 'cP') {
+                results.push({ name: 'Centipoise (cgs)', unit: 'cP', value: cP_value.toFixed(6) });
+            }
+
+            // Note on Kinematic
+            results.push({ 
+                name: 'Kinematic Viscosity Note', 
+                unit: '', 
+                value: 'Requires density to convert to kinematic units ($\text{m}^2/\text{s}$, $\text{cSt}$).', 
+                isNote: true 
+            });
+
+
+        // --- KINEMATIC VISCOSITY CONVERSIONS (m²/s and cSt) ---
+        } else if (inputUnit === 'm2S' || inputUnit === 'cSt') {
+            let m2S_value;
+            
+            if (inputUnit === 'm2S') {
+                m2S_value = value;
+                results.push({ name: 'Input', unit: '$\text{m}^2/\text{s}$', value: value.toFixed(8) });
+            } else { // cSt
+                m2S_value = value / M2S_TO_CST_FACTOR;
+                results.push({ name: 'Input', unit: 'cSt', value: value.toFixed(6) });
+            }
+            
+            // Output in m²/s
+            if (inputUnit !== 'm2S') {
+                results.push({ name: 'Square meters/second (SI)', unit: '$\text{m}^2/\text{s}$', value: m2S_value.toFixed(12) });
+            }
+            
+            // Output in cSt
+            const cSt_value = m2S_value * M2S_TO_CST_FACTOR;
+            if (inputUnit !== 'cSt') {
+                results.push({ name: 'Centistokes (cgs)', unit: 'cSt', value: cSt_value.toFixed(6) });
+            }
+            
+             // Note on Dynamic
+            results.push({ 
+                name: 'Dynamic Viscosity Note', 
+                unit: '', 
+                value: 'Requires density to convert to dynamic units ($\text{Pa} \cdot \text{s}$, $\text{cP}$).', 
+                isNote: true 
+            });
+        }
+
+        // --- Render Results ---
+        results.forEach(res => {
+            renderResult(res.name, res.value, res.unit, res.isNote);
+        });
+    }
+    
+    /**
+     * Renders a single result item.
+     * @param {string} name - The name of the result/unit.
+     * @param {string} value - The numerical value.
+     * @param {string} unit - The unit abbreviation.
+     * @param {boolean} isNote - If true, style as a note/alert.
+     */
+    function renderResult(name, value, unit, isNote = false) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        
+        if (isNote) {
+             item.style.borderLeftColor = '#3498db'; /* Blue for info */
+             item.style.backgroundColor = '#eef7ff';
+             item.innerHTML = `
+                <div class="unit-name" style="color:#3498db">${name}</div>
+                <div style="font-size: 0.9rem; color: #34495e; font-style: italic; margin-top: 5px;">${value}</div>
+             `;
+        } else {
+             item.innerHTML = `
+                <div class="unit-name">${name}</div>
+                <div class="unit-value">
+                    ${value} <span style="font-size: 0.8em; font-weight: normal; color: #f39c12;">${unit}</span>
+                </div>
+            `;
+        }
+
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change
+        inputValue.addEventListener('input', convertViscosity);
+        // Use 'change' event for unit switch
+        inputUnitSelect.addEventListener('change', convertViscosity);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertViscosity(); // Run initial conversion on load
+    };
+
+</script>
+{% endblock %}

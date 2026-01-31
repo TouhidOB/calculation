@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+
+{% block title %}Capital Gains Tax on Real Estate Calculator{% endblock %}
+
+{% block meta_description %}Estimate the capital gains tax owed on a real estate sale by calculating the adjusted basis, taxable gain, and applying federal long-term capital gains rates.{% endblock %}
+
+{% block meta_keywords %}capital gains tax, real estate tax calculator, adjusted cost basis, primary residence exclusion, long-term capital gains, short-term capital gains, home sale tax{% endendblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<style>
+    /* Custom Styling for a Red/Burgundy Theme (representing taxes/loss) */
+    .solver-wrapper {
+        background: #fdf6f7; /* Very light red/white */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 1100px; 
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #fecaca; /* Light Red/Pink */
+        border: 2px solid #ef4444; /* Red accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #991b1b; /* Dark Red */
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-control-custom {
+        padding: 12px;
+        font-size: 1.2rem;
+        border: 2px solid #fca5a5; 
+        border-radius: 8px;
+        font-weight: 700;
+        color: #dc2626;
+    }
+    .form-control-custom:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.25);
+    }
+
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .summary-card {
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #ffeaea; /* Very light Pink */
+        border-left: 5px solid #b91c1c; /* Burgundy accent */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    /* Styles for Tax display */
+    .result-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #991b1b; /* Dark Red */
+    }
+    
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: #b91c1c; /* Burgundy */
+    }
+
+    .tax-box {
+        background-color: #fef2f2; /* Lighter Pink */
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid #dc2626;
+    }
+    
+    .tax-value {
+        font-size: 2.8rem;
+        font-weight: 900;
+        color: #b91c1c;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container p-4 p-md-5">
+    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🛑 Capital Gains Tax on Real Estate Calculator</h1>
+    <p class="text-secondary mb-5 text-center">
+        Estimate the **Federal Capital Gains Tax** owed on your home sale after factoring in costs, improvements, and the primary residence exclusion.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <form id="cap-gains-form" class="row g-4">
+            
+            <div class="col-lg-5 col-md-6">
+                <div class="input-section h-100">
+                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Basis & Gain Calculation</h4>
+                    
+                    <div class="input-box mb-3">
+                        <label for="sale-price">Final Sale Price:</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="sale-price" 
+                               value="550000" 
+                               min="1000"
+                               step="any"
+                               required
+                               class="form-control form-control-custom">
+                        </div>
+                    </div>
+                    
+                    <div class="input-box mb-3">
+                        <label for="purchase-price">Original Purchase Price (Initial Basis):</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="purchase-price" 
+                               value="300000" 
+                               min="0" 
+                               step="any"
+                               required 
+                               class="form-control form-control-custom">
+                        </div>
+                    </div>
+                    
+                    <div class="input-box mb-3">
+                        <label for="improvement-costs">Capital Improvement Costs (e.g., remodel):</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="improvement-costs" 
+                               value="40000" 
+                               min="0" 
+                               step="any"
+                               required 
+                               class="form-control form-control-custom">
+                        </div>
+                    </div>
+
+                     <div class="input-box mb-3">
+                        <label for="selling-costs">Total Selling Expenses (Commissions, Fees):</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="selling-costs" 
+                               value="35000" 
+                               min="0" 
+                               step="any"
+                               required 
+                               class="form-control form-control-custom">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7 col-md-6">
+                 <div class="input-section h-100">
+                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. Exclusions & Tax Status</h4>
+
+                    <div class="row g-3">
+                        <div class="col-md-6 input-box">
+                            <label for="ownership-months">Months Owned (For Long-Term Status):</label>
+                            <input type="number" id="ownership-months" 
+                               value="60" 
+                               min="1" 
+                               step="1"
+                               required 
+                               class="form-control form-control-custom">
+                            <small class="text-muted">Over 12 months = Long-Term Gain.</small>
+                        </div>
+
+                        <div class="col-md-6 input-box">
+                            <label for="filing-status">Tax Filing Status:</label>
+                            <select id="filing-status" class="form-select form-control-custom">
+                                <option value="single">Single</option>
+                                <option value="married_joint">Married Filing Jointly</option>
+                            </select>
+                            <small class="text-muted">Determines exclusion amount and brackets.</small>
+                        </div>
+
+                        <div class="col-md-6 input-box">
+                            <label for="residence-exclusion">Primary Residence Exclusion ($):</label>
+                            <input type="number" id="residence-exclusion" 
+                               value="250000" 
+                               min="0" 
+                               step="any"
+                               required 
+                               class="form-control form-control-custom border-success text-success">
+                            <small class="text-muted">Max: $250k (S) / $500k (MFJ).</small>
+                        </div>
+
+                        <div class="col-md-6 input-box">
+                            <label for="agi">Adjusted Gross Income (AGI) Excl. Sale:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" id="agi" 
+                                   value="80000" 
+                                   min="0" 
+                                   step="any"
+                                   required 
+                                   class="form-control form-control-custom">
+                            </div>
+                            <small class="text-muted">Used to estimate your tax bracket.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12 mt-0">
+                <button type="submit"
+                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
+                Calculate Taxable Gain & Tax Liability
+            </button>
+            </div>
+        </form>
+
+        <div id="result-container" class="result-section">
+            <div id="summary-output" class="summary-card d-none mb-4"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script>
+    // Simplified 2024 Long-Term Capital Gains Brackets (AGI thresholds for 0%/15%/20%)
+    const LTCG_BRACKETS_2024 = {
+        single: [47025, 518900],        // 0% up to $47,025; 20% over $518,900
+        married_joint: [94050, 583750]  // 0% up to $94,050; 20% over $583,750
+    };
+
+    /**
+     * Determines the federal Long-Term Capital Gains tax rate (0%, 15%, or 20%) 
+     * based on the provided AGI (including the taxable gain).
+     */
+    function getLTCGTaxRate(agiIncludingGain, filingStatus) {
+        const brackets = LTCG_BRACKETS_2024[filingStatus];
+        
+        if (agiIncludingGain <= brackets[0]) {
+            return 0;
+        } else if (agiIncludingGain <= brackets[1]) {
+            return 15;
+        } else {
+            return 20;
+        }
+    }
+
+    /**
+     * Formats a number as USD currency (no cents).
+     */
+    const currencyFormatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    });
+    
+    /**
+     * Formats a number as USD currency (with cents).
+     */
+    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const summaryDiv = document.getElementById('summary-output');
+        
+        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
+        
+        if (isError) {
+            summaryDiv.classList.add('result-error');
+            summaryDiv.classList.remove('summary-card');
+            summaryDiv.innerHTML = contentHtml;
+        } else {
+            summaryDiv.classList.add('summary-card');
+            summaryDiv.classList.remove('result-error');
+            summaryDiv.innerHTML = contentHtml;
+        }
+    }
+    
+    /**
+     * Handles form submission and triggers the calculation.
+     */
+    function handleCapGains(e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const salePrice = parseFloat(document.getElementById('sale-price').value);
+        const purchasePrice = parseFloat(document.getElementById('purchase-price').value);
+        const improvementCosts = parseFloat(document.getElementById('improvement-costs').value);
+        const sellingCosts = parseFloat(document.getElementById('selling-costs').value);
+        const ownershipMonths = parseInt(document.getElementById('ownership-months').value);
+        const residenceExclusion = parseFloat(document.getElementById('residence-exclusion').value);
+        const agi = parseFloat(document.getElementById('agi').value);
+        const filingStatus = document.getElementById('filing-status').value;
+        
+        // 2. Input Validation (Basic)
+        if (isNaN(salePrice) || salePrice <= 0 || isNaN(purchasePrice) || purchasePrice < 0 ||
+            isNaN(improvementCosts) || improvementCosts < 0 || isNaN(sellingCosts) || sellingCosts < 0 ||
+            isNaN(ownershipMonths) || ownershipMonths <= 0 || isNaN(residenceExclusion) || residenceExclusion < 0 ||
+            isNaN(agi) || agi < 0) {
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please ensure all inputs are valid positive numbers.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
+        try {
+            // --- Part 1: Calculate Taxable Gain ---
+            
+            // Adjusted Basis = Purchase Price + Improvements
+            const adjustedBasis = purchasePrice + improvementCosts;
+
+            // Net Sale Price = Sale Price - Selling Costs
+            const netSalePrice = salePrice - sellingCosts;
+
+            // Gross Gain = Net Sale Price - Adjusted Basis
+            const grossGain = netSalePrice - adjustedBasis;
+            
+            // Taxable Gain (applying the exclusion)
+            const taxableGainBeforeTerm = Math.max(0, grossGain - residenceExclusion);
+
+            // --- Part 2: Determine Tax Type and Rate ---
+            
+            const isLongTerm = ownershipMonths > 12;
+            let finalTaxableGain = 0;
+            let appliedRate = 0;
+            let taxType = "N/A";
+            
+            if (grossGain <= 0) {
+                // Capital Loss or $0 gain
+                taxType = "Capital Loss (No Tax Owed)";
+                finalTaxableGain = 0;
+                appliedRate = 0;
+            } else if (!isLongTerm) {
+                // Short-Term Gain (taxed at ordinary income rates - cannot calculate here)
+                taxType = "Short-Term Gain (Ordinary Income Rate)";
+                finalTaxableGain = taxableGainBeforeTerm;
+                appliedRate = 0; // Set to 0 because we cannot accurately calculate ordinary rate
+            } else {
+                // Long-Term Gain (LTCG Rate)
+                taxType = "Long-Term Gain (LTCG Rate)";
+                finalTaxableGain = taxableGainBeforeTerm;
+                
+                // Estimate the rate based on AGI + Taxable Gain
+                const agiIncludingGain = agi + finalTaxableGain;
+                appliedRate = getLTCGTaxRate(agiIncludingGain, filingStatus);
+            }
+
+            // --- Part 3: Calculate Estimated Tax ---
+            let estimatedTax = 0;
+            if (taxType === "Long-Term Gain (LTCG Rate)") {
+                 // Note: This simplified model applies a single marginal rate to the *entire* gain, 
+                 // which is a simplification of the tiered LTCG tax system.
+                estimatedTax = finalTaxableGain * (appliedRate / 100);
+            }
+            
+            const taxMessage = (taxType === "Short-Term Gain (Ordinary Income Rate)") 
+                ? "Tax is due at your ordinary income rate, which may be higher than 20%." 
+                : `Tax is estimated at the ${appliedRate}% federal Long-Term Capital Gains rate.`;
+
+
+            // 4. Build Summary HTML
+            const taxColor = estimatedTax > 0 ? 'text-danger' : 'text-success';
+            
+            const summaryHtml = `
+                <h4 class="h5 fw-bold text-center text-red-700 mb-4">Estimated Federal Capital Gains Tax Liability</h4>
+                
+                <div class="text-center mb-4">
+                    <p class="result-label">ESTIMATED CAPITAL GAINS TAX</p>
+                    <div class="tax-box d-inline-block">
+                        <p class="tax-value mb-0 ${taxColor}">
+                            ${currencyFormatter.format(estimatedTax)}
+                        </p>
+                    </div>
+                    <p class="text-muted small mt-2 fw-bold">
+                        ${taxMessage}
+                    </p>
+                </div>
+                
+                <hr class="my-4">
+                
+                <h5 class="h6 fw-bold text-center text-primary mb-3">Gain Calculation Breakdown</h5>
+                <div class="row text-center">
+                    <div class="col-md-4 border-end border-red-400">
+                        <p class="result-label mb-2">Adjusted Cost Basis</p>
+                        <p class="fs-4 fw-bold text-secondary">${currencyFormatter.format(adjustedBasis)}</p>
+                        <p class="text-muted small">(Purchase + Improvements)</p>
+                    </div>
+                    <div class="col-md-4 border-end border-red-400">
+                        <p class="result-label mb-2">Gross Capital Gain</p>
+                        <p class="fs-4 fw-bold ${grossGain > 0 ? 'text-danger' : 'text-success'}">${currencyFormatter.format(grossGain)}</p>
+                        <p class="text-muted small">(After selling costs)</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="result-label mb-2">Final Taxable Gain</p>
+                        <p class="fs-4 fw-bold text-warning">${currencyFormatter.format(finalTaxableGain)}</p>
+                        <p class="text-muted small">(After $${currencyFormatter.format(residenceExclusion)} exclusion)</p>
+                    </div>
+                </div>
+            `;
+            
+            displayResult(false, summaryHtml);
+            
+        } catch (error) {
+            console.error(error);
+             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
+            displayResult(true, htmlContent);
+        }
+    }
+    
+    // Function to update the exclusion amount when status changes
+    function updateExclusion() {
+        const status = document.getElementById('filing-status').value;
+        const exclusionInput = document.getElementById('residence-exclusion');
+        
+        if (status === 'married_joint') {
+            exclusionInput.value = 500000;
+        } else {
+            exclusionInput.value = 250000;
+        }
+    }
+
+    // Attach handler to the form
+    document.getElementById('cap-gains-form').addEventListener('submit', handleCapGains);
+    
+    // Attach event listener for status change
+    document.getElementById('filing-status').addEventListener('change', updateExclusion);
+
+    // Initial calculation for default value on load
+    window.onload = function() {
+        updateExclusion();
+        document.getElementById('cap-gains-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

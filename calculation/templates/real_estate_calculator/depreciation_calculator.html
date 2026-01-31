@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Depreciation (Cost Recovery) Calculator{% endblock %}
+
+{% block meta_description %}Calculate annual depreciation, accumulated depreciation, and book value using Straight-Line, Sum-of-the-Years' Digits (SYD), and Declining Balance methods.{% endblock %}
+
+{% block meta_keywords %}depreciation calculator, straight-line, declining balance, SYD, cost recovery, asset accounting{% endendblock %}
+
+{% block extra_head %}
+<!-- Include Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKyc/iM85rEkg9nO8g19z0c4n1qJkI15d9yI5M9I4KjD4+gN2V01GjJ8F4/1043K2b+I7Sg/q2N5oQ2A==" crossorigin="anonymous">
+
+<style>
+    /* Custom Styling for a "Balance Sheet Green" Theme */
+    :root {
+        --main-green: #047857; /* Deep Teal/Green */
+        --light-green: #d1fae5; /* Pale Mint */
+        --dark-text: #065f46;   /* Dark Green text */
+    }
+    
+    .solver-wrapper {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 1200px; 
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: var(--light-green);
+        border: 2px solid var(--main-green);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--dark-text);
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-control-custom, .form-select-custom {
+        padding: 12px;
+        font-size: 1.1rem;
+        border: 2px solid #34d399; 
+        border-radius: 8px;
+        font-weight: 700;
+        color: var(--dark-text);
+    }
+    .form-control-custom:focus, .form-select-custom:focus {
+        border-color: var(--main-green);
+        box-shadow: 0 0 0 0.25rem rgba(4, 120, 87, 0.25);
+    }
+
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .summary-card {
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #f0fff4; /* Very Light Green */
+        border-left: 5px solid var(--main-green);
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    .table-depreciation th {
+        background-color: var(--main-green);
+        color: white;
+        text-align: center;
+        vertical-align: middle;
+        font-weight: 600;
+        border: 1px solid #14532d;
+    }
+    .table-depreciation td {
+        text-align: right;
+        font-family: 'Courier New', monospace;
+    }
+    .table-depreciation thead tr:first-child th {
+        border-bottom: 2px solid white;
+    }
+    .book-value {
+        font-weight: 700;
+        background-color: #ecfdf5;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container p-4 p-md-5">
+    <h1 class="h3 fw-bolder mb-2 text-dark text-center">📊 Depreciation Calculator (Cost Recovery)</h1>
+    <p class="text-secondary mb-5 text-center">
+        Calculate the asset's book value and depreciation schedule using three key accounting methods.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <form id="depreciation-form" class="row g-4">
+            
+            <!-- Input Section -->
+            <div class="col-lg-12">
+                <div class="input-section">
+                    <h4 class="h5 fw-bold text-center text-dark-text p-2 rounded mb-4">Asset Details & Parameters</h4>
+                    
+                    <div class="row">
+                        <!-- Asset Cost -->
+                        <div class="col-md-3 input-box mb-4">
+                            <label for="asset-cost">1. Asset Cost:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" id="asset-cost" 
+                                   value="50000" 
+                                   min="1000"
+                                   step="any"
+                                   required
+                                   class="form-control form-control-custom">
+                            </div>
+                        </div>
+                        
+                        <!-- Salvage Value -->
+                        <div class="col-md-3 input-box mb-4">
+                            <label for="salvage-value">2. Salvage Value:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" id="salvage-value" 
+                                   value="5000" 
+                                   min="0"
+                                   step="any"
+                                   required 
+                                   class="form-control form-control-custom">
+                            </div>
+                        </div>
+
+                        <!-- Useful Life -->
+                        <div class="col-md-3 input-box mb-4">
+                            <label for="useful-life">3. Useful Life (Years):</label>
+                            <input type="number" id="useful-life" 
+                               value="5" 
+                               min="2" 
+                               max="50"
+                               step="1"
+                               required 
+                               class="form-control form-control-custom">
+                        </div>
+                        
+                        <!-- DB Factor -->
+                         <div class="col-md-3 input-box mb-4">
+                            <label for="db-factor">4. Declining Balance Factor:</label>
+                            <select id="db-factor" required class="form-select form-select-custom">
+                                <option value="1.5">150% Declining Balance</option>
+                                <option value="2" selected>Double Declining Balance (200%)</option>
+                            </select>
+                            <small class="text-muted">Rate Multiplier (e.g., 2 / Life).</small>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="col-12 mt-0">
+                <button type="submit"
+                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: var(--main-green); border: none;">
+                Calculate Depreciation Schedules
+            </button>
+            </div>
+        </form>
+
+        <div id="result-container" class="result-section">
+            <div id="summary-output" class="summary-card d-none mb-4"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script>
+    /**
+     * Formats a number as USD currency (with cents).
+     */
+    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const summaryDiv = document.getElementById('summary-output');
+        
+        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
+        
+        if (isError) {
+            summaryDiv.classList.add('result-error');
+            summaryDiv.classList.remove('summary-card');
+            summaryDiv.innerHTML = contentHtml;
+        } else {
+            summaryDiv.classList.add('summary-card');
+            summaryDiv.classList.remove('result-error');
+            summaryDiv.innerHTML = contentHtml;
+        }
+    }
+
+    /**
+     * Gathers and validates all inputs from the form.
+     */
+    function getInputs() {
+        const cost = parseFloat(document.getElementById('asset-cost').value);
+        const salvage = parseFloat(document.getElementById('salvage-value').value);
+        const life = parseInt(document.getElementById('useful-life').value);
+        const factor = parseFloat(document.getElementById('db-factor').value);
+        
+        if (isNaN(cost) || cost <= 0 || isNaN(salvage) || salvage < 0 || isNaN(life) || life < 1 || isNaN(factor) || factor <= 0) {
+            throw new Error("Please ensure Asset Cost, Salvage Value, and Useful Life are valid positive numbers.");
+        }
+        if (salvage >= cost) {
+            throw new Error("Salvage Value must be less than Asset Cost for depreciation to occur.");
+        }
+        
+        return { cost, salvage, life, factor };
+    }
+
+    /**
+     * Calculates the Straight-Line Depreciation schedule.
+     */
+    function calculateStraightLine(cost, salvage, life) {
+        const depreciableBase = cost - salvage;
+        const annualDepreciation = depreciableBase / life;
+        let bookValue = cost;
+        const schedule = [];
+
+        for (let year = 1; year <= life; year++) {
+            let dep = annualDepreciation;
+            
+            // Adjust last year to ensure book value hits salvage exactly
+            if (year === life) {
+                dep = bookValue - salvage;
+            }
+
+            const accumulatedDep = annualDepreciation * year;
+            bookValue -= dep;
+
+            schedule.push({ year, dep, accumulatedDep, bookValue });
+        }
+        return schedule;
+    }
+    
+    /**
+     * Calculates the Sum-of-the-Years' Digits (SYD) Depreciation schedule.
+     */
+    function calculateSYD(cost, salvage, life) {
+        const depreciableBase = cost - salvage;
+        const sumOfYears = life * (life + 1) / 2;
+        let bookValue = cost;
+        let accumulatedDep = 0;
+        const schedule = [];
+
+        for (let year = 1; year <= life; year++) {
+            const remainingLife = life - year + 1;
+            const depFactor = remainingLife / sumOfYears;
+            
+            let dep = depreciableBase * depFactor;
+            
+            // Adjust last year to prevent rounding issues and ensure book value hits salvage
+            if (year === life) {
+                dep = bookValue - salvage;
+            }
+
+            accumulatedDep += dep;
+            bookValue -= dep;
+
+            schedule.push({ year, dep, accumulatedDep, bookValue });
+        }
+        return schedule;
+    }
+
+    /**
+     * Calculates the Declining Balance Depreciation schedule.
+     */
+    function calculateDecliningBalance(cost, salvage, life, factor) {
+        const rate = factor / life;
+        let bookValue = cost;
+        let accumulatedDep = 0;
+        const schedule = [];
+
+        for (let year = 1; year <= life; year++) {
+            let dep = bookValue * rate;
+            
+            // Check if depreciation would drop book value below salvage
+            const potentialBookValue = bookValue - dep;
+            
+            if (potentialBookValue < salvage) {
+                // Adjust depreciation to stop at salvage value
+                dep = bookValue - salvage;
+            }
+            
+            // Ensure no negative depreciation
+            dep = Math.max(0, dep);
+
+            accumulatedDep += dep;
+            bookValue -= dep;
+
+            schedule.push({ year, dep, accumulatedDep, bookValue });
+
+            // Stop if salvage is reached
+            if (bookValue.toFixed(2) <= salvage.toFixed(2) && year < life) {
+                 // Fill remaining years with zero depreciation
+                 for (let y = year + 1; y <= life; y++) {
+                     schedule.push({ year: y, dep: 0, accumulatedDep, bookValue: salvage });
+                 }
+                 break;
+            }
+        }
+        return schedule;
+    }
+    
+    /**
+     * Generates the HTML table for a single depreciation schedule.
+     */
+    function generateTableHTML(methodName, schedule) {
+        let html = `
+            <h5 class="mt-4 mb-3 text-center fw-bold" style="color: var(--main-green);">${methodName} Schedule</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm table-hover table-depreciation">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Year</th>
+                            <th colspan="2">Annual Totals</th>
+                            <th rowspan="2">Ending Book Value</th>
+                        </tr>
+                        <tr>
+                            <th>Depreciation</th>
+                            <th>Accumulated Dep.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        schedule.forEach(row => {
+            html += `
+                <tr>
+                    <td class="text-center fw-bold">${row.year}</td>
+                    <td>${currencyFormatterCents.format(row.dep)}</td>
+                    <td>${currencyFormatterCents.format(row.accumulatedDep)}</td>
+                    <td class="book-value">${currencyFormatterCents.format(row.bookValue)}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        return html;
+    }
+
+
+    /**
+     * Handles form submission and triggers the calculation.
+     */
+    function handleDepreciationCalc(e) {
+        e.preventDefault();
+
+        try {
+            const i = getInputs();
+            
+            // 1. Calculate Schedules
+            const straightLineSchedule = calculateStraightLine(i.cost, i.salvage, i.life);
+            const sydSchedule = calculateSYD(i.cost, i.salvage, i.life);
+            const dbSchedule = calculateDecliningBalance(i.cost, i.salvage, i.life, i.factor);
+
+            // 2. Build Summary HTML
+            let summaryHtml = `
+                <h4 class="h5 fw-bold text-center mb-3" style="color: var(--main-green);">Results Overview</h4>
+                <div class="row mb-4 text-center">
+                    <div class="col-md-4">
+                        <p class="result-label mb-0">Depreciable Base</p>
+                        <p class="budget-value mb-0" style="font-size: 2rem; color: #10b981;">${currencyFormatterCents.format(i.cost - i.salvage)}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="result-label mb-0">Total Life</p>
+                        <p class="budget-value mb-0" style="font-size: 2rem; color: #3b82f6;">${i.life} Years</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="result-label mb-0">Final Salvage Value</p>
+                        <p class="budget-value mb-0" style="font-size: 2rem; color: #f59e0b;">${currencyFormatterCents.format(i.salvage)}</p>
+                    </div>
+                </div>
+                <hr class="my-4">
+                
+                <div class="row">
+                    <div class="col-lg-4">
+                        ${generateTableHTML('Straight-Line', straightLineSchedule)}
+                    </div>
+                    <div class="col-lg-4">
+                        ${generateTableHTML('Sum-of-the-Years\' Digits (SYD)', sydSchedule)}
+                    </div>
+                    <div class="col-lg-4">
+                        ${generateTableHTML(i.factor === 2 ? 'Double Declining Balance' : '150% Declining Balance', dbSchedule)}
+                    </div>
+                </div>
+            `;
+            
+            displayResult(false, summaryHtml);
+            
+        } catch (error) {
+            console.error(error);
+             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
+            displayResult(true, htmlContent);
+        }
+    }
+
+    // Attach handler to the form
+    document.getElementById('depreciation-form').addEventListener('submit', handleDepreciationCalc);
+    
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('depreciation-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

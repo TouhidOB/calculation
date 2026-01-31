@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}USDA Loan Calculator (Guarantee & Annual Fees){% endblock %}
+
+{% block meta_description %}Calculate your total monthly payment and upfront costs for a USDA loan, including the Upfront Guarantee Fee and the Annual Fee.{% endblock %}
+
+{% block meta_keywords %}USDA calculator, USDA loan, guarantee fee, annual fee, zero down payment, monthly payment, rural housing loan{% endendblock %}
+
+{% block extra_head %}
+<!-- Include Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<style>
+    /* Custom Styling to match the 'Rural' Green/Earthy Theme */
+    .solver-wrapper {
+        background: #f8fff8; /* Very light green/white background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 1000px; 
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #dcfce7; /* Light Mint Green */
+        border: 2px solid #10b981; /* Green accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #065f46; /* Dark Green */
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-control-custom {
+        padding: 12px;
+        font-size: 1.2rem;
+        border: 2px solid #6ee7b7; 
+        border-radius: 8px;
+        font-weight: 700;
+        color: #059669;
+    }
+    .form-control-custom:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+    }
+
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .summary-card {
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #ecfdf5; /* Very Light Green */
+        border-left: 5px solid #059669; /* Darker Green accent */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    /* Styles for USDA display */
+    .result-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #064e3b; /* Very Dark Green */
+    }
+    
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: #10b981; /* Bright Green */
+    }
+
+    .monthly-payment-box {
+        background-color: #ccfbf1; /* Lighter Teal/Green */
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #5eead4;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container p-4 p-md-5">
+    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🌾 USDA Loan Calculator (Fees & Payments)</h1>
+    <p class="text-secondary mb-5 text-center">
+        Calculate the **total monthly mortgage payment** for a USDA loan, including the Upfront Guarantee Fee and the Monthly Annual Fee.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <form id="usda-form" class="row g-4">
+            
+            <!-- Loan Details -->
+            <div class="col-md-6">
+                <div class="input-section h-100">
+                    <h4 class="h5 fw-bold text-center text-secondary-emphasis p-2 rounded mb-3">1. Loan & Home Details</h4>
+                    
+                    <div class="input-box mb-3">
+                        <label for="home-price">Home Purchase Price:</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="home-price" 
+                               value="280000" 
+                               min="1"
+                               step="any"
+                               required
+                               class="form-control form-control-custom">
+                        </div>
+                    </div>
+                    
+                    <div class="input-box mb-3">
+                        <label for="interest-rate">Annual Interest Rate (%):</label>
+                        <div class="input-group">
+                            <input type="number" id="interest-rate" 
+                               value="6.5" 
+                               min="0.01" 
+                               step="0.01"
+                               required 
+                               class="form-control form-control-custom">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="input-box">
+                        <label for="loan-term">Loan Term (Years):</label>
+                        <input type="number" id="loan-term" 
+                               value="30" 
+                               min="10" 
+                               max="30"
+                               required 
+                               class="form-control form-control-custom">
+                    </div>
+                </div>
+            </div>
+
+            <!-- USDA Specific Inputs -->
+            <div class="col-md-6">
+                 <div class="input-section h-100">
+                    <h4 class="h5 fw-bold text-center text-secondary-emphasis p-2 rounded mb-3">2. USDA Fees (Guaranteed Rural Housing)</h4>
+
+                    <div class="input-box mb-3">
+                        <label for="upfront-fee-rate">Upfront Guarantee Fee Rate (%):</label>
+                        <div class="input-group">
+                            <input type="number" id="upfront-fee-rate" 
+                               value="1.00" 
+                               min="0.01" 
+                               max="5.0"
+                               step="0.01"
+                               required 
+                               class="form-control form-control-custom">
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted">Current standard rate is 1.00% (financed).</small>
+                    </div>
+
+                    <div class="input-box mb-3">
+                        <label for="annual-fee-rate">Annual Fee Rate (%):</label>
+                        <div class="input-group">
+                            <input type="number" id="annual-fee-rate" 
+                               value="0.35" 
+                               min="0.01" 
+                               max="5.0"
+                               step="0.01"
+                               required 
+                               class="form-control form-control-custom">
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted">Current standard rate is 0.35% (paid monthly).</small>
+                    </div>
+                    
+                    <div class="alert alert-success mt-4 mb-0 text-center fw-bold">
+                        🎉 USDA loans require 0% Down Payment.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12 mt-0">
+                <button type="submit"
+                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
+                Calculate USDA Payments & Costs
+            </button>
+            </div>
+        </form>
+
+        <div id="result-container" class="result-section">
+            <div id="summary-output" class="summary-card d-none mb-4"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script>
+    /**
+     * Calculates the monthly mortgage payment (P&I) using the amortization formula.
+     */
+    function calculateMonthlyPI(P, R_annual, N_years) {
+        const i = (R_annual / 100) / 12; 
+        const n = N_years * 12;
+
+        if (i === 0) return P / n;
+
+        const i_plus_1_pow_n = Math.pow(1 + i, n);
+        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
+    }
+    
+    /**
+     * Formats a number as USD currency (with cents).
+     */
+    const currencyFormatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+    
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const summaryDiv = document.getElementById('summary-output');
+        
+        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
+        
+        if (isError) {
+            summaryDiv.classList.add('result-error');
+            summaryDiv.classList.remove('summary-card');
+            summaryDiv.innerHTML = contentHtml;
+        } else {
+            summaryDiv.classList.add('summary-card');
+            summaryDiv.classList.remove('result-error');
+            summaryDiv.innerHTML = contentHtml;
+        }
+    }
+
+    /**
+     * Handles form submission and triggers the calculation.
+     */
+    function handleUSDALoan(e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const homePrice = parseFloat(document.getElementById('home-price').value);
+        const interestRate = parseFloat(document.getElementById('interest-rate').value);
+        const loanTerm = parseFloat(document.getElementById('loan-term').value);
+        const upfrontFeeRate = parseFloat(document.getElementById('upfront-fee-rate').value);
+        const annualFeeRate = parseFloat(document.getElementById('annual-fee-rate').value);
+        
+        // 2. Input Validation
+        if (isNaN(homePrice) || isNaN(interestRate) || isNaN(loanTerm) || isNaN(upfrontFeeRate) || isNaN(annualFeeRate) ||
+            homePrice <= 0 || interestRate <= 0 || loanTerm < 10 || upfrontFeeRate < 0 || annualFeeRate < 0) {
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please ensure all values are positive.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
+        try {
+            // 3. Calculate Base Loan (0% down, so Base Loan = Home Price)
+            const baseLoanAmount = homePrice; 
+
+            // 4. Calculate Upfront Guarantee Fee Cost
+            const upfrontFeeCost = baseLoanAmount * (upfrontFeeRate / 100);
+            
+            // 5. Calculate Total Financed Principal
+            // USDA adds the Upfront Fee to the loan amount (it is financed)
+            const totalFinancedPrincipal = baseLoanAmount + upfrontFeeCost;
+            
+            // 6. Calculate P&I Payment (on Total Financed Principal)
+            const monthlyPI = calculateMonthlyPI(totalFinancedPrincipal, interestRate, loanTerm);
+            
+            // 7. Calculate Monthly Annual Fee 
+            // Calculated on the Base Loan Amount (unfinanced amount) and paid monthly
+            const annualFeeCost = baseLoanAmount * (annualFeeRate / 100);
+            const monthlyAnnualFee = annualFeeCost / 12;
+            
+            // 8. Calculate Total Monthly Payment (P&I + Monthly Annual Fee)
+            // This excludes taxes, insurance, and HOA (PITI)
+            const totalMonthlyPayment = monthlyPI + monthlyAnnualFee;
+
+            // 9. Build Summary HTML
+            const summaryHtml = `
+                <h4 class="h5 fw-bold text-center text-green-600 mb-4">USDA Total Monthly Payment & Upfront Costs</h4>
+                
+                <div class="row text-center align-items-center mb-4">
+                    
+                    <!-- Total Monthly Payment -->
+                    <div class="col-md-6 mb-3 border-end border-green-400">
+                        <p class="result-label">ESTIMATED TOTAL MONTHLY PAYMENT (P&I + Annual Fee)</p>
+                        <div class="monthly-payment-box">
+                             <p class="result-value mb-0">
+                                ${currencyFormatter.format(totalMonthlyPayment)}
+                            </p>
+                        </div>
+                        <p class="text-muted small mt-2">Does not include Property Taxes (T) or Insurance (I) / HOA.</p>
+                    </div>
+
+                    <!-- Components -->
+                    <div class="col-md-6 mb-3">
+                        <p class="text-muted fw-bold">Payment Breakdown:</p>
+                        <p class="mb-1 text-primary">Principal & Interest (P&I): ${currencyFormatter.format(monthlyPI)}</p>
+                        <p class="mb-1 text-danger">Monthly Annual Fee: ${currencyFormatter.format(monthlyAnnualFee)}</p>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <h5 class="h6 fw-bold text-center text-primary mb-3">Financing Details</h5>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <p class="result-label">Base Loan Amount</p>
+                        <p class="fs-4 fw-bold text-success">${currencyFormatter.format(baseLoanAmount)}</p>
+                        <p class="text-muted small">(100% of Home Price)</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="result-label">Upfront Guarantee Fee (${upfrontFeeRate.toFixed(2)}%)</p>
+                        <p class="fs-4 fw-bold text-danger">${currencyFormatter.format(upfrontFeeCost)}</p>
+                        <p class="text-muted small">(Financed into the loan)</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="result-label">Total Financed Loan Principal</p>
+                        <p class="fs-4 fw-bold text-primary">${currencyFormatter.format(totalFinancedPrincipal)}</p>
+                        <p class="text-muted small">(Base Loan + Upfront Fee)</p>
+                    </div>
+                </div>
+            `;
+            
+            displayResult(false, summaryHtml);
+            
+        } catch (error) {
+            console.error(error);
+             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
+            displayResult(true, htmlContent);
+        }
+    }
+
+    // Attach handler to the form
+    document.getElementById('usda-form').addEventListener('submit', handleUSDALoan);
+
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('usda-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

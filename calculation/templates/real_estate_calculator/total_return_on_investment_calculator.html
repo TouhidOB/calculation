@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+
+{% block title %}Total Return on Investment (ROI) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the comprehensive one-year Return on Investment (ROI) for a rental property, factoring in cash flow, appreciation, and principal paydown.{% endblock %}
+
+{% block meta_keywords %}roi calculator, return on investment, total annual return, real estate roi, investment gains, appreciation, principal paydown{% endendblock %}
+
+{% block extra_head %}
+<!-- Include Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<style>
+    /* Custom Styling for a Bold Red/Orange Theme (Action/High-Level Return) */
+    .solver-wrapper {
+        background: #fffcf7; /* Very light orange/white */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 950px; 
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #ffedd5; /* Light Peach/Orange */
+        border: 2px solid #f97316; /* Orange accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #9a3412; /* Dark Orange/Red */
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-control-custom {
+        padding: 12px;
+        font-size: 1.2rem;
+        border: 2px solid #fdba74; 
+        border-radius: 8px;
+        font-weight: 700;
+        color: #ea580c;
+    }
+    .form-control-custom:focus {
+        border-color: #f97316;
+        box-shadow: 0 0 0 0.25rem rgba(249, 115, 22, 0.25);
+    }
+
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .summary-card {
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #fff7ed; /* Very Light Peach */
+        border-left: 5px solid #ea580c; /* Orange accent */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    /* Styles for ROI display */
+    .result-label {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #9a3412; /* Dark Orange */
+    }
+    
+    .roi-value {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #f97316; /* Bright Orange */
+    }
+    .text-orange { color: #f97316 !important; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container p-4 p-md-5">
+    <h1 class="h3 fw-bolder mb-2 text-dark text-center">💸 Total Return on Investment (ROI) Calculator</h1>
+    <p class="text-secondary mb-5 text-center">
+        Calculate the complete one-year ROI for a property by combining Annual Cash Flow, Appreciation, and Principal Paydown.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <form id="roi-form" class="row g-4 justify-content-center">
+            
+            <!-- Initial Investment -->
+            <div class="col-lg-6">
+                <div class="input-section h-100">
+                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-4">1. Initial Investment</h4>
+                    
+                    <div class="input-box mb-4">
+                        <label for="initial-investment">Total Initial Cash Invested:</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="initial-investment" 
+                               value="75000" 
+                               min="1"
+                               step="any"
+                               required
+                               class="form-control form-control-custom">
+                        </div>
+                        <small class="text-muted">Down Payment + Closing Costs + Initial Rehab.</small>
+                    </div>
+                     <div class="input-box mb-4">
+                        <label for="property-value">Current Property Value:</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="property-value" 
+                               value="300000" 
+                               min="1000"
+                               step="any"
+                               required
+                               class="form-control form-control-custom">
+                        </div>
+                        <small class="text-muted">The current market value or purchase price.</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Annual Gains -->
+            <div class="col-lg-6">
+                <div class="input-section h-100">
+                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-4">2. Total Annual Gains</h4>
+                    
+                    <div class="input-box mb-4">
+                        <label for="annual-cash-flow">Annual Pre-Tax Cash Flow:</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="annual-cash-flow" 
+                               value="5000" 
+                               step="any"
+                               required
+                               class="form-control form-control-custom">
+                        </div>
+                        <small class="text-muted">Gross Rent minus all operating expenses and debt service (P&I).</small>
+                    </div>
+                    
+                    <div class="input-box mb-4">
+                        <label for="appreciation-rate">Annual Appreciation Rate (%):</label>
+                        <div class="input-group">
+                            <input type="number" id="appreciation-rate" 
+                               value="4.0" 
+                               step="any"
+                               required 
+                               class="form-control form-control-custom">
+                             <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted">Estimated annual increase in property value.</small>
+                    </div>
+                    
+                    <div class="input-box mb-4">
+                        <label for="principal-reduction">Annual Principal Reduction ($):</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="principal-reduction" 
+                               value="2500" 
+                               min="0"
+                               step="any"
+                               required 
+                               class="form-control form-control-custom">
+                        </div>
+                        <small class="text-muted">The portion of mortgage payments that paid down the loan balance.</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12 mt-0">
+                <button type="submit"
+                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
+                Calculate Total Annual ROI
+            </button>
+            </div>
+        </form>
+
+        <div id="result-container" class="result-section">
+            <div id="summary-output" class="summary-card d-none mb-4"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script>
+    /**
+     * Formats a number as USD currency (no cents).
+     */
+    const currencyFormatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    });
+    
+    /**
+     * Formats a number as USD currency (with cents).
+     */
+    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+    
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const summaryDiv = document.getElementById('summary-output');
+        
+        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
+        
+        if (isError) {
+            summaryDiv.classList.add('result-error');
+            summaryDiv.classList.remove('summary-card');
+            summaryDiv.innerHTML = contentHtml;
+        } else {
+            summaryDiv.classList.add('summary-card');
+            summaryDiv.classList.remove('result-error');
+            summaryDiv.innerHTML = contentHtml;
+        }
+    }
+
+    /**
+     * Gathers all inputs from the form.
+     */
+    function getInputs() {
+        const inputs = {
+            initialInvestment: parseFloat(document.getElementById('initial-investment').value),
+            propertyValue: parseFloat(document.getElementById('property-value').value),
+            annualCashFlow: parseFloat(document.getElementById('annual-cash-flow').value),
+            appreciationRate: parseFloat(document.getElementById('appreciation-rate').value),
+            principalReduction: parseFloat(document.getElementById('principal-reduction').value),
+        };
+        
+        for (const key in inputs) {
+            if (isNaN(inputs[key])) {
+                throw new Error(`Invalid Input: Please ensure all fields are valid numbers. ${key} is invalid.`);
+            }
+        }
+        return inputs;
+    }
+
+    /**
+     * Handles form submission and triggers the calculation.
+     */
+    function handleROI(e) {
+        e.preventDefault();
+
+        try {
+            const i = getInputs();
+
+            // 1. Initial Investment Validation
+            if (i.initialInvestment <= 0) {
+                throw new Error("Total Initial Cash Invested must be greater than zero.");
+            }
+            if (i.propertyValue <= 0) {
+                 throw new Error("Property Value must be greater than zero.");
+            }
+
+            // 2. Calculate Appreciation Gain
+            const appreciationGain = i.propertyValue * (i.appreciationRate / 100);
+
+            // 3. Calculate Total Annual Gain
+            const totalAnnualGain = i.annualCashFlow + appreciationGain + i.principalReduction;
+
+            // 4. Calculate ROI
+            // ROI = (Total Annual Gain / Initial Cash Invested) * 100
+            const roi = (totalAnnualGain / i.initialInvestment) * 100;
+            
+            // Determine styling
+            const roiColor = roi >= 15 ? 'text-success' : (roi >= 8 ? 'text-orange' : 'text-danger');
+            
+            const roi_message = roi >= 20 ? "Outstanding! This level of total return is exceptional and highly desirable." :
+                                roi >= 10 ? "Very Strong. This indicates a high-performing, robust investment." : 
+                                roi >= 5 ? "Solid. A respectable return, especially in a stable market." : 
+                                "Low or Negative Return. Consider adjusting your strategy or expenses to improve profitability.";
+
+            // 5. Build Summary HTML
+            const summaryHtml = `
+                <h4 class="h5 fw-bold text-center text-orange mb-4">Total One-Year Return on Investment (ROI)</h4>
+                
+                <div class="text-center mb-4">
+                    <p class="result-label">TOTAL ANNUAL ROI</p>
+                    <p class="roi-value mb-0 ${roiColor}">
+                        ${roi.toFixed(2)}%
+                    </p>
+                </div>
+                
+                <hr class="my-4">
+                
+                <h5 class="h6 fw-bold text-center text-primary mb-3">Formula Breakdown</h5>
+                
+                <div class="row">
+                    <div class="col-md-6 border-end border-warning-400">
+                        <h6 class="fw-bold text-orange mb-3">Total Annual Gain</h6>
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td>Cash Flow (CF)</td>
+                                    <td class="text-end fw-bold">${currencyFormatterCents.format(i.annualCashFlow)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Appreciation Gain (${i.appreciationRate}%)</td>
+                                    <td class="text-end fw-bold">${currencyFormatterCents.format(appreciationGain)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Principal Paydown (Equity)</td>
+                                    <td class="text-end fw-bold">${currencyFormatterCents.format(i.principalReduction)}</td>
+                                </tr>
+                                <tr class="table-success">
+                                    <td class="fw-bolder fs-6">Total Annual Gain</td>
+                                    <td class="text-end fw-bolder fs-6">${currencyFormatterCents.format(totalAnnualGain)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-orange mb-3">Total Investment & Result</h6>
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                 <tr>
+                                    <td class="fw-bold">Total Cash Invested</td>
+                                    <td class="text-end fw-bold">${currencyFormatter.format(i.initialInvestment)}</td>
+                                </tr>
+                                 <tr>
+                                    <td class="fw-bold">Property Value</td>
+                                    <td class="text-end fw-bold">${currencyFormatter.format(i.propertyValue)}</td>
+                                </tr>
+                                <tr class="table-info">
+                                    <td colspan="2" class="small text-center">
+                                        ROI = (Total Gain / Invested Cash)
+                                    </td>
+                                </tr>
+                                <tr class="table-warning">
+                                    <td class="fw-bolder fs-6">Final ROI</td>
+                                    <td class="text-end fw-bolder fs-6 ${roiColor}">${roi.toFixed(2)}%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4 p-3 bg-light rounded">
+                    <p class="text-muted fw-bold mb-0">${roi_message}</p>
+                </div>
+            `;
+            
+            displayResult(false, summaryHtml);
+            
+        } catch (error) {
+            console.error(error);
+             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
+            displayResult(true, htmlContent);
+        }
+    }
+
+    // Attach handler to the form
+    document.getElementById('roi-form').addEventListener('submit', handleROI);
+
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('roi-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

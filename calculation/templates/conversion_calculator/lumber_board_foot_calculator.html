@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Lumber Board Foot Calculator{% endblock %}
+
+{% block meta_description %}Calculate the total Board Feet (BF) volume and estimated cost for lumber using thickness (in), width (in), and length (ft).{% endblock %}
+
+{% block meta_keywords %}board foot, lumber volume, bf calculation, woodworking, board foot formula, square footage{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #343a40;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        background: #fff8f0; /* Warm wood/brown theme */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #795548; /* Brown border */
+    }
+    
+    .conversion-input-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #5d4037;
+    }
+
+    .conversion-input-group input[type="number"] {
+        font-size: 1.1rem;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        text-align: center;
+    }
+    
+    .input-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        align-items: end; /* Align labels at the bottom */
+    }
+
+    .input-row > div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #795548; /* Brown theme */
+    }
+    
+    .highlight-item {
+        border-left-color: #795548 !important; 
+        background-color: #fffaf5;
+    }
+    
+    .conversion-button {
+        background-color: #795548;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 20px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #5d4037;
+    }
+    
+    @media (max-width: 768px) {
+        .input-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .input-row > div:nth-child(3), .input-row > div:nth-child(4) {
+            margin-top: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🌲 Lumber Board Foot Calculator</h1>
+    <p class="small-muted">Calculate the Board Feet (BF) volume for lumber. The formula uses **nominal dimensions** (Thickness $\times$ Width in inches, Length in feet). </p>
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Board Dimensions and Quantity</h5>
+
+        <div class="conversion-input-group">
+            <div class="input-row">
+                <!-- Thickness (in) -->
+                <div>
+                    <label for="thicknessInput">Thickness (in)</label>
+                    <input type="number" id="thicknessInput" placeholder="T" value="2" min="0.1" step="any" autofocus>
+                </div>
+                <!-- Width (in) -->
+                <div>
+                    <label for="widthInput">Width (in)</label>
+                    <input type="number" id="widthInput" placeholder="W" value="4" min="0.1" step="any">
+                </div>
+                <!-- Length (ft) -->
+                <div>
+                    <label for="lengthInput">Length (ft)</label>
+                    <input type="number" id="lengthInput" placeholder="L" value="8" min="0.1" step="any">
+                </div>
+                <!-- Quantity -->
+                <div>
+                    <label for="quantityInput">Quantity</label>
+                    <input type="number" id="quantityInput" placeholder="Qty" value="1" min="1" step="1">
+                </div>
+            </div>
+        </div>
+
+        <h5 class="section-title">Step 2: Price Input (Optional)</h5>
+        
+        <div class="conversion-input-group">
+            <div class="input-row" style="grid-template-columns: 2fr 1fr;">
+                 <div>
+                    <label for="pricePerBFInput">Price Per Board Foot ($)</label>
+                    <input type="number" id="pricePerBFInput" placeholder="0.00" value="3.50" min="0" step="0.01">
+                </div>
+                <div class="align-self-end">
+                    <span class="text-muted small">/ BF</span>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" id="convertButton">
+            Calculate Total Board Feet & Cost
+        </button>
+
+        <h5 class="section-title mt-4">Step 3: Calculation Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Enter dimensions and quantity above to calculate.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Formula:** $\text{Board Feet} = \left(\frac{\text{T} \times \text{W} \times \text{L}}{12}\right) \times \text{Quantity}$. This tool uses **nominal** dimensions.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const thicknessInput = document.getElementById('thicknessInput');
+    const widthInput = document.getElementById('widthInput');
+    const lengthInput = document.getElementById('lengthInput');
+    const quantityInput = document.getElementById('quantityInput');
+    const pricePerBFInput = document.getElementById('pricePerBFInput');
+    const convertButton = document.getElementById('convertButton');
+    const resultsList = document.getElementById('resultsList');
+    
+    /**
+     * Calculates the Board Feet (BF) and optional cost.
+     */
+    function calculateBoardFeet() {
+        const T = parseFloat(thicknessInput.value);
+        const W = parseFloat(widthInput.value);
+        const L = parseFloat(lengthInput.value);
+        const Q = parseInt(quantityInput.value);
+        const pricePerBF = parseFloat(pricePerBFInput.value) || 0;
+
+        resultsList.innerHTML = '';
+
+        if (isNaN(T) || isNaN(W) || isNaN(L) || isNaN(Q) || T <= 0 || W <= 0 || L <= 0 || Q <= 0) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter valid, positive numbers for all dimensions and quantity.</div>`;
+            return;
+        }
+
+        // 1. Calculate BF for a single board
+        // BF = (T * W * L) / 12
+        const singleBoardFeet = (T * W * L) / 12;
+
+        // 2. Calculate Total Board Feet
+        const totalBoardFeet = singleBoardFeet * Q;
+        
+        // 3. Calculate Total Cost
+        const totalCost = totalBoardFeet * pricePerBF;
+
+        // 4. Display Results
+        
+        // --- Single Board BF ---
+        resultsList.innerHTML += `
+            <div class="list-group-item highlight-item">
+                <span class="unit-name">Board Feet per Unit</span>
+                <span class="unit-value">${singleBoardFeet.toFixed(3)} BF</span>
+            </div>
+        `;
+
+        // --- Total BF ---
+        resultsList.innerHTML += `
+            <div class="list-group-item">
+                <span class="unit-name">Total Board Feet (${Q} boards)</span>
+                <span class="unit-value">${totalBoardFeet.toFixed(2)} BF</span>
+            </div>
+        `;
+
+        // --- Total Cost (if price is provided) ---
+        if (pricePerBF > 0) {
+            resultsList.innerHTML += `
+                <div class="list-group-item highlight-item">
+                    <span class="unit-name">Estimated Total Cost</span>
+                    <span class="unit-value">$${totalCost.toFixed(2)}</span>
+                </div>
+            `;
+        } else {
+             resultsList.innerHTML += `
+                <div class="list-group-item">
+                    <span class="unit-name">Estimated Total Cost</span>
+                    <span class="unit-value">N/A (Enter price above)</span>
+                </div>
+            `;
+        }
+
+        // --- Square Footage Estimation (based on 1" thick) ---
+        const squareFootage = (W * L * Q) / 12;
+        resultsList.innerHTML += `
+            <div class="list-group-item">
+                <span class="unit-name">Approx. Surface Area (1" thick)</span>
+                <span class="unit-value">${squareFootage.toFixed(2)} sq ft</span>
+            </div>
+        `;
+    }
+
+    // --- Event Listeners and Initialization ---
+    
+    // Function to attach listeners to all input elements for real-time updates
+    function setupListeners() {
+        const inputs = [thicknessInput, widthInput, lengthInput, quantityInput, pricePerBFInput];
+        inputs.forEach(input => {
+            // Use 'input' event for real-time responsiveness
+            input.addEventListener('input', calculateBoardFeet);
+        });
+        convertButton.addEventListener('click', calculateBoardFeet);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        calculateBoardFeet(); // Initial calculation on load
+    };
+
+</script>
+{% endblock %}

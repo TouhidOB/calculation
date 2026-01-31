@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Ring Size Converter (US, UK, EU, Japan){% endblock %}
+
+{% block meta_description %}Convert ring sizes instantly between US, UK (Letter), European (Numeric), and Japanese standards based on internal diameter (mm).{% endblock %}
+
+{% block meta_keywords %}ring size converter, US ring size, UK letter size, European ring size, internal diameter, jewelry conversion{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #343a40;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        background: #fcf0ff; /* Light pink/rose gold theme for jewelry */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #ff69b4; /* Hot pink/rose border */
+    }
+    
+    .conversion-input-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #c71585;
+    }
+
+    .conversion-input-group select,
+    .conversion-input-group input[type="text"],
+    .conversion-input-group input[type="number"] {
+        font-size: 1.1rem;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+    
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #c71585; /* Deep rose theme */
+    }
+    
+    .highlight-item {
+        border-left-color: #c71585 !important; 
+        background-color: #fff5ff;
+    }
+    
+    .conversion-button {
+        background-color: #c71585;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 20px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #a3126f;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💍 Ring Size Converter</h1>
+    <p class="small-muted">Convert between major global ring sizing standards. Calculations are based on the ring's **Internal Diameter (mm)**, which is the most reliable metric. </p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Size and Standard</h5>
+
+        <div class="conversion-input-group">
+            <label for="inputValue">Enter Ring Size or Diameter (e.g., 7, L, 55, 17.3)</label>
+            <div class="d-flex">
+                <input type="text" class="form-control me-2" id="inputValue" placeholder="Enter size..." value="7" autofocus>
+                <select id="unitSelect" class="form-select w-50">
+                    <option value="diameter">Internal Diameter (mm)</option>
+                    <option value="us">US / Canada (Numeric)</option>
+                    <option value="uk">UK / Australia (Letter)</option>
+                    <option value="eu">European (Numeric/Circumference)</option>
+                    <option value="jp">Japan / China (Numeric)</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" id="convertButton">
+            Convert Size
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Enter a size and unit, then click 'Convert Size'.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Note on Diameter:** If inputting Diameter (mm), the calculator finds the closest matching standard size. Diameter is the actual internal width of the ring.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- RING SIZING CHART ---
+    // The chart uses Internal Diameter (mm) as the primary key (index 0).
+    // Interpolation is used for diameter/circumference conversions.
+    
+    const RING_SIZES = [
+        // [ID (mm), Circumference (mm), US, UK, EU, JP]
+        [14.1, 44.3, '3', 'F', 44, '4'],
+        [14.5, 45.6, '3.5', 'G', 45, '5'],
+        [14.9, 46.8, '4', 'H', 47, '7'],
+        [15.3, 48.0, '4.5', 'I', 48, '8'],
+        [15.7, 49.3, '5', 'J', 49, '9'],
+        [16.1, 50.6, '5.5', 'K', 51, '10'],
+        [16.5, 51.8, '6', 'L', 52, '12'],
+        [16.9, 53.1, '6.5', 'M', 53, '13'],
+        [17.3, 54.4, '7', 'N', 54, '14'],
+        [17.7, 55.7, '7.5', 'O', 56, '15'],
+        [18.1, 57.0, '8', 'P', 57, '16'],
+        [18.5, 58.2, '8.5', 'Q', 58, '17'],
+        [18.9, 59.5, '9', 'R', 59, '18'],
+        [19.4, 60.8, '9.5', 'S', 61, '19'],
+        [19.8, 62.1, '10', 'T', 62, '20'],
+        [20.2, 63.4, '10.5', 'U', 63, '22'],
+        [20.6, 64.6, '11', 'V', 65, '23'],
+        [21.0, 65.9, '11.5', 'W', 66, '24'],
+        [21.4, 67.2, '12', 'X', 67, '25'],
+    ];
+
+    // Map unit keys to their column index in the RING_SIZES chart
+    const UNIT_MAPPING = {
+        'diameter': { index: 0, name: 'Internal Diameter', abbr: 'mm', type: 'number' },
+        'circumference': { index: 1, name: 'Internal Circumference', abbr: 'mm', type: 'number' },
+        'us': { index: 2, name: 'US / Canada', abbr: 'US N', type: 'string' },
+        'uk': { index: 3, name: 'UK / Australia', abbr: 'UK Letter', type: 'string' },
+        'eu': { index: 4, name: 'European (Numeric)', abbr: 'EU N', type: 'number' },
+        'jp': { index: 5, name: 'Japan / China', abbr: 'JP N', type: 'number' },
+    };
+    
+    // Get a list of all convertible unit keys
+    const ALL_UNIT_KEYS = Object.keys(UNIT_MAPPING);
+
+    const inputValue = document.getElementById('inputValue');
+    const unitSelect = document.getElementById('unitSelect');
+    const convertButton = document.getElementById('convertButton');
+    const resultsList = document.getElementById('resultsList');
+    
+    /**
+     * Finds the base Internal Diameter (mm) from the input value and unit.
+     * @returns {number|null} The closest Internal Diameter in mm.
+     */
+    function convertToBaseDiameter(input, fromKey) {
+        const mapping = UNIT_MAPPING[fromKey];
+        const fromIndex = mapping.index;
+        
+        if (fromIndex === -1) return null;
+
+        // Special handling for Diameter (base unit) and Circumference (derived base)
+        if (fromKey === 'diameter') {
+            const diameter = parseFloat(input);
+            return isNaN(diameter) ? null : diameter;
+        }
+        
+        if (fromKey === 'circumference') {
+             const circumference = parseFloat(input);
+             // ID = Circumference / Pi
+             const diameter = circumference / Math.PI;
+             return isNaN(diameter) ? null : diameter;
+        }
+
+        let closestDiameter = null;
+        let minDiff = Infinity;
+        
+        let normalizedInput;
+        if (mapping.type === 'string') {
+            normalizedInput = String(input).toUpperCase().trim();
+        } else {
+            normalizedInput = parseFloat(input);
+            if (isNaN(normalizedInput)) return null;
+        }
+
+        // Find the ring chart entry closest to the input value
+        for (const row of RING_SIZES) {
+            const chartSize = row[fromIndex];
+            
+            if (mapping.type === 'string') {
+                 // Check for exact match for letter/string sizes
+                if (chartSize === normalizedInput) {
+                    return row[0]; // Return the diameter (index 0)
+                }
+            } else {
+                // Check for closest numeric match
+                const diff = Math.abs(chartSize - normalizedInput);
+                
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestDiameter = row[0];
+                }
+            }
+        }
+        
+        // For numeric sizes, only accept if the difference is small (e.g., less than 0.5)
+        if (mapping.type === 'number' && minDiff > 0.5) {
+             // Handle edge case where input is a fractional US size like 7.5
+             if (fromKey === 'us' && minDiff <= 0.51) {
+                return closestDiameter;
+             }
+             // For EU/JP sizes, we are strict
+             return null;
+        }
+
+        return closestDiameter;
+    }
+
+    /**
+     * Converts the base diameter (mm) to the closest target size in the chart.
+     */
+    function convertFromBaseDiameter(baseDiameter) {
+        let closestSizeRow = null;
+        let minDiff = Infinity;
+        
+        for (const row of RING_SIZES) {
+            const chartDiameter = row[0];
+            const diff = Math.abs(chartDiameter - baseDiameter);
+
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestSizeRow = row;
+            }
+        }
+        
+        // If we found a match, return the entire row
+        if (minDiff < 0.5 && closestSizeRow) {
+            return closestSizeRow;
+        }
+
+        return null;
+    }
+
+    /**
+     * Main conversion logic.
+     */
+    function convertSize() {
+        const inputVal = inputValue.value.trim();
+        const fromKey = unitSelect.value;
+        
+        resultsList.innerHTML = '';
+
+        if (!inputVal) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a size.</div>`;
+            return;
+        }
+
+        // 1. Find the base Internal Diameter (mm)
+        const baseDiameter = convertToBaseDiameter(inputVal, fromKey);
+
+        if (baseDiameter === null) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Error: The size "${inputVal}" is not recognized for the selected unit, or is outside the standard range.</div>`;
+            return;
+        }
+        
+        // 2. Find the closest standard ring size row
+        const convertedRow = convertFromBaseDiameter(baseDiameter);
+
+        if (!convertedRow) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Error: Could not map diameter ${baseDiameter.toFixed(2)} mm to a standard size.</div>`;
+            return;
+        }
+
+        // 3. Display all results
+        
+        ALL_UNIT_KEYS.forEach(toKey => {
+            const mapping = UNIT_MAPPING[toKey];
+            const toIndex = mapping.index;
+            
+            let sizeValue;
+            let displayValue;
+            
+            if (toKey === 'diameter') {
+                sizeValue = baseDiameter;
+                displayValue = sizeValue.toFixed(2);
+            } else if (toKey === 'circumference') {
+                sizeValue = baseDiameter * Math.PI;
+                displayValue = sizeValue.toFixed(2);
+            } else {
+                sizeValue = convertedRow[toIndex];
+                displayValue = sizeValue;
+            }
+
+            const li = document.createElement('div');
+            li.classList.add('list-group-item');
+            
+            // Highlight the input unit/base unit
+            if (fromKey === toKey) {
+                li.classList.add('highlight-item');
+            }
+
+            li.innerHTML = `
+                <span class="unit-name">${mapping.name} (${mapping.abbr})</span>
+                <span class="unit-value">${displayValue}</span>
+            `;
+            
+            resultsList.appendChild(li);
+        });
+    }
+
+    // --- Event Listeners and Initialization ---
+
+    function setupListeners() {
+        // Use 'input' event for real-time responsiveness
+        inputValue.addEventListener('input', convertSize);
+        unitSelect.addEventListener('change', convertSize);
+        convertButton.addEventListener('click', convertSize);
+    }
+    
+    window.onload = function() {
+        setupListeners();
+        convertSize(); // Initial conversion run
+    };
+
+</script>
+{% endblock %}

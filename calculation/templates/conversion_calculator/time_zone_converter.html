@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Time Zone Converter (World Clocks){% endblock %}
+
+{% block meta_description %}Convert time instantly between major global time zones using Luxon for accurate DST and offset calculation.{% endblock %}
+
+{% block meta_keywords %}time zone converter, UTC, GMT, local time, dst, luxon, world clock{% endblock %}
+
+{% block extra_head %}
+<!-- Load Luxon for accurate Time Zone and DST handling -->
+<script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #343a40;
+    }
+    
+    /* Input/Select Group Styling */
+    .conversion-input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        padding: 10px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+
+    .conversion-input-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #007bff;
+    }
+    
+    .conversion-input-group select,
+    .conversion-input-group input[type="datetime-local"] {
+        font-size: 1rem;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+    
+    /* Results Display */
+    #conversionResult {
+        background-color: #e9f7ff;
+        border: 2px solid #007bff;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 25px;
+        text-align: center;
+        min-height: 100px;
+    }
+
+    #conversionResult .result-time {
+        font-size: 2.2rem;
+        font-weight: bold;
+        color: #007bff;
+        line-height: 1.2;
+    }
+
+    #conversionResult .result-date {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .btn-convert {
+        background-color: #28a745;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 20px;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+    }
+    .btn-convert:hover {
+        background-color: #218838;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🌐 Time Zone Converter</h1>
+    <p class="small-muted">Instantly convert a specific time from a **Source Time Zone** to a **Target Time Zone**. Handles all Daylight Saving Time (DST) rules automatically.</p>
+
+    <div class="calc-wrapper mt-4">
+        <h5 class="section-title">Step 1: Define Time and Source Zone</h5>
+
+        <div class="row">
+            <!-- Time/Date Input -->
+            <div class="col-md-6 mb-3">
+                <div class="conversion-input-group">
+                    <label for="dateTimeInput">Source Date & Time (Leave blank for NOW)</label>
+                    <input type="datetime-local" id="dateTimeInput">
+                </div>
+            </div>
+
+            <!-- Source Time Zone Dropdown -->
+            <div class="col-md-6 mb-3">
+                <div class="conversion-input-group">
+                    <label for="sourceTimeZone">Source Time Zone</label>
+                    <select id="sourceTimeZone" class="form-select">
+                        <!-- Options filled by JavaScript -->
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="section-title">Step 2: Select Target Zone</h5>
+        
+        <!-- Target Time Zone Dropdown -->
+        <div class="conversion-input-group">
+            <label for="targetTimeZone">Target Time Zone</label>
+            <select id="targetTimeZone" class="form-select">
+                <!-- Options filled by JavaScript -->
+            </select>
+        </div>
+        
+        <button class="btn w-full btn-convert" id="convertButton">
+            Convert Time
+        </button>
+
+        <h5 class="section-title mt-5">Step 3: Converted Result</h5>
+
+        <div id="conversionResult">
+            <p class="small-muted" id="initialMessage">Select your time zones and click 'Convert Time' or leave the date/time blank to check the current time.</p>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Note:** All time zone data is provided by the IANA Time Zone Database (via Luxon) ensuring high accuracy, including historical DST changes.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const DateTime = luxon.DateTime;
+    const TIME_ZONES = [
+        { label: 'UTC / GMT (Coordinated Universal Time)', zone: 'UTC' },
+        { label: 'Local Time Zone (Current)', zone: DateTime.local().zoneName },
+        { label: 'New York (EST/EDT)', zone: 'America/New_York' },
+        { label: 'Los Angeles (PST/PDT)', zone: 'America/Los_Angeles' },
+        { label: 'London (GMT/BST)', zone: 'Europe/London' },
+        { label: 'Paris / Berlin (CET/CEST)', zone: 'Europe/Paris' },
+        { label: 'Cairo (EET/EEST)', zone: 'Africa/Cairo' },
+        { label: 'Moscow (MSK)', zone: 'Europe/Moscow' },
+        { label: 'Dubai (GST)', zone: 'Asia/Dubai' },
+        { label: 'Mumbai / Delhi (IST)', zone: 'Asia/Kolkata' },
+        { label: 'Bangkok / Hanoi (ICT)', zone: 'Asia/Bangkok' },
+        { label: 'Shanghai / Hong Kong (CST)', zone: 'Asia/Shanghai' },
+        { label: 'Tokyo (JST)', zone: 'Asia/Tokyo' },
+        { label: 'Sydney (AEST/AEDT)', zone: 'Australia/Sydney' },
+    ];
+
+    const sourceSelect = document.getElementById('sourceTimeZone');
+    const targetSelect = document.getElementById('targetTimeZone');
+    const dateTimeInput = document.getElementById('dateTimeInput');
+    const convertButton = document.getElementById('convertButton');
+    const resultDiv = document.getElementById('conversionResult');
+    const initialMessage = document.getElementById('initialMessage');
+
+    // --- Utility Functions ---
+
+    /**
+     * Populates the given select element with time zone options.
+     */
+    function populateTimeZones(selectElement, defaultValue) {
+        selectElement.innerHTML = '';
+        TIME_ZONES.forEach(tz => {
+            const option = document.createElement('option');
+            option.value = tz.zone;
+            option.textContent = `${tz.label} (${tz.zone})`;
+            if (tz.zone === defaultValue) {
+                option.selected = true;
+            }
+            selectElement.appendChild(option);
+        });
+    }
+
+    /**
+     * Main conversion logic using Luxon.
+     */
+    function convertTime() {
+        const sourceZone = sourceSelect.value;
+        const targetZone = targetSelect.value;
+        const inputDateTime = dateTimeInput.value;
+
+        let sourceDt;
+
+        if (inputDateTime) {
+            // Attempt to parse the provided date/time string in the source zone context
+            sourceDt = DateTime.fromISO(inputDateTime, { zone: sourceZone });
+        } else {
+            // If blank, use the current time in the source zone
+            sourceDt = DateTime.now().setZone(sourceZone);
+        }
+        
+        if (!sourceDt.isValid) {
+            resultDiv.innerHTML = `<div class="alert alert-danger" role="alert">Error: Invalid date/time input. Please check the format.</div>`;
+            return;
+        }
+
+        // Convert to the target zone
+        const targetDt = sourceDt.setZone(targetZone);
+
+        // Display Result
+        const timeFormat = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+        const dateFormat = { weekday: 'long', month: 'short', day: '2-digit', year: 'numeric' };
+
+        // Get the offset of the target zone (e.g., GMT-05:00)
+        const offset = targetDt.toFormat('ZZZZ');
+
+        resultDiv.innerHTML = `
+            <p class="result-time">${targetDt.toLocaleString(timeFormat)}</p>
+            <p class="result-date">
+                ${targetDt.toLocaleString(dateFormat)}<br>
+                in ${targetDt.zoneName} (${offset})
+            </p>
+        `;
+    }
+
+    // --- Initialization ---
+
+    // Set initial default zones
+    const defaultSourceZone = 'America/New_York';
+    const defaultTargetZone = 'Europe/London';
+    
+    populateTimeZones(sourceSelect, defaultSourceZone);
+    populateTimeZones(targetSelect, defaultTargetZone);
+
+    // Set the initial value for datetime input to the current local time (optional, but helpful)
+    dateTimeInput.value = DateTime.local().toFormat("yyyy-MM-dd'T'HH:mm");
+
+    // --- Event Listener ---
+    convertButton.addEventListener('click', convertTime);
+    
+    // Initial Conversion on load
+    convertTime();
+
+</script>
+{% endblock %}

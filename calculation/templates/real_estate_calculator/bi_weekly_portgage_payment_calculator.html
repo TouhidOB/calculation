@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}Bi-Weekly Mortgage Payment Calculator{% endblock %}
+
+{% block meta_description %}See the total interest savings and the shorter loan term achieved by switching from monthly to bi-weekly mortgage payments (26 payments per year).{% endblock %}
+
+{% block meta_keywords %}bi-weekly mortgage, interest savings, accelerate payoff, loan term reduction, 13th payment, finance calculator{% endendblock %}
+
+{% block extra_head %}
+<!-- Include Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<style>
+    /* Custom Styling to match the original Blue Theme */
+    .solver-wrapper {
+        background: #f8fbff; /* Very light blue/white background */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 1200px; 
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #dbeafe; /* Light Blue */
+        border: 2px solid #3b82f6; /* Blue accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e3a8a; /* Dark Blue */
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-control-custom {
+        padding: 12px;
+        font-size: 1.2rem;
+        border: 2px solid #93c5fd; 
+        border-radius: 8px;
+        font-weight: 700;
+        color: #1d4ed8;
+    }
+    .form-control-custom:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+    }
+
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .summary-card {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #e0f2fe; /* Lightest Blue */
+        border-left: 5px solid #0ea5e9; /* Cyan/Sky Blue accent for change */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    /* Styles for savings display */
+    .summary-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0c4a6e; /* Dark Cyan */
+    }
+    
+    .summary-value {
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: #0ea5e9; /* Bright Cyan */
+    }
+
+    .comparison-table {
+        margin-top: 20px;
+    }
+
+    .comparison-table th {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .comparison-table td {
+        font-weight: 600;
+    }
+
+    .monthly-row {
+        background-color: #bfdbfe;
+    }
+
+    .biweekly-row {
+        background-color: #dbeafe;
+    }
+
+    .savings-value {
+        color: #10b981; /* Green */
+        font-weight: 900;
+        font-size: 1.1em;
+    }
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container p-4 p-md-5">
+    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🗓️ Bi-Weekly Mortgage Calculator</h1>
+    <p class="text-secondary mb-5 text-center">
+        Compare the total cost and term of a standard **Monthly** payment plan vs. a **Bi-Weekly** payment plan.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <div class="input-section">
+            <form id="bi-weekly-form" class="row g-3">
+                
+                <!-- Loan Inputs -->
+                <div class="col-md-4 input-box">
+                    <label for="principal-input">Loan Principal (P):</label>
+                    <div class="input-group">
+                        <span class="input-group-text fw-bold text-lg text-secondary">$</span>
+                        <input type="number" id="principal-input" 
+                               value="250000" 
+                               min="1"
+                               step="any"
+                               required
+                               placeholder="e.g., 250000"
+                               class="form-control form-control-custom">
+                    </div>
+                </div>
+
+                <div class="col-md-4 input-box">
+                    <label for="rate-input">Annual Interest Rate (R):</label>
+                    <div class="input-group">
+                        <input type="number" id="rate-input" 
+                               value="6.5" 
+                               min="0.01"
+                               step="any"
+                               required
+                               placeholder="e.g., 6.5"
+                               class="form-control form-control-custom">
+                        <span class="input-group-text fw-bold text-lg text-secondary">%</span>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 input-box">
+                    <label for="term-input">Loan Term in Years:</label>
+                    <input type="number" id="term-input" 
+                           value="30" 
+                           min="1"
+                           max="60"
+                           required
+                           placeholder="e.g., 30"
+                           class="form-control form-control-custom">
+                </div>
+                
+                <div class="col-12 mt-4">
+                    <button type="submit"
+                        class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
+                    Calculate Bi-Weekly Savings
+                </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="result-container" class="result-section">
+            <!-- Summary will be placed here -->
+            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script>
+    /**
+     * Calculates the monthly mortgage payment (P&I) using the amortization formula.
+     */
+    function calculateMonthlyPI(P, R_annual, N_years) {
+        const i = (R_annual / 100) / 12; 
+        const n = N_years * 12;
+
+        if (i === 0) return P / n;
+
+        const i_plus_1_pow_n = Math.pow(1 + i, n);
+        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
+    }
+
+    /**
+     * Formats a number as USD currency.
+     */
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+    
+    /**
+     * Converts total months into Years and Months string.
+     */
+    function formatTerm(totalMonths) {
+        const years = Math.floor(totalMonths / 12);
+        const months = totalMonths % 12;
+        if (years === 0) return `${months} months`;
+        return `${years} yrs, ${months} mos`;
+    }
+
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const summaryDiv = document.getElementById('summary-output');
+        
+        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
+        
+        if (isError) {
+            summaryDiv.classList.add('result-error');
+            summaryDiv.classList.remove('summary-card');
+            summaryDiv.innerHTML = contentHtml;
+        } else {
+            summaryDiv.classList.add('summary-card');
+            summaryDiv.classList.remove('result-error');
+            summaryDiv.innerHTML = contentHtml;
+        }
+    }
+    
+    /**
+     * Simulates the amortization schedule for a given payment frequency.
+     * @param {number} P - Principal
+     * @param {number} R_annual - Annual Rate (percentage)
+     * @param {number} N_years - Loan Term (years)
+     * @param {number} paymentsPerYear - 12 for monthly, 26 for bi-weekly
+     * @returns {{totalInterest: number, totalPayments: number}}
+     */
+    function simulateAmortization(P, R_annual, N_years, paymentsPerYear) {
+        const monthlyPI = calculateMonthlyPI(P, R_annual, N_years);
+        
+        // Calculate payment amount based on frequency
+        let periodicPayment;
+        let totalPeriods;
+        
+        if (paymentsPerYear === 12) {
+            periodicPayment = monthlyPI;
+            totalPeriods = N_years * 12;
+        } else if (paymentsPerYear === 26) {
+            // Bi-weekly payment is half the monthly payment
+            periodicPayment = monthlyPI / 2;
+            // Max periods is a safety limit, the loop will stop when balance hits 0
+            totalPeriods = N_years * 26; 
+        } else {
+            // Should not happen, but safe guard
+            return { totalInterest: NaN, totalPayments: NaN };
+        }
+
+        const periodicRateDecimal = (R_annual / 100) / 12; // Interest is always compounded monthly
+        let balance = P;
+        let totalInterest = 0;
+        let totalPaymentsMade = 0;
+        let currentMonth = 0;
+
+        for (let period = 1; period <= totalPeriods * 2; period++) { // Safety limit of 2x max periods
+            if (balance <= 0) break;
+
+            let paymentDue = periodicPayment;
+            
+            // Interest is always calculated monthly, but applied on the day of payment (or bi-weekly)
+            // To simplify, we track the interest accrued since the last payment and apply it.
+            // Bi-Weekly payments reduce the effective period interest more quickly.
+            
+            let interestPayment = balance * periodicRateDecimal * (12 / paymentsPerYear);
+            
+            // For bi-weekly, we need to manually adjust the accrued interest based on the frequency.
+            // Since banks compound monthly, we calculate interest for a *month*, then determine how many bi-weekly payments fit.
+            // To simplify, we use the standard bi-weekly model (26 payments, half the monthly amount).
+            
+            // Standard Bi-weekly Model Logic:
+            if (paymentsPerYear === 26) {
+                // Bi-weekly payment means payment is half the monthly P&I, made every two weeks.
+                // The interest is calculated on the *remaining balance* and applied per payment.
+                // Monthly Rate / 2 (approx for bi-weekly)
+                interestPayment = balance * periodicRateDecimal * (1 / 2); 
+            } else {
+                // Monthly
+                interestPayment = balance * periodicRateDecimal;
+            }
+
+            // Principal paid is payment minus interest
+            let principalPayment = paymentDue - interestPayment;
+
+            if (principalPayment <= 0) {
+                 // The payment is less than the interest. Loan is increasing (negative amortization).
+                 // This should not happen with standard P&I calculation but is a safeguard.
+                 principalPayment = 0;
+            }
+            
+            // Handle last payment
+            if (balance - principalPayment < 0) {
+                principalPayment = balance;
+                paymentDue = principalPayment + interestPayment;
+                balance = 0;
+            } else {
+                balance -= principalPayment;
+            }
+            
+            totalInterest += interestPayment;
+            totalPaymentsMade = period;
+        }
+
+        return { totalInterest: totalInterest, totalPayments: totalPaymentsMade };
+    }
+
+    /**
+     * Handles form submission and triggers the bi-weekly comparison.
+     */
+    function handleBiWeekly(e) {
+        e.preventDefault();
+
+        const P = parseFloat(document.getElementById('principal-input').value);
+        const R = parseFloat(document.getElementById('rate-input').value);
+        const N = parseFloat(document.getElementById('term-input').value);
+
+        // Input Validation
+        if (isNaN(P) || isNaN(R) || isNaN(N) || P <= 0 || R <= 0 || N <= 0) {
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid positive numbers for Principal, Annual Rate (R > 0), and Term.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
+        try {
+            // --- 1. Monthly Baseline ---
+            const monthlyResult = simulateAmortization(P, R, N, 12);
+            
+            // --- 2. Bi-Weekly Simulation ---
+            const biWeeklyResult = simulateAmortization(P, R, N, 26);
+            
+            // --- 3. Calculate Savings ---
+            const interestSaved = monthlyResult.totalInterest - biWeeklyResult.totalInterest;
+            const termSavedMonths = (N * 12) - (biWeeklyResult.totalPayments / 26 * 12);
+            
+            const standardMonthlyPayment = calculateMonthlyPI(P, R, N);
+            const biWeeklyPayment = standardMonthlyPayment / 2;
+            const biWeeklyTermFormatted = formatTerm(Math.round(biWeeklyResult.totalPayments / 26 * 12));
+            const termSavedFormatted = formatTerm(Math.round(termSavedMonths));
+
+
+            // --- 4. Build Summary HTML ---
+            const summaryHtml = `
+                <h4 class="h6 fw-bold text-center text-primary mb-4">Savings Analysis</h4>
+                
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <p class="summary-label">Total Interest Saved:</p>
+                        <p class="summary-value text-success">${formatter.format(interestSaved)}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <p class="summary-label">Loan Term Reduction:</p>
+                        <p class="summary-value">${termSavedFormatted}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <p class="summary-label">New Total Loan Term:</p>
+                        <p class="summary-value text-info">${biWeeklyTermFormatted}</p>
+                    </div>
+                </div>
+
+                <div class="comparison-table mt-4">
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th>Payment Plan</th>
+                                <th>Payment Amount</th>
+                                <th>Payments Per Year</th>
+                                <th>Total Interest Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="monthly-row">
+                                <td>Monthly</td>
+                                <td>${formatter.format(standardMonthlyPayment)}</td>
+                                <td>12</td>
+                                <td>${formatter.format(monthlyResult.totalInterest)}</td>
+                            </tr>
+                            <tr class="biweekly-row">
+                                <td>Bi-Weekly</td>
+                                <td>${formatter.format(biWeeklyPayment)}</td>
+                                <td>26 (Equivalent to 13 monthly payments)</td>
+                                <td class="savings-value">${formatter.format(biWeeklyResult.totalInterest)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-center text-muted small mt-3">
+                        By making 26 half-payments instead of 12 full payments, you essentially make one full extra payment toward principal each year.
+                    </p>
+                </div>
+            `;
+            
+            displayResult(false, summaryHtml);
+            
+        } catch (error) {
+            console.error(error);
+             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
+            displayResult(true, htmlContent);
+        }
+    }
+
+    // Attach handler to the form
+    document.getElementById('bi-weekly-form').addEventListener('submit', handleBiWeekly);
+
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('bi-weekly-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

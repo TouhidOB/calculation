@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Power Converter (Horsepower, Kilowatts, Watts){% endblock %}
+
+{% block meta_description %}Convert power instantly between Watts (W), Kilowatts (kW), Metric Horsepower (PS), and Imperial Horsepower (hp).{% endblock %}
+
+{% block meta_keywords %}power converter, horsepower to kilowatts, watts to hp, metric horsepower, imperial power, engine output{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        background: #f8f9fa; 
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .conversion-input-group .form-control {
+        font-size: 1.25rem;
+        height: auto;
+        padding: 10px;
+        border-right: none;
+        box-shadow: none; 
+    }
+    
+    .conversion-input-group .input-group-text {
+        background: #e9ecef;
+        font-weight: bold;
+        padding: 10px 15px;
+        cursor: pointer; 
+    }
+    
+    .conversion-input-group .dropdown-toggle {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #20c997; /* Green-teal theme for power */
+    }
+    
+    .highlight-item {
+        border-left-color: #20c997 !important; 
+        background-color: #eafcf6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🔌 Power Converter</h1>
+    <p class="small-muted">Convert between **SI, Metric, and Imperial** power units, including Watts (W), Kilowatts (kW), and Horsepower (hp). Results update in **real-time**.</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Value and Unit</h5>
+
+        <div class="conversion-input-group">
+            <!-- The main input field for the value -->
+            <input type="number" class="form-control" id="inputValue" placeholder="Enter power value..." min="0" step="any" autofocus>
+
+            <!-- Dropdown for selecting the input unit -->
+            <div class="input-group-append">
+                <button class="btn dropdown-toggle" style="background-color: #20c997; color: white;" type="button" id="unitDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Unit
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="unitDropdown">
+                    <li><a class="dropdown-item" href="#" data-unit="W">Watts (W)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="kW">Kilowatts (kW)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="hp_i">Horsepower (Imperial, hp)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="hp_m">Horsepower (Metric, PS)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="ft_lbs">Foot-Pounds per Second (ft·lb/s)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="kCal_s">Kilocalories per Second (kcal/s)</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <h5 class="section-title mt-4">Step 2: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <!-- Results will be dynamically inserted here -->
+            <div class="alert alert-info" id="initialMessage">Enter a number and select a unit to see conversions.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Standard Definitions Used:** Conversions use the standard definitions: $1 \text{ hp} \approx 745.7 \text{ W}$, $1 \text{ PS} \approx 735.5 \text{ W}$, and $1 \text{ kW} = 1000 \text{ W}$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Base unit: Watts (W)
+    const UNIT_FACTORS = {
+        'W': { name: 'Watts', factor: 1, abbr: 'W' },
+        'kW': { name: 'Kilowatts', factor: 1000, abbr: 'kW' }, // 1 kW = 1000 W
+        
+        // Imperial Horsepower (550 ft·lbf/s)
+        'hp_i': { name: 'Horsepower (Imp)', factor: 745.699872, abbr: 'hp' }, 
+        
+        // Metric Horsepower (PS - Pferdestärke)
+        'hp_m': { name: 'Horsepower (Metric)', factor: 735.49875, abbr: 'PS' }, 
+        
+        // Foot-Pounds per Second (1 ft·lbf/s = 1.355817948 W)
+        'ft_lbs': { name: 'Foot-Pounds/Second', factor: 1.355817948, abbr: 'ft·lb/s' }, 
+        
+        // Kilocalories per Second (1 kcal/s = 4184 W)
+        'kCal_s': { name: 'Kilocalories per Second', factor: 4184, abbr: 'kcal/s' } 
+    };
+
+    let activeUnit = 'W'; // Default unit
+    const inputField = document.getElementById('inputValue');
+    const unitDropdown = document.getElementById('unitDropdown');
+    const resultsList = document.getElementById('resultsList');
+    const initialMessage = document.getElementById('initialMessage');
+    
+    // Function to update the dropdown button text
+    function updateDropdownButton(unitKey) {
+        const { name, abbr } = UNIT_FACTORS[unitKey];
+        unitDropdown.textContent = `${name} (${abbr})`;
+    }
+
+    // Function to perform the conversion and update the UI
+    function convertPower() {
+        const inputValue = parseFloat(inputField.value);
+
+        // Clear previous results
+        resultsList.innerHTML = '';
+        initialMessage.style.display = 'none';
+
+        if (isNaN(inputValue) || inputValue < 0) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a valid, non-negative number.</div>`;
+            return;
+        }
+
+        const fromFactor = UNIT_FACTORS[activeUnit].factor;
+        
+        // 1. Convert the input value to the Base Unit (Watts)
+        const baseValueWatts = inputValue * fromFactor;
+        
+        // 2. Calculate and display all conversions
+        const allUnits = Object.keys(UNIT_FACTORS);
+
+        allUnits.forEach(toUnitKey => {
+            const { name, abbr, factor: toFactor } = UNIT_FACTORS[toUnitKey];
+            
+            // Convert from Base Unit (Watts) to the Target Unit
+            const convertedValue = baseValueWatts / toFactor;
+            
+            const li = document.createElement('div');
+            li.classList.add('list-group-item');
+            
+            // Highlight the active input unit
+            if (activeUnit === toUnitKey) {
+                li.classList.add('highlight-item');
+            }
+
+            // Ensure proper display formatting
+            let displayValue;
+            // Use exponential notation for very large/small numbers to maintain precision and readability
+            if (convertedValue === 0) {
+                displayValue = '0';
+            } else if (Math.abs(convertedValue) > 1e6 || Math.abs(convertedValue) < 1e-5) {
+                displayValue = convertedValue.toExponential(4);
+            } else {
+                displayValue = convertedValue.toFixed(6);
+            }
+
+            li.innerHTML = `
+                <span class="unit-name">${name} (${abbr})</span>
+                <span class="unit-value">${displayValue}</span>
+            `;
+            
+            resultsList.appendChild(li);
+        });
+    }
+
+    // Event listener for input changes (real-time conversion)
+    inputField.addEventListener('input', convertPower);
+
+    // Event listener for dropdown unit selection
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newUnit = this.getAttribute('data-unit');
+            activeUnit = newUnit;
+            updateDropdownButton(activeUnit);
+            convertPower(); // Recalculate with the new unit
+        });
+    });
+
+    // Initial setup: Set default unit and prompt user
+    updateDropdownButton(activeUnit);
+    resultsList.appendChild(initialMessage);
+
+</script>
+{% endblock %}

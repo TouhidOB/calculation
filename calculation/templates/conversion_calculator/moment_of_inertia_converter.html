@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Moment of Inertia Converter (kg⋅m² to g⋅cm² to lbm⋅ft²){% endblock %}
+
+{% block meta_description %}Convert Moment of Inertia instantly between Kilogram meter squared (kg⋅m²), Gram centimeter squared (g⋅cm²), and Pound-mass foot squared (lbm⋅ft²).{% endblock %}
+
+{% block meta_keywords %}moment of inertia, rotational mass, kg⋅m², g⋅cm², lbm⋅ft², dynamics, unit converter, rotational mechanics{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #673ab7; /* Deep Purple Theme for Rotational Dynamics */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #ede7f6; /* Light purple background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #673ab7; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #512da8;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #673ab7;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #fdd835; /* Yellow/Amber contrast */
+        word-break: break-all;
+        width: 100%;
+        background-color: #512da8;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #673ab7;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #512da8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">⚙️ Moment of Inertia Converter</h1>
+    <p class="small-muted">Convert **Moment of Inertia ($I$)** between **Kilogram meter squared ($\text{kg}\cdot\text{m}^2$)**, **Gram centimeter squared ($\text{g}\cdot\text{cm}^2$)**, and **Pound-mass foot squared ($\text{lbm}\cdot\text{ft}^2$)**.</p>
+    
+    <p class="small-muted">Moment of inertia is a measure of an object's resistance to changes in its rotation. [Image of moment of inertia of basic shapes]</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Enter Value and Unit</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Value Input -->
+            <label for="inputValue">Moment of Inertia Value to Convert</label>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 5" value="5" min="0" step="any" autofocus>
+            
+            <!-- Unit Select -->
+            <div class="mt-3">
+                <label for="inputUnitSelect">Input Unit</label>
+                <select id="inputUnitSelect" class="form-select input-field">
+                    <option value="KGM2">Kilogram meter squared ($\text{kg}\cdot\text{m}^2$)</option>
+                    <option value="GCM2">Gram centimeter squared ($\text{g}\cdot\text{cm}^2$)</option>
+                    <option value="LBMFT2">Pound-mass foot squared ($\text{lbm}\cdot\text{ft}^2$)</option>
+                </select>
+            </div>
+            
+            <p class="small-muted mt-2">The output will be shown for all other supported units.</p>
+        </div>
+
+        <button class="btn conversion-button" onclick="convertInertia()">
+            Calculate Moment of Inertia
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Converted Results</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Conversion Factors:** $1 \text{ kg}\cdot\text{m}^2 = 10^7 \text{ g}\cdot\text{cm}^2$. $1 \text{ kg}\cdot\text{m}^2 \approx 23.73036 \text{ lbm}\cdot\text{ft}^2$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS (Relative to kg⋅m²) ---
+    // kg⋅m² to g⋅cm²: 1000 g/kg * 10000 cm²/m² = 10,000,000
+    const KGM2_TO_GCM2_FACTOR = 1e7; 
+    
+    // kg⋅m² to lbm⋅ft²: 1 kg ≈ 2.20462 lbm, 1 m² ≈ 10.7639 ft². (2.20462 * 10.7639)
+    const KGM2_TO_LBMFT2_FACTOR = 23.73036; 
+
+    // --- Inverse Factors ---
+    const GCM2_TO_KGM2_FACTOR = 1 / KGM2_TO_GCM2_FACTOR; // 1e-7
+    const LBMFT2_TO_KGM2_FACTOR = 1 / KGM2_TO_LBMFT2_FACTOR; // 0.04214011
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const inputUnitSelect = document.getElementById('inputUnitSelect');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Converts the moment of inertia value from the input unit to all other units.
+     */
+    function convertInertia() {
+        resultsList.innerHTML = '';
+        const value = parseFloat(inputValue.value);
+        const inputUnit = inputUnitSelect.value;
+        
+        if (isNaN(value) || value < 0) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid non-negative number.</div>`;
+            return;
+        }
+
+        let kgm2 = 0; // Base unit: Kilogram meter squared
+
+        // Step 1: Normalize input to KGM2
+        if (inputUnit === 'KGM2') {
+            kgm2 = value;
+        } else if (inputUnit === 'GCM2') {
+            // g⋅cm² to kg⋅m²
+            kgm2 = value * GCM2_TO_KGM2_FACTOR;
+        } else if (inputUnit === 'LBMFT2') {
+            // lbm⋅ft² to kg⋅m²
+            kgm2 = value * LBMFT2_TO_KGM2_FACTOR;
+        }
+        
+        // Step 2: Convert normalized KGM2 to all target units
+        const g_cm2 = kgm2 * KGM2_TO_GCM2_FACTOR; // kg⋅m² to g⋅cm²
+        const lbm_ft2 = kgm2 * KGM2_TO_LBMFT2_FACTOR; // kg⋅m² to lbm⋅ft²
+
+        // --- Render Results ---
+        
+        const units = [
+            { id: 'KGM2', name: 'Kilogram meter squared (SI)', symbol: 'kg⋅m²', value: kgm2 },
+            { id: 'GCM2', name: 'Gram centimeter squared (CGS)', symbol: 'g⋅cm²', value: g_cm2 },
+            { id: 'LBMFT2', name: 'Pound-mass foot squared (Imperial)', symbol: 'lbm⋅ft²', value: lbm_ft2 }
+        ];
+
+        // 1. Render converted values first
+        units.filter(u => u.id !== inputUnit).forEach(unit => {
+            // Use different precision for CGS due to large numbers
+            const precision = unit.id === 'GCM2' ? 0 : 6;
+            renderResult(unit.name, unit.value.toFixed(precision), unit.symbol, '673ab7', false);
+        });
+
+        // 2. Highlight the input value
+        const inputUnitData = units.find(u => u.id === inputUnit);
+        // Display input value as entered, maybe with some formatting
+        renderResult(`Input Value (${inputUnitData.symbol})`, value.toFixed(4), inputUnitData.symbol, '343a40', true);
+    }
+    
+    /**
+     * Renders a single result item.
+     * @param {string} name - The name of the result/unit.
+     * @param {string} value - The numerical value (string).
+     * @param {string} unit - The unit abbreviation.
+     * @param {string} borderColor - The color for the left border (HEX).
+     * @param {boolean} isInput - If true, styles the item as the input echo.
+     */
+    function renderResult(name, value, unit, borderColor, isInput) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        let valueColor = isInput ? '#343a40' : '#fdd835';
+        let backgroundColor = isInput ? '#ede7f6' : '#512da8';
+        let unitColor = isInput ? '#512da8' : '#ede7f6';
+        let fontSize = isInput ? '1.1rem' : '1.3rem';
+
+
+        item.innerHTML = `
+            <div class="unit-name">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor}; font-size: ${fontSize};">
+                ${value} <span style="font-size: 0.8em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change
+        inputValue.addEventListener('input', convertInertia);
+        // Use 'change' event for unit switch
+        inputUnitSelect.addEventListener('change', convertInertia);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertInertia(); // Run initial conversion on load
+    };
+
+</script>
+{% endblock %}

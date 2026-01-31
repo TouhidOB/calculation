@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Debt Service Coverage Ratio (DSCR) Calculator{% endblock %}
+
+{% block meta_description %}Calculate the Debt Service Coverage Ratio (DSCR) to determine if a property's Net Operating Income (NOI) sufficiently covers its annual mortgage debt service.{% endblock %}
+
+{% block meta_keywords %}dscr calculator, debt service coverage ratio, noi, annual debt service, commercial lending metric, real estate finance{% endendblock %}
+
+{% block extra_head %}
+<!-- Include Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<style>
+    /* Custom Styling for a Conservative Navy/Blue Theme (Finance/Lending) */
+    .solver-wrapper {
+        background: #f7faff; /* Very light blue/grey */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 800px; 
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #bfdbfe; /* Light Blue/Indigo */
+        border: 2px solid #1e40af; /* Navy accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e3a8a; /* Darker Blue */
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-control-custom {
+        padding: 12px;
+        font-size: 1.2rem;
+        border: 2px solid #93c5fd; 
+        border-radius: 8px;
+        font-weight: 700;
+        color: #1e40af;
+    }
+    .form-control-custom:focus {
+        border-color: #1e40af;
+        box-shadow: 0 0 0 0.25rem rgba(30, 64, 175, 0.25);
+    }
+
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .summary-card {
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #eff6ff; /* Very Light Blue */
+        border-left: 5px solid #1e40af; /* Navy accent */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    /* Styles for DSCR display */
+    .result-label {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1e3a8a; /* Dark Blue */
+    }
+    
+    .dscr-value {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #1e40af; /* Navy */
+    }
+    .text-primary-navy { color: #1e40af !important; }
+    .text-success { color: #10b981 !important; }
+    .text-danger { color: #ef4444 !important; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container p-4 p-md-5">
+    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🏦 Debt Service Coverage Ratio (DSCR) Calculator</h1>
+    <p class="text-secondary mb-5 text-center">
+        Calculate the **DSCR** to verify if a property's income is enough to cover the annual mortgage payments.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <form id="dscr-form" class="row g-4 justify-content-center">
+            
+            <!-- Input Section -->
+            <div class="col-lg-10">
+                <div class="input-section">
+                    <h4 class="h5 fw-bold text-center text-primary-navy p-2 rounded mb-4">Input Annual Totals</h4>
+                    
+                    <div class="input-box mb-4">
+                        <label for="noi">Annual Net Operating Income (NOI):</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="noi" 
+                               value="45000" 
+                               step="any"
+                               required
+                               class="form-control form-control-custom">
+                        </div>
+                        <small class="text-muted">Total income minus all operating expenses (before debt service).</small>
+                    </div>
+                    
+                    <div class="input-box mb-4">
+                        <label for="debt-service">Total Annual Debt Service (Principal & Interest):</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="debt-service" 
+                               value="35000" 
+                               min="1" 
+                               step="any"
+                               required 
+                               class="form-control form-control-custom">
+                        </div>
+                        <small class="text-muted">The sum of all mortgage payments for one year.</small>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="col-12 mt-0">
+                <button type="submit"
+                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
+                Calculate DSCR
+            </button>
+            </div>
+        </form>
+
+        <div id="result-container" class="result-section">
+            <div id="summary-output" class="summary-card d-none mb-4"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script>
+    /**
+     * Formats a number as USD currency (no cents).
+     */
+    const currencyFormatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    });
+    
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const summaryDiv = document.getElementById('summary-output');
+        
+        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
+        
+        if (isError) {
+            summaryDiv.classList.add('result-error');
+            summaryDiv.classList.remove('summary-card');
+            summaryDiv.innerHTML = contentHtml;
+        } else {
+            summaryDiv.classList.add('summary-card');
+            summaryDiv.classList.remove('result-error');
+            summaryDiv.innerHTML = contentHtml;
+        }
+    }
+
+    /**
+     * Handles form submission and triggers the calculation.
+     */
+    function handleDSCR(e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const noi = parseFloat(document.getElementById('noi').value);
+        const debtService = parseFloat(document.getElementById('debt-service').value);
+        
+        // 2. Input Validation
+        if (isNaN(noi) || isNaN(debtService) || debtService <= 0) {
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter positive values for Annual Debt Service and valid numbers for NOI.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
+        try {
+            // 3. Calculation
+            // DSCR = NOI / Debt Service
+            const dscr = noi / debtService;
+            
+            let dscrColor = 'text-danger';
+            let dscr_message = "Danger! The NOI is less than the debt service. The property does not generate enough cash to cover its mortgage payments.";
+
+            if (dscr >= 1.25) {
+                dscrColor = 'text-success';
+                dscr_message = "Excellent! A DSCR of 1.25 or higher is typically preferred by lenders for commercial real estate loans, indicating a healthy margin of safety.";
+            } else if (dscr > 1.0) {
+                 dscrColor = 'text-warning';
+                 dscr_message = "Marginal. The property covers its debt, but the safety margin is low. Lenders often require a higher DSCR (1.10 - 1.25).";
+            }
+            
+
+            // 4. Build Summary HTML
+            const summaryHtml = `
+                <h4 class="h5 fw-bold text-center text-primary-navy mb-4">Calculated Debt Service Coverage Ratio (DSCR)</h4>
+                
+                <div class="text-center mb-4">
+                    <p class="result-label">DSCR</p>
+                    <p class="dscr-value mb-0 ${dscrColor}">
+                        ${dscr.toFixed(2)}:1
+                    </p>
+                </div>
+                
+                <hr class="my-4">
+                
+                <h5 class="h6 fw-bold text-center text-primary-navy mb-3">Formula Breakdown</h5>
+                <div class="row text-center">
+                    <div class="col-md-6 border-end border-indigo-400">
+                        <p class="result-label mb-2">Annual Net Operating Income (NOI)</p>
+                        <p class="fs-4 fw-bold text-secondary">${currencyFormatter.format(noi)}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="result-label mb-2">Annual Debt Service (P&I)</p>
+                        <p class="fs-4 fw-bold text-secondary">${currencyFormatter.format(debtService)}</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4 p-3 bg-light rounded">
+                    <p class="text-muted fw-bold mb-0">${dscr_message}</p>
+                </div>
+            `;
+            
+            displayResult(false, summaryHtml);
+            
+        } catch (error) {
+            console.error(error);
+             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
+            displayResult(true, htmlContent);
+        }
+    }
+
+    // Attach handler to the form
+    document.getElementById('dscr-form').addEventListener('submit', handleDSCR);
+    
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('dscr-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

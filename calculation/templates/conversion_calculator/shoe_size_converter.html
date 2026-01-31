@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}Shoe Size Converter (US, UK, EU){% endblock %}
+
+{% block meta_description %}Convert shoe sizes instantly between US Men's, US Women's, UK, EU, and Centimeters (Mondopoint).{% endblock %}
+
+{% block meta_keywords %}shoe size converter, us to eu shoe size, uk to us shoe size, mondopoint, shoe length, apparel sizing{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #343a40;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        background: #f0f8ff; /* Light blue/grey for apparel theme */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #007bff;
+    }
+    
+    .conversion-input-group .form-control {
+        font-size: 1.25rem;
+        height: auto;
+        padding: 10px;
+        border-right: none;
+        box-shadow: none; 
+    }
+    
+    .conversion-input-group .input-group-text {
+        background: #007bff;
+        color: white;
+        font-weight: bold;
+        padding: 10px 15px;
+        cursor: pointer; 
+    }
+    
+    .conversion-input-group .dropdown-toggle {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        background-color: #0056b3;
+        color: white;
+    }
+
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .highlight-item {
+        border-left-color: #007bff !important; 
+        background-color: #eaf1ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">👟 Shoe Size Converter</h1>
+    <p class="small-muted">Convert between major international shoe sizing systems (US, UK, EU) based on **Centimeter (Mondopoint) foot length**. Results update in **real-time**.</p>
+    [Image of international shoe size comparison chart]
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Size or Foot Length</h5>
+
+        <div class="conversion-input-group">
+            <!-- The main input field for the value -->
+            <input type="number" class="form-control" id="inputValue" placeholder="Enter size or length..." min="0" step="0.1" autofocus>
+
+            <!-- Dropdown for selecting the input unit -->
+            <div class="input-group-append">
+                <button class="btn dropdown-toggle" type="button" id="unitDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Unit
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="unitDropdown">
+                    <li><a class="dropdown-item" href="#" data-unit="cm">Foot Length (cm)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="us_m">US Men's Size</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="us_w">US Women's Size</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="uk">UK Size</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="eu">EU Size (Continental)</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <h5 class="section-title mt-4">Step 2: Converted Sizes</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <!-- Results will be dynamically inserted here -->
+            <div class="alert alert-info" id="initialMessage">Enter a size and select a system (e.g., US Men's) to see conversions.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Note:** Shoe sizing is not perfectly standardized. This tool uses averaged standard charts based on Mondopoint (foot length) for the closest match. Always check specific brand charts where possible.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Base unit for conversion: Centimeters (cm) - Mondopoint
+    
+    // Key reference points (Foot Length in CM) mapping to standard sizes
+    const SIZING_CHART = [
+        // CM, US Men, US Women, UK, EU
+        [22.1, 4.0, 5.5, 3.5, 36.0],
+        [22.5, 4.5, 6.0, 4.0, 36.5],
+        [23.0, 5.0, 6.5, 4.5, 37.0],
+        [23.4, 5.5, 7.0, 5.0, 37.5],
+        [23.8, 6.0, 7.5, 5.5, 38.0],
+        [24.3, 6.5, 8.0, 6.0, 38.5],
+        [24.6, 7.0, 8.5, 6.5, 39.0],
+        [25.0, 7.5, 9.0, 7.0, 40.0],
+        [25.4, 8.0, 9.5, 7.5, 40.5],
+        [25.8, 8.5, 10.0, 8.0, 41.0],
+        [26.2, 9.0, 10.5, 8.5, 42.0],
+        [26.7, 9.5, 11.0, 9.0, 42.5],
+        [27.1, 10.0, 11.5, 9.5, 43.0],
+        [27.5, 10.5, 12.0, 10.0, 43.5],
+        [27.9, 11.0, 12.5, 10.5, 44.0],
+        [28.4, 11.5, 13.0, 11.0, 44.5],
+        [28.8, 12.0, 13.5, 11.5, 45.0],
+        [29.2, 12.5, 14.0, 12.0, 46.0],
+        [29.6, 13.0, 14.5, 12.5, 46.5],
+        [30.5, 14.0, 15.5, 13.5, 47.5],
+        [31.3, 15.0, 16.5, 14.5, 48.5]
+    ];
+    
+    // Mapping keys to the column index in the SIZING_CHART array
+    const UNIT_MAPPING = {
+        'cm': { name: 'Foot Length', abbr: 'cm', index: 0, decimal: 1 },
+        'us_m': { name: "US Men's Size", abbr: 'US M', index: 1, decimal: 1 },
+        'us_w': { name: "US Women's Size", abbr: 'US W', index: 2, decimal: 1 },
+        'uk': { name: "UK Size", abbr: 'UK', index: 3, decimal: 1 },
+        'eu': { name: "EU Size", abbr: 'EU', index: 4, decimal: 0 } // EU sizes are typically whole numbers
+    };
+    
+    let activeUnit = 'us_m'; // Default unit
+    const inputField = document.getElementById('inputValue');
+    const unitDropdown = document.getElementById('unitDropdown');
+    const resultsList = document.getElementById('resultsList');
+    const initialMessage = document.getElementById('initialMessage');
+
+    /**
+     * Converts any input size to the base unit (CM) using the chart lookup.
+     * Finds the closest foot length entry in the SIZING_CHART.
+     * @param {number} inputValue - The size number (e.g., 9.5)
+     * @param {string} fromUnitKey - The key of the source unit (e.g., 'us_m')
+     * @returns {number|null} The equivalent foot length in CM, or null if invalid.
+     */
+    function convertToBaseCM(inputValue, fromUnitKey) {
+        if (fromUnitKey === 'cm') {
+            return inputValue;
+        }
+
+        const fromIndex = UNIT_MAPPING[fromUnitKey].index;
+        let minDiff = Infinity;
+        let baseCM = null;
+
+        // Find the CM entry that is closest to the input size
+        for (const row of SIZING_CHART) {
+            const chartSize = row[fromIndex];
+            const diff = Math.abs(chartSize - inputValue);
+
+            if (diff < minDiff) {
+                minDiff = diff;
+                baseCM = row[0]; // row[0] is the CM (base) value
+            }
+        }
+        
+        // If the closest size is too far off (e.g., input is far outside chart range), return null
+        // Max half-step difference is generally 0.5 (e.g., US sizes move in 0.5 increments)
+        if (minDiff > 0.6) {
+             return null;
+        }
+
+        return baseCM;
+    }
+
+    /**
+     * Converts the base unit (CM) to a target size.
+     * @param {number} baseCM - The foot length in CM.
+     * @param {string} toUnitKey - The key of the target unit (e.g., 'eu')
+     * @returns {number|null} The equivalent shoe size in the target system.
+     */
+    function convertFromBaseCM(baseCM, toUnitKey) {
+        if (toUnitKey === 'cm') {
+            return baseCM;
+        }
+        
+        const toIndex = UNIT_MAPPING[toUnitKey].index;
+        let minDiff = Infinity;
+        let targetSize = null;
+
+        // Find the CM entry closest to the baseCM value
+        for (const row of SIZING_CHART) {
+            const chartCM = row[0];
+            const diff = Math.abs(chartCM - baseCM);
+
+            if (diff < minDiff) {
+                minDiff = diff;
+                targetSize = row[toIndex];
+            }
+        }
+
+        return targetSize;
+    }
+
+    // Function to update the dropdown button text
+    function updateDropdownButton(unitKey) {
+        const { name, abbr } = UNIT_MAPPING[unitKey];
+        unitDropdown.textContent = `${name} (${abbr})`;
+    }
+
+    // Function to perform the conversion and update the UI
+    function convertShoeSize() {
+        const inputValue = parseFloat(inputField.value);
+
+        // Clear previous results
+        resultsList.innerHTML = '';
+        initialMessage.style.display = 'none';
+
+        if (isNaN(inputValue) || inputValue <= 0) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a valid, positive size or length.</div>`;
+            return;
+        }
+
+        // 1. Convert input value to the Base Unit (CM)
+        const baseCM = convertToBaseCM(inputValue, activeUnit);
+
+        if (baseCM === null) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Error: The input size (${inputValue}) is outside the common conversion range (approx. EU 36 to 48).</div>`;
+            return;
+        }
+        
+        // 2. Calculate and display all conversions
+        const allUnits = Object.keys(UNIT_MAPPING);
+
+        allUnits.forEach(toUnitKey => {
+            const { name, abbr, decimal } = UNIT_MAPPING[toUnitKey];
+            
+            // Convert from Base Unit (CM) to the Target Unit
+            const convertedValue = convertFromBaseCM(baseCM, toUnitKey);
+            
+            const li = document.createElement('div');
+            li.classList.add('list-group-item');
+            
+            // Highlight the active input unit
+            if (activeUnit === toUnitKey) {
+                li.classList.add('highlight-item');
+            }
+
+            // Ensure proper display formatting
+            let displayValue;
+            if (convertedValue !== null) {
+                if (toUnitKey === 'eu') {
+                    // EU sizes are typically rounded to the nearest half or whole number
+                    displayValue = convertedValue.toFixed(decimal);
+                } else if (toUnitKey === 'cm') {
+                    // CM length needs 2 decimals for precision
+                     displayValue = convertedValue.toFixed(2);
+                } else {
+                    // Other sizes (US/UK)
+                    displayValue = convertedValue.toFixed(decimal);
+                }
+            } else {
+                displayValue = 'N/A'; // Should not happen if baseCM is valid
+            }
+
+            li.innerHTML = `
+                <span class="unit-name">${name} (${abbr})</span>
+                <span class="unit-value">${displayValue}</span>
+            `;
+            
+            resultsList.appendChild(li);
+        });
+    }
+
+    // Event listener for input changes (real-time conversion)
+    inputField.addEventListener('input', convertShoeSize);
+
+    // Event listener for dropdown unit selection
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newUnit = this.getAttribute('data-unit');
+            activeUnit = newUnit;
+            updateDropdownButton(activeUnit);
+            convertShoeSize(); // Recalculate with the new unit
+        });
+    });
+
+    // Initial setup: Set default unit and run initial conversion
+    updateDropdownButton(activeUnit);
+    inputField.value = 9; // Default starting size
+    convertShoeSize();
+
+</script>
+{% endblock %}

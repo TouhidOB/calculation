@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Blood Sugar Unit Converter (mg/dL to mmol/L){% endblock %}
+
+{% block meta_description %}Convert blood glucose readings between milligrams per deciliter (mg/dL) and millimoles per liter (mmol/L) using the standard conversion factor of 18.{% endblock %}
+
+{% block meta_keywords %}blood sugar, glucose converter, mg/dL, mmol/L, diabetes, health calculator, blood glucose level{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #e91e63; /* Pink/Red Theme for Health/Blood */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #fce4ec; /* Light pink background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #e91e63; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #c2185b;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #e91e63;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white; 
+        word-break: break-all;
+        width: 100%;
+        background-color: #e91e63;
+        padding: 10px;
+        border-radius: 4px;
+    }
+
+    .conversion-button {
+        background-color: #e91e63;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #c2185b;
+    }
+
+    .hidden-input {
+        display: none;
+    }
+    
+    .conversion-note {
+        padding: 10px;
+        background-color: #f8bbd0;
+        border-radius: 6px;
+        margin-top: 15px;
+        font-size: 0.9em;
+        color: #880e4f;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🩸 Blood Sugar Unit Converter</h1>
+    <p class="small-muted">Convert **Glucose Readings** between $\text{mg/dL}$ (U.S./European standard) and $\text{mmol/L}$ (International standard).</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Choose Input Unit</h5>
+
+        <div class="input-group-custom">
+            <label for="calculationMode">Input Unit</label>
+            <select id="calculationMode" class="form-select input-field" onchange="toggleInputs()">
+                <option value="mgdl">Milligrams per Deciliter ($\text{mg/dL}$)</option>
+                <option value="mmol">Millimoles per Liter ($\text{mmol/L}$)</option>
+            </select>
+        </div>
+
+        <h5 class="section-title" id="inputSectionTitle">Step 2: Enter Value</h5>
+        
+        <div class="input-group-custom">
+            
+            <!-- mg/dL Input -->
+            <div id="mgdlInputGroup">
+                <label for="mgdlValue">Value in $\text{mg/dL}$</label>
+                <input type="number" class="form-control input-field" id="mgdlValue" placeholder="e.g., 120" value="120" min="0" step="1">
+            </div>
+
+            <!-- mmol/L Input -->
+            <div id="mmolInputGroup" class="mt-3 hidden-input">
+                <label for="mmolValue">Value in $\text{mmol/L}$</label>
+                <input type="number" class="form-control input-field" id="mmolValue" placeholder="e.g., 6.7" value="6.7" min="0" step="0.1">
+            </div>
+            
+            <div class="conversion-note">
+                <p>Conversion Factor: <span style="font-weight: bold;">$\text{18}$</span> (based on the molecular weight of glucose).</p>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" onclick="calculateConversion()">
+            Convert Value
+        </button>
+
+        <h5 class="section-title mt-4">Step 3: Converted Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Reference Ranges (Fasting):** $70-100\text{ mg/dL}$ is considered normal ($3.9-5.6\text{ mmol/L}$).</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    const CONVERSION_FACTOR = 18.0;
+
+    // --- DOM Elements ---
+    const calculationMode = document.getElementById('calculationMode');
+    const mgdlInputGroup = document.getElementById('mgdlInputGroup');
+    const mmolInputGroup = document.getElementById('mmolInputGroup');
+    
+    const mgdlValue = document.getElementById('mgdlValue');
+    const mmolValue = document.getElementById('mmolValue');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Toggles visibility of input groups based on the selected calculation mode.
+     */
+    function toggleInputs() {
+        const mode = calculationMode.value;
+
+        // Reset visibility
+        mgdlInputGroup.classList.add('hidden-input');
+        mmolInputGroup.classList.add('hidden-input');
+
+        if (mode === 'mgdl') {
+            mgdlInputGroup.classList.remove('hidden-input');
+        } else if (mode === 'mmol') {
+            mmolInputGroup.classList.remove('hidden-input');
+        }
+
+        calculateConversion(); // Recalculate immediately
+    }
+
+    /**
+     * Converts mg/dL to mmol/L.
+     * @param {number} mgdl - Value in mg/dL.
+     * @returns {number} Value in mmol/L.
+     */
+    function mgdlToMmol(mgdl) {
+        return mgdl / CONVERSION_FACTOR;
+    }
+
+    /**
+     * Converts mmol/L to mg/dL.
+     * @param {number} mmol - Value in mmol/L.
+     * @returns {number} Value in mg/dL.
+     */
+    function mmolToMgdl(mmol) {
+        return mmol * CONVERSION_FACTOR;
+    }
+
+    /**
+     * Renders a single result item.
+     */
+    function renderResult(name, value, unit, isMainResult) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        
+        let borderColor = isMainResult ? '#e91e63' : '#f06292';
+        let backgroundColor = isMainResult ? '#e91e63' : '#fce4ec';
+        let valueColor = isMainResult ? 'white' : '#c2185b';
+        let nameColor = isMainResult ? 'white' : '#455a64';
+        let unitColor = isMainResult ? '#ffcdd2' : '#c2185b';
+
+        item.style.borderLeftColor = borderColor;
+
+        let displayValue = (unit === 'mg/dL') ? value.toFixed(0) : value.toFixed(2);
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${nameColor};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor};">
+                ${displayValue} <span style="font-size: 0.7em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+
+    /**
+     * Performs the main calculation based on the selected mode.
+     */
+    function calculateConversion() {
+        resultsList.innerHTML = '';
+        const mode = calculationMode.value;
+        let errors = [];
+
+        if (mode === 'mgdl') {
+            // --- Mode 1: mg/dL to mmol/L ---
+            const mgdl = parseFloat(mgdlValue.value);
+            
+            if (isNaN(mgdl) || mgdl < 0) errors.push("Please enter a valid, non-negative value in mg/dL.");
+            
+            if (errors.length === 0) {
+                const mmol = mgdlToMmol(mgdl);
+
+                renderResult('Input Value', mgdl, 'mg/dL', false);
+                renderResult('Converted Value', mmol, 'mmol/L', true);
+            }
+        } else if (mode === 'mmol') {
+            // --- Mode 2: mmol/L to mg/dL ---
+            const mmol = parseFloat(mmolValue.value);
+
+            if (isNaN(mmol) || mmol < 0) errors.push("Please enter a valid, non-negative value in mmol/L.");
+            
+            if (errors.length === 0) {
+                const mgdl = mmolToMgdl(mmol);
+                
+                renderResult('Input Value', mmol, 'mmol/L', false);
+                renderResult('Converted Value', mgdl, 'mg/dL', true);
+            }
+        }
+        
+        if (errors.length > 0) {
+            resultsList.innerHTML = errors.map(err => `<div class="alert alert-danger">${err}</div>`).join('');
+        }
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Attach listeners to all relevant inputs
+        document.querySelectorAll('#mgdlValue, #mmolValue, #calculationMode').forEach(input => {
+            input.addEventListener('input', calculateConversion);
+            input.addEventListener('change', calculateConversion); 
+        });
+        
+        // Initial setup
+        toggleInputs(); 
+    }
+
+    window.onload = function() {
+        setupListeners();
+    };
+
+</script>
+{% endblock %}

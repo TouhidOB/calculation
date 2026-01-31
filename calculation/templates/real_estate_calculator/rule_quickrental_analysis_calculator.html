@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}1% Rule Quick Rental Analysis Calculator{% endblock %}
+
+{% block meta_description %}Quickly check if a rental property meets the 1% Rule: Gross Monthly Rent should equal or exceed 1% of the Purchase Price.{% endblock %}
+
+{% block meta_keywords %}1 percent rule calculator, rental property screening, quick real estate analysis, investment analysis, gross rent rule{% endendblock %}
+
+{% block extra_head %}
+<!-- Include Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<style>
+    /* Custom Styling for a Clean Silver/Teal Theme (Quick Analysis) */
+    .solver-wrapper {
+        background: #f7f7f7; /* Light silver/grey */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 700px; 
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .input-section {
+        padding: 25px;
+        border-radius: 10px;
+        background-color: #e0f2f1; /* Light Teal */
+        border: 2px solid #009688; /* Dark Teal accent */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+    
+    .input-box label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #004d40; /* Very Dark Teal */
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-control-custom {
+        padding: 12px;
+        font-size: 1.2rem;
+        border: 2px solid #80cbc4; 
+        border-radius: 8px;
+        font-weight: 700;
+        color: #00796b;
+    }
+    .form-control-custom:focus {
+        border-color: #009688;
+        box-shadow: 0 0 0 0.25rem rgba(0, 150, 136, 0.25);
+    }
+
+    .result-section {
+        margin-top: 30px;
+    }
+
+    .summary-card {
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        background-color: #e0f7fa; /* Pale Cyan */
+        border-left: 5px solid #004d40; /* Dark Teal accent */
+    }
+
+    .result-error {
+        border-left: 5px solid #ef4444; /* Red */
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    /* Styles for Pass/Fail display */
+    .result-label {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #004d40; /* Dark Teal */
+    }
+    
+    .status-badge {
+        font-size: 2.5rem;
+        font-weight: 900;
+        padding: 10px 20px;
+        border-radius: 10px;
+        display: inline-block;
+        margin-top: 10px;
+    }
+    
+    .status-pass {
+        color: #065f46; /* Darker Green */
+        background-color: #d1fae5; /* Pale Green */
+        border: 2px solid #10b981;
+    }
+
+    .status-fail {
+        color: #991b1b; /* Darker Red */
+        background-color: #fee2e2; /* Pale Red */
+        border: 2px solid #ef4444;
+    }
+
+    .text-teal { color: #009688 !important; }
+    .text-dark-teal { color: #004d40 !important; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container p-4 p-md-5">
+    <h1 class="h3 fw-bolder mb-2 text-dark text-center">✅ 1% Rule Quick Rental Analysis</h1>
+    <p class="text-secondary mb-5 text-center">
+        Quickly determine if a property passes the **1% Rule** by comparing its gross monthly rent to 1% of its purchase price.
+    </p>
+
+    <div class="solver-wrapper">
+        
+        <form id="one-percent-form" class="row g-4 justify-content-center">
+            
+            <!-- Input Section -->
+            <div class="col-lg-10">
+                <div class="input-section">
+                    <h4 class="h5 fw-bold text-center text-dark-teal p-2 rounded mb-4">Input Property Data</h4>
+                    
+                    <div class="input-box mb-4">
+                        <label for="purchase-price">Property Purchase Price:</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="purchase-price" 
+                               value="250000" 
+                               min="1000"
+                               step="any"
+                               required
+                               class="form-control form-control-custom">
+                        </div>
+                        <small class="text-muted">The total cost of the investment property.</small>
+                    </div>
+                    
+                    <div class="input-box mb-4">
+                        <label for="monthly-rent">Actual Gross Monthly Rent:</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="monthly-rent" 
+                               value="2500" 
+                               min="1" 
+                               step="any"
+                               required 
+                               class="form-control form-control-custom">
+                        </div>
+                        <small class="text-muted">Total rent collected from all units per month.</small>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="col-12 mt-0">
+                <button type="submit"
+                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
+                Check 1% Rule Status
+            </button>
+            </div>
+        </form>
+
+        <div id="result-container" class="result-section">
+            <div id="summary-output" class="summary-card d-none mb-4"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script>
+    /**
+     * Formats a number as USD currency (with cents for precision).
+     */
+    const currencyFormatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+    
+    /**
+     * Updates the UI with the calculation result or error.
+     */
+    function displayResult(isError, contentHtml) {
+        const summaryDiv = document.getElementById('summary-output');
+        
+        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
+        
+        if (isError) {
+            summaryDiv.classList.add('result-error');
+            summaryDiv.classList.remove('summary-card');
+            summaryDiv.innerHTML = contentHtml;
+        } else {
+            summaryDiv.classList.add('summary-card');
+            summaryDiv.classList.remove('result-error');
+            summaryDiv.innerHTML = contentHtml;
+        }
+    }
+
+    /**
+     * Handles form submission and triggers the calculation.
+     */
+    function handleOnePercent(e) {
+        e.preventDefault();
+
+        // 1. Get Inputs
+        const purchasePrice = parseFloat(document.getElementById('purchase-price').value);
+        const monthlyRent = parseFloat(document.getElementById('monthly-rent').value);
+        
+        // 2. Input Validation
+        if (isNaN(purchasePrice) || purchasePrice <= 0 || isNaN(monthlyRent) || monthlyRent <= 0) {
+            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter positive values for both Purchase Price and Monthly Rent.</p>`;
+            displayResult(true, htmlContent);
+            return;
+        }
+
+        try {
+            // 3. Calculation
+            // Required Rent = Purchase Price * 0.01 (1%)
+            const requiredRent = purchasePrice * 0.01;
+            const meetsRule = monthlyRent >= requiredRent;
+            const rentDifference = monthlyRent - requiredRent;
+            
+            // 4. Determine Status and Styling
+            let statusText;
+            let statusClass;
+            let message;
+
+            if (meetsRule) {
+                statusText = "PASSES";
+                statusClass = "status-pass";
+                message = `The property is generating ${currencyFormatter.format(rentDifference)} **above** the 1% threshold, making it a strong candidate for further analysis.`;
+            } else {
+                statusText = "FAILS";
+                statusClass = "status-fail";
+                message = `The property is generating ${currencyFormatter.format(Math.abs(rentDifference))} **below** the 1% threshold. It may not provide sufficient gross income to be cash-flow positive.`;
+            }
+
+            // 5. Build Summary HTML
+            const summaryHtml = `
+                <h4 class="h5 fw-bold text-center text-dark-teal mb-4">1% Rule Quick Analysis Result</h4>
+                
+                <div class="text-center mb-4">
+                    <p class="result-label">RULE STATUS</p>
+                    <div class="${statusClass} status-badge">${statusText}</div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <h5 class="h6 fw-bold text-center text-dark-teal mb-3">Comparison Breakdown</h5>
+                <div class="row text-center">
+                    <div class="col-md-6 border-end border-teal-400">
+                        <p class="result-label mb-2">Required Monthly Rent (1% of Price)</p>
+                        <p class="fs-4 fw-bold text-teal">${currencyFormatter.format(requiredRent)}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="result-label mb-2">Actual Gross Monthly Rent</p>
+                        <p class="fs-4 fw-bold text-teal">${currencyFormatter.format(monthlyRent)}</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4 p-3 bg-light rounded">
+                    <p class="text-muted fw-bold mb-0">${message}</p>
+                </div>
+            `;
+            
+            displayResult(false, summaryHtml);
+            
+        } catch (error) {
+            console.error(error);
+             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
+            displayResult(true, htmlContent);
+        }
+    }
+
+    // Attach handler to the form
+    document.getElementById('one-percent-form').addEventListener('submit', handleOnePercent);
+    
+    // Initial calculation for default value on load
+    window.onload = function() {
+        document.getElementById('one-percent-form').dispatchEvent(new Event('submit'));
+    };
+</script>
+{% endblock %}

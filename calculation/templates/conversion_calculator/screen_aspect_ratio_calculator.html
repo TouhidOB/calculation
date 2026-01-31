@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}Screen Aspect Ratio Calculator{% endblock %}
+
+{% block meta_description %}Calculate screen width, height, or aspect ratio (X:Y format) instantly using standard display resolutions and ratios like 16:9 or 4:3.{% endblock %}
+
+{% block meta_keywords %}aspect ratio, screen calculator, resolution, width, height, 16:9, 4:3, display geometry{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #ff9800; /* Orange/Amber Theme for Screens */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #fff3e0; /* Light orange background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #ff9800; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #f57c00;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Ratio Input Styling */
+    .ratio-input-container {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .ratio-input-container input {
+        flex-grow: 1;
+        text-align: center;
+    }
+    .ratio-separator {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #f57c00;
+    }
+
+    /* Results Styling */
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #ff9800;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white; 
+        word-break: break-all;
+        width: 100%;
+        background-color: #f57c00;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #ff9800;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #f57c00;
+    }
+
+    .hidden-input {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🖥️ Screen Aspect Ratio Calculator</h1>
+    <p class="small-muted">Calculate Width, Height, or the Aspect Ratio ($\text{X}:\text{Y}$) for any screen or video resolution.</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Choose Calculation Mode</h5>
+
+        <div class="input-group-custom">
+            <label for="calculationMode">What do you want to calculate?</label>
+            <select id="calculationMode" class="form-select input-field" onchange="toggleInputs()">
+                <option value="ratio">Aspect Ratio ($\text{X}:\text{Y}$)</option>
+                <option value="height">Screen Height ($\text{px}$)</option>
+                <option value="width">Screen Width ($\text{px}$)</option>
+            </select>
+        </div>
+
+        <h5 class="section-title" id="inputSectionTitle">Step 2: Enter Known Values ($\text{px}$)</h5>
+        
+        <div class="input-group-custom">
+            
+            <!-- Width Input (Always visible except when calculating Width) -->
+            <div id="widthInputGroup">
+                <label for="widthValue">Width ($\text{px}$)</label>
+                <input type="number" class="form-control input-field" id="widthValue" placeholder="e.g., 1920" value="1920" min="1" step="1">
+            </div>
+
+            <!-- Height Input (Always visible except when calculating Height) -->
+            <div id="heightInputGroup" class="mt-3">
+                <label for="heightValue">Height ($\text{px}$)</label>
+                <input type="number" class="form-control input-field" id="heightValue" placeholder="e.g., 1080" value="1080" min="1" step="1">
+            </div>
+            
+            <!-- Ratio Input (Only visible when calculating Width or Height) -->
+            <div id="ratioInputGroup" class="mt-3 hidden-input">
+                <label>Aspect Ratio ($\text{X}:\text{Y}$)</label>
+                <div class="ratio-input-container">
+                    <input type="number" class="form-control input-field" id="ratioX" placeholder="e.g., 16" value="16" min="1" step="1">
+                    <span class="ratio-separator">:</span>
+                    <input type="number" class="form-control input-field" id="ratioY" placeholder="e.g., 9" value="9" min="1" step="1">
+                </div>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" onclick="calculateRatio()">
+            Calculate Result
+        </button>
+
+        <h5 class="section-title mt-4">Step 3: Calculated Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Calculated results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Common Ratios:** $\text{16}:\text{9}$ (Widescreen HD), $\text{4}:\text{3}$ (Standard Definition/Classic), $\text{21}:\text{9}$ (Ultrawide).</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- DOM Elements ---
+    const calculationMode = document.getElementById('calculationMode');
+    const widthInputGroup = document.getElementById('widthInputGroup');
+    const heightInputGroup = document.getElementById('heightInputGroup');
+    const ratioInputGroup = document.getElementById('ratioInputGroup');
+    const widthValue = document.getElementById('widthValue');
+    const heightValue = document.getElementById('heightValue');
+    const ratioX = document.getElementById('ratioX');
+    const ratioY = document.getElementById('ratioY');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Toggles visibility of input groups based on the selected calculation mode.
+     */
+    function toggleInputs() {
+        const mode = calculationMode.value;
+
+        // Hide all conditional inputs
+        widthInputGroup.classList.remove('hidden-input');
+        heightInputGroup.classList.remove('hidden-input');
+        ratioInputGroup.classList.add('hidden-input'); // Ratio inputs start hidden
+
+        if (mode === 'ratio') {
+            // Needs Width and Height
+            // All pixel inputs visible, ratio input hidden
+        } else if (mode === 'height') {
+            // Needs Width and Ratio
+            heightInputGroup.classList.add('hidden-input');
+            ratioInputGroup.classList.remove('hidden-input');
+        } else if (mode === 'width') {
+            // Needs Height and Ratio
+            widthInputGroup.classList.add('hidden-input');
+            ratioInputGroup.classList.remove('hidden-input');
+        }
+
+        calculateRatio(); // Recalculate immediately
+    }
+
+    /**
+     * Finds the Greatest Common Divisor (GCD) of two numbers using the Euclidean algorithm.
+     * @param {number} a
+     * @param {number} b
+     * @returns {number} The GCD.
+     */
+    function gcd(a, b) {
+        return b ? gcd(b, a % b) : a;
+    }
+
+    /**
+     * Performs the main calculation based on the selected mode.
+     */
+    function calculateRatio() {
+        resultsList.innerHTML = '';
+        const mode = calculationMode.value;
+
+        // Fetch values
+        const width = parseFloat(widthValue.value);
+        const height = parseFloat(heightValue.value);
+        const ratio_x = parseFloat(ratioX.value);
+        const ratio_y = parseFloat(ratioY.value);
+
+        let errors = [];
+
+        // --- Validation based on mode ---
+        if (mode === 'ratio') {
+            if (isNaN(width) || width < 1) errors.push("Please enter a valid, positive Width.");
+            if (isNaN(height) || height < 1) errors.push("Please enter a valid, positive Height.");
+        } else { // Height or Width calculation (requires ratio)
+            if (isNaN(ratio_x) || ratio_x < 1 || isNaN(ratio_y) || ratio_y < 1) {
+                errors.push("Please enter a valid, positive Aspect Ratio (X:Y).");
+            } else {
+                if (mode === 'height' && (isNaN(width) || width < 1)) errors.push("Please enter a valid, positive Width.");
+                if (mode === 'width' && (isNaN(height) || height < 1)) errors.push("Please enter a valid, positive Height.");
+            }
+        }
+
+        if (errors.length > 0) {
+            resultsList.innerHTML = errors.map(err => `<div class="alert alert-danger">${err}</div>`).join('');
+            return;
+        }
+
+        let calculatedValue = 0;
+        let resultName = '';
+        let resultUnit = '';
+        let simplifiedRatio = '';
+
+        if (mode === 'ratio') {
+            // --- Mode 1: Calculate Ratio ---
+            resultName = 'Simplified Aspect Ratio';
+            resultUnit = 'X:Y';
+            
+            // Calculate GCD for simplification
+            const commonDivisor = gcd(width, height);
+            const simpleX = width / commonDivisor;
+            const simpleY = height / commonDivisor;
+
+            simplifiedRatio = `${simpleX}:${simpleY}`;
+            
+            renderResult('Input Resolution', `${width} x ${height}`, 'px', '343a40', '#fff3e0');
+            renderResult(resultName, simplifiedRatio, resultUnit, 'ff9800', '#f57c00');
+            
+            // Also show the decimal ratio
+            const decimalRatio = width / height;
+            renderResult('Decimal Ratio (W/H)', decimalRatio.toFixed(6), '', '343a40', '#fff3e0');
+
+        } else {
+            // --- Mode 2 & 3: Calculate Dimension (Width or Height) ---
+            const decimalRatio = ratio_x / ratio_y;
+
+            if (mode === 'height') {
+                // Height = Width / Ratio
+                calculatedValue = width / decimalRatio;
+                resultName = 'Calculated Height';
+                resultUnit = 'px';
+                
+                renderResult('Input Width', width.toFixed(0), 'px', '343a40', '#fff3e0');
+                renderResult('Input Ratio', `${ratio_x}:${ratio_y}`, 'X:Y', '343a40', '#fff3e0');
+                renderResult(resultName, calculatedValue.toFixed(0), resultUnit, 'ff9800', '#f57c00');
+            } else if (mode === 'width') {
+                // Width = Height * Ratio
+                calculatedValue = height * decimalRatio;
+                resultName = 'Calculated Width';
+                resultUnit = 'px';
+                
+                renderResult('Input Height', height.toFixed(0), 'px', '343a40', '#fff3e0');
+                renderResult('Input Ratio', `${ratio_x}:${ratio_y}`, 'X:Y', '343a40', '#fff3e0');
+                renderResult(resultName, calculatedValue.toFixed(0), resultUnit, 'ff9800', '#f57c00');
+            }
+        }
+    }
+    
+    /**
+     * Renders a single result item.
+     */
+    function renderResult(name, value, unit, borderColor, backgroundColor) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = borderColor;
+
+        let valueColor = (backgroundColor === '#f57c00') ? 'white' : '#f57c00';
+        let nameColor = (backgroundColor === '#f57c00') ? 'white' : '#455a64';
+        let unitColor = (backgroundColor === '#f57c00') ? '#ffcc80' : '#455a64';
+
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${nameColor};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor};">
+                ${value} <span style="font-size: 0.7em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change for all pixel inputs
+        document.querySelectorAll('#widthValue, #heightValue, #ratioX, #ratioY').forEach(input => {
+            input.addEventListener('input', calculateRatio);
+        });
+
+        // Use 'change' event for mode select
+        calculationMode.addEventListener('change', toggleInputs);
+        
+        // Initial setup
+        toggleInputs(); 
+    }
+
+    window.onload = function() {
+        setupListeners();
+    };
+
+</script>
+{% endblock %}

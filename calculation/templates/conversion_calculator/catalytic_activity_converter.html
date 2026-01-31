@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Catalytic Activity Converter (Katal to Enzyme Unit){% endblock %}
+
+{% block meta_description %}Convert catalytic activity instantly between Katal (kat) and Enzyme Units (U or IU).{% endblock %}
+
+{% block meta_keywords %}catalytic activity, katal, enzyme unit, international unit, U, kat, biochemistry, unit converter{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #009688; /* Teal Theme for Biochemistry */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #e0f2f1; /* Light teal background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #009688; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #00695c;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #009688;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #ff5722; /* Orange-Red for high visibility output */
+        word-break: break-all;
+        width: 100%;
+        background-color: #343a40;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #009688;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #00695c;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🧪 Catalytic Activity Converter</h1>
+    <p class="small-muted">Convert **Catalytic Activity** between **Katal ($\text{kat}$)** (SI unit) and **Enzyme Units ($\text{U}$)** (Traditional unit).</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Enter Value and Direction</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Value Input -->
+            <label for="inputValue">Activity Value to Convert</label>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 5000" value="5000" min="0" step="any" autofocus>
+            
+            <!-- Direction Select -->
+            <div class="mt-3">
+                <label for="directionSelect">Conversion Direction</label>
+                <select id="directionSelect" class="form-select input-field">
+                    <option value="UtoKat">Enzyme Units ($\text{U}$) $\rightarrow$ Katal ($\text{kat}$)</option>
+                    <option value="KattoU">Katal ($\text{kat}$) $\rightarrow$ Enzyme Units ($\text{U}$)</option>
+                </select>
+            </div>
+            
+            <p class="small-muted mt-2">Conversion Factor: $1 \text{ kat} = 60,000,000 \text{ U}$</p>
+        </div>
+
+        <button class="btn conversion-button" onclick="convertCatalyticActivity()">
+            Calculate Activity
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Converted Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Units:** **Katal ($\text{kat}$) is $\text{mol}/\text{s}$ (moles per second).** **Enzyme Unit ($\text{U}$) is $\mu\text{mol}/\text{min}$ (micromoles per minute).** The katal is a very large unit, hence why enzyme activity is often reported in $\text{U}$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    // 1 Katal to Enzyme Units (60 seconds/minute * 1,000,000 micromoles/mole)
+    const KATAL_TO_UNIT_FACTOR = 60000000; 
+    const UNIT_TO_KATAL_FACTOR = 1 / KATAL_TO_UNIT_FACTOR; // Inverse of the above
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const directionSelect = document.getElementById('directionSelect');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Converts the catalytic activity value based on the selected direction.
+     */
+    function convertCatalyticActivity() {
+        resultsList.innerHTML = '';
+        const value = parseFloat(inputValue.value);
+        const direction = directionSelect.value;
+        
+        if (isNaN(value) || value < 0) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid non-negative number.</div>`;
+            return;
+        }
+
+        let result = 0;
+        let inputUnitSymbol = '';
+        let outputUnitSymbol = '';
+        let outputFormat = 4; // Default precision
+
+        if (direction === 'UtoKat') {
+            // Enzyme Units (U) to Katal (kat): kat = U / 60,000,000
+            result = value * UNIT_TO_KATAL_FACTOR;
+            inputUnitSymbol = 'U';
+            outputUnitSymbol = 'kat';
+            outputFormat = 15; // High precision for small kat values
+        } else if (direction === 'KattoU') {
+            // Katal (kat) to Enzyme Units (U): U = kat * 60,000,000
+            result = value * KATAL_TO_UNIT_FACTOR;
+            inputUnitSymbol = 'kat';
+            outputUnitSymbol = 'U';
+            outputFormat = 4;
+        }
+
+        // --- Render Results ---
+        
+        // 1. Input Echo
+        renderResult(`Input Value (${inputUnitSymbol})`, value.toPrecision(7), inputUnitSymbol, '343a40', true);
+
+        // 2. Converted Output
+        renderResult(`Converted Value (${outputUnitSymbol})`, result.toPrecision(outputFormat), outputUnitSymbol, '009688', false);
+    }
+    
+    /**
+     * Renders a single result item.
+     * @param {string} name - The name of the result/unit.
+     * @param {string} value - The numerical value (string).
+     * @param {string} unit - The unit abbreviation.
+     * @param {string} borderColor - The color for the left border (HEX).
+     * @param {boolean} isInput - If true, styles the item as the input echo.
+     */
+    function renderResult(name, value, unit, borderColor, isInput) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        let valueColor = isInput ? '#f5f5f5' : '#ff5722';
+        let backgroundColor = isInput ? '#343a40' : '#343a40';
+        let unitColor = isInput ? '#009688' : '#e0f2f1';
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${isInput ? '#343a40' : '#2c3e50'};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor}; font-size: 1.3rem;">
+                ${value} <span style="font-size: 0.8em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change
+        inputValue.addEventListener('input', convertCatalyticActivity);
+        // Use 'change' event for direction switch
+        directionSelect.addEventListener('change', convertCatalyticActivity);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertCatalyticActivity(); // Run initial conversion
+    };
+
+</script>
+{% endblock %}

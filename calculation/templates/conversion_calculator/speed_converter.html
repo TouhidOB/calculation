@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Speed Converter (KPH, MPH, Knots){% endblock %}
+
+{% block meta_description %}Convert speed and velocity instantly between Kilometers per Hour (KPH), Miles per Hour (MPH), Knots, and Meters per Second (M/S).{% endblock %}
+
+{% block meta_keywords %}speed converter, velocity, mph to kph, knots to mph, meters per second, kph, knots{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        background: #f8f9fa; 
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .conversion-input-group .form-control {
+        font-size: 1.25rem;
+        height: auto;
+        padding: 10px;
+        border-right: none;
+        box-shadow: none; 
+    }
+    
+    .conversion-input-group .input-group-text {
+        background: #e9ecef;
+        font-weight: bold;
+        padding: 10px 15px;
+        cursor: pointer; 
+    }
+    
+    .conversion-input-group .dropdown-toggle {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #6f42c1; /* Purple/Indigo theme for speed */
+    }
+    
+    .highlight-item {
+        border-left-color: #6f42c1 !important; 
+        background-color: #f3f0fa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🚀 Speed Converter</h1>
+    <p class="small-muted">Convert between common speed units, including **Miles per Hour (MPH), Kilometers per Hour (KPH), and Knots**. Results update in **real-time**.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Value and Unit</h5>
+
+        <div class="conversion-input-group">
+            <!-- The main input field for the value -->
+            <input type="number" class="form-control" id="inputValue" placeholder="Enter speed value..." min="0" step="any" autofocus>
+
+            <!-- Dropdown for selecting the input unit -->
+            <div class="input-group-append">
+                <button class="btn btn-purple dropdown-toggle" style="background-color: #6f42c1; color: white;" type="button" id="unitDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Unit
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="unitDropdown">
+                    <li><a class="dropdown-item" href="#" data-unit="kph">Kilometers per Hour (kph)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="mph">Miles per Hour (mph)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="kn">Knots (kn)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="ms">Meters per Second (m/s)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="fts">Feet per Second (ft/s)</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <h5 class="section-title mt-4">Step 2: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <!-- Results will be dynamically inserted here -->
+            <div class="alert alert-info" id="initialMessage">Enter a number and select a unit to see conversions.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Standard Definitions Used:** Conversions use the international standards: $1 \text{ mile} \approx 1.60934 \text{ km}$, and $1 \text{ knot} = 1 \text{ nautical mile per hour} \approx 1.852 \text{ kph}$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Base unit: Kilometers per Hour (kph)
+    const UNIT_FACTORS = {
+        'kph': { name: 'Kilometers per Hour', factor: 1, abbr: 'kph' },
+        
+        // 1 mph = 1.609344 kph (based on international mile)
+        'mph': { name: 'Miles per Hour', factor: 1.609344, abbr: 'mph' }, 
+        
+        // 1 knot = 1.852 kph (based on international nautical mile)
+        'kn': { name: 'Knots', factor: 1.852, abbr: 'kn' }, 
+        
+        // 1 m/s = 3.6 kph
+        'ms': { name: 'Meters per Second', factor: 3.6, abbr: 'm/s' }, 
+        
+        // 1 ft/s = 1.09728 kph (based on international foot)
+        'fts': { name: 'Feet per Second', factor: 1.09728, abbr: 'ft/s' } 
+    };
+
+    let activeUnit = 'kph'; // Default unit
+    const inputField = document.getElementById('inputValue');
+    const unitDropdown = document.getElementById('unitDropdown');
+    const resultsList = document.getElementById('resultsList');
+    const initialMessage = document.getElementById('initialMessage');
+    
+    // Function to update the dropdown button text
+    function updateDropdownButton(unitKey) {
+        const { name, abbr } = UNIT_FACTORS[unitKey];
+        unitDropdown.textContent = `${name} (${abbr})`;
+    }
+
+    // Function to perform the conversion and update the UI
+    function convertSpeed() {
+        const inputValue = parseFloat(inputField.value);
+
+        // Clear previous results
+        resultsList.innerHTML = '';
+        initialMessage.style.display = 'none';
+
+        if (isNaN(inputValue) || inputValue < 0) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a valid, non-negative number.</div>`;
+            return;
+        }
+
+        const fromFactor = UNIT_FACTORS[activeUnit].factor;
+        
+        // 1. Convert the input value to the Base Unit (Kilometers per Hour)
+        const baseValueKPH = inputValue * fromFactor;
+        
+        // 2. Calculate and display all conversions
+        const allUnits = Object.keys(UNIT_FACTORS);
+
+        allUnits.forEach(toUnitKey => {
+            const { name, abbr, factor: toFactor } = UNIT_FACTORS[toUnitKey];
+            
+            // Convert from Base Unit (KPH) to the Target Unit
+            const convertedValue = baseValueKPH / toFactor;
+            
+            const li = document.createElement('div');
+            li.classList.add('list-group-item');
+            
+            // Highlight the active input unit
+            if (activeUnit === toUnitKey) {
+                li.classList.add('highlight-item');
+            }
+
+            li.innerHTML = `
+                <span class="unit-name">${name} (${abbr})</span>
+                <span class="unit-value">${convertedValue.toFixed(4)}</span>
+            `;
+            
+            resultsList.appendChild(li);
+        });
+    }
+
+    // Event listener for input changes (real-time conversion)
+    inputField.addEventListener('input', convertSpeed);
+
+    // Event listener for dropdown unit selection
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newUnit = this.getAttribute('data-unit');
+            activeUnit = newUnit;
+            updateDropdownButton(activeUnit);
+            convertSpeed(); // Recalculate with the new unit
+        });
+    });
+
+    // Initial setup: Set default unit and prompt user
+    updateDropdownButton(activeUnit);
+    resultsList.appendChild(initialMessage);
+
+</script>
+{% endblock %}

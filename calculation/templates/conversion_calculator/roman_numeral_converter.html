@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Roman Numeral Converter{% endblock %}
+
+{% block meta_description %}Convert numbers between standard Decimal (1-3999) and Roman Numerals (I, V, X, L, C, D, M).{% endblock %}
+
+{% block meta_keywords %}roman numeral converter, decimal to roman, roman to decimal, ancient numbers, math converter{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #343a40;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        background: #fdfaf5; /* Cream/parchment theme */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #d4af37; /* Gold/Bronze border */
+    }
+    
+    .conversion-input-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #b8860b;
+    }
+
+    .conversion-input-group select,
+    .conversion-input-group input[type="text"] {
+        font-size: 1.1rem;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        text-transform: uppercase; /* Ensure Roman input is uppercase */
+    }
+    
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: serif;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #b8860b; /* Gold/Bronze theme */
+    }
+    
+    .highlight-item {
+        border-left-color: #b8860b !important; 
+        background-color: #fffaf0;
+    }
+    
+    .conversion-button {
+        background-color: #b8860b;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 20px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #a37f09;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🏛️ Roman Numeral Converter</h1>
+    <p class="small-muted">Convert between standard Decimal numbers ($1$ to $3999$) and Roman Numerals (I, V, X, L, C, D, M). [Image of Roman numerals chart I to M]</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Value and Direction</h5>
+
+        <div class="conversion-input-group">
+            <label for="inputValue">Enter Number or Roman Numeral</label>
+            <div class="d-flex">
+                <input type="text" class="form-control me-2" id="inputValue" placeholder="e.g., 2024 or MMXXIV" value="2024" autofocus>
+                <select id="directionSelect" class="form-select w-50">
+                    <option value="decimalToRoman">Decimal $\rightarrow$ Roman</option>
+                    <option value="romanToDecimal">Roman $\rightarrow$ Decimal</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" id="convertButton">
+            Convert
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Enter a value and select the conversion direction.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Symbols Used:** I=1, V=5, X=10, L=50, C=100, D=500, M=1000. Maximum number supported is 3999 (MMMCMXCIX).</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- ROMAN NUMERAL LOOKUP TABLE ---
+    // Used for Decimal to Roman conversion. Ordered from largest to smallest.
+    const ROMAN_MAP = [
+        { value: 1000, numeral: 'M' },
+        { value: 900, numeral: 'CM' },
+        { value: 500, numeral: 'D' },
+        { value: 400, numeral: 'CD' },
+        { value: 100, numeral: 'C' },
+        { value: 90, numeral: 'XC' },
+        { value: 50, numeral: 'L' },
+        { value: 40, numeral: 'XL' },
+        { value: 10, numeral: 'X' },
+        { value: 9, numeral: 'IX' },
+        { value: 5, numeral: 'V' },
+        { value: 4, numeral: 'IV' },
+        { value: 1, numeral: 'I' }
+    ];
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const directionSelect = document.getElementById('directionSelect');
+    const convertButton = document.getElementById('convertButton');
+    const resultsList = document.getElementById('resultsList');
+    
+    const ROMAN_REGEX = /^(M{0,3})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i;
+    const ROMAN_SYMBOL_VALUES = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
+
+    /**
+     * Converts a Decimal number to a Roman Numeral string.
+     * @param {number} num - The decimal number (1 to 3999).
+     * @returns {string} The Roman numeral representation.
+     */
+    function decimalToRoman(num) {
+        if (num < 1 || num > 3999) {
+            return 'Input out of standard range (1-3999)';
+        }
+
+        let result = '';
+        let remainingNum = num;
+
+        for (const { value, numeral } of ROMAN_MAP) {
+            while (remainingNum >= value) {
+                result += numeral;
+                remainingNum -= value;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Converts a Roman Numeral string to a Decimal number.
+     * @param {string} roman - The Roman numeral string (e.g., 'MMXXIV').
+     * @returns {number|string} The decimal number or an error message.
+     */
+    function romanToDecimal(roman) {
+        if (!ROMAN_REGEX.test(roman)) {
+            return 'Invalid Roman Numeral format';
+        }
+
+        let decimal = 0;
+        let prevValue = 0;
+
+        // Iterate backwards through the Roman numeral string
+        for (let i = roman.length - 1; i >= 0; i--) {
+            const char = roman[i];
+            const currentValue = ROMAN_SYMBOL_VALUES[char];
+
+            if (currentValue === undefined) {
+                 // Should be caught by the regex, but safe check anyway
+                 return 'Invalid character in Roman Numeral'; 
+            }
+
+            if (currentValue < prevValue) {
+                // Subtractive case (e.g., IX where I=1 is subtracted from X=10)
+                decimal -= currentValue;
+            } else {
+                // Additive case
+                decimal += currentValue;
+            }
+            prevValue = currentValue;
+        }
+
+        if (decimal < 1 || decimal > 3999) {
+             return 'Result out of standard range (1-3999)';
+        }
+
+        return decimal;
+    }
+
+    /**
+     * Main conversion logic based on selected direction.
+     */
+    function convert() {
+        const input = inputValue.value.trim();
+        const direction = directionSelect.value;
+        resultsList.innerHTML = '';
+        let result = '';
+        let resultType = '';
+
+        if (!input) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a value.</div>`;
+            return;
+        }
+
+        if (direction === 'decimalToRoman') {
+            const num = parseInt(input, 10);
+            if (isNaN(num) || !/^\d+$/.test(input)) {
+                result = 'Invalid Decimal number.';
+            } else {
+                result = decimalToRoman(num);
+            }
+            resultType = 'Roman Numeral';
+
+        } else if (direction === 'romanToDecimal') {
+            const romanUpper = input.toUpperCase();
+            result = romanToDecimal(romanUpper);
+            resultType = 'Decimal Number';
+        }
+
+        // Display Result
+        if (typeof result === 'string' && (result.includes('Invalid') || result.includes('out of range'))) {
+            resultsList.innerHTML = `<div class="alert alert-danger">${result}</div>`;
+        } else {
+            const inputName = direction === 'decimalToRoman' ? 'Decimal Input' : 'Roman Numeral Input';
+            const outputName = direction === 'decimalToRoman' ? 'Roman Numeral Output' : 'Decimal Output';
+            
+            // Input Echo
+            resultsList.innerHTML += `
+                <div class="list-group-item">
+                    <span class="unit-name">${inputName}</span>
+                    <span class="unit-value">${input}</span>
+                </div>
+            `;
+            
+            // Conversion Result
+            resultsList.innerHTML += `
+                <div class="list-group-item highlight-item">
+                    <span class="unit-name">${outputName}</span>
+                    <span class="unit-value">${result}</span>
+                </div>
+            `;
+        }
+    }
+
+    // --- Event Listeners and Initialization ---
+
+    function setupListeners() {
+        // Use 'input' event for real-time responsiveness
+        inputValue.addEventListener('input', convert);
+        // Use 'change' event for dropdown changes
+        directionSelect.addEventListener('change', convert);
+        convertButton.addEventListener('click', convert);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convert(); // Initial conversion run
+    };
+
+</script>
+{% endblock %}

@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Audio Conversion Calculator (Bitrate & File Size){% endblock %}
+
+{% block meta_description %}Calculate audio file size, duration, or required bitrate instantly given the other two parameters. Handles MB, kbps, and time conversion.{% endblock %}
+
+{% block meta_keywords %}audio calculator, bitrate, file size, duration, MB, kbps, audio conversion, digital media, bandwidth{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #607d8b; /* Blue Gray Theme for Digital/Audio */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #eceff1; /* Light Blue Gray background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #607d8b; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #455a64;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #607d8b;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #fdd835; /* Yellow/Amber contrast */
+        word-break: break-all;
+        width: 100%;
+        background-color: #455a64;
+        padding: 10px;
+        border-radius: 4px;
+        color: white;
+    }
+    
+    .conversion-button {
+        background-color: #607d8b;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #455a64;
+    }
+
+    .time-input-container {
+        display: flex;
+        gap: 10px;
+    }
+    .time-input-container input {
+        flex-grow: 1;
+        min-width: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🎧 Audio Conversion Calculator</h1>
+    <p class="small-muted">Calculate **Bitrate**, **File Size**, or **Duration** using the fundamental relationship: $\text{Size} = \text{Bitrate} \times \text{Duration}$</p>
+    
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Choose Calculation Type</h5>
+
+        <div class="input-group-custom">
+            <label for="calculationType">What do you want to calculate?</label>
+            <select id="calculationType" class="form-select input-field" onchange="toggleInputs()">
+                <option value="size">File Size (MB)</option>
+                <option value="bitrate">Bitrate (kbps)</option>
+                <option value="duration">Duration (h:m:s)</option>
+            </select>
+        </div>
+
+        <h5 class="section-title" id="inputSectionTitle">Step 2: Enter Known Values</h5>
+        
+        <div class="input-group-custom">
+            
+            <!-- Bitrate Input -->
+            <div id="bitrateInputGroup">
+                <label for="bitrateValue">Bitrate (in kbps - kilobits per second)</label>
+                <input type="number" class="form-control input-field" id="bitrateValue" placeholder="e.g., 320 for high quality MP3" value="320" min="1" step="any">
+            </div>
+
+            <!-- Size Input -->
+            <div id="sizeInputGroup" class="mt-3">
+                <label for="sizeValue">File Size (in MB - Megabytes)</label>
+                <input type="number" class="form-control input-field" id="sizeValue" placeholder="e.g., 50" value="50" min="0.01" step="any">
+            </div>
+            
+            <!-- Duration Input -->
+            <div id="durationInputGroup" class="mt-3">
+                <label>Duration ($\text{h}:\text{m}:\text{s}$)</label>
+                <div class="time-input-container">
+                    <input type="number" class="form-control input-field" id="durationH" placeholder="Hours" value="0" min="0" step="1">
+                    <input type="number" class="form-control input-field" id="durationM" placeholder="Minutes" value="20" min="0" max="59" step="1">
+                    <input type="number" class="form-control input-field" id="durationS" placeholder="Seconds" value="0" min="0" max="59" step="1">
+                </div>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" onclick="calculateAudioValue()">
+            Calculate Result
+        </button>
+
+        <h5 class="section-title mt-4">Step 3: Calculated Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Calculated results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Units:** We use $\text{MB}$ (Megabytes) for size and $\text{kbps}$ (kilobits per second) for bitrate. Remember: $1 \text{ Byte} = 8 \text{ bits}$ and $1 \text{ Mega} = 1000 \text{ Kilo}$ (decimal prefix standard).</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    const BITS_PER_BYTE = 8;
+    const KILO_TO_MEGA_FACTOR = 1000;
+    
+    // --- CONVERSION FACTOR: (kbps * seconds) / (8 bits/byte * 1000 kb/Mb) = MB
+    // CONVERSION_FACTOR_MB_PER_SECOND = (1 kbps) / (8 * 1000) MB/s = 0.000125
+    const KBPS_SECONDS_TO_MB_FACTOR = 1 / (BITS_PER_BYTE * KILO_TO_MEGA_FACTOR); // 0.000125
+
+    // --- DOM Elements ---
+    const calculationType = document.getElementById('calculationType');
+    const bitrateInputGroup = document.getElementById('bitrateInputGroup');
+    const sizeInputGroup = document.getElementById('sizeInputGroup');
+    const durationInputGroup = document.getElementById('durationInputGroup');
+    const bitrateValue = document.getElementById('bitrateValue');
+    const sizeValue = document.getElementById('sizeValue');
+    const durationH = document.getElementById('durationH');
+    const durationM = document.getElementById('durationM');
+    const durationS = document.getElementById('durationS');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Converts hours, minutes, and seconds input into total seconds.
+     * @returns {number} Total duration in seconds.
+     */
+    function durationToSeconds() {
+        const h = parseFloat(durationH.value) || 0;
+        const m = parseFloat(durationM.value) || 0;
+        const s = parseFloat(durationS.value) || 0;
+        return (h * 3600) + (m * 60) + s;
+    }
+
+    /**
+     * Converts total seconds into H:M:S format string.
+     * @param {number} totalSeconds - The total duration in seconds.
+     * @returns {string} Formatted duration string (e.g., 01:05:30).
+     */
+    function secondsToHMS(totalSeconds) {
+        if (totalSeconds < 0 || isNaN(totalSeconds)) return "N/A";
+        
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = Math.round(totalSeconds % 60);
+
+        const pad = (num) => String(num).padStart(2, '0');
+        return `${pad(h)}h : ${pad(m)}m : ${pad(s)}s`;
+    }
+
+    /**
+     * Toggles visibility of input groups based on the selected calculation type.
+     */
+    function toggleInputs() {
+        const type = calculationType.value;
+
+        // Hide all initially
+        bitrateInputGroup.style.display = 'block';
+        sizeInputGroup.style.display = 'block';
+        durationInputGroup.style.display = 'block';
+
+        // Hide the one being calculated
+        if (type === 'size') {
+            sizeInputGroup.style.display = 'none';
+        } else if (type === 'bitrate') {
+            bitrateInputGroup.style.display = 'none';
+        } else if (type === 'duration') {
+            durationInputGroup.style.display = 'none';
+        }
+
+        calculateAudioValue(); // Recalculate immediately
+    }
+
+    /**
+     * Performs the main calculation based on the selected type.
+     */
+    function calculateAudioValue() {
+        resultsList.innerHTML = '';
+        const type = calculationType.value;
+        const bitrate = parseFloat(bitrateValue.value);
+        const size = parseFloat(sizeValue.value);
+        const durationSec = durationToSeconds();
+
+        const errors = [];
+        
+        // --- Validation ---
+        if (type !== 'size' && (isNaN(bitrate) || bitrate <= 0)) errors.push("Please enter a valid, positive Bitrate (kbps).");
+        if (type !== 'bitrate' && (isNaN(size) || size <= 0)) errors.push("Please enter a valid, positive File Size (MB).");
+        if (type !== 'duration' && durationSec <= 0) errors.push("Please enter a positive Duration (h:m:s).");
+
+        if (errors.length > 0) {
+            resultsList.innerHTML = errors.map(err => `<div class="alert alert-danger">${err}</div>`).join('');
+            return;
+        }
+
+        let result = 0;
+        let resultUnit = '';
+        let resultName = '';
+
+        if (type === 'size') {
+            // Size = Bitrate * Duration (in seconds) * Factor
+            // Result is in MB
+            result = bitrate * durationSec * KBPS_SECONDS_TO_MB_FACTOR;
+            resultUnit = 'MB';
+            resultName = 'File Size (Megabytes)';
+        } else if (type === 'bitrate') {
+            // Bitrate = Size / (Duration * Factor)
+            // Result is in kbps
+            result = size / (durationSec * KBPS_SECONDS_TO_MB_FACTOR);
+            resultUnit = 'kbps';
+            resultName = 'Required Bitrate (kilobits per second)';
+        } else if (type === 'duration') {
+            // Duration = Size / (Bitrate * Factor)
+            // Result is in seconds
+            const totalSeconds = size / (bitrate * KBPS_SECONDS_TO_MB_FACTOR);
+            
+            // Render duration result directly
+            renderResult('Total Seconds', totalSeconds.toFixed(2), 's', '455a64', false);
+            renderResult('Total Duration', secondsToHMS(totalSeconds), 'h:m:s', '607d8b', false);
+            return; 
+        }
+        
+        // --- Render standard results (Size or Bitrate) ---
+        renderResult(resultName, result.toFixed(3), resultUnit, '607d8b', false);
+
+        // --- Render Inputs Echo (For context) ---
+        if (type !== 'bitrate') renderResult('Bitrate Input', bitrate.toFixed(0), 'kbps', '343a40', true);
+        if (type !== 'size') renderResult('Size Input', size.toFixed(2), 'MB', '343a40', true);
+        if (type !== 'duration') renderResult('Duration Input', secondsToHMS(durationSec), 'h:m:s', '343a40', true);
+    }
+    
+    /**
+     * Renders a single result item.
+     */
+    function renderResult(name, value, unit, borderColor, isInput) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        let valueColor = isInput ? '#343a40' : 'white';
+        let backgroundColor = isInput ? '#eceff1' : '#455a64';
+        let unitColor = isInput ? '#455a64' : '#fdd835';
+        let nameColor = isInput ? '#455a64' : '#eceff1';
+
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${nameColor};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor}; font-size: 1.3rem;">
+                ${value} <span style="font-size: 0.8em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Recalculate on any input change
+        document.querySelectorAll('.input-field').forEach(input => {
+            input.addEventListener('input', calculateAudioValue);
+            input.addEventListener('change', calculateAudioValue); // For select elements
+        });
+        
+        // Initial setup
+        toggleInputs(); 
+    }
+
+    window.onload = function() {
+        setupListeners();
+    };
+
+</script>
+{% endblock %}

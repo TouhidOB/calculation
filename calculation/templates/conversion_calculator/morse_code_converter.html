@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Morse Code Converter{% endblock %}
+
+{% block meta_description %}Convert text instantly to International Morse Code and vice versa. Supports letters, numbers, and basic punctuation.{% endblock %}
+
+{% block meta_keywords %}morse code, code converter, text to morse, international morse code, dots and dashes, CW{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #343a40;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        background: #f0f0f5; /* Muted blue/gray theme for communication */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #007bff; 
+    }
+    
+    .conversion-input-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #0056b3;
+    }
+
+    .conversion-input-group textarea,
+    .conversion-input-group select {
+        font-size: 1.1rem;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+    
+    .input-textarea {
+        font-family: monospace;
+        min-height: 100px;
+        resize: vertical;
+        text-transform: uppercase;
+    }
+    
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #007bff;
+        word-break: break-all; /* Ensure long morse sequences wrap */
+        width: 100%;
+    }
+    
+    .highlight-item {
+        border-left-color: #007bff !important; 
+        background-color: #f5f8ff;
+    }
+    
+    .conversion-button {
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 20px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #0056b3;
+    }
+    
+    .separator-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">📡 Morse Code Converter</h1>
+    <p class="small-muted">Convert between English Text and International Morse Code. [Image of the International Morse Code chart]</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Message and Direction</h5>
+
+        <div class="conversion-input-group">
+            <label for="inputValue">Enter Text or Morse Code</label>
+            <textarea class="form-control input-textarea" id="inputValue" placeholder="HELLO WORLD or .... . .-.. .-.. --- / .-- --- .-. .-.. -.." rows="4" autofocus>HELLO</textarea>
+            
+            <div class="d-flex mt-3">
+                <select id="directionSelect" class="form-select w-100">
+                    <option value="textToMorse">Text $\rightarrow$ Morse Code</option>
+                    <option value="morseToText">Morse Code $\rightarrow$ Text</option>
+                </select>
+            </div>
+            
+            <p class="separator-info">Morse Code uses a single space ( ) to separate letters/symbols, and a forward slash (/) to separate words.</p>
+        </div>
+
+        <button class="btn conversion-button" id="convertButton">
+            Convert Message
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Enter a message and select the conversion direction.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Key:** Dot (.), Dash (-). All unsupported characters in text will be ignored. Invalid Morse code sequences will result in a question mark (?)</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- INTERNATIONAL MORSE CODE MAP ---
+    // Source: Based on ITU recommendations.
+    const MORSE_CODE_MAP = {
+        // Letters
+        'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 
+        'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 
+        'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.', 
+        'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 
+        'Y': '-.--', 'Z': '--..',
+        
+        // Numbers
+        '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-', 
+        '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+        
+        // Punctuation and Special
+        '.': '.-.-.-', // Period
+        ',': '--..--', // Comma
+        '?': '..--..', // Question Mark
+        "'": '.----.', // Apostrophe
+        '!': '-.-.--', // Exclamation Mark
+        '-': '-....-', // Hyphen / Dash
+        '/': '-..-.',  // Slash / Fraction Bar
+        '(': '-.--.',  // Parenthesis (Open)
+        ')': '-.--.-', // Parenthesis (Close)
+        '&': '.-...',  // Ampersand
+        ':': '---...', // Colon
+        ';': '-.-.-.', // Semicolon
+        '=': '-...-',  // Double Dash (Break)
+        '@': '.--.-.', // At Sign
+        '$': '...-..-' // Dollar Sign
+        // Note: Space is handled separately
+    };
+    
+    // Reverse map for Morse to Text conversion
+    const TEXT_CODE_MAP = Object.entries(MORSE_CODE_MAP).reduce((acc, [key, value]) => {
+        acc[value] = key;
+        return acc;
+    }, {});
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const directionSelect = document.getElementById('directionSelect');
+    const convertButton = document.getElementById('convertButton');
+    const resultsList = document.getElementById('resultsList');
+    
+    const MORSE_SEPARATOR_CHAR = ' '; // Separates letters/symbols in morse
+    const WORD_SEPARATOR_CHAR = '/';  // Separates words
+
+    /**
+     * Converts English Text to Morse Code.
+     * @param {string} text - The input English text.
+     * @returns {string} The resulting Morse Code string.
+     */
+    function textToMorse(text) {
+        // Normalize text: convert to uppercase and remove leading/trailing whitespace
+        const normalizedText = text.toUpperCase().trim();
+        const words = normalizedText.split(/\s+/); // Split by one or more spaces
+
+        const morseWords = words.map(word => {
+            // Map each character in the word to its morse code, joined by MORSE_SEPARATOR_CHAR
+            return Array.from(word)
+                .map(char => {
+                    const code = MORSE_CODE_MAP[char];
+                    return code !== undefined ? code : ''; // Ignore unsupported characters
+                })
+                .filter(code => code !== '') // Remove empty strings from ignored chars
+                .join(MORSE_SEPARATOR_CHAR);
+        });
+
+        // Join the morse words with the WORD_SEPARATOR_CHAR (/)
+        return morseWords.filter(word => word !== '').join(` ${WORD_SEPARATOR_CHAR} `);
+    }
+
+    /**
+     * Converts Morse Code to English Text.
+     * @param {string} morse - The input Morse Code string.
+     * @returns {string} The resulting English Text string.
+     */
+    function morseToText(morse) {
+        // Normalize Morse: replace any number of slashes or spaces surrounding a slash with the standard separator
+        // And replace any sequence of spaces greater than 1 with a single space (letter separator)
+        const normalizedMorse = morse
+            .replace(/\s*\/\s*/g, ` ${WORD_SEPARATOR_CHAR} `) // Standardize word separator
+            .replace(/\s+/g, MORSE_SEPARATOR_CHAR) // Collapse multiple spaces to single space (letter separator)
+            .trim(); 
+
+        if (!normalizedMorse) return '';
+
+        // Split the entire message by the word separator
+        const morseWords = normalizedMorse.split(` ${WORD_SEPARATOR_CHAR} `);
+
+        const textWords = morseWords.map(morseWord => {
+            // Split the morse word into individual symbol codes
+            const codes = morseWord.split(MORSE_SEPARATOR_CHAR).filter(c => c.length > 0);
+            
+            // Map each code to its corresponding character
+            return codes.map(code => {
+                const char = TEXT_CODE_MAP[code];
+                // Use '?' for invalid/unrecognized sequences
+                return char !== undefined ? char : '?';
+            }).join('');
+        });
+
+        // Join the text words with a single space
+        return textWords.join(' ');
+    }
+
+    /**
+     * Main conversion logic based on selected direction.
+     */
+    function convert() {
+        const input = inputValue.value;
+        const direction = directionSelect.value;
+        resultsList.innerHTML = '';
+        let result = '';
+        let inputName = '';
+        let outputName = '';
+
+        if (!input.trim()) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a message.</div>`;
+            return;
+        }
+
+        if (direction === 'textToMorse') {
+            result = textToMorse(input);
+            inputName = 'English Text Input';
+            outputName = 'Morse Code Output';
+        } else if (direction === 'morseToText') {
+            result = morseToText(input);
+            inputName = 'Morse Code Input';
+            outputName = 'English Text Output';
+        }
+
+        // Display Result
+        if (!result.trim()) {
+             resultsList.innerHTML = `<div class="alert alert-danger">The input contained only unsupported characters or spaces.</div>`;
+             return;
+        }
+
+        // Input Echo
+        resultsList.innerHTML += `
+            <div class="list-group-item">
+                <span class="unit-name">${inputName}</span>
+                <span class="unit-value">${input}</span>
+            </div>
+        `;
+        
+        // Conversion Result
+        resultsList.innerHTML += `
+            <div class="list-group-item highlight-item">
+                <span class="unit-name">${outputName}</span>
+                <span class="unit-value">${result}</span>
+            </div>
+        `;
+    }
+
+    // --- Event Listeners and Initialization ---
+
+    function setupListeners() {
+        // Use 'input' event for real-time responsiveness on text area changes
+        inputValue.addEventListener('input', convert);
+        // Use 'change' event for dropdown changes
+        directionSelect.addEventListener('change', convert);
+        convertButton.addEventListener('click', convert);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convert(); // Initial conversion run
+    };
+
+</script>
+{% endblock %}

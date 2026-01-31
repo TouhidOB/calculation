@@ -382,7 +382,6 @@
     <a href="{% url 'work_study_earnings_calculator' %}" class="{% if request.resolver_match.url_name == 'work_study_earnings_calculator' %}active{% endif %}">Work-Study Earnings Calculator</a>
     <a href="{% url 'internship_stipend_budget_calculator' %}" class="{% if request.resolver_match.url_name == 'internship_stipend_budget_calculator' %}active{% endif %}">Internship Stipend Budget Calculator</a>
     <a href="{% url 'thesis_page_count_estimator' %}" class="{% if request.resolver_match.url_name == 'thesis_page_count_estimator' %}active{% endif %}">Thesis Page Count Estimator</a>
-    
     <a href="{% url 'paragraph_structure_planner' %}" class="{% if request.resolver_match.url_name == 'paragraph_structure_planner' %}active{% endif %}">Paragraph Structure Planner</a>
     <a href="{% url 'project_deadline_calculator' %}" class="{% if request.resolver_match.url_name == 'project_deadline_calculator' %}active{% endif %}">Project Deadline Calculator</a>
     <a href="{% url 'group_project_contribution_tracker' %}" class="{% if request.resolver_match.url_name == 'group_project_contribution_tracker' %}active{% endif %}">Group Project Contribution Tracker</a>
@@ -401,22 +400,123 @@
     <a href="{% url 'online_course_progress_tracker' %}" class="{% if request.resolver_match.url_name == 'online_course_progress_tracker' %}active{% endif %}">Online Course Progress Tracker</a>
     <a href="{% url 'academic_paper_formatting_checker' %}" class="{% if request.resolver_match.url_name == 'academic_paper_formatting_checker' %}active{% endif %}">Academic Paper Formatting Checker</a>
     <a href="{% url 'lms_grade_calculator' %}" class="{% if request.resolver_match.url_name == 'lms_grade_calculator' %}active{% endif %}">LMS Grade Calculator</a>
-    
-    
-    
     <a href="{% url 'essay_outline_generator' %}" class="{% if request.resolver_match.url_name == 'essay_outline_generator' %}active{% endif %}">Essay Outline Generator</a>
     <a href="{% url 'memorization_time_estimator' %}" class="{% if request.resolver_match.url_name == 'memorization_time_estimator' %}active{% endif %}">Memorization Time Estimator</a>
     <a href="{% url 'language_learning_fluency_timeline' %}" class="{% if request.resolver_match.url_name == 'language_learning_fluency_timeline' %}active{% endif %}">Language Learning Fluency Timeline</a>
     
     
+
+
     <h5 class="mt-5"><a href="{% url 'conversion_dashboard' %}" class="{% if request.resolver_match.url_name == 'conversion_dashboard' %}active{% endif %}">Conversion Calculators</a></h5>
     <a href="{% url 'length_converter' %}" class="{% if request.resolver_match.url_name == 'length_converter' %}active{% endif %}">Length Converter</a>
-    
-    
+    <a href="{% url 'weight_mass_converter' %}" class="{% if request.resolver_match.url_name == 'weight_mass_converter' %}active{% endif %}">Weight & Mass Converter</a>
+    <a href="{% url 'volume_converter' %}" class="{% if request.resolver_match.url_name == 'volume_converter' %}active{% endif %}">Volume Converter</a>
+    <a href="{% url 'area_converter' %}" class="{% if request.resolver_match.url_name == 'area_converter' %}active{% endif %}">Area Converter</a>
+    <a href="{% url 'temperature_converter' %}" class="{% if request.resolver_match.url_name == 'temperature_converter' %}active{% endif %}">Temperature Converter</a>
+    <a href="{% url 'speed_converter' %}" class="{% if request.resolver_match.url_name == 'speed_converter' %}active{% endif %}">Speed Converter</a>
+    <a href="{% url 'pressure_converter' %}" class="{% if request.resolver_match.url_name == 'pressure_converter' %}active{% endif %}">Pressure Converter</a>
+    <a href="{% url 'energy_converter' %}" class="{% if request.resolver_match.url_name == 'energy_converter' %}active{% endif %}">Energy Converter</a>
+    <a href="{% url 'power_converter' %}" class="{% if request.resolver_match.url_name == 'power_converter' %}active{% endif %}">Power Converter</a>
+    <a href="{% url 'data_storage_converter' %}" class="{% if request.resolver_match.url_name == 'data_storage_converter' %}active{% endif %}">Data Storage Converter</a>
+    <a href="{% url 'time_zone_converter' %}" class="{% if request.resolver_match.url_name == 'time_zone_converter' %}active{% endif %}">Time Zone Converter</a>
+    <a href="{% url 'cooking_measurement_converter' %}" class="{% if request.resolver_match.url_name == 'cooking_measurement_converter' %}active{% endif %}">Cooking Measurement Converter</a>
+    <a href="{% url 'shoe_size_converter' %}" class="{% if request.resolver_match.url_name == 'shoe_size_converter' %}active{% endif %}">Shoe Size Converter</a>
+    <a href="{% url 'clothing_size_converter' %}" class="{% if request.resolver_match.url_name == 'clothing_size_converter' %}active{% endif %}">Clothing Size Converter</a>
+    <a href="{% url 'angle_converter' %}" class="{% if request.resolver_match.url_name == 'angle_converter' %}active{% endif %}">Angle Converter</a>
+    <a href="{% url 'fuel_consumption_converter' %}" class="{% if request.resolver_match.url_name == 'fuel_consumption_converter' %}active{% endif %}">Fuel Consumption Converter</a>
+    <a href="{% url 'digital_image_resolution_converter' %}" class="{% if request.resolver_match.url_name == 'digital_image_resolution_converter' %}active{% endif %}">Digital Image Resolution Converter</a>
+    <a href="{% url 'lumber_board_foot_calculator' %}" class="{% if request.resolver_match.url_name == 'lumber_board_foot_calculator' %}active{% endif %}">Lumber Board Foot Calculator</a>
+    <a href="{% url 'ring_size_converter' %}" class="{% if request.resolver_match.url_name == 'ring_size_converter' %}active{% endif %}">Ring Size Converter</a>
+    <a href="{% url 'number_system_converter' %}" class="{% if request.resolver_match.url_name == 'number_system_converter' %}active{% endif %}">Number System Converter</a>
+    <a href="{% url 'roman_numeral_converter' %}" class="{% if request.resolver_match.url_name == 'roman_numeral_converter' %}active{% endif %}">Roman Numeral Converter</a>
+    <a href="{% url 'morse_code_converter' %}" class="{% if request.resolver_match.url_name == 'morse_code_converter' %}active{% endif %}">Morse Code Converter</a>
+    <a href="{% url 'braille_converter' %}" class="{% if request.resolver_match.url_name == 'braille_converter' %}active{% endif %}">Braille Converter</a>
+    <a href="{% url 'password_generator_calculator' %}" class="{% if request.resolver_match.url_name == 'password_generator_calculator' %}active{% endif %}">Password Generator & Strength Calculator</a>
+    <a href="{% url 'cryptographic_hash_generator' %}" class="{% if request.resolver_match.url_name == 'cryptographic_hash_generator' %}active{% endif %}">Cryptographic Hash Generator</a>
+    <a href="{% url 'color_code_converter' %}" class="{% if request.resolver_match.url_name == 'color_code_converter' %}active{% endif %}">Color Code Converter</a>
+    <a href="{% url 'electric_charge_converter' %}" class="{% if request.resolver_match.url_name == 'electric_charge_converter' %}active{% endif %}">Electric Charge Converter</a>
+    <a href="{% url 'radiation_dose_converter' %}" class="{% if request.resolver_match.url_name == 'radiation_dose_converter' %}active{% endif %}">Radiation Dose Converter</a>
+    <a href="{% url 'viscosity_converter' %}" class="{% if request.resolver_match.url_name == 'viscosity_converter' %}active{% endif %}">Viscosity Converter</a>
+    <a href="{% url 'flow_rate_converter' %}" class="{% if request.resolver_match.url_name == 'flow_rate_converter' %}active{% endif %}">Flow Rate Converter</a>
+    <a href="{% url 'torque_converter' %}" class="{% if request.resolver_match.url_name == 'torque_converter' %}active{% endif %}">Torque Converter</a>
+    <a href="{% url 'density_converter' %}" class="{% if request.resolver_match.url_name == 'density_converter' %}active{% endif %}">Density Converter</a>
+    <a href="{% url 'surface_tension_converter' %}" class="{% if request.resolver_match.url_name == 'surface_tension_converter' %}active{% endif %}">Surface Tension Converter</a>
+    <a href="{% url 'catalytic_activity_converter' %}" class="{% if request.resolver_match.url_name == 'catalytic_activity_converter' %}active{% endif %}">Catalytic Activity Converter</a>
+    <a href="{% url 'luminous_intensity_converter' %}" class="{% if request.resolver_match.url_name == 'luminous_intensity_converter' %}active{% endif %}">Luminous Intensity Converter</a>
+    <a href="{% url 'radioactivity_converter' %}" class="{% if request.resolver_match.url_name == 'radioactivity_converter' %}active{% endif %}">Radioactivity Converter</a>
+    <a href="{% url 'acceleration_converter' %}" class="{% if request.resolver_match.url_name == 'acceleration_converter' %}active{% endif %}">Acceleration Converter</a>
+    <a href="{% url 'force_converter' %}" class="{% if request.resolver_match.url_name == 'force_converter' %}active{% endif %}">Force Converter</a>
+    <a href="{% url 'moment_of_inertia_converter' %}" class="{% if request.resolver_match.url_name == 'moment_of_inertia_converter' %}active{% endif %}">Moment of Inertia Converter</a>
+    <a href="{% url 'metric_prefix_converter' %}" class="{% if request.resolver_match.url_name == 'metric_prefix_converter' %}active{% endif %}">Metric Prefix Converter</a>
+    <a href="{% url 'typography_unit_converter' %}" class="{% if request.resolver_match.url_name == 'typography_unit_converter' %}active{% endif %}">Typography Unit Converter</a>
+    <a href="{% url 'audio_conversion_calculator' %}" class="{% if request.resolver_match.url_name == 'audio_conversion_calculator' %}active{% endif %}">Audio Conversion Calculator</a>
+    <a href="{% url 'video_file_size_calculator' %}" class="{% if request.resolver_match.url_name == 'video_file_size_calculator' %}active{% endif %}">Video File Size Calculator</a>
+    <a href="{% url 'screen_aspect_ratio_calculator' %}" class="{% if request.resolver_match.url_name == 'screen_aspect_ratio_calculator' %}active{% endif %}">Screen Aspect Ratio Calculator</a>
+    <a href="{% url 'map_scale_calculator' %}" class="{% if request.resolver_match.url_name == 'map_scale_calculator' %}active{% endif %}">Map Scale Calculator</a>
+    <a href="{% url 'earthquake_magnitude_scale_calculator' %}" class="{% if request.resolver_match.url_name == 'earthquake_magnitude_scale_calculator' %}active{% endif %}">Earthquake Magnitude Scale Converter</a>
+    <a href="{% url 'hurricane_speed_calculator' %}" class="{% if request.resolver_match.url_name == 'hurricane_speed_calculator' %}active{% endif %}">Hurricane Speed Converter</a>
+    <a href="{% url 'ph_to_hydrogen_ion_concentration_converter' %}" class="{% if request.resolver_match.url_name == 'ph_to_hydrogen_ion_concentration_converter' %}active{% endif %}">pH to Hydrogen Ion Concentration Converter</a>
+    <a href="{% url 'blood_sugar_unit_converter' %}" class="{% if request.resolver_match.url_name == 'blood_sugar_unit_converter' %}active{% endif %}">Blood Sugar Unit Converter</a>
+
+
     <h5 class="mt-5"><a href="{% url 'real_estate_dashboard' %}" class="{% if request.resolver_match.url_name == 'real_estate_dashboard' %}active{% endif %}">Real Estate Calculators</a></h5>
     <a href="{% url 'days_on_market_calculator' %}" class="{% if request.resolver_match.url_name == 'days_on_market_calculator' %}active{% endif %}">Days on Market Calculator</a>
+    <a href="{% url 'mortgage_payment_calculator' %}" class="{% if request.resolver_match.url_name == 'mortgage_payment_calculator' %}active{% endif %}">Mortgage Payment Calculator</a>
+    <a href="{% url 'piti_mortgage_calculator' %}" class="{% if request.resolver_match.url_name == 'piti_mortgage_calculator' %}active{% endif %}">PITI Mortgage Calculator</a>
+    <a href="{% url 'mortgage_affordability_calculator' %}" class="{% if request.resolver_match.url_name == 'mortgage_affordability_calculator' %}active{% endif %}">Mortgage Affordability Calculator</a>
+    <a href="{% url 'rent_vs_buy_calculator' %}" class="{% if request.resolver_match.url_name == 'rent_vs_buy_calculator' %}active{% endif %}">Rent vs. Buy Calculator</a>
+    <a href="{% url 'mortgage_amortization_schedule_generator' %}" class="{% if request.resolver_match.url_name == 'mortgage_amortization_schedule_generator' %}active{% endif %}">Mortgage Amortization Schedule Generator</a>
+    <a href="{% url 'extra_mortgage_payment_calculator' %}" class="{% if request.resolver_match.url_name == 'extra_mortgage_payment_calculator' %}active{% endif %}">Extra Mortgage Payment Calculator</a>
+    <a href="{% url 'bi_weekly_portgage_payment_calculator' %}" class="{% if request.resolver_match.url_name == 'bi_weekly_portgage_payment_calculator' %}active{% endif %}">Bi-Weekly Mortgage Payment Calculator</a>
+    <a href="{% url 'refinance_breakeven_calculator' %}" class="{% if request.resolver_match.url_name == 'refinance_breakeven_calculator' %}active{% endif %}">Refinance Breakeven Calculator</a>
+    <a href="{% url 'dti_ratio_calculator' %}" class="{% if request.resolver_match.url_name == 'dti_ratio_calculator' %}active{% endif %}">Debt-to-Income (DTI) Ratio Calculator</a>
+    <a href="{% url 'ltv_ratio_calculator' %}" class="{% if request.resolver_match.url_name == 'ltv_ratio_calculator' %}active{% endif %}">Loan-to-Value (LTV) Ratio Calculator</a>
+    <a href="{% url 'down_payment_calculator' %}" class="{% if request.resolver_match.url_name == 'down_payment_calculator' %}active{% endif %}">Down Payment Calculator</a>
+    <a href="{% url 'pmi_calculator' %}" class="{% if request.resolver_match.url_name == 'pmi_calculator' %}active{% endif %}">PMI (Private Mortgage Insurance) Calculator</a>
+    <a href="{% url 'fha_loan_calculator' %}" class="{% if request.resolver_match.url_name == 'fha_loan_calculator' %}active{% endif %}">FHA Loan Calculator</a>
+    <a href="{% url 'va_loan_calculator' %}" class="{% if request.resolver_match.url_name == 'va_loan_calculator' %}active{% endif %}">VA Loan Calculator (Funding Fee)</a>
+    <a href="{% url 'usda_loan_calculator' %}" class="{% if request.resolver_match.url_name == 'usda_loan_calculator' %}active{% endif %}">USDA Loan Calculator (Guarantee & Annual Fees)</a>
+    <a href="{% url 'arm_calculator' %}" class="{% if request.resolver_match.url_name == 'arm_calculator' %}active{% endif %}">ARM (Adjustable Rate Mortgage) Calculator</a>
+    <a href="{% url 'closing_cost_calculator' %}" class="{% if request.resolver_match.url_name == 'closing_cost_calculator' %}active{% endif %}">Closing Cost Calculator</a>
+    <a href="{% url 'seller_net_proceeds_calculator' %}" class="{% if request.resolver_match.url_name == 'seller_net_proceeds_calculator' %}active{% endif %}">Seller's Net Proceeds Calculator</a>
+    <a href="{% url 'capital_gains_tax_on_real_estate_calculator' %}" class="{% if request.resolver_match.url_name == 'capital_gains_tax_on_real_estate_calculator' %}active{% endif %}">Capital Gains Tax on Real Estate Calculator</a>
+    <a href="{% url 'rental_property_cash_flow_calculator' %}" class="{% if request.resolver_match.url_name == 'rental_property_cash_flow_calculator' %}active{% endif %}">Rental Property Cash Flow Calculator</a>
+    <a href="{% url 'gross_rent_multiplier_calculator' %}" class="{% if request.resolver_match.url_name == 'gross_rent_multiplier_calculator' %}active{% endif %}">Gross Rent Multiplier (GRM) Calculator</a>
+    <a href="{% url 'capitalization_rate_calculator' %}" class="{% if request.resolver_match.url_name == 'capitalization_rate_calculator' %}active{% endif %}">Capitalization Rate (Cap Rate) Calculator</a>
+    <a href="{% url 'cash_on_cash_return_calculator' %}" class="{% if request.resolver_match.url_name == 'cash_on_cash_return_calculator' %}active{% endif %}">Cash-on-Cash Return Calculator</a>
+    <a href="{% url 'total_return_on_investment_calculator' %}" class="{% if request.resolver_match.url_name == 'total_return_on_investment_calculator' %}active{% endif %}">Total Return on Investment (ROI) Calculator</a>
+    <a href="{% url 'debt_service_coverage_ratio_calculator' %}" class="{% if request.resolver_match.url_name == 'debt_service_coverage_ratio_calculator' %}active{% endif %}">Debt Service Coverage Ratio (DSCR) Calculator</a>
+    <a href="{% url 'rule_quickrental_analysis_calculator' %}" class="{% if request.resolver_match.url_name == 'rule_quickrental_analysis_calculator' %}active{% endif %}">1% Rule Quick Rental Analysis Calculator</a>
+    <a href="{% url 'rule_house_flipping_calculator' %}" class="{% if request.resolver_match.url_name == 'rule_house_flipping_calculator' %}active{% endif %}">70% Rule House Flipping Calculator</a>
+    <a href="{% url 'property_tax_calculator' %}" class="{% if request.resolver_match.url_name == 'property_tax_calculator' %}active{% endif %}">Property Tax Calculator</a>
+    <a href="{% url 'homeowners_insurance_premium_estimator' %}" class="{% if request.resolver_match.url_name == 'homeowners_insurance_premium_estimator' %}active{% endif %}">Homeowners Insurance (HOI) Premium Estimator</a>
+    <a href="{% url 'home_appreciation_value_projection_calculator' %}" class="{% if request.resolver_match.url_name == 'home_appreciation_value_projection_calculator' %}active{% endif %}">Home Appreciation Value Projection Calculator</a>
+    <a href="{% url 'price_per_square_foot_calculator' %}" class="{% if request.resolver_match.url_name == 'price_per_square_foot_calculator' %}active{% endif %}">Price per Square Foot (PPSF) Calculator</a>
+    <a href="{% url 'real_estate_agent_commission_calculator' %}" class="{% if request.resolver_match.url_name == 'real_estate_agent_commission_calculator' %}active{% endif %}">Real Estate Agent Commission Calculator</a>
+    <a href="{% url 'land_lease_payment_calculator' %}" class="{% if request.resolver_match.url_name == 'land_lease_payment_calculator' %}active{% endif %}">Land Lease Payment Calculator</a>
+    <a href="{% url 'piti_as_percentage_of_income_calculator' %}" class="{% if request.resolver_match.url_name == 'piti_as_percentage_of_income_calculator' %}active{% endif %}">PITI as Percentage of Income Calculator (28% Rule)</a>
+    <a href="{% url 'balloon_mortgage_calculator' %}" class="{% if request.resolver_match.url_name == 'balloon_mortgage_calculator' %}active{% endif %}">Balloon Mortgage Calculator</a>
+    <a href="{% url 'construction_loan_interest_calculator' %}" class="{% if request.resolver_match.url_name == 'construction_loan_interest_calculator' %}active{% endif %}">Construction Loan Interest Calculator</a>
+    <a href="{% url 'home_equity_loan_calculator' %}" class="{% if request.resolver_match.url_name == 'home_equity_loan_calculator' %}active{% endif %}">Home Equity Loan Calculator</a>
+    <a href="{% url 'heloc_calculator' %}" class="{% if request.resolver_match.url_name == 'heloc_calculator' %}active{% endif %}">HELOC (Home Equity Line of Credit) Calculator</a>
+    <a href="{% url 'reverse_mortgage_calculator' %}" class="{% if request.resolver_match.url_name == 'reverse_mortgage_calculator' %}active{% endif %}">Reverse Mortgage (HECM) Calculator</a>
+    <a href="{% url 'buy_to_let_mortgage_calculator' %}" class="{% if request.resolver_match.url_name == 'buy_to_let_mortgage_calculator' %}active{% endif %}">Buy-to-Let (BTL) Mortgage Calculator</a>
+    <a href="{% url 'hoa_fee_affordability_calculator' %}" class="{% if request.resolver_match.url_name == 'hoa_fee_affordability_calculator' %}active{% endif %}">HOA Fee Affordability Calculator</a>
+    <a href="{% url 'moving_cost_estimator' %}" class="{% if request.resolver_match.url_name == 'moving_cost_estimator' %}active{% endif %}">Moving Cost Estimator</a>
+    <a href="{% url 'home_repair_budget_calculator' %}" class="{% if request.resolver_match.url_name == 'home_repair_budget_calculator' %}active{% endif %}">Home Repair Budget Calculator</a>
+    <a href="{% url 'depreciation_calculator' %}" class="{% if request.resolver_match.url_name == 'depreciation_calculator' %}active{% endif %}">Depreciation (Cost Recovery) Calculator</a>
+    <a href="{% url 'exchange_calculator' %}" class="{% if request.resolver_match.url_name == 'exchange_calculator' %}active{% endif %}">1031 Exchange (Like-Kind) Calculator</a>
+    <a href="{% url 'annual_property_operating_data_calculator' %}" class="{% if request.resolver_match.url_name == 'annual_property_operating_data_calculator' %}active{% endif %}">Annual Property Operating Data (APOD) Calculator</a>
+    <a href="{% url 'net_operating_income_calculator' %}" class="{% if request.resolver_match.url_name == 'net_operating_income_calculator' %}active{% endif %}">Net Operating Income (NOI) Calculator</a>
+    <a href="{% url 'internal_rate_of_return_calculator' %}" class="{% if request.resolver_match.url_name == 'internal_rate_of_return_calculator' %}active{% endif %}">Internal Rate of Return (IRR) Calculator</a>
+    <a href="{% url 'tenant_rent_to_income_ratio_calculator' %}" class="{% if request.resolver_match.url_name == 'tenant_rent_to_income_ratio_calculator' %}active{% endif %}">Tenant Rent-to-Income Ratio Calculator</a>
     
     
+
+
+
+
+
     <h5 class="mt-5"><a href="{% url 'vehicle_dashboard' %}" class="{% if request.resolver_match.url_name == 'vehicle_dashboard' %}active{% endif %}">Vehicle Calculators</a></h5>
     <a href="{% url 'car_affordability_calculator' %}" class="{% if request.resolver_match.url_name == 'car_affordability_calculator' %}active{% endif %}">Car Affordability Calculator</a>
 

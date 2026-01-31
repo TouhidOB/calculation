@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Radioactivity Converter (Becquerel to Curie){% endblock %}
+
+{% block meta_description %}Convert radioactivity instantly between Becquerel (Bq) and Curie (Ci).{% endblock %}
+
+{% block meta_keywords %}radioactivity converter, becquerel, curie, Bq, Ci, nuclear physics, unit converter{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #e74c3c; /* Red Theme for Radioactivity */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #fdf5f5; /* Light red background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #e74c3c; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #c0392b;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #e74c3c;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #2c3e50; 
+        word-break: break-all;
+        width: 100%;
+        background-color: #fbecec;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #e74c3c;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #c0392b;
+    }
+    
+    .result-exponent {
+        font-size: 0.7em;
+        vertical-align: super;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">☢️ Radioactivity Converter</h1>
+    <p class="small-muted">Convert **Radioactivity** (rate of decay) between **Becquerel ($\text{Bq}$)** (SI unit) and **Curie ($\text{Ci}$)** (Traditional unit).</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Enter Value and Direction</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Value Input -->
+            <label for="inputValue">Activity Value to Convert</label>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 3.7e10" value="3.7e10" min="0" step="any" autofocus>
+            
+            <!-- Direction Select -->
+            <div class="mt-3">
+                <label for="directionSelect">Conversion Direction</label>
+                <select id="directionSelect" class="form-select input-field">
+                    <option value="BqToCi">Becquerel ($\text{Bq}$) $\rightarrow$ Curie ($\text{Ci}$)</option>
+                    <option value="CiToBq">Curie ($\text{Ci}$) $\rightarrow$ Becquerel ($\text{Bq}$)</option>
+                </select>
+            </div>
+            
+            <p class="small-muted mt-2">Conversion Factor: $1 \text{ Ci} = 3.7 \times 10^{10} \text{ Bq}$ (decays per second).</p>
+        </div>
+
+        <button class="btn conversion-button" onclick="convertRadioactivity()">
+            Calculate Radioactivity
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Converted Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Becquerel ($\text{Bq}$):** $1 \text{ Bq}$ is defined as one disintegration (radioactive decay) per second ($\text{s}^{-1}$). **Curie ($\text{Ci}$):** Defined as the number of disintegrations per second from one gram of pure radium-226, which is $3.7 \times 10^{10} \text{ Bq}$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    // 1 Curie (Ci) to Becquerel (Bq)
+    const CI_TO_BQ_FACTOR = 3.7e10; 
+    // 1 Becquerel (Bq) to Curie (Ci)
+    const BQ_TO_CI_FACTOR = 1 / CI_TO_BQ_FACTOR; // 2.7027027027e-11
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const directionSelect = document.getElementById('directionSelect');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Helper function to format large/small numbers in scientific notation.
+     * @param {number} num - The number to format.
+     * @returns {string} The formatted string (e.g., "3.7 x 10^10").
+     */
+    function formatScientific(num) {
+        if (num === 0) return '0';
+        // Use exponential notation from JS
+        let expStr = num.toExponential(4);
+        
+        // Reformat 'e+XX' to 'x 10^XX' for better visual math display
+        const [mantissa, exponent] = expStr.split('e');
+        if (exponent) {
+            const sign = exponent.startsWith('-') ? '' : '+';
+            const expValue = exponent.replace('+', ''); // Remove the default plus sign if present
+            return `${parseFloat(mantissa).toFixed(4)} \times 10<span class="result-exponent">${sign}${expValue}</span>`;
+        }
+        return num.toFixed(4);
+    }
+
+
+    /**
+     * Converts the radioactivity value based on the selected direction.
+     */
+    function convertRadioactivity() {
+        resultsList.innerHTML = '';
+        const value = parseFloat(inputValue.value);
+        const direction = directionSelect.value;
+        
+        if (isNaN(value) || value < 0) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid non-negative number.</div>`;
+            return;
+        }
+
+        let result = 0;
+        let inputUnitSymbol = '';
+        let outputUnitSymbol = '';
+        let inputUnitName = '';
+        let outputUnitName = '';
+
+        if (direction === 'BqToCi') {
+            // Bq to Ci: Ci = Bq / 3.7e10
+            result = value * BQ_TO_CI_FACTOR;
+            inputUnitSymbol = 'Bq';
+            outputUnitSymbol = 'Ci';
+            inputUnitName = 'Becquerel (SI)';
+            outputUnitName = 'Curie (Traditional)';
+        } else if (direction === 'CiToBq') {
+            // Ci to Bq: Bq = Ci * 3.7e10
+            result = value * CI_TO_BQ_FACTOR;
+            inputUnitSymbol = 'Ci';
+            outputUnitSymbol = 'Bq';
+            inputUnitName = 'Curie (Traditional)';
+            outputUnitName = 'Becquerel (SI)';
+        }
+        
+        // --- Render Results ---
+        
+        // 1. Input Echo - Use raw value for input display
+        renderResult(`Input Value (${inputUnitName})`, inputValue.value, inputUnitSymbol, '343a40', true);
+
+        // 2. Converted Output - Use scientific formatter for the result
+        renderResult(`Converted Value (${outputUnitName})`, formatScientific(result), outputUnitSymbol, 'e74c3c', false);
+    }
+    
+    /**
+     * Renders a single result item.
+     * @param {string} name - The name of the result/unit.
+     * @param {string} value - The numerical value (string, potentially formatted with exponents).
+     * @param {string} unit - The unit abbreviation.
+     * @param {string} borderColor - The color for the left border (HEX).
+     * @param {boolean} isInput - If true, styles the item as the input echo.
+     */
+    function renderResult(name, value, unit, borderColor, isInput) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        let valueColor = isInput ? '#343a40' : '#e74c3c';
+        let backgroundColor = isInput ? '#fcfcfc' : '#fbecec';
+        let unitColor = isInput ? '#c0392b' : '#c0392b';
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${isInput ? '#343a40' : '#2c3e50'};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor}; font-size: 1.3rem;">
+                ${value} <span style="font-size: 0.8em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change
+        inputValue.addEventListener('input', convertRadioactivity);
+        // Use 'change' event for direction switch
+        directionSelect.addEventListener('change', convertRadioactivity);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertRadioactivity(); // Run initial conversion
+    };
+
+</script>
+{% endblock %}

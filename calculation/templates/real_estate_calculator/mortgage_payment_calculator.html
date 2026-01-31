@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Mortgage Payment Calculator (P&I){% endblock %}
+
+{% block meta_description %}Quickly calculate your monthly principal and interest (P&I) payment for a mortgage loan with our professional tool.{% endblock %}
+
+{% block meta_keywords %}mortgage payment calculator, P&I, principal and interest, loan calculation, amortization{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .result-display-box {
+        background-color: #eff6ff;
+        border: 2px solid #bfdbfe;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #1e40af;
+        line-height: 1;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .stat-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-calculator-fill text-primary me-2"></i>Mortgage P&I Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Accurately estimate your monthly Principal and Interest payments. Understand the long-term cost of your loan including total interest paid.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-sliders me-2"></i>Loan Parameters</h5>
+                
+                <form id="mortgage-form">
+                    <div class="mb-4">
+                        <label class="form-label">Loan Principal</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="principal-input" class="form-control border-start-0 ps-0" placeholder="e.g. 250000">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Annual Interest Rate</label>
+                        <div class="input-group">
+                            <input type="number" id="rate-input" class="form-control border-end-0" placeholder="e.g. 6.5" step="0.01">
+                            <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Loan Term (Years)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-calendar3"></i></span>
+                            <input type="number" id="term-input" class="form-control border-start-0 ps-0" placeholder="e.g. 30">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold mt-2 shadow-sm">
+                        Calculate Payment
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white d-flex align-items-center">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-piggy-bank display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Ready for Calculation</h4>
+                    <p>Enter your loan details on the left to generate a complete monthly payment breakdown.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-primary opacity-75">Monthly P&I Payment</span>
+                        <div class="result-value my-2" id="monthly-payment-display">$0.00</div>
+                        <p class="mb-0 text-dark fw-bold">Principal & Interest</p>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="stat-box">
+                                <span class="small text-muted d-block text-uppercase fw-bold">Total Interest Paid</span>
+                                <span class="h5 fw-bold text-dark" id="total-interest-display">$0.00</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-box">
+                                <span class="small text-muted d-block text-uppercase fw-bold">Total Life Cost</span>
+                                <span class="h5 fw-bold text-dark" id="total-cost-display">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-light rounded-3 small text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Note: This calculation only includes Principal and Interest. Actual payments typically include taxes, insurance, and HOA fees.
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none">
+                    <div class="alert alert-danger rounded-4 p-4 text-center">
+                        <i class="bi bi-exclamation-octagon display-4 mb-2 d-block"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p class="mb-0">Please ensure all fields are filled with positive numbers.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const form = document.getElementById('mortgage-form');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const resultsUi = document.getElementById('results-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const P = parseFloat(document.getElementById('principal-input').value);
+        const R = parseFloat(document.getElementById('rate-input').value);
+        const N = parseFloat(document.getElementById('term-input').value);
+
+        // Hide all views initially
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        // Validation
+        if (isNaN(P) || isNaN(R) || isNaN(N) || P <= 0 || R < 0 || N <= 0) {
+            errorUi.classList.remove('d-none');
+            return;
+        }
+
+        // Calculation Logic
+        const i = (R / 100) / 12;
+        const n = N * 12;
+        let monthly;
+
+        if (i === 0) {
+            monthly = P / n;
+        } else {
+            const pow = Math.pow(1 + i, n);
+            monthly = P * (i * pow) / (pow - 1);
+        }
+
+        const totalCost = monthly * n;
+        const totalInterest = totalCost - P;
+
+        // Formatter
+        const formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2
+        });
+
+        // Update UI
+        resultsUi.classList.remove('d-none');
+        document.getElementById('monthly-payment-display').textContent = formatter.format(monthly);
+        document.getElementById('total-interest-display').textContent = formatter.format(totalInterest);
+        document.getElementById('total-cost-display').textContent = formatter.format(totalCost);
+    });
+</script>
+{% endblock %}

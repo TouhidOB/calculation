@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Flow Rate Converter (GPM, L/s, m³/h){% endblock %}
+
+{% block meta_description %}Convert volumetric flow rate instantly between Gallons per Minute (GPM), Liters per Second (L/s), and Cubic Meters per Hour (m³/h).{% endblock %}
+
+{% block meta_keywords %}flow rate converter, gpm, liters per second, cubic meters per hour, volumetric flow, fluid dynamics, plumbing{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #3498db; /* Water Blue Theme */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #eef7ff; /* Light blue background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #3498db; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #2980b9;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #3498db;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #e74c3c; /* Red for emphasis on flow */
+        word-break: break-all;
+        width: 100%;
+        background-color: #ecf0f1;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #3498db;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #2980b9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🌊 Flow Rate Converter</h1>
+    <p class="small-muted">Convert **Volumetric Flow Rate** between common units: Gallons per Minute (GPM), Liters per Second (L/s), and Cubic Meters per Hour ($\text{m}^3/\text{h}$). [Image of volumetric flow rate calculation]</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Enter Value and Unit</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Value Input -->
+            <label for="inputValue">Value to Convert</label>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 50" value="50" min="0" step="any" autofocus>
+            
+            <!-- Unit Select -->
+            <div class="mt-3">
+                <label for="inputUnitSelect">Input Unit</label>
+                <select id="inputUnitSelect" class="form-select input-field">
+                    <option value="GPM">Gallons per Minute (GPM)</option>
+                    <option value="LPS">Liters per Second (L/s)</option>
+                    <option value="CMH">Cubic Meters per Hour ($\text{m}^3/\text{h}$)</option>
+                </select>
+            </div>
+            
+            <p class="small-muted mt-2">The output will be shown for all other supported units.</p>
+        </div>
+
+        <button class="btn conversion-button" onclick="convertFlowRate()">
+            Calculate Flow Rates
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Converted Results</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Volumetric Flow Rate (Q):** Defined as the volume of fluid passing through a given cross-sectional area per unit of time. It is a critical metric for pump sizing and pipe efficiency.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONVERSION CONSTANTS (Based on US Gallon) ---
+    // 1 US Gallon = 3.78541 Liters
+    // 1 Minute = 60 Seconds
+    // 1 Hour = 3600 Seconds
+
+    // GPM (Gallons/Minute) to LPS (Liters/Second)
+    const GPM_TO_LPS_FACTOR = 3.78541 / 60; // 0.063090166...
+
+    // LPS (Liters/Second) to CMH (Cubic Meters/Hour)
+    // 1 L/s = 0.001 m³/s
+    // 1 m³/s = 3600 m³/h
+    // 1 L/s = 3.6 m³/h
+    const LPS_TO_CMH_FACTOR = 3.6;
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const inputUnitSelect = document.getElementById('inputUnitSelect');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Converts the flow rate value from the input unit to all other units.
+     */
+    function convertFlowRate() {
+        resultsList.innerHTML = '';
+        const value = parseFloat(inputValue.value);
+        const inputUnit = inputUnitSelect.value;
+        
+        if (isNaN(value) || value < 0) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid non-negative number.</div>`;
+            return;
+        }
+
+        let gpm = 0;
+        let lps = 0;
+        let cmh = 0;
+
+        // Step 1: Normalize input to GPM (Gallons per Minute)
+        if (inputUnit === 'GPM') {
+            gpm = value;
+        } else if (inputUnit === 'LPS') {
+            // LPS to GPM: GPM = LPS / GPM_TO_LPS_FACTOR
+            gpm = value / GPM_TO_LPS_FACTOR;
+        } else if (inputUnit === 'CMH') {
+            // CMH to LPS: LPS = CMH / LPS_TO_CMH_FACTOR
+            lps = value / LPS_TO_CMH_FACTOR;
+            // LPS to GPM
+            gpm = lps / GPM_TO_LPS_FACTOR;
+        }
+        
+        // Step 2: Convert normalized GPM to other target units
+        lps = gpm * GPM_TO_LPS_FACTOR;
+        cmh = lps * LPS_TO_CMH_FACTOR;
+
+        // --- Render Results ---
+        
+        const units = [
+            { id: 'GPM', name: 'Gallons per Minute', symbol: 'GPM', value: gpm },
+            { id: 'LPS', name: 'Liters per Second', symbol: 'L/s', value: lps },
+            { id: 'CMH', name: 'Cubic Meters per Hour', symbol: 'm³/h', value: cmh }
+        ];
+
+        // Highlight the input value
+        renderResult(`Input Value (${units.find(u => u.id === inputUnit).symbol})`, value.toFixed(4), units.find(u => u.id === inputUnit).symbol, '343a40', true);
+
+
+        units.filter(u => u.id !== inputUnit).forEach(unit => {
+            renderResult(unit.name, unit.value.toFixed(6), unit.symbol, '3498db', false);
+        });
+    }
+    
+    /**
+     * Renders a single result item.
+     * @param {string} name - The name of the result/unit.
+     * @param {string} value - The numerical value.
+     * @param {string} unit - The unit abbreviation.
+     * @param {string} borderColor - The color for the left border (HEX).
+     * @param {boolean} isInput - If true, styles the item as the input echo.
+     */
+    function renderResult(name, value, unit, borderColor, isInput) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        let valueColor = isInput ? '#343a40' : '#e74c3c';
+        let backgroundColor = isInput ? '#fcfcfc' : '#ecf0f1';
+        let fontSize = isInput ? '1.1rem' : '1.3rem';
+
+        item.innerHTML = `
+            <div class="unit-name">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor}; font-size: ${fontSize};">
+                ${value} <span style="font-size: 0.8em; font-weight: normal; color: #3498db;">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change
+        inputValue.addEventListener('input', convertFlowRate);
+        // Use 'change' event for unit switch
+        inputUnitSelect.addEventListener('change', convertFlowRate);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertFlowRate(); // Run initial conversion on load
+    };
+
+</script>
+{% endblock %}

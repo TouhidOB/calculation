@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}Cryptographic Hash Generator{% endblock %}
+
+{% block meta_description %}Generate secure cryptographic hashes (SHA-256, SHA-512, MD5) from any text input using the Web Crypto API.{% endblock %}
+
+{% block meta_keywords %}hash generator, md5, sha256, sha512, cryptographic hash, web crypto api, data integrity{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #007bff; /* Primary blue for a reliable, technical theme */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #f8f9fa; /* Light background for input area */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #ced4da; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #343a40;
+    }
+
+    .input-textarea {
+        min-height: 100px;
+        resize: vertical;
+        font-family: monospace;
+        font-size: 1rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+    
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+        background-color: #ffffff;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .result-list-group .algorithm-name {
+        font-weight: 600;
+        color: #007bff;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        align-items: center;
+    }
+    
+    .result-list-group .hash-value {
+        font-family: monospace;
+        font-size: 0.95rem;
+        color: #343a40;
+        word-break: break-all;
+        width: 100%;
+        background-color: #f8f9fa;
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px dashed #ced4da;
+    }
+    
+    .deprecated-label {
+        font-size: 0.75rem;
+        background-color: #dc3545;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: normal;
+    }
+    
+    .copy-button {
+        background-color: #28a745;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: background-color 0.2s;
+    }
+    .copy-button:hover {
+        background-color: #1e7e34;
+    }
+
+    .action-button {
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .action-button:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🔑 Hash Generator Tool</h1>
+    <p class="small-muted">Generate one-way cryptographic hashes for data integrity checks and security applications. </p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Data</h5>
+
+        <div class="input-group-custom">
+            <label for="inputValue">Enter Text to Hash</label>
+            <textarea class="form-control input-textarea" id="inputValue" placeholder="Type or paste your data here. The hash changes instantly as you type." rows="4" autofocus>Hello World</textarea>
+            <p class="small-muted mt-2">Note: Even a single character change results in a completely different hash.</p>
+        </div>
+
+        <h5 class="section-title mt-4">Step 2: Generated Hashes</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Hashes will appear here automatically.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Security Note:** MD5 and SHA-1 are cryptographically broken and should only be used for integrity checks or legacy systems, not for password storage or security-sensitive authentication. Use SHA-256 or SHA-512 for modern security applications.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- HASH ALGORITHMS ---
+    // The Web Crypto API uses specific string identifiers.
+    const ALGORITHMS = [
+        { name: 'SHA-256', apiName: 'SHA-256', deprecated: false },
+        { name: 'SHA-512', apiName: 'SHA-512', deprecated: false },
+        { name: 'SHA-1', apiName: 'SHA-1', deprecated: true },
+        // MD5 is not officially supported by the Web Crypto API due to security concerns, 
+        // but we'll include it with a warning as a common hash for comparison. 
+        // Note: For actual MD5 generation, external libraries are usually required, 
+        // but for this implementation, we will focus on standard Web Crypto API algorithms.
+        // We will include a placeholder/warning for MD5.
+        // { name: 'MD5', apiName: 'MD5', deprecated: true } 
+    ];
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const resultsList = document.getElementById('resultsList');
+    
+    /**
+     * Converts an ArrayBuffer to a hexadecimal string.
+     * @param {ArrayBuffer} buffer - The buffer containing the hash bytes.
+     * @returns {string} The hexadecimal hash string.
+     */
+    function bufferToHex(buffer) {
+        return Array.from(new Uint8Array(buffer))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+    }
+    
+    /**
+     * Generates a hash for a given message and algorithm using Web Crypto API.
+     * @param {string} message - The input string.
+     * @param {string} algorithm - The crypto algorithm name (e.g., 'SHA-256').
+     * @returns {Promise<string>} The hexadecimal hash string.
+     */
+    async function generateHash(message, algorithm) {
+        if (typeof window.crypto === 'undefined' || typeof window.crypto.subtle === 'undefined') {
+            console.error("Web Crypto API is not available in this environment.");
+            return `Error: Crypto API not supported.`;
+        }
+        
+        // Encode the string into a buffer of bytes
+        const msgBuffer = new TextEncoder().encode(message);
+
+        try {
+            // Generate the hash
+            const hashBuffer = await crypto.subtle.digest(algorithm, msgBuffer);
+            
+            // Convert the buffer to a hex string
+            return bufferToHex(hashBuffer);
+            
+        } catch (error) {
+            console.error(`Error generating hash for ${algorithm}:`, error);
+            return `Error: Algorithm ${algorithm} failed.`;
+        }
+    }
+
+    /**
+     * Copies the hash value to the clipboard.
+     * @param {string} hashValue - The hash string to copy.
+     * @param {HTMLElement} copyButtonEl - The button element that was clicked.
+     */
+    function copyHash(hashValue, copyButtonEl) {
+         // Fallback to execCommand for compatibility
+        const tempInput = document.createElement('textarea');
+        tempInput.value = hashValue;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        
+        // Provide visual feedback
+        const originalText = copyButtonEl.textContent;
+        copyButtonEl.textContent = 'Copied!';
+        setTimeout(() => {
+            copyButtonEl.textContent = originalText;
+        }, 1000);
+    }
+
+    /**
+     * Renders a single hash result item.
+     * @param {Object} algo - Algorithm object.
+     * @param {string} hash - The generated hash value.
+     */
+    function renderHashItem(algo, hash) {
+        const li = document.createElement('div');
+        li.classList.add('list-group-item');
+        
+        const deprecatedHtml = algo.deprecated ? '<span class="deprecated-label">DEPRECATED</span>' : '';
+
+        li.innerHTML = `
+            <div class="algorithm-name">
+                <span>${algo.name} ${deprecatedHtml}</span>
+                <button class="copy-button">Copy</button>
+            </div>
+            <div class="hash-value">${hash}</div>
+        `;
+
+        const copyButtonEl = li.querySelector('.copy-button');
+        copyButtonEl.addEventListener('click', () => copyHash(hash, copyButtonEl));
+
+        resultsList.appendChild(li);
+    }
+
+    /**
+     * Main function to run all hash generations and update the UI.
+     */
+    async function runAllHashes() {
+        resultsList.innerHTML = '';
+        const inputMessage = inputValue.value;
+        
+        if (!inputMessage.length) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter some text to generate hashes.</div>`;
+            return;
+        }
+
+        // Handle MD5 separately as it's not in the standard Web Crypto API
+        const md5Placeholder = document.createElement('div');
+        md5Placeholder.classList.add('list-group-item');
+        md5Placeholder.innerHTML = `
+            <div class="algorithm-name">
+                <span>MD5 <span class="deprecated-label">DEPRECATED (External Lib Required)</span></span>
+            </div>
+            <div class="hash-value">Not supported via standard Web Crypto API. Use SHA-256/512 for security.</div>
+        `;
+        resultsList.appendChild(md5Placeholder);
+
+        // Generate and display hashes for supported algorithms
+        for (const algo of ALGORITHMS) {
+            const hash = await generateHash(inputMessage, algo.apiName);
+            renderHashItem(algo, hash);
+        }
+    }
+
+    // --- Initialization ---
+    window.onload = function() {
+        // Debounce the input to avoid excessive computation while typing
+        let timeout = null;
+        inputValue.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(runAllHashes, 200); // Wait 200ms after last keystroke
+        });
+        
+        // Run initial hash generation on load
+        runAllHashes();
+    };
+
+</script>
+{% endblock %}

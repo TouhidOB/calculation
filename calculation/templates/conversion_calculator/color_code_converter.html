@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Color Code Converter (HEX, RGB, CMYK){% endblock %}
+
+{% block meta_description %}Convert color codes instantly between Hexadecimal, RGB, and CMYK models using standard formulas.{% endblock %}
+
+{% block meta_keywords %}color code converter, hex to rgb, rgb to cmyk, hex, rgb, cmyk, color models, graphic design tool{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #1abc9c; /* Teal/cyan theme for colors */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #fcfcfc;
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #c8d8e1; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #34495e;
+    }
+
+    .input-field {
+        font-family: monospace;
+        font-size: 1.1rem;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+    
+    /* Input Specific Styles */
+    #hexInput {
+        text-transform: uppercase;
+    }
+    #colorPreview {
+        width: 100%;
+        height: 50px;
+        border-radius: 6px;
+        border: 1px solid #34495e;
+        transition: background-color 0.2s;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .color-model-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .color-value {
+        font-family: monospace;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #1abc9c;
+        word-break: break-all;
+        width: 100%;
+        background-color: #ecf0f1;
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #bdc3c7;
+    }
+    
+    .conversion-button {
+        background-color: #1abc9c;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #17a990;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🎨 Color Code Converter</h1>
+    <p class="small-muted">Convert between **HEX** (Web/Digital), **RGB** (Screen/Additive), and **CMYK** (Print/Subtractive) color models. [Image of RGB and CMYK Color Wheels]</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input HEX Code</h5>
+
+        <div class="input-group-custom">
+            <label for="hexInput">Enter HEX Code (e.g., #1abc9c)</label>
+            <input type="text" class="form-control input-field" id="hexInput" placeholder="#RRGGBB" value="#1abc9c" maxlength="7" autofocus>
+            
+            <div class="mt-3">
+                <label>Live Color Preview</label>
+                <div id="colorPreview" style="background-color: #1abc9c;"></div>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" onclick="convertColor()">
+            Convert
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Converted Values</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted codes will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**CMYK Note:** CMYK conversion is based on the subtractive model and is an approximation for standard RGB displays. Professional printing requires calibration.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- DOM Elements ---
+    const hexInput = document.getElementById('hexInput');
+    const colorPreview = document.getElementById('colorPreview');
+    const resultsList = document.getElementById('resultsList');
+    
+    const HEX_REGEX = /^#?([a-fA-F0-9]{6})$/;
+
+    // --- CONVERSION LOGIC ---
+
+
+    function hexToRgb(hex) {
+        const match = hex.match(HEX_REGEX);
+        if (!match) return null;
+
+        const value = match[1];
+        const r = parseInt(value.substring(0, 2), 16);
+        const g = parseInt(value.substring(2, 4), 16);
+        const b = parseInt(value.substring(4, 6), 16);
+        
+        return { r, g, b };
+    }
+
+
+    function rgbToCmyk(r, g, b) {
+        // Convert R, G, B to R', G', B' (0-1 range)
+        const R_prime = r / 255;
+        const G_prime = g / 255;
+        const B_prime = b / 255;
+
+        // Calculate K (Black key)
+        const K = 1 - Math.max(R_prime, G_prime, B_prime);
+
+        // If K=1, then the color is black (C, M, Y are 0)
+        if (K === 1) {
+            return { c: 0, m: 0, y: 0, k: 100 };
+        }
+
+        // Calculate C, M, Y
+        const C = (1 - R_prime - K) / (1 - K);
+        const M = (1 - G_prime - K) / (1 - K);
+        const Y = (1 - B_prime - K) / (1 - K);
+
+        // Convert to percentage (0-100) and round
+        return {
+            c: Math.round(C * 100),
+            m: Math.round(M * 100),
+            y: Math.round(Y * 100),
+            k: Math.round(K * 100)
+        };
+    }
+
+    /**
+     * Main function to handle input and conversion.
+     */
+    function convertColor() {
+        resultsList.innerHTML = '';
+        const hex = hexInput.value.trim().toUpperCase();
+
+        const rgb = hexToRgb(hex);
+
+        if (!rgb) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Invalid HEX code entered. Format must be #RRGGBB.</div>`;
+            colorPreview.style.backgroundColor = 'transparent';
+            return;
+        }
+
+        // --- Conversion 2: RGB to CMYK ---
+        const cmyk = rgbToCmyk(rgb.r, rgb.g, rgb.b);
+
+        // --- Update Preview ---
+        const cleanHex = `#${hex.replace('#', '')}`;
+        colorPreview.style.backgroundColor = cleanHex;
+
+        // --- Output Formatting ---
+        
+        // 1. HEX Output
+        renderResult('Hexadecimal', cleanHex, 'HEX');
+
+        // 2. RGB Output
+        const rgbString = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+        renderResult('RGB', rgbString, 'RGB');
+        
+        // 3. CMYK Output
+        const cmykString = `cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`;
+        renderResult('CMYK', cmykString, 'CMYK');
+    }
+    
+
+    function renderResult(name, value) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.innerHTML = `
+            <div class="color-model-name">${name}</div>
+            <div class="color-value">${value}</div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates and preview
+        hexInput.addEventListener('input', () => {
+            const hex = hexInput.value.trim().toUpperCase();
+            const rgb = hexToRgb(hex);
+            
+            if (rgb) {
+                // Update live preview instantly
+                colorPreview.style.backgroundColor = `#${hex.replace('#', '')}`;
+            } else {
+                colorPreview.style.backgroundColor = 'transparent';
+            }
+        });
+        
+        // Use 'change' event to trigger full conversion (or click button)
+        hexInput.addEventListener('change', convertColor);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertColor(); // Run initial conversion on load
+    };
+
+</script>
+{% endblock %}

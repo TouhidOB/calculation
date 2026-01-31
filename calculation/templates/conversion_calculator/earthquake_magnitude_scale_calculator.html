@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}Earthquake Magnitude Scale Converter (M to Energy){% endblock %}
+
+{% block meta_description %}Convert earthquake magnitude (Richter/Moment) to seismic energy released in Joules and Tons of TNT. Compare relative energy of two quakes.{% endblock %}
+
+{% block meta_keywords %}earthquake magnitude, Richter scale, Moment magnitude, energy released, seismic energy, Joules, TNT, scale conversion{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #b71c1c; /* Deep Red/Maroon Theme for Severity */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #ffebee; /* Very light red background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #b71c1c; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #c62828;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #b71c1c;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white; 
+        word-break: break-all;
+        width: 100%;
+        background-color: #c62828;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #b71c1c;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #c62828;
+    }
+
+    .hidden-input {
+        display: none;
+    }
+    
+    .comparison-container {
+        display: flex;
+        gap: 15px;
+    }
+    .comparison-container input {
+        width: 50%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🌍 Earthquake Magnitude Converter</h1>
+    <p class="small-muted">Relate Magnitude ($\mathbf{M}$) to Seismic Energy ($\mathbf{E}$) using the Gutenberg-Richter formula: $\log_{10} E = 1.5 M + 4.8$.</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Choose Calculation Type</h5>
+
+        <div class="input-group-custom">
+            <label for="calculationMode">What do you want to calculate?</label>
+            <select id="calculationMode" class="form-select input-field" onchange="toggleInputs()">
+                <option value="energy">Energy Released (Joules/TNT) from Magnitude</option>
+                <option value="magnitude">Magnitude ($\mathbf{M}$) from Energy (Joules)</option>
+                <option value="compare">Energy Comparison of Two Magnitudes</option>
+            </select>
+        </div>
+
+        <h5 class="section-title" id="inputSectionTitle">Step 2: Enter Known Values</h5>
+        
+        <div class="input-group-custom">
+            
+            <!-- Magnitude Input -->
+            <div id="magnitudeInputGroup">
+                <label for="magnitudeValue">Earthquake Magnitude ($\mathbf{M}$)</label>
+                <input type="number" class="form-control input-field" id="magnitudeValue" placeholder="e.g., 7.5" value="7.5" min="0" step="0.1">
+                <p class="small-muted mt-1">Typically between $2.0$ (minor) and $9.5$ (greatest recorded).</p>
+            </div>
+
+            <!-- Energy Input -->
+            <div id="energyInputGroup" class="mt-3 hidden-input">
+                <label for="energyValue">Seismic Energy Released (in Joules)</label>
+                <input type="number" class="form-control input-field" id="energyValue" placeholder="e.g., 100000000000000" value="100000000000000" min="1" step="any">
+                <p class="small-muted mt-1">Use scientific notation for large numbers (e.g., 1e15).</p>
+            </div>
+            
+            <!-- Comparison Input -->
+            <div id="comparisonInputGroup" class="mt-3 hidden-input">
+                <label>Two Magnitudes to Compare ($\mathbf{M_A}$ vs. $\mathbf{M_B}$)</label>
+                <div class="comparison-container">
+                    <input type="number" class="form-control input-field" id="magA" placeholder="Magnitude A (e.g., 6.0)" value="6.0" min="0" step="0.1">
+                    <input type="number" class="form-control input-field" id="magB" placeholder="Magnitude B (e.g., 7.0)" value="7.0" min="0" step="0.1">
+                </div>
+                <p class="small-muted mt-1">A difference of $1.0$ is a $32\text{x}$ difference in energy.</p>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" onclick="calculateEarthquakeScale()">
+            Calculate Result
+        </button>
+
+        <h5 class="section-title mt-4">Step 3: Calculated Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Calculated results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**TNT Equivalence:** The energy conversion uses the convention that 1 Ton of TNT releases $4.184 \times 10^9 \text{ Joules}$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    // Conversion factor for Joules to Tons of TNT
+    const JOULES_PER_TON_TNT = 4.184e9;
+    // Base constant for the Gutenberg-Richter formula: log10(E) = 1.5 * M + C
+    const GR_CONSTANT = 4.8;
+
+    // --- DOM Elements ---
+    const calculationMode = document.getElementById('calculationMode');
+    const magnitudeInputGroup = document.getElementById('magnitudeInputGroup');
+    const energyInputGroup = document.getElementById('energyInputGroup');
+    const comparisonInputGroup = document.getElementById('comparisonInputGroup');
+    
+    const magnitudeValue = document.getElementById('magnitudeValue');
+    const energyValue = document.getElementById('energyValue');
+    const magA = document.getElementById('magA');
+    const magB = document.getElementById('magB');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Toggles visibility of input groups based on the selected calculation mode.
+     */
+    function toggleInputs() {
+        const mode = calculationMode.value;
+
+        // Reset visibility
+        magnitudeInputGroup.classList.add('hidden-input');
+        energyInputGroup.classList.add('hidden-input');
+        comparisonInputGroup.classList.add('hidden-input');
+
+        if (mode === 'energy') {
+            magnitudeInputGroup.classList.remove('hidden-input');
+        } else if (mode === 'magnitude') {
+            energyInputGroup.classList.remove('hidden-input');
+        } else if (mode === 'compare') {
+            comparisonInputGroup.classList.remove('hidden-input');
+        }
+
+        calculateEarthquakeScale(); // Recalculate immediately
+    }
+
+    /**
+     * Calculates Energy (Joules) from Magnitude (M).
+     * E = 10^(1.5 * M + 4.8)
+     * @param {number} M - Magnitude value.
+     * @returns {number} Energy in Joules.
+     */
+    function magnitudeToEnergy(M) {
+        return Math.pow(10, 1.5 * M + GR_CONSTANT);
+    }
+    
+    /**
+     * Calculates Magnitude (M) from Energy (Joules).
+     * M = (log10(E) - 4.8) / 1.5
+     * @param {number} E - Energy in Joules.
+     * @returns {number} Magnitude value.
+     */
+    function energyToMagnitude(E) {
+        return (Math.log10(E) - GR_CONSTANT) / 1.5;
+    }
+
+    /**
+     * Formats a large number into scientific notation string.
+     * @param {number} num - The number to format.
+     * @returns {string} Formatted number string.
+     */
+    function formatScientific(num) {
+        if (Math.abs(num) >= 1e15 || Math.abs(num) < 1e-3) {
+            return num.toExponential(3);
+        }
+        return num.toLocaleString(undefined, { maximumFractionDigits: 3 });
+    }
+
+    /**
+     * Renders a single result item.
+     */
+    function renderResult(name, value, unit, isMainResult) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        
+        let borderColor = isMainResult ? '#b71c1c' : '#e57373';
+        let backgroundColor = isMainResult ? '#c62828' : '#ffebee';
+        let valueColor = isMainResult ? 'white' : '#c62828';
+        let nameColor = isMainResult ? 'white' : '#455a64';
+        let unitColor = isMainResult ? '#ffcdd2' : '#c62828';
+
+        item.style.borderLeftColor = borderColor;
+
+        let displayValue = (typeof value === 'number') ? formatScientific(value) : value;
+        if (unit === 'M') displayValue = parseFloat(value).toFixed(2);
+
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${nameColor};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor};">
+                ${displayValue} <span style="font-size: 0.7em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+
+    /**
+     * Performs the main calculation based on the selected mode.
+     */
+    function calculateEarthquakeScale() {
+        resultsList.innerHTML = '';
+        const mode = calculationMode.value;
+        let errors = [];
+
+        if (mode === 'energy') {
+            // --- Mode 1: Magnitude to Energy ---
+            const M = parseFloat(magnitudeValue.value);
+            if (isNaN(M) || M < 0) errors.push("Please enter a valid, non-negative Magnitude (M).");
+            
+            if (errors.length === 0) {
+                const energyJ = magnitudeToEnergy(M);
+                const energyTNT = energyJ / JOULES_PER_TON_TNT;
+
+                renderResult('Input Magnitude', M, 'M', false);
+                renderResult('Energy Released (Joules)', energyJ, 'J', true);
+                renderResult('TNT Equivalent (Kiloton)', energyTNT / 1000, 'kT', false);
+                renderResult('TNT Equivalent (Megaton)', energyTNT / 1000000, 'MT', false);
+            }
+        } else if (mode === 'magnitude') {
+            // --- Mode 2: Energy to Magnitude ---
+            const E = parseFloat(energyValue.value);
+            if (isNaN(E) || E <= 0) errors.push("Please enter a valid, positive Energy (Joules).");
+            
+            if (errors.length === 0) {
+                const M = energyToMagnitude(E);
+                const energyTNT = E / JOULES_PER_TON_TNT;
+                
+                renderResult('Input Energy', E, 'J', false);
+                renderResult('Calculated Magnitude', M.toFixed(2), 'M', true);
+                renderResult('TNT Equivalent', energyTNT, 'tons', false);
+            }
+
+        } else if (mode === 'compare') {
+            // --- Mode 3: Comparison ---
+            const MA = parseFloat(magA.value);
+            const MB = parseFloat(magB.value);
+
+            if (isNaN(MA) || MA < 0) errors.push("Please enter a valid Magnitude A (M_A).");
+            if (isNaN(MB) || MB < 0) errors.push("Please enter a valid Magnitude B (M_B).");
+            
+            if (errors.length === 0) {
+                const ratio = Math.pow(10, 1.5 * (MB - MA));
+                const energyA = magnitudeToEnergy(MA);
+                const energyB = magnitudeToEnergy(MB);
+
+                renderResult('Magnitude A', MA, 'M', false);
+                renderResult('Magnitude B', MB, 'M', false);
+                
+                renderResult('Energy Ratio (B/A)', ratio.toFixed(2), 'times', true);
+                renderResult('Ratio (A/B)', (1/ratio).toFixed(3), 'times', false);
+
+                renderResult('Energy A (Joules)', energyA, 'J', false);
+                renderResult('Energy B (Joules)', energyB, 'J', false);
+            }
+        }
+        
+        if (errors.length > 0) {
+            resultsList.innerHTML = errors.map(err => `<div class="alert alert-danger">${err}</div>`).join('');
+        }
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Attach listeners to all relevant inputs
+        document.querySelectorAll('.input-field').forEach(input => {
+            input.addEventListener('input', calculateEarthquakeScale);
+            input.addEventListener('change', calculateEarthquakeScale); 
+        });
+        
+        // Initial setup
+        toggleInputs(); 
+    }
+
+    window.onload = function() {
+        setupListeners();
+    };
+
+</script>
+{% endblock %}

@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Volume Converter (Liters, Gallons, Cups, Milliliters){% endblock %}
+
+{% block meta_description %}Convert liquid and dry volume instantly between Liters, Gallons (US/Imperial), Cups, Milliliters, and Fluid Ounces.{% endblock %}
+
+{% block meta_keywords %}volume converter, liquid capacity, gallons to liters, cups to ml, fluid ounces, metric volume, imperial volume{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        background: #f8f9fa; 
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .conversion-input-group .form-control {
+        font-size: 1.25rem;
+        height: auto;
+        padding: 10px;
+        border-right: none;
+        box-shadow: none; 
+    }
+    
+    .conversion-input-group .input-group-text {
+        background: #e9ecef;
+        font-weight: bold;
+        padding: 10px 15px;
+        cursor: pointer; 
+    }
+    
+    .conversion-input-group .dropdown-toggle {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #ffc107; /* Orange/Yellow for focus */
+    }
+    
+    .highlight-item {
+        border-left-color: #ffc107 !important; 
+        background-color: #fff9e6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">💧 Volume Converter</h1>
+    <p class="small-muted">Convert between **Metric and Imperial** volume units, essential for cooking, baking, and engineering. Results update in **real-time**.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Value and Unit</h5>
+
+        <div class="conversion-input-group">
+            <!-- The main input field for the value -->
+            <input type="number" class="form-control" id="inputValue" placeholder="Enter volume value..." min="0" step="any" autofocus>
+
+            <!-- Dropdown for selecting the input unit -->
+            <div class="input-group-append">
+                <button class="btn btn-warning dropdown-toggle" type="button" id="unitDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Unit
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="unitDropdown">
+                    <li><a class="dropdown-item" href="#" data-unit="L">Liters (L)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="ml">Milliliters (ml)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="us_gal">US Gallons (gal)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="imp_gal">Imperial Gallons (gal)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="us_cup">US Cups</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="us_fl_oz">US Fluid Ounces (fl oz)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="m3">Cubic Meters ($m^3$)</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <h5 class="section-title mt-4">Step 2: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <!-- Results will be dynamically inserted here -->
+            <div class="alert alert-info" id="initialMessage">Enter a number and select a unit to see conversions.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Standard Definitions Used:** Conversions use the standard definitions: $1 \text{ US gallon} = 3.78541 \text{ liters}$ and $1 \text{ Imperial gallon} = 4.54609 \text{ liters}$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Base unit: Liters (L)
+    const UNIT_FACTORS = {
+        'L': { name: 'Liters', factor: 1, abbr: 'L' },
+        'ml': { name: 'Milliliters', factor: 0.001, abbr: 'ml' },
+        'm3': { name: 'Cubic Meters', factor: 1000, abbr: 'm³' },
+        
+        // Imperial/US Units (factors defined in Liters)
+        'us_gal': { name: 'US Gallons', factor: 3.785411784, abbr: 'gal (US)' }, 
+        'imp_gal': { name: 'Imperial Gallons', factor: 4.54609, abbr: 'gal (Imp)' },
+        
+        // Note: US Cup is 1/16th of a US Gallon, or 236.5882365 ml
+        'us_cup': { name: 'US Cups', factor: 0.2365882365, abbr: 'cup' }, 
+        
+        // Note: US Fluid Ounce is 1/128th of a US Gallon, or 29.5735295625 ml
+        'us_fl_oz': { name: 'US Fluid Ounces', factor: 0.0295735295625, abbr: 'fl oz' } 
+    };
+
+    let activeUnit = 'L'; // Default unit
+    const inputField = document.getElementById('inputValue');
+    const unitDropdown = document.getElementById('unitDropdown');
+    const resultsList = document.getElementById('resultsList');
+    const initialMessage = document.getElementById('initialMessage');
+    
+    // Function to update the dropdown button text
+    function updateDropdownButton(unitKey) {
+        const { name, abbr } = UNIT_FACTORS[unitKey];
+        unitDropdown.textContent = `${name} (${abbr})`;
+    }
+
+    // Function to perform the conversion and update the UI
+    function convertVolume() {
+        const inputValue = parseFloat(inputField.value);
+
+        // Clear previous results
+        resultsList.innerHTML = '';
+        initialMessage.style.display = 'none';
+
+        if (isNaN(inputValue) || inputValue < 0) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a valid, non-negative number.</div>`;
+            return;
+        }
+
+        const fromFactor = UNIT_FACTORS[activeUnit].factor;
+        
+        // 1. Convert the input value to the Base Unit (Liters)
+        const baseValueLiters = inputValue * fromFactor;
+        
+        // 2. Calculate and display all conversions
+        const allUnits = Object.keys(UNIT_FACTORS);
+
+        allUnits.forEach(toUnitKey => {
+            const { name, abbr, factor: toFactor } = UNIT_FACTORS[toUnitKey];
+            
+            // Convert from Base Unit (Liters) to the Target Unit
+            const convertedValue = baseValueLiters / toFactor;
+            
+            const li = document.createElement('div');
+            li.classList.add('list-group-item');
+            
+            // Highlight the active input unit
+            if (activeUnit === toUnitKey) {
+                li.classList.add('highlight-item');
+            }
+
+            li.innerHTML = `
+                <span class="unit-name">${name} (${abbr})</span>
+                <span class="unit-value">${convertedValue.toFixed(4)}</span>
+            `;
+            
+            resultsList.appendChild(li);
+        });
+    }
+
+    // Event listener for input changes (real-time conversion)
+    inputField.addEventListener('input', convertVolume);
+
+    // Event listener for dropdown unit selection
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newUnit = this.getAttribute('data-unit');
+            activeUnit = newUnit;
+            updateDropdownButton(activeUnit);
+            convertVolume(); // Recalculate with the new unit
+        });
+    });
+
+    // Initial setup: Set default unit and prompt user
+    updateDropdownButton(activeUnit);
+    resultsList.appendChild(initialMessage);
+
+</script>
+{% endblock %}

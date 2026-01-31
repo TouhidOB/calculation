@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Typography Unit Converter (pt, px, em){% endblock %}
+
+{% block meta_description %}Convert typography units instantly: Points (pt) to Pixels (px), and Ems (em) to Pixels (px) using a custom base font size.{% endblock %}
+
+{% block meta_keywords %}typography converter, points, pixels, ems, pt, px, em, web design, CSS units, font size converter{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #009688; /* Teal Theme for design/typography */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #e0f2f1; /* Light teal background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #009688; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #00695c;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #009688;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #fdd835; /* Yellow/Amber contrast */
+        word-break: break-all;
+        width: 100%;
+        background-color: #00695c;
+        padding: 10px;
+        border-radius: 4px;
+        color: white;
+    }
+    
+    .conversion-button {
+        background-color: #009688;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #00695c;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">📐 Typography Converter</h1>
+    <p class="small-muted">Convert font and layout sizes between **Points ($\text{pt}$)**, **Pixels ($\text{px}$)**, and **Ems ($\text{em}$)**.</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Set Base Size (Crucial for $\text{em}$ conversion)</h5>
+
+        <div class="input-group-custom">
+            <label for="baseFontSize">Base Font Size (in Pixels, $\text{px}$)</label>
+            <input type="number" class="form-control input-field" id="baseFontSize" placeholder="Typically 16" value="16" min="1" step="1" required>
+            <p class="small-muted mt-2">This is usually the default browser size (e.g., $16\text{px}$) or the root element size.</p>
+        </div>
+        
+        <h5 class="section-title">Step 2: Enter Value and Input Unit</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Value Input -->
+            <label for="inputValue">Value to Convert</label>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 12" value="12" min="0" step="any" autofocus>
+            
+            <!-- Unit Select -->
+            <div class="mt-3">
+                <label for="inputUnitSelect">Input Unit</label>
+                <select id="inputUnitSelect" class="form-select input-field">
+                    <option value="PX">Pixels ($\text{px}$)</option>
+                    <option value="PT">Points ($\text{pt}$)</option>
+                    <option value="EM">Ems ($\text{em}$)</option>
+                </select>
+            </div>
+            
+        </div>
+
+        <button class="btn conversion-button" onclick="convertTypography()">
+            Calculate Sizes
+        </button>
+
+        <h5 class="section-title mt-4">Step 3: Converted Results</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Point vs. Pixel:** The standard conversion is $1\text{pt} = 1/72$ of an inch, and $1\text{px} = 1/96$ of an inch (for web/CSS), meaning $1\text{pt} \approx 1.333\text{px}$. **Em:** The $\text{em}$ unit is relative; $1\text{em}$ equals the current font size, or the base font size if applied to top-level elements like $\text{html}$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    // Standard CSS/Web assumption: 1 point = 1.333... pixels (72/96 ratio)
+    const PT_TO_PX_FACTOR = 96 / 72; // 1.33333333
+    const PX_TO_PT_FACTOR = 72 / 96; // 0.75
+
+    // --- DOM Elements ---
+    const baseFontSize = document.getElementById('baseFontSize');
+    const inputValue = document.getElementById('inputValue');
+    const inputUnitSelect = document.getElementById('inputUnitSelect');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Converts the typography value from the input unit to all other units.
+     */
+    function convertTypography() {
+        resultsList.innerHTML = '';
+        const value = parseFloat(inputValue.value);
+        const basePx = parseFloat(baseFontSize.value);
+        const inputUnit = inputUnitSelect.value;
+        
+        if (isNaN(value) || value < 0) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid non-negative value for the conversion.</div>`;
+            return;
+        }
+        
+        if (isNaN(basePx) || basePx <= 0) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid, positive Base Font Size (e.g., 16).</div>`;
+            return;
+        }
+
+        let px = 0; // Base unit: Pixels
+
+        // Step 1: Normalize input to PX
+        if (inputUnit === 'PX') {
+            px = value;
+        } else if (inputUnit === 'PT') {
+            // pt to px: px = pt * (96/72)
+            px = value * PT_TO_PX_FACTOR;
+        } else if (inputUnit === 'EM') {
+            // em to px: px = em * basePx
+            px = value * basePx;
+        }
+        
+        // Step 2: Convert normalized PX to all target units
+        const pt = px * PX_TO_PT_FACTOR; // px to pt
+        const em = px / basePx; // px to em
+
+        // --- Render Results ---
+        
+        const units = [
+            { id: 'PX', name: 'Pixels (Web Standard)', symbol: 'px', value: px },
+            { id: 'PT', name: 'Points (Print Standard)', symbol: 'pt', value: pt },
+            { id: 'EM', name: 'Ems (Relative Unit)', symbol: 'em', value: em }
+        ];
+        
+        const inputUnitData = units.find(u => u.id === inputUnit);
+
+        // 1. Render input value (always first)
+        renderResult(`Input Value (${inputUnitData.name})`, value.toFixed(4), inputUnitData.symbol, '343a40', true);
+
+
+        // 2. Render converted values
+        units.filter(u => u.id !== inputUnit).forEach(unit => {
+            renderResult(`Converted to ${unit.name}`, unit.value.toFixed(4), unit.symbol, '009688', false);
+        });
+
+        // 3. Show Base Size Info
+        renderResult(`Base Size Used`, basePx.toFixed(0), 'px', '512da8', true);
+    }
+    
+    /**
+     * Renders a single result item.
+     * @param {string} name - The name of the result/unit.
+     * @param {string} value - The numerical value (string).
+     * @param {string} unit - The unit abbreviation.
+     * @param {string} borderColor - The color for the left border (HEX).
+     * @param {boolean} isInput - If true, styles the item as the input echo/info.
+     */
+    function renderResult(name, value, unit, borderColor, isInput) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        let valueColor = isInput ? '#343a40' : 'white';
+        let backgroundColor = isInput ? '#e0f2f1' : '#00695c';
+        let unitColor = isInput ? '#00695c' : '#fdd835';
+        let nameColor = isInput ? '#00695c' : '#e0f2f1';
+
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${nameColor};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor}; font-size: 1.3rem;">
+                ${value} <span style="font-size: 0.8em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change
+        inputValue.addEventListener('input', convertTypography);
+        inputUnitSelect.addEventListener('change', convertTypography);
+        // Base font size is critical, also listen to its changes
+        baseFontSize.addEventListener('input', convertTypography);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertTypography(); // Run initial conversion on load
+    };
+
+</script>
+{% endblock %}

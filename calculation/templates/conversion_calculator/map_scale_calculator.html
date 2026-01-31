@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}Map Scale Calculator (Map Distance, Ground Distance, Scale Factor){% endblock %}
+
+{% block meta_description %}Calculate map distance, ground distance, or the scale factor (1:X) using various metric units like cm, m, and km.{% endblock %}
+
+{% block meta_keywords %}map scale, ground distance, scale factor, map distance calculator, cartography, metric units{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #4caf50; /* Green Theme for Maps/Geography */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #e8f5e9; /* Light green background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #4caf50; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #388e3c;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Distance/Unit Combo Input Styling */
+    .distance-input-container {
+        display: flex;
+        gap: 10px;
+    }
+    .distance-input-container input {
+        flex-grow: 2;
+    }
+    .distance-input-container select {
+        flex-grow: 1;
+        max-width: 100px;
+    }
+
+    /* Ratio Input Styling */
+    .ratio-input-container {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .ratio-input-container input {
+        flex-grow: 1;
+        text-align: center;
+    }
+    .ratio-separator {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #388e3c;
+    }
+
+    /* Results Styling */
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #4caf50;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white; 
+        word-break: break-all;
+        width: 100%;
+        background-color: #388e3c;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #4caf50;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #388e3c;
+    }
+
+    .hidden-input {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🗺️ Map Scale Calculator</h1>
+    <p class="small-muted">Calculate **Map Distance**, **Ground Distance**, or the **Scale Factor** based on the relationship: $\text{Map Distance} = \text{Ground Distance} / \text{Scale}$.</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Choose Calculation Mode</h5>
+
+        <div class="input-group-custom">
+            <label for="calculationMode">What do you want to calculate?</label>
+            <select id="calculationMode" class="form-select input-field" onchange="toggleInputs()">
+                <option value="scale">Scale Factor (1:X)</option>
+                <option value="ground">Ground Distance</option>
+                <option value="map">Map Distance</option>
+            </select>
+        </div>
+
+        <h5 class="section-title" id="inputSectionTitle">Step 2: Enter Known Values</h5>
+        
+        <div class="input-group-custom">
+            
+            <!-- Map Distance Input -->
+            <div id="mapDistanceInputGroup">
+                <label for="mapDistanceValue">Map Distance</label>
+                <div class="distance-input-container">
+                    <input type="number" class="form-control input-field" id="mapDistanceValue" placeholder="e.g., 5" value="5" min="0.01" step="any">
+                    <select id="mapDistanceUnit" class="form-select input-field">
+                        <option value="mm">mm</option>
+                        <option value="cm" selected>cm</option>
+                        <option value="m">m</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Ground Distance Input -->
+            <div id="groundDistanceInputGroup" class="mt-3">
+                <label for="groundDistanceValue">Ground Distance</label>
+                <div class="distance-input-container">
+                    <input type="number" class="form-control input-field" id="groundDistanceValue" placeholder="e.g., 25" value="25" min="0.01" step="any">
+                    <select id="groundDistanceUnit" class="form-select input-field">
+                        <option value="m">m</option>
+                        <option value="km" selected>km</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Scale Factor Input -->
+            <div id="scaleFactorInputGroup" class="mt-3 hidden-input">
+                <label>Scale Factor (1:X)</label>
+                <div class="ratio-input-container">
+                    <input type="number" class="form-control input-field" id="scaleX" value="1" min="1" step="1" disabled>
+                    <span class="ratio-separator">:</span>
+                    <input type="number" class="form-control input-field" id="scaleY" placeholder="e.g., 50000" value="50000" min="1" step="1">
+                </div>
+                <p class="small-muted mt-1">Example: $\text{1}:50000$ means $1 \text{ unit}$ on the map is $50000 \text{ units}$ on the ground.</p>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" onclick="calculateScale()">
+            Calculate Result
+        </button>
+
+        <h5 class="section-title mt-4">Step 3: Calculated Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Calculated results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Note on Scale:** The Scale Factor is unitless (relative). For example, $\text{1}:50000$ means $1\text{ cm}$ on the map is $50000\text{ cm}$ on the ground ($500\text{ m}$ or $0.5\text{ km}$).</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    // Conversion factors to a base unit (meters for distance, unitless for scale)
+    const UNIT_FACTORS_TO_METER = {
+        'mm': 0.001,
+        'cm': 0.01,
+        'm': 1,
+        'km': 1000,
+    };
+
+    // Output units for easy reading
+    const OUTPUT_UNITS_GROUND = {
+        'm': 1,
+        'km': 1000
+    };
+    const OUTPUT_UNITS_MAP = {
+        'mm': 0.001,
+        'cm': 0.01
+    };
+
+
+    // --- DOM Elements ---
+    const calculationMode = document.getElementById('calculationMode');
+    const mapDistanceInputGroup = document.getElementById('mapDistanceInputGroup');
+    const groundDistanceInputGroup = document.getElementById('groundDistanceInputGroup');
+    const scaleFactorInputGroup = document.getElementById('scaleFactorInputGroup');
+    
+    const mapDistanceValue = document.getElementById('mapDistanceValue');
+    const mapDistanceUnit = document.getElementById('mapDistanceUnit');
+    const groundDistanceValue = document.getElementById('groundDistanceValue');
+    const groundDistanceUnit = document.getElementById('groundDistanceUnit');
+    const scaleY = document.getElementById('scaleY');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Toggles visibility of input groups based on the selected calculation mode.
+     */
+    function toggleInputs() {
+        const mode = calculationMode.value;
+
+        // Reset visibility
+        mapDistanceInputGroup.classList.remove('hidden-input');
+        groundDistanceInputGroup.classList.remove('hidden-input');
+        scaleFactorInputGroup.classList.remove('hidden-input');
+
+        // Hide the input we are calculating
+        if (mode === 'scale') {
+            scaleFactorInputGroup.classList.add('hidden-input');
+        } else if (mode === 'ground') {
+            groundDistanceInputGroup.classList.add('hidden-input');
+        } else if (mode === 'map') {
+            mapDistanceInputGroup.classList.add('hidden-input');
+        }
+
+        calculateScale(); // Recalculate immediately
+    }
+
+
+    function autoFormatDistance(meters, unitMap) {
+        if (meters >= 1000 && unitMap === OUTPUT_UNITS_GROUND) {
+            return { value: meters / 1000, unit: 'km' };
+        } 
+        if (meters < 1 && unitMap === OUTPUT_UNITS_MAP) {
+            // Check for cm
+            if (meters / 0.01 >= 1) { 
+                return { value: meters / 0.01, unit: 'cm' };
+            }
+            // Check for mm
+            if (meters / 0.001 >= 1) {
+                return { value: meters / 0.001, unit: 'mm' };
+            }
+        }
+        return { value: meters, unit: 'm' }; // Default to meters
+    }
+    
+    /**
+     * Renders a single result item.
+     */
+    function renderResult(name, value, unit, isMainResult) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        
+        let borderColor = isMainResult ? '#4caf50' : '#81c784';
+        let backgroundColor = isMainResult ? '#388e3c' : '#e8f5e9';
+        let valueColor = isMainResult ? 'white' : '#388e3c';
+        let nameColor = isMainResult ? 'white' : '#455a64';
+        let unitColor = isMainResult ? '#c8e6c9' : '#455a64';
+
+        item.style.borderLeftColor = borderColor;
+
+        let displayValue = (typeof value === 'number') ? value.toFixed(3) : value;
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${nameColor};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor};">
+                ${displayValue} <span style="font-size: 0.7em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+
+    /**
+     * Performs the main calculation based on the selected mode.
+     */
+    function calculateScale() {
+        resultsList.innerHTML = '';
+        const mode = calculationMode.value;
+
+        // Fetch inputs
+        const mapDistVal = parseFloat(mapDistanceValue.value);
+        const mapDistUnit = mapDistanceUnit.value;
+        const groundDistVal = parseFloat(groundDistanceValue.value);
+        const groundDistUnit = groundDistanceUnit.value;
+        const scaleFactorY = parseFloat(scaleY.value);
+
+        let errors = [];
+
+        // Normalize distance values to meters (the base unit)
+        const mapDistMeters = mapDistVal * (UNIT_FACTORS_TO_METER[mapDistUnit] || 0);
+        const groundDistMeters = groundDistVal * (UNIT_FACTORS_TO_METER[groundDistUnit] || 0);
+
+        // --- Validation ---
+        if (mode !== 'scale' && (isNaN(scaleFactorY) || scaleFactorY < 1)) errors.push("Please enter a valid, positive Scale Factor (Y).");
+        if (mode !== 'map' && (isNaN(mapDistVal) || mapDistVal <= 0)) errors.push("Please enter a valid, positive Map Distance.");
+        if (mode !== 'ground' && (isNaN(groundDistVal) || groundDistVal <= 0)) errors.push("Please enter a valid, positive Ground Distance.");
+        
+        if (errors.length > 0) {
+            resultsList.innerHTML = errors.map(err => `<div class="alert alert-danger">${err}</div>`).join('');
+            return;
+        }
+
+        let result = null;
+        
+        if (mode === 'scale') {
+            // --- Mode 1: Calculate Scale Factor (1:X) ---
+            // Scale Factor (unitless) = Ground Distance (e.g., in cm) / Map Distance (in the *same unit*, e.g., cm)
+            
+            // To ensure 1:X format, we normalize both to the map distance unit (cm is usually easiest)
+            // Scale X = Ground Distance (cm) / Map Distance (cm)
+            
+            const mapDistBase = mapDistVal * (UNIT_FACTORS_TO_METER[mapDistUnit] / UNIT_FACTORS_TO_METER['cm']); // Map distance in cm
+            const groundDistBase = groundDistMeters / UNIT_FACTORS_TO_METER['cm']; // Ground distance in cm
+
+            const scaleX = groundDistBase / mapDistBase;
+
+            if (scaleX < 1) {
+                 errors.push("Scale factor (X) must be 1 or greater. Check your inputs.");
+            } else {
+                 result = Math.round(scaleX); // Scale is typically rounded to nearest whole number
+            }
+
+            if (errors.length > 0) {
+                 resultsList.innerHTML = errors.map(err => `<div class="alert alert-danger">${err}</div>`).join('');
+                 return;
+            }
+
+            renderResult('Calculated Scale Factor', `1:${result.toLocaleString()}`, 'unitless', true);
+            renderResult('Input Map Distance', `${mapDistVal.toFixed(2)} ${mapDistUnit}`, '', false);
+            renderResult('Input Ground Distance', `${groundDistVal.toFixed(2)} ${groundDistUnit}`, '', false);
+
+        } else if (mode === 'ground') {
+            // --- Mode 2: Calculate Ground Distance ---
+            // Ground Distance (m) = Map Distance (m) * Scale Factor (X)
+            const groundDistM = mapDistMeters * scaleFactorY;
+
+            // Auto-format for display (m or km)
+            const formatted = autoFormatDistance(groundDistM, OUTPUT_UNITS_GROUND);
+
+            renderResult('Calculated Ground Distance', formatted.value, formatted.unit, true);
+            renderResult('Input Map Distance', `${mapDistVal.toFixed(2)} ${mapDistUnit}`, '', false);
+            renderResult('Input Scale Factor', `1:${scaleFactorY.toLocaleString()}`, '', false);
+
+        } else if (mode === 'map') {
+            // --- Mode 3: Calculate Map Distance ---
+            // Map Distance (m) = Ground Distance (m) / Scale Factor (X)
+            const mapDistM = groundDistMeters / scaleFactorY;
+
+            // Auto-format for display (mm or cm)
+            const formatted = autoFormatDistance(mapDistM, OUTPUT_UNITS_MAP);
+
+            renderResult('Calculated Map Distance', formatted.value, formatted.unit, true);
+            renderResult('Input Ground Distance', `${groundDistVal.toFixed(2)} ${groundDistUnit}`, '', false);
+            renderResult('Input Scale Factor', `1:${scaleFactorY.toLocaleString()}`, '', false);
+        }
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Attach listeners to all inputs that change the result
+        document.querySelectorAll('.input-field').forEach(input => {
+            input.addEventListener('input', calculateScale);
+            input.addEventListener('change', calculateScale); // For select elements
+        });
+        
+        // Initial setup
+        toggleInputs(); 
+    }
+
+    window.onload = function() {
+        setupListeners();
+    };
+
+</script>
+{% endblock %}

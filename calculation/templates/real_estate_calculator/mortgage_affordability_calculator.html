@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Mortgage Affordability Calculator{% endblock %}
+
+{% block meta_description %}Determine the maximum loan amount you can afford based on your desired monthly budget, interest rate, and loan term.{% endblock %}
+
+{% block meta_keywords %}mortgage affordability, maximum loan amount, monthly budget, PITI calculator, finance tools{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .result-display-box {
+        background-color: #eff6ff;
+        border: 2px solid #bfdbfe;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #1e40af;
+        line-height: 1;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .breakdown-item {
+        border-bottom: 1px dashed #cbd5e1;
+        padding: 0.75rem 0;
+    }
+
+    .breakdown-item:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-house-heart text-primary me-2"></i>Mortgage Affordability Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Calculate your purchasing power. Determine the maximum loan amount you can safely borrow based on your specific monthly payment goals.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-sliders me-2"></i>Financial Inputs</h5>
+                
+                <form id="affordability-form">
+                    <div class="mb-4">
+                        <label class="form-label text-primary">Monthly PITI Budget</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="budget-input" class="form-control" placeholder="e.g. 2500">
+                        </div>
+                        <small class="text-muted">Total target monthly payment.</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-4">
+                            <label class="form-label">Interest Rate</label>
+                            <div class="input-group">
+                                <input type="number" id="rate-input" class="form-control" placeholder="6.5" step="0.1">
+                                <span class="input-group-text bg-white">%</span>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4">
+                            <label class="form-label">Loan Term</label>
+                            <div class="input-group">
+                                <input type="number" id="term-input" class="form-control" placeholder="30">
+                                <span class="input-group-text bg-white">Yrs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Annual Property Taxes</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="taxes-input" class="form-control" placeholder="3600">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Annual Insurance</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="insurance-input" class="form-control" placeholder="1200">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">
+                        Calculate Borrowing Power
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white d-flex align-items-center">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-calculator display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Ready to Analyze</h4>
+                    <p>Provide your budget details to see your maximum affordable loan amount.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-primary opacity-75">Max Affordable Loan</span>
+                        <div class="result-value my-2" id="max-principal-display">$0</div>
+                        <p class="mb-0 text-dark fw-bold">Principal Amount</p>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart me-2"></i>Monthly Payment Breakdown</h6>
+                    <div class="bg-light p-3 rounded">
+                        <div class="d-flex justify-content-between breakdown-item">
+                            <span>Principal & Interest (P&I)</span>
+                            <span class="fw-bold text-primary" id="pi-breakdown">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between breakdown-item">
+                            <span>Taxes & Insurance (Escrow)</span>
+                            <span class="fw-bold text-secondary" id="ti-breakdown">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between breakdown-item border-0">
+                            <span class="fw-bold">Total Monthly PITI</span>
+                            <span class="fw-bold" id="total-breakdown">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center p-4">
+                    <div class="alert alert-danger rounded-4 py-4">
+                        <i class="bi bi-exclamation-triangle display-4 mb-3 d-block"></i>
+                        <h5 class="fw-bold" id="error-title">Budget Error</h5>
+                        <p class="mb-0" id="error-msg"></p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const form = document.getElementById('affordability-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    function formatCurrency(num, digits = 0) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits,
+        }).format(num);
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const budget = parseFloat(document.getElementById('budget-input').value);
+        const rate = parseFloat(document.getElementById('rate-input').value);
+        const term = parseFloat(document.getElementById('term-input').value);
+        const taxes = parseFloat(document.getElementById('taxes-input').value);
+        const insurance = parseFloat(document.getElementById('insurance-input').value);
+
+        // Reset views
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(budget) || isNaN(rate) || isNaN(term)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please provide your monthly budget, interest rate, and term.";
+            return;
+        }
+
+        const monthlyEscrow = (taxes + insurance) / 12 || 0;
+        const availablePI = budget - monthlyEscrow;
+
+        if (availablePI <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-title').innerText = "Taxes/Insurance Too High";
+            document.getElementById('error-msg').innerText = `Your monthly fixed costs ($${monthlyEscrow.toFixed(2)}) exceed your total budget.`;
+            return;
+        }
+
+        // Calculation
+        const i = (rate / 100) / 12;
+        const n = term * 12;
+        let principal = 0;
+
+        if (i === 0) {
+            principal = availablePI * n;
+        } else {
+            principal = availablePI * (Math.pow(1 + i, n) - 1) / (i * Math.pow(1 + i, n));
+        }
+
+        // Show Results
+        resultsUi.classList.remove('d-none');
+        document.getElementById('max-principal-display').textContent = formatCurrency(principal);
+        document.getElementById('pi-breakdown').textContent = formatCurrency(availablePI, 2);
+        document.getElementById('ti-breakdown').textContent = formatCurrency(monthlyEscrow, 2);
+        document.getElementById('total-breakdown').textContent = formatCurrency(budget, 2);
+    });
+</script>
+{% endblock %}

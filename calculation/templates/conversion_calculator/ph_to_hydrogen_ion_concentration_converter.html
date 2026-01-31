@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}pH to Hydrogen Ion Concentration Converter{% endblock %}
+
+{% block meta_description %}Convert between pH value and Hydrogen Ion Concentration ($[\text{H}^+]$ in Molarity) using the logarithmic scale.{% endblock %}
+
+{% block meta_keywords %}pH, hydrogen ion concentration, H+ concentration, molarity, chemistry calculator, acid, base, logarithmic scale{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #00897b; /* Teal/Cyan Theme for Chemistry/pH */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #e0f2f1; /* Light teal background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #00897b; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #004d40;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #00897b;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white; 
+        word-break: break-all;
+        width: 100%;
+        background-color: #00897b;
+        padding: 10px;
+        border-radius: 4px;
+    }
+
+    .conversion-button {
+        background-color: #00897b;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #004d40;
+    }
+
+    .hidden-input {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🧪 pH to Hydrogen Ion Concentration Converter</h1>
+    <p class="small-muted">Convert between **$\text{pH}$** and the **Hydrogen Ion Concentration** ($[\text{H}^+]$) in Molarity (M).</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Choose Calculation Mode</h5>
+
+        <div class="input-group-custom">
+            <label for="calculationMode">What do you want to calculate?</label>
+            <select id="calculationMode" class="form-select input-field" onchange="toggleInputs()">
+                <option value="concentration">Concentration ($[\text{H}^+]$) from $\text{pH}$</option>
+                <option value="ph">$\text{pH}$ from Concentration ($[\text{H}^+]$)</option>
+            </select>
+        </div>
+
+        <h5 class="section-title" id="inputSectionTitle">Step 2: Enter Known Value</h5>
+        
+        <div class="input-group-custom">
+            
+            <!-- pH Input -->
+            <div id="phInputGroup">
+                <label for="phValue">Input $\text{pH}$ Value</label>
+                <input type="number" class="form-control input-field" id="phValue" placeholder="e.g., 7.4" value="7.4" min="-2" step="0.01">
+                <p class="small-muted mt-1">Typical $\text{pH}$ scale ranges from $0$ to $14$.</p>
+            </div>
+
+            <!-- Concentration Input -->
+            <div id="concentrationInputGroup" class="mt-3 hidden-input">
+                <label for="concentrationValue">Input Hydrogen Ion Concentration ($[\text{H}^+]$)</label>
+                <input type="number" class="form-control input-field" id="concentrationValue" placeholder="e.g., 0.0000001" value="0.0000001" min="1e-20" step="any">
+                <p class="small-muted mt-1">Enter in decimal or scientific notation (e.g., $1\text{e-}7$).</p>
+            </div>
+        </div>
+
+        <button class="btn conversion-button" onclick="calculateConversion()">
+            Calculate Result
+        </button>
+
+        <h5 class="section-title mt-4">Step 3: Calculated Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Calculated results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Formulas Used:** $\text{pH} = - \log_{10} [\text{H}^+]$ and $[\text{H}^+] = 10^{-\text{pH}}$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- DOM Elements ---
+    const calculationMode = document.getElementById('calculationMode');
+    const phInputGroup = document.getElementById('phInputGroup');
+    const concentrationInputGroup = document.getElementById('concentrationInputGroup');
+    
+    const phValue = document.getElementById('phValue');
+    const concentrationValue = document.getElementById('concentrationValue');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Toggles visibility of input groups based on the selected calculation mode.
+     */
+    function toggleInputs() {
+        const mode = calculationMode.value;
+
+        // Reset visibility
+        phInputGroup.classList.add('hidden-input');
+        concentrationInputGroup.classList.add('hidden-input');
+
+        if (mode === 'concentration') {
+            phInputGroup.classList.remove('hidden-input');
+        } else if (mode === 'ph') {
+            concentrationInputGroup.classList.remove('hidden-input');
+        }
+
+        calculateConversion(); // Recalculate immediately
+    }
+
+    /**
+     * Formats a large or small number into scientific notation string for Molarity.
+     * @param {number} num - The concentration value.
+     * @returns {string} Formatted number string.
+     */
+    function formatScientific(num) {
+        if (num === 0) return "0";
+        // Use exponential notation for very large (>1000) or very small (<0.0001) numbers
+        if (Math.abs(num) >= 1000 || Math.abs(num) < 0.0001) {
+            return num.toExponential(4);
+        }
+        return num.toFixed(6).replace(/\.?0+$/, ''); // Remove trailing zeros
+    }
+
+    /**
+     * Renders a single result item.
+     */
+    function renderResult(name, value, unit, isMainResult) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        
+        let borderColor = isMainResult ? '#00897b' : '#4db6ac';
+        let backgroundColor = isMainResult ? '#00897b' : '#e0f2f1';
+        let valueColor = isMainResult ? 'white' : '#004d40';
+        let nameColor = isMainResult ? 'white' : '#455a64';
+        let unitColor = isMainResult ? '#b2dfdb' : '#004d40';
+
+        item.style.borderLeftColor = borderColor;
+
+        let displayValue = (typeof value === 'number' && unit === 'M') ? formatScientific(value) : value.toFixed(2);
+        if (unit === 'pH') displayValue = value.toFixed(3);
+
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${nameColor};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor};">
+                ${displayValue} <span style="font-size: 0.7em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+
+    /**
+     * Performs the main calculation based on the selected mode.
+     */
+    function calculateConversion() {
+        resultsList.innerHTML = '';
+        const mode = calculationMode.value;
+        let errors = [];
+
+        if (mode === 'concentration') {
+            // --- Mode 1: pH to Concentration ---
+            const pH = parseFloat(phValue.value);
+            
+            if (isNaN(pH)) errors.push("Please enter a valid $\text{pH}$ value.");
+            
+            if (errors.length === 0) {
+                // [H+] = 10^(-pH)
+                const concentration = Math.pow(10, -pH);
+
+                renderResult('Input $\text{pH}$ Value', pH, 'pH', false);
+                renderResult('Hydrogen Ion Concentration', concentration, 'M', true);
+            }
+        } else if (mode === 'ph') {
+            // --- Mode 2: Concentration to pH ---
+            const concentration = parseFloat(concentrationValue.value);
+
+            if (isNaN(concentration) || concentration <= 0) errors.push("Please enter a valid, positive Concentration ($[\text{H}^+]$).");
+            
+            if (errors.length === 0) {
+                // pH = -log10([H+])
+                const pH = -Math.log10(concentration);
+                
+                renderResult('Input Concentration', concentration, 'M', false);
+                renderResult('Calculated $\text{pH}$ Value', pH, 'pH', true);
+            }
+        }
+        
+        if (errors.length > 0) {
+            resultsList.innerHTML = errors.map(err => `<div class="alert alert-danger">${err}</div>`).join('');
+        }
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Attach listeners to all relevant inputs
+        document.querySelectorAll('#phValue, #concentrationValue, #calculationMode').forEach(input => {
+            input.addEventListener('input', calculateConversion);
+            input.addEventListener('change', calculateConversion); 
+        });
+        
+        // Initial setup
+        toggleInputs(); 
+    }
+
+    window.onload = function() {
+        setupListeners();
+    };
+
+</script>
+{% endblock %}

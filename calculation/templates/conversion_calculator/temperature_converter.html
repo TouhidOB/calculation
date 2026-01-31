@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Temperature Converter (Celsius, Fahrenheit, Kelvin){% endblock %}
+
+{% block meta_description %}Convert temperature instantly between Celsius ($^\circ C$), Fahrenheit ($^\circ F$), and Kelvin (K).{% endblock %}
+
+{% block meta_keywords %}temperature converter, celsius to fahrenheit, kelvin conversion, heat units, metric temperature{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        background: #f8f9fa; 
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .conversion-input-group .form-control {
+        font-size: 1.25rem;
+        height: auto;
+        padding: 10px;
+        border-right: none;
+        box-shadow: none; 
+    }
+    
+    .conversion-input-group .input-group-text {
+        background: #e9ecef;
+        font-weight: bold;
+        padding: 10px 15px;
+        cursor: pointer; 
+    }
+    
+    .conversion-input-group .dropdown-toggle {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #dc3545; /* Red for temperature theme */
+    }
+    
+    .highlight-item {
+        border-left-color: #dc3545 !important; 
+        background-color: #fcebeb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🌡️ Temperature Converter</h1>
+    <p class="small-muted">Convert between **Celsius ($^\circ C$), Fahrenheit ($^\circ F$), and Kelvin (K)**. Results update in **real-time**.</p>
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Value and Unit</h5>
+
+        <div class="conversion-input-group">
+            <!-- The main input field for the value -->
+            <input type="number" class="form-control" id="inputValue" placeholder="Enter temperature value..." step="any" autofocus>
+
+            <!-- Dropdown for selecting the input unit -->
+            <div class="input-group-append">
+                <button class="btn btn-danger dropdown-toggle" type="button" id="unitDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Unit
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="unitDropdown">
+                    <li><a class="dropdown-item" href="#" data-unit="celsius">Celsius ($^\circ C$)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="fahrenheit">Fahrenheit ($^\circ F$)</a></li>
+                    <li><a class="dropdown-item" href="#" data-unit="kelvin">Kelvin (K)</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <h5 class="section-title mt-4">Step 2: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <!-- Results will be dynamically inserted here -->
+            <div class="alert alert-info" id="initialMessage">Enter a number and select a unit to see conversions.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Note:** The Kelvin scale is an absolute thermodynamic scale, where $0 \text{ K}$ is absolute zero ($ -273.15 \text{ }^\circ C$).</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Define the units and their names/abbreviations
+    const UNITS = {
+        'celsius': { name: 'Celsius', abbr: '°C' },
+        'fahrenheit': { name: 'Fahrenheit', abbr: '°F' },
+        'kelvin': { name: 'Kelvin', abbr: 'K' }
+    };
+
+    let activeUnit = 'celsius'; // Default unit
+    const inputField = document.getElementById('inputValue');
+    const unitDropdown = document.getElementById('unitDropdown');
+    const resultsList = document.getElementById('resultsList');
+    const initialMessage = document.getElementById('initialMessage');
+    
+    // Function to update the dropdown button text
+    function updateDropdownButton(unitKey) {
+        const { name, abbr } = UNITS[unitKey];
+        unitDropdown.innerHTML = `${name} (${abbr})`;
+    }
+
+    /**
+     * Converts a temperature value from a source unit to a target unit.
+     * Conversion uses Celsius (°C) as the intermediary base.
+     */
+    function convertTemperature(value, fromUnit, toUnit) {
+        let celsiusValue;
+
+        // 1. Convert input value to Celsius (Base Unit)
+        if (fromUnit === 'celsius') {
+            celsiusValue = value;
+        } else if (fromUnit === 'fahrenheit') {
+            // C = (F - 32) * 5/9
+            celsiusValue = (value - 32) * (5 / 9);
+        } else if (fromUnit === 'kelvin') {
+            // C = K - 273.15
+            celsiusValue = value - 273.15;
+        } else {
+            return NaN;
+        }
+
+        // 2. Convert from Celsius to the target unit
+        if (toUnit === 'celsius') {
+            return celsiusValue;
+        } else if (toUnit === 'fahrenheit') {
+            // F = C * 9/5 + 32
+            return (celsiusValue * (9 / 5)) + 32;
+        } else if (toUnit === 'kelvin') {
+            // K = C + 273.15
+            return celsiusValue + 273.15;
+        } else {
+            return NaN;
+        }
+    }
+
+    // Function to handle UI updates and validation
+    function executeConversion() {
+        const inputValue = parseFloat(inputField.value);
+
+        // Clear previous results
+        resultsList.innerHTML = '';
+        initialMessage.style.display = 'none';
+
+        if (isNaN(inputValue)) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a valid number.</div>`;
+            return;
+        }
+
+        // Check for physical impossibility (below absolute zero: 0 K or -273.15 °C)
+        // Convert input to Kelvin to check.
+        const kelvinCheck = convertTemperature(inputValue, activeUnit, 'kelvin');
+        if (kelvinCheck < 0 && activeUnit !== 'kelvin') { // Kelvin must be 0 or above
+            resultsList.innerHTML = `<div class="alert alert-danger">Temperature cannot be below Absolute Zero (0 K).</div>`;
+            return;
+        }
+        if (activeUnit === 'kelvin' && inputValue < 0) {
+             resultsList.innerHTML = `<div class="alert alert-danger">Temperature cannot be below Absolute Zero (0 K).</div>`;
+            return;
+        }
+
+
+        // Calculate and display all conversions
+        const allUnits = Object.keys(UNITS);
+
+        allUnits.forEach(toUnitKey => {
+            const { name, abbr } = UNITS[toUnitKey];
+            
+            // Perform the conversion
+            const convertedValue = convertTemperature(inputValue, activeUnit, toUnitKey);
+            
+            const li = document.createElement('div');
+            li.classList.add('list-group-item');
+            
+            // Highlight the active input unit
+            if (activeUnit === toUnitKey) {
+                li.classList.add('highlight-item');
+            }
+
+            li.innerHTML = `
+                <span class="unit-name">${name} (${abbr})</span>
+                <span class="unit-value">${convertedValue.toFixed(2)} ${abbr}</span>
+            `;
+            
+            resultsList.appendChild(li);
+        });
+    }
+
+    // Event listener for input changes (real-time conversion)
+    inputField.addEventListener('input', executeConversion);
+
+    // Event listener for dropdown unit selection
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newUnit = this.getAttribute('data-unit');
+            activeUnit = newUnit;
+            updateDropdownButton(activeUnit);
+            executeConversion(); // Recalculate with the new unit
+        });
+    });
+
+    // Initial setup: Set default unit and prompt user
+    updateDropdownButton(activeUnit);
+    resultsList.appendChild(initialMessage);
+
+</script>
+{% endblock %}

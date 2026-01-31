@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Fuel Consumption Converter (MPG to L/100km){% endblock %}
+
+{% block meta_description %}Convert fuel economy between miles per gallon (US/Imperial) and liters per 100 kilometers (L/100km).{% endblock %}
+
+{% block meta_keywords %}fuel consumption, mpg to l/100km, miles per gallon, fuel economy, car metrics, conversion{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #343a40;
+    }
+    
+    /* Input Group Styling */
+    .conversion-input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        background: #fdfdf5; /* Off-white/cream for automotive theme */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #ffc107; /* Amber/yellow for fuel/warning */
+    }
+    
+    .conversion-input-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #ffc107;
+    }
+
+    .conversion-input-group input[type="number"],
+    .conversion-input-group select {
+        font-size: 1.1rem;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+    
+    /* Results List Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .result-list-group .list-group-item:hover {
+        background-color: #f1f3f5;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .result-list-group .unit-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #dc3545; /* Red theme for consumption warnings */
+    }
+    
+    .highlight-item {
+        border-left-color: #dc3545 !important; 
+        background-color: #fff8f8;
+    }
+    
+    .conversion-button {
+        background-color: #dc3545;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 20px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #c82333;
+    }
+
+    /* Clarification Box */
+    .clarification {
+        font-size: 0.85rem;
+        margin-top: 10px;
+        padding: 8px;
+        background-color: #ffe0e3;
+        border: 1px solid #dc3545;
+        border-radius: 4px;
+        color: #851820;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">⛽ Fuel Consumption Converter</h1>
+    <p class="small-muted">Convert between **Miles Per Gallon (MPG)** and **Liters per 100 Kilometers (L/100km)**. Important: US and Imperial Gallons differ!</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Input Value and Unit System</h5>
+
+        <div class="conversion-input-group">
+            <label for="inputValue">Enter Fuel Consumption Value (e.g., 30 for MPG, or 8 for L/100km)</label>
+            <div class="d-flex">
+                <input type="number" class="form-control me-2" id="inputValue" placeholder="Enter value..." value="30" min="0.1" step="any" autofocus>
+                <select id="unitSelect" class="form-select w-50">
+                    <option value="us_mpg">US MPG</option>
+                    <option value="imp_mpg">Imperial MPG</option>
+                    <option value="l_per_100km">L/100km</option>
+                </select>
+            </div>
+            <div class="clarification" id="unitClarification">
+                Current selected unit: **US MPG**. $1 \text{ US Gallon} \approx 3.785 \text{ Liters}$.
+            </div>
+        </div>
+
+        <button class="btn conversion-button" id="convertButton">
+            Convert Consumption
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Conversion Results</h5>
+        
+        <div class="list-group result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Enter a consumption value and unit, then click 'Convert Consumption'.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Conversion Constants Used:** $1 \text{ Mile} = 1.609344 \text{ Kilometers}$. $1 \text{ Imperial Gallon} \approx 4.546 \text{ Liters}$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONVERSION CONSTANTS ---
+    const CONSTANTS = {
+        // Distance
+        MILES_TO_KM: 1.609344, 
+
+        // Volume
+        US_GALLON_TO_LITER: 3.785411784, // Exact definition
+        IMP_GALLON_TO_LITER: 4.54609,     // Exact definition
+        
+        // Target base: L/100km (Liters per 100 Kilometers)
+        // Note: L/100km is an inverse measure of efficiency (lower is better). 
+        // MPG is a direct measure of efficiency (higher is better).
+    };
+
+    // --- UNIT DEFINITIONS ---
+    const UNIT_DEFINITIONS = {
+        'us_mpg': { 
+            name: 'US MPG', 
+            abbr: 'MPG (US)', 
+            // Formula to convert US MPG to L/100km: (100 * L_per_Gal) / Km_per_Mile
+            formula: (value) => (100 * CONSTANTS.US_GALLON_TO_LITER) / (value * CONSTANTS.MILES_TO_KM),
+            inverse_formula: (value) => (100 * CONSTANTS.US_GALLON_TO_LITER) / (value * CONSTANTS.MILES_TO_KM),
+            clarification: `Current selected unit: **US MPG**. 1 US Gallon \u2248 ${CONSTANTS.US_GALLON_TO_LITER.toFixed(3)} Liters.`,
+            is_mpg: true
+        },
+        'imp_mpg': { 
+            name: 'Imperial MPG', 
+            abbr: 'MPG (Imp)', 
+            formula: (value) => (100 * CONSTANTS.IMP_GALLON_TO_LITER) / (value * CONSTANTS.MILES_TO_KM),
+            inverse_formula: (value) => (100 * CONSTANTS.IMP_GALLON_TO_LITER) / (value * CONSTANTS.MILES_TO_KM),
+            clarification: `Current selected unit: **Imperial MPG**. 1 Imperial Gallon \u2248 ${CONSTANTS.IMP_GALLON_TO_LITER.toFixed(3)} Liters.`,
+            is_mpg: true
+        },
+        'l_per_100km': { 
+            name: 'Liters per 100km', 
+            abbr: 'L/100km', 
+            formula: (value) => value, // Base unit is L/100km
+            inverse_formula: (value) => value,
+            clarification: `Current selected unit: **L/100km**. Liters of fuel consumed per 100 kilometers traveled.`,
+            is_mpg: false
+        }
+    };
+
+    const inputValue = document.getElementById('inputValue');
+    const unitSelect = document.getElementById('unitSelect');
+    const convertButton = document.getElementById('convertButton');
+    const resultsList = document.getElementById('resultsList');
+    const unitClarification = document.getElementById('unitClarification');
+
+    /**
+     * Converts a value from any source unit to L/100km.
+     * MPG: (100 * L/Gal) / (MPG * Km/Mile)
+     * L/100km: Value itself
+     */
+    function convertToLPer100km(value, fromUnitKey) {
+        const def = UNIT_DEFINITIONS[fromUnitKey];
+        if (def.is_mpg) {
+            return def.formula(value);
+        }
+        return value; // Already in L/100km
+    }
+
+    /**
+     * Converts the L/100km base unit to a target unit (specifically MPG variants).
+     * Formula to convert L/100km to MPG: (100 * L_per_Gal) / (L/100km * Km_per_Mile)
+     * This is the same structure as the inverse, but the 'value' is now L/100km.
+     */
+    function convertFromLPer100km(l_per_100km, toUnitKey) {
+        const def = UNIT_DEFINITIONS[toUnitKey];
+        if (toUnitKey === 'us_mpg') {
+            return (CONSTANTS.US_GALLON_TO_LITER * 100) / (l_per_100km * CONSTANTS.MILES_TO_KM);
+        } else if (toUnitKey === 'imp_mpg') {
+            return (CONSTANTS.IMP_GALLON_TO_LITER * 100) / (l_per_100km * CONSTANTS.MILES_TO_KM);
+        }
+        return l_per_100km; // Already L/100km
+    }
+
+    /**
+     * Updates the clarification box based on the selected unit.
+     */
+    function updateClarification() {
+        const selectedUnit = unitSelect.value;
+        unitClarification.innerHTML = UNIT_DEFINITIONS[selectedUnit].clarification;
+        // Adjust placeholder for better UX
+        if (selectedUnit === 'l_per_100km') {
+             inputValue.placeholder = "e.g., 8.0";
+        } else {
+             inputValue.placeholder = "e.g., 30.0";
+        }
+    }
+
+    /**
+     * Main conversion logic.
+     */
+    function convertConsumption() {
+        const inputVal = parseFloat(inputValue.value);
+        const fromKey = unitSelect.value;
+        
+        resultsList.innerHTML = '';
+
+        if (isNaN(inputVal) || inputVal <= 0) {
+            resultsList.innerHTML = `<div class="alert alert-warning">Please enter a valid, positive consumption value.</div>`;
+            return;
+        }
+
+        // 1. Convert input value to the Base L/100km
+        const baseLPer100km = convertToLPer100km(inputVal, fromKey);
+
+        // 2. Display all converted consumption metrics
+        Object.keys(UNIT_DEFINITIONS).forEach(toKey => {
+            const def = UNIT_DEFINITIONS[toKey];
+            
+            let convertedValue;
+            if (toKey === 'l_per_100km') {
+                convertedValue = baseLPer100km;
+            } else {
+                convertedValue = convertFromLPer100km(baseLPer100km, toKey);
+            }
+
+            const li = document.createElement('div');
+            li.classList.add('list-group-item');
+            
+            // Apply highlight if this is the input unit
+            if (fromKey === toKey) {
+                li.classList.add('highlight-item');
+            }
+
+            let valueDisplay = convertedValue.toFixed(2);
+            
+            li.innerHTML = `
+                <span class="unit-name">${def.name} (${def.abbr})</span>
+                <span class="unit-value">${valueDisplay}</span>
+            `;
+            
+            resultsList.appendChild(li);
+        });
+    }
+
+    // --- Initialization and Event Listeners ---
+
+    window.onload = function() {
+        // Run conversion when input changes or button is clicked
+        unitSelect.addEventListener('change', updateClarification);
+        unitSelect.addEventListener('change', convertConsumption);
+        inputValue.addEventListener('input', convertConsumption);
+        convertButton.addEventListener('click', convertConsumption);
+        
+        // Initial setup
+        updateClarification();
+        convertConsumption();
+    };
+
+</script>
+{% endblock %}

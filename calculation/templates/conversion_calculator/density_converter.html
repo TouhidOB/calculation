@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Density Converter (kg/m³, g/cm³, lb/ft³){% endblock %}
+
+{% block meta_description %}Convert material density instantly between Kilograms per Cubic Meter, Grams per Cubic Centimeter, and Pounds per Cubic Foot.{% endblock %}
+
+{% block meta_keywords %}density converter, kg/m3, g/cm3, lb/ft3, mass density, specific gravity, unit converter{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #9b59b6; /* Purple/Violet Theme for Science */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #fcf4ff; /* Light purple background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #9b59b6; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #8e44ad;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #9b59b6;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #2c3e50;
+        word-break: break-all;
+        width: 100%;
+        background-color: #ecf0f1;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #9b59b6;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #8e44ad;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">⚛️ Density Converter</h1>
+    <p class="small-muted">Convert **Mass Density** between common scientific and engineering units: $\text{kg}/\text{m}^3$ (SI), $\text{g}/\text{cm}^3$ (CGS), and $\text{lb}/\text{ft}^3$ (Imperial).</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Enter Value and Unit</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Value Input -->
+            <label for="inputValue">Density Value to Convert</label>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 1000" value="1000" min="0" step="any" autofocus>
+            
+            <!-- Unit Select -->
+            <div class="mt-3">
+                <label for="inputUnitSelect">Input Unit</label>
+                <select id="inputUnitSelect" class="form-select input-field">
+                    <option value="KGM3">Kilograms per Cubic Meter ($\text{kg}/\text{m}^3$)</option>
+                    <option value="GCM3">Grams per Cubic Centimeter ($\text{g}/\text{cm}^3$)</option>
+                    <option value="LBFT3">Pounds per Cubic Foot ($\text{lb}/\text{ft}^3$)</option>
+                </select>
+            </div>
+            
+            <p class="small-muted mt-2">The output will be shown for all other supported units.</p>
+        </div>
+
+        <button class="btn conversion-button" onclick="convertDensity()">
+            Calculate Density
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Converted Results</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Density ($\rho$):** Defined as the mass (m) of a substance per unit volume (V), $\rho = m/V$. For water, density is approximately $1000 \text{ kg}/\text{m}^3$ or $1 \text{ g}/\text{cm}^3$.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS (Based on the kg/m³ SI unit) ---
+    const GCM3_TO_KGM3 = 1000; // 1 g/cm³ = 1000 kg/m³
+    const LBFT3_TO_KGM3 = 16.018463; // 1 lb/ft³ ≈ 16.018463 kg/m³
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const inputUnitSelect = document.getElementById('inputUnitSelect');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Converts the density value from the input unit to all other units.
+     */
+    function convertDensity() {
+        resultsList.innerHTML = '';
+        const value = parseFloat(inputValue.value);
+        const inputUnit = inputUnitSelect.value;
+        
+        if (isNaN(value) || value < 0) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid non-negative number.</div>`;
+            return;
+        }
+
+        let kgm3 = 0; // Base unit: Kilograms per Cubic Meter
+
+        // Step 1: Normalize input to KGM3
+        if (inputUnit === 'KGM3') {
+            kgm3 = value;
+        } else if (inputUnit === 'GCM3') {
+            // g/cm³ to kg/m³
+            kgm3 = value * GCM3_TO_KGM3;
+        } else if (inputUnit === 'LBFT3') {
+            // lb/ft³ to kg/m³
+            kgm3 = value * LBFT3_TO_KGM3;
+        }
+        
+        // Step 2: Convert normalized KGM3 to all target units
+        const gcm3 = kgm3 / GCM3_TO_KGM3; // kg/m³ to g/cm³
+        const lbft3 = kgm3 / LBFT3_TO_KGM3; // kg/m³ to lb/ft³
+
+        // --- Render Results ---
+        
+        const units = [
+            { id: 'KGM3', name: 'Kilograms per Cubic Meter (SI)', symbol: 'kg/m³', value: kgm3 },
+            { id: 'GCM3', name: 'Grams per Cubic Centimeter (CGS)', symbol: 'g/cm³', value: gcm3 },
+            { id: 'LBFT3', name: 'Pounds per Cubic Foot (Imperial)', symbol: 'lb/ft³', value: lbft3 }
+        ];
+
+        // 1. Highlight the input value
+        const inputUnitData = units.find(u => u.id === inputUnit);
+        renderResult(`Input Value (${inputUnitData.symbol})`, value.toFixed(4), inputUnitData.symbol, '343a40', true);
+
+
+        // 2. Render converted values
+        units.filter(u => u.id !== inputUnit).forEach(unit => {
+            renderResult(unit.name, unit.value.toFixed(6), unit.symbol, '9b59b6', false);
+        });
+    }
+    
+    /**
+     * Renders a single result item.
+     * @param {string} name - The name of the result/unit.
+     * @param {string} value - The numerical value.
+     * @param {string} unit - The unit abbreviation.
+     * @param {string} borderColor - The color for the left border (HEX).
+     * @param {boolean} isInput - If true, styles the item as the input echo.
+     */
+    function renderResult(name, value, unit, borderColor, isInput) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        let valueColor = isInput ? '#343a40' : '#8e44ad';
+        let backgroundColor = isInput ? '#fcfcfc' : '#ecf0f1';
+        let fontSize = isInput ? '1.1rem' : '1.3rem';
+
+        item.innerHTML = `
+            <div class="unit-name">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor}; font-size: ${fontSize};">
+                ${value} <span style="font-size: 0.8em; font-weight: normal; color: #9b59b6;">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change
+        inputValue.addEventListener('input', convertDensity);
+        // Use 'change' event for unit switch
+        inputUnitSelect.addEventListener('change', convertDensity);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertDensity(); // Run initial conversion on load
+    };
+
+</script>
+{% endblock %}

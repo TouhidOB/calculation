@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Surface Tension Converter (N/m <> dyne/cm){% endblock %}
+
+{% block meta_description %}Convert surface tension instantly between Newton per Meter (N/m) and Dyne per Centimeter (dyne/cm).{% endblock %}
+
+{% block meta_keywords %}surface tension converter, newton per meter, dyne per centimeter, N/m, dyne/cm, fluid physics, unit converter{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #3f51b5; /* Indigo/Deep Blue Theme for physics */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #f0f4ff; /* Light blue background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #3f51b5; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #303f9f;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #3f51b5;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #fbc02d; /* Yellow/Gold for visibility */
+        word-break: break-all;
+        width: 100%;
+        background-color: #303f9f;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #3f51b5;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #303f9f;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🔬 Surface Tension Converter</h1>
+    <p class="small-muted">Convert **Surface Tension ($\gamma$)** between **Newton per Meter ($\text{N}/\text{m}$)** (SI unit) and **Dyne per Centimeter ($\text{dyne}/\text{cm}$)** (CGS unit).</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Enter Value and Direction</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Value Input -->
+            <label for="inputValue">Surface Tension Value to Convert</label>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 0.0728" value="0.0728" min="0" step="any" autofocus>
+            
+            <!-- Direction Select -->
+            <div class="mt-3">
+                <label for="directionSelect">Conversion Direction</label>
+                <select id="directionSelect" class="form-select input-field">
+                    <option value="NmtoDyneCm">Newton per Meter ($\text{N}/\text{m}$) $\rightarrow$ Dyne per Centimeter ($\text{dyne}/\text{cm}$)</option>
+                    <option value="DyneCmtoNm">Dyne per Centimeter ($\text{dyne}/\text{cm}$) $\rightarrow$ Newton per Meter ($\text{N}/\text{m}$)</option>
+                </select>
+            </div>
+            
+            <p class="small-muted mt-2">Conversion Factor: $1 \text{ N}/\text{m} = 1000 \text{ dyne}/\text{cm}$. (The surface tension of water at $25^\circ\text{C}$ is approximately $0.072 \text{ N}/\text{m}$ or $72 \text{ dyne}/\text{cm}$).</p>
+        </div>
+
+        <button class="btn conversion-button" onclick="convertSurfaceTension()">
+            Calculate Surface Tension
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Converted Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Surface Tension ($\gamma$):** A property of the surface of a liquid that allows it to resist an external force due to the cohesive nature of its molecules. Measured as force per unit length.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    // 1 Newton/Meter to Dyne/Centimeter
+    const NM_TO_DYNECM_FACTOR = 1000; 
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const directionSelect = document.getElementById('directionSelect');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Converts the surface tension value based on the selected direction.
+     */
+    function convertSurfaceTension() {
+        resultsList.innerHTML = '';
+        const value = parseFloat(inputValue.value);
+        const direction = directionSelect.value;
+        
+        if (isNaN(value) || value < 0) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid non-negative number.</div>`;
+            return;
+        }
+
+        let result = 0;
+        let inputUnitSymbol = '';
+        let outputUnitSymbol = '';
+        let inputUnitName = '';
+        let outputUnitName = '';
+
+        if (direction === 'NmtoDyneCm') {
+            // N/m to dyne/cm: dyne/cm = N/m * 1000
+            result = value * NM_TO_DYNECM_FACTOR;
+            inputUnitSymbol = 'N/m';
+            outputUnitSymbol = 'dyne/cm';
+            inputUnitName = 'Newton per Meter (SI)';
+            outputUnitName = 'Dyne per Centimeter (CGS)';
+        } else if (direction === 'DyneCmtoNm') {
+            // dyne/cm to N/m: N/m = dyne/cm / 1000
+            result = value / NM_TO_DYNECM_FACTOR;
+            inputUnitSymbol = 'dyne/cm';
+            outputUnitSymbol = 'N/m';
+            inputUnitName = 'Dyne per Centimeter (CGS)';
+            outputUnitName = 'Newton per Meter (SI)';
+        }
+
+        // --- Render Results ---
+        
+        // 1. Input Echo
+        renderResult(`Input Value (${inputUnitName})`, value.toFixed(6), inputUnitSymbol, '343a40', true);
+
+        // 2. Converted Output
+        renderResult(`Converted Value (${outputUnitName})`, result.toFixed(8), outputUnitSymbol, '3f51b5', false);
+    }
+    
+    /**
+     * Renders a single result item.
+     * @param {string} name - The name of the result/unit.
+     * @param {string} value - The numerical value.
+     * @param {string} unit - The unit abbreviation.
+     * @param {string} borderColor - The color for the left border (HEX).
+     * @param {boolean} isInput - If true, styles the item as the input echo.
+     */
+    function renderResult(name, value, unit, borderColor, isInput) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        let valueColor = isInput ? '#fbc02d' : '#fbc02d';
+        let backgroundColor = isInput ? '#303f9f' : '#303f9f';
+        let unitColor = isInput ? '#f5f5f5' : '#f5f5f5';
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${isInput ? '#343a40' : '#2c3e50'};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor}; font-size: 1.3rem;">
+                ${value} <span style="font-size: 0.8em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change
+        inputValue.addEventListener('input', convertSurfaceTension);
+        // Use 'change' event for direction switch
+        directionSelect.addEventListener('change', convertSurfaceTension);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertSurfaceTension(); // Run initial conversion (e.g., 0.0728 N/m -> 72.8 dyne/cm)
+    };
+
+</script>
+{% endblock %}

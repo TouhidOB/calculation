@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}Metric Prefix Converter (Kilo, Mega, Giga, Tera){% endblock %}
+
+{% block meta_description %}Convert values between metric prefixes: Base Unit, Kilo (k), Mega (M), Giga (G), and Tera (T) using the 1000x standard.{% endblock %}
+
+{% block meta_keywords %}metric prefix converter, kilo, mega, giga, tera, SI units, powers of 1000, unit converter{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #00bcd4; /* Cyan Theme for prefixes */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #e0f7fa; /* Light cyan background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #00bcd4; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #00838f;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #00bcd4;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #e91e63; /* Pink contrast for visibility */
+        word-break: break-all;
+        width: 100%;
+        background-color: #fce4ec; 
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #00bcd4;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #0097a7;
+    }
+
+    .result-exponent {
+        font-size: 0.7em;
+        vertical-align: super;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">📊 Metric Prefix Converter</h1>
+    <p class="small-muted">Convert values between common metric prefixes (powers of 1000). The base unit is denoted as 'U'.</p>
+    
+    [Image of SI unit prefixes chart]
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Enter Value and Input Prefix</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Value Input -->
+            <label for="inputValue">Value to Convert</label>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 5.5" value="5.5" step="any" autofocus>
+            
+            <!-- Unit Select -->
+            <div class="mt-3">
+                <label for="inputUnitSelect">Input Prefix</label>
+                <select id="inputUnitSelect" class="form-select input-field">
+                    <option value="T">Tera ($\text{T}$ - $10^{12}$)</option>
+                    <option value="G">Giga ($\text{G}$ - $10^9$)</option>
+                    <option value="M">Mega ($\text{M}$ - $10^6$)</option>
+                    <option value="K">Kilo ($\text{k}$ - $10^3$)</option>
+                    <option value="BASE" selected>Base Unit (U - $10^0$)</option>
+                </select>
+            </div>
+            
+            <p class="small-muted mt-2">The conversion uses the decimal definition ($1 \text{ k} = 1000$).</p>
+        </div>
+
+        <button class="btn conversion-button" onclick="convertPrefix()">
+            Calculate Conversion
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Converted Results</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Prefix Hierarchy:** Each prefix represents a $1000\times$ difference from the next one (e.g., $1 \text{ MU} = 1000 \text{ kU}$).</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Define all prefixes relative to the Base Unit (factor is 10^X)
+    const PREFIX_FACTORS = {
+        'BASE': 1e0,   // Base Unit (U)
+        'K': 1e3,      // Kilo (kU)
+        'M': 1e6,      // Mega (MU)
+        'G': 1e9,      // Giga (GU)
+        'T': 1e12     // Tera (TU)
+    };
+
+    const PREFIX_NAMES = {
+        'BASE': 'Base Unit',
+        'K': 'Kilo',
+        'M': 'Mega',
+        'G': 'Giga',
+        'T': 'Tera'
+    };
+
+    const PREFIX_SYMBOLS = {
+        'BASE': 'U',
+        'K': 'kU',
+        'M': 'MU',
+        'G': 'GU',
+        'T': 'TU'
+    };
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const inputUnitSelect = document.getElementById('inputUnitSelect');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Helper function to format large/small numbers in scientific notation if necessary.
+     * @param {number} num - The number to format.
+     * @returns {string} The formatted string, using toFixed or toExponential based on magnitude.
+     */
+    function formatOutput(num) {
+        if (num === 0) return '0';
+        const absNum = Math.abs(num);
+
+        // Use standard notation if within a comfortable range
+        if (absNum >= 0.00001 && absNum < 10000000) {
+            return num.toFixed(6).replace(/\.?0+$/, ""); // Remove trailing zeros
+        }
+        
+        // Use scientific notation for very large or very small numbers
+        let expStr = num.toExponential(4);
+        
+        // Reformat 'e+XX' to 'x 10^XX' for better visual math display
+        const [mantissa, exponent] = expStr.split('e');
+        if (exponent) {
+            const sign = exponent.startsWith('-') ? '' : '+';
+            const expValue = exponent.replace('+', '');
+            return `${parseFloat(mantissa).toFixed(4)} \times 10<span class="result-exponent">${sign}${expValue}</span>`;
+        }
+        return num.toString();
+    }
+
+
+    /**
+     * Converts the value from the input prefix to all other prefixes.
+     */
+    function convertPrefix() {
+        resultsList.innerHTML = '';
+        const value = parseFloat(inputValue.value);
+        const inputPrefix = inputUnitSelect.value;
+        
+        if (isNaN(value)) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid number.</div>`;
+            return;
+        }
+
+        // 1. Normalize input value to the Base Unit (U)
+        const baseFactor = PREFIX_FACTORS[inputPrefix];
+        const baseValue = value * baseFactor; 
+        
+        // 2. Convert baseValue to all target prefixes
+        const units = [];
+        for (const [prefix, factor] of Object.entries(PREFIX_FACTORS)) {
+            const convertedValue = baseValue / factor;
+            units.push({
+                id: prefix,
+                name: PREFIX_NAMES[prefix],
+                symbol: PREFIX_SYMBOLS[prefix],
+                value: convertedValue
+            });
+        }
+
+        // --- Render Results ---
+        
+        // Find and render the input value first
+        const inputUnitData = units.find(u => u.id === inputPrefix);
+        if (inputUnitData) {
+            renderResult(`Input Value (${inputUnitData.name})`, value.toString(), inputUnitData.symbol, '343a40', true);
+        }
+
+
+        // Render all other converted values
+        units.filter(u => u.id !== inputPrefix).forEach(unit => {
+            // Use formatter for the output
+            renderResult(unit.name, formatOutput(unit.value), unit.symbol, '00bcd4', false);
+        });
+    }
+    
+    /**
+     * Renders a single result item.
+     * @param {string} name - The name of the result/unit.
+     * @param {string} value - The numerical value (string, potentially formatted with exponents).
+     * @param {string} unit - The unit abbreviation.
+     * @param {string} borderColor - The color for the left border (HEX).
+     * @param {boolean} isInput - If true, styles the item as the input echo.
+     */
+    function renderResult(name, value, unit, borderColor, isInput) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        let valueColor = isInput ? '#343a40' : '#e91e63';
+        let backgroundColor = isInput ? '#e0f7fa' : '#fce4ec';
+        let unitColor = isInput ? '#00838f' : '#00838f';
+        let fontSize = isInput ? '1.1rem' : '1.3rem';
+
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${isInput ? '#343a40' : '#2c3e50'};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor}; font-size: ${fontSize};">
+                ${value} <span style="font-size: 0.8em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change
+        inputValue.addEventListener('input', convertPrefix);
+        // Use 'change' event for unit switch
+        inputUnitSelect.addEventListener('change', convertPrefix);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertPrefix(); // Run initial conversion on load
+    };
+
+</script>
+{% endblock %}

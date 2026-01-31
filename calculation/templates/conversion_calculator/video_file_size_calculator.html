@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Video File Size Calculator (Bitrate & Duration to MB){% endblock %}
+
+{% block meta_description %}Calculate the total video file size (MB) based on video bitrate, audio bitrate, and duration. Supports kbps and hours/minutes/seconds input.{% endblock %}
+
+{% block meta_keywords %}video file size, bitrate calculator, audio bitrate, video duration, mb calculation, digital video, encoding, streaming{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #e91e63; /* Pink Theme for Media */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #f8bbd0; /* Light pink background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #e91e63; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #c2185b;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #e91e63;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: white; 
+        word-break: break-all;
+        width: 100%;
+        background-color: #c2185b;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #e91e63;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #c2185b;
+    }
+
+    .time-input-container {
+        display: flex;
+        gap: 10px;
+    }
+    .time-input-container input {
+        flex-grow: 1;
+        min-width: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">🎬 Video File Size Calculator</h1>
+    <p class="small-muted">Calculate the total **File Size (MB)** based on Video Bitrate, Audio Bitrate, and Duration.</p>
+    
+    <p class="small-muted">Formula: $\text{Total Size} (\text{MB}) = (\text{Video Bitrate} + \text{Audio Bitrate}) \times \text{Duration} \times \text{Conversion Factor}$.</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Enter Bitrates (in $\text{kbps}$)</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Video Bitrate Input -->
+            <div>
+                <label for="videoBitrateValue">Video Bitrate ($\text{kbps}$)</label>
+                <input type="number" class="form-control input-field" id="videoBitrateValue" placeholder="e.g., 5000 for 1080p stream" value="5000" min="1" step="any">
+                <p class="small-muted mt-1">Typical range: $500\text{ kbps}$ (SD) to $10000\text{ kbps}$ ($\text{4K}$).</p>
+            </div>
+
+            <!-- Audio Bitrate Input -->
+            <div class="mt-3">
+                <label for="audioBitrateValue">Audio Bitrate ($\text{kbps}$)</label>
+                <input type="number" class="form-control input-field" id="audioBitrateValue" placeholder="e.g., 128 for MP3" value="128" min="0" step="any">
+                <p class="small-muted mt-1">Typical range: $64\text{ kbps}$ (low) to $320\text{ kbps}$ (high quality).</p>
+            </div>
+
+        </div>
+
+        <h5 class="section-title">Step 2: Enter Duration</h5>
+        
+        <div class="input-group-custom">
+             <label>Duration ($\text{h}:\text{m}:\text{s}$)</label>
+            <div class="time-input-container">
+                <input type="number" class="form-control input-field" id="durationH" placeholder="Hours" value="0" min="0" step="1">
+                <input type="number" class="form-control input-field" id="durationM" placeholder="Minutes" value="10" min="0" max="59" step="1">
+                <input type="number" class="form-control input-field" id="durationS" placeholder="Seconds" value="30" min="0" max="59" step="1">
+            </div>
+            <p class="small-muted mt-1">The total length of the video clip.</p>
+        </div>
+
+
+        <button class="btn conversion-button" onclick="calculateFileSize()">
+            Calculate Total File Size
+        </button>
+
+        <h5 class="section-title mt-4">Step 3: Calculated Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Calculated results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Units:** Bitrates are in $\text{kbps}$ (kilobits per second). File size is output in $\text{MB}$ (Megabytes). The conversion assumes the decimal prefix standard ($1 \text{MB} = 1000 \times 1000 \text{ Bytes}$).</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    const BITS_PER_BYTE = 8;
+    const KILO_TO_MEGA_FACTOR = 1000;
+    
+    // The total factor to convert (kbps * seconds) into MB:
+    // (kbps * s) / (8 bits/byte * 1000 kb/Mb) = MB
+    const KBPS_SECONDS_TO_MB_FACTOR = 1 / (BITS_PER_BYTE * KILO_TO_MEGA_FACTOR); // 0.000125
+
+    // --- DOM Elements ---
+    const videoBitrateValue = document.getElementById('videoBitrateValue');
+    const audioBitrateValue = document.getElementById('audioBitrateValue');
+    const durationH = document.getElementById('durationH');
+    const durationM = document.getElementById('durationM');
+    const durationS = document.getElementById('durationS');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Converts hours, minutes, and seconds input into total seconds.
+     * @returns {number} Total duration in seconds.
+     */
+    function durationToSeconds() {
+        const h = parseFloat(durationH.value) || 0;
+        const m = parseFloat(durationM.value) || 0;
+        const s = parseFloat(durationS.value) || 0;
+        return (h * 3600) + (m * 60) + s;
+    }
+
+    /**
+     * Performs the main calculation for total file size.
+     */
+    function calculateFileSize() {
+        resultsList.innerHTML = '';
+        const videoBitrate = parseFloat(videoBitrateValue.value);
+        const audioBitrate = parseFloat(audioBitrateValue.value);
+        const durationSec = durationToSeconds();
+
+        const errors = [];
+        
+        // --- Validation ---
+        if (isNaN(videoBitrate) || videoBitrate < 1) errors.push("Please enter a valid, positive Video Bitrate (kbps).");
+        if (isNaN(audioBitrate) || audioBitrate < 0) errors.push("Please enter a valid, non-negative Audio Bitrate (kbps).");
+        if (durationSec <= 0) errors.push("Please enter a positive Duration (h:m:s).");
+
+        if (errors.length > 0) {
+            resultsList.innerHTML = errors.map(err => `<div class="alert alert-danger">${err}</div>`).join('');
+            return;
+        }
+
+        // --- Calculation ---
+        const totalBitrate = videoBitrate + audioBitrate; // Total kbps
+        
+        // Total Size (MB) = Total Bitrate (kbps) * Duration (s) * Conversion Factor
+        const totalSizeMB = totalBitrate * durationSec * KBPS_SECONDS_TO_MB_FACTOR;
+        
+        // --- Calculate individual stream sizes for breakdown ---
+        const videoSizeMB = videoBitrate * durationSec * KBPS_SECONDS_TO_MB_FACTOR;
+        const audioSizeMB = audioBitrate * durationSec * KBPS_SECONDS_TO_MB_FACTOR;
+
+        // --- Render Results ---
+        
+        // 1. Total Result
+        renderResult('Total Estimated File Size', totalSizeMB, 'MB', 'e91e63', 'white', '#c2185b');
+
+        // 2. Breakdown and Inputs Echo
+        renderResult('Video Stream Size', videoSizeMB, 'MB', '607d8b', '#343a40', '#eceff1');
+        renderResult('Audio Stream Size', audioSizeMB, 'MB', '607d8b', '#343a40', '#eceff1');
+        renderResult('Total Duration Input', secondsToHMS(durationSec), 'h:m:s', '607d8b', '#343a40', '#eceff1');
+    }
+    
+    /**
+     * Converts total seconds into H:M:S format string.
+     */
+    function secondsToHMS(totalSeconds) {
+        if (totalSeconds < 0 || isNaN(totalSeconds)) return "00h : 00m : 00s";
+        
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = Math.round(totalSeconds % 60);
+
+        const pad = (num) => String(num).padStart(2, '0');
+        return `${pad(h)}h : ${pad(m)}m : ${pad(s)}s`;
+    }
+
+    /**
+     * Renders a single result item.
+     */
+    function renderResult(name, value, unit, borderColor, valueColor, backgroundColor) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        let displayValue = (typeof value === 'number') ? value.toFixed(3) : value;
+        let unitColor = valueColor === 'white' ? '#fdd835' : '#e91e63';
+        let nameColor = valueColor === 'white' ? 'white' : '#455a64';
+
+
+        item.innerHTML = `
+            <div class="unit-name" style="color: ${nameColor};">${name}</div>
+            <div class="unit-value" style="background-color: ${backgroundColor}; color: ${valueColor}; font-size: 1.3rem;">
+                ${displayValue} <span style="font-size: 0.8em; font-weight: normal; color: ${unitColor};">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Recalculate on any input change
+        document.querySelectorAll('.input-field').forEach(input => {
+            input.addEventListener('input', calculateFileSize);
+            input.addEventListener('change', calculateFileSize);
+        });
+        
+        calculateFileSize(); // Initial calculation
+    }
+
+    window.onload = function() {
+        setupListeners();
+    };
+
+</script>
+{% endblock %}

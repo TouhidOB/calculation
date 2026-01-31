@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Electric Charge Converter (C to Ah){% endblock %}
+
+{% block meta_description %}Convert electric charge instantly between Coulombs (C) and Ampere-Hours (Ah).{% endblock %}
+
+{% block meta_keywords %}electric charge, coulombs, amp-hours, ampere-hour, battery capacity, charge conversion, physics{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Base styles from the template */
+    .calc-wrapper {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-title {
+        font-weight: 600;
+        margin-top: 20px;
+        color: #007bff; /* Electric Blue Theme */
+    }
+    
+    /* Input Group Styling */
+    .input-group-custom {
+        margin-bottom: 20px;
+        background: #e9f5ff; /* Light blue background for emphasis */
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid #007bff; 
+    }
+    
+    .input-group-custom label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #0056b3;
+    }
+
+    .input-field {
+        font-size: 1.2rem;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Results Styling */
+    .result-list-group {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .result-list-group .list-group-item {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+        background-color: #f7f7f7;
+    }
+
+    .result-list-group .unit-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    
+    .result-list-group .unit-value {
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #ffc107; /* Amber/Yellow for energy */
+        word-break: break-all;
+        width: 100%;
+        background-color: #343a40;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .conversion-button {
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+    .conversion-button:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="mb-3">⚡ Electric Charge Converter</h1>
+    <p class="small-muted">Convert between **Coulombs (C)** (SI Unit of Charge) and **Ampere-Hours (Ah)** (Battery Capacity Unit).</p>
+    
+
+    <div class="calc-wrapper mt-4">
+
+        <h5 class="section-title">Step 1: Enter Value and Direction</h5>
+
+        <div class="input-group-custom">
+            
+            <!-- Value Input -->
+            <label for="inputValue">Value to Convert</label>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 3600" value="3600" min="0" step="any" autofocus>
+            
+            <!-- Direction Select -->
+            <div class="mt-3">
+                <label for="directionSelect">Conversion Direction</label>
+                <select id="directionSelect" class="form-select input-field">
+                    <option value="CtoAh">Coulombs (C) → Ampere-Hours (Ah)</option>
+                    <option value="AhtoC">Ampere-Hours (Ah) → Coulombs (C)</option>
+                </select>
+            </div>
+            
+            <p class="small-muted mt-2">Conversion Factor: 1 Ah = 3600 C</p>
+        </div>
+
+        <button class="btn conversion-button" onclick="convertCharge()">
+            Calculate Charge
+        </button>
+
+        <h5 class="section-title mt-4">Step 2: Converted Result</h5>
+        
+        <div class="result-list-group mt-3" id="resultsList">
+            <div class="alert alert-info" id="initialMessage">Converted results will appear here.</div>
+        </div>
+
+    </div>
+    
+    <div class="mt-5">
+        <p class="small-muted">**Definition:** One Coulomb is the amount of electric charge transported by a constant current of one Ampere flowing for one second. One Ampere-Hour is the charge capacity that allows one Ampere of current to flow for one hour.</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- CONSTANTS ---
+    const SECONDS_PER_HOUR = 3600; // 1 Ah = 3600 C
+
+    // --- DOM Elements ---
+    const inputValue = document.getElementById('inputValue');
+    const directionSelect = document.getElementById('directionSelect');
+    const resultsList = document.getElementById('resultsList');
+
+    /**
+     * Converts the charge value based on the selected direction.
+     */
+    function convertCharge() {
+        resultsList.innerHTML = '';
+        const value = parseFloat(inputValue.value);
+        const direction = directionSelect.value;
+        
+        if (isNaN(value) || value < 0) {
+            resultsList.innerHTML = `<div class="alert alert-danger">Please enter a valid non-negative number.</div>`;
+            return;
+        }
+
+        let result = 0;
+        let inputUnit = '';
+        let outputUnit = '';
+
+        if (direction === 'CtoAh') {
+            // Coulombs (C) to Ampere-Hours (Ah): Ah = C / 3600
+            result = value / SECONDS_PER_HOUR;
+            inputUnit = 'Coulombs (C)';
+            outputUnit = 'Ampere-Hours (Ah)';
+        } else if (direction === 'AhtoC') {
+            // Ampere-Hours (Ah) to Coulombs (C): C = Ah * 3600
+            result = value * SECONDS_PER_HOUR;
+            inputUnit = 'Ampere-Hours (Ah)';
+            outputUnit = 'Coulombs (C)';
+        }
+
+        // --- Render Results ---
+        
+        // 1. Input Echo
+        renderResult(`Input Value (${inputUnit})`, value.toFixed(4), inputUnit, '343a40');
+
+        // 2. Converted Output
+        renderResult(`Converted Value (${outputUnit})`, result.toFixed(6), outputUnit, '007bff');
+    }
+    
+    /**
+     * Renders a single result item.
+     * @param {string} name - The name of the result/unit.
+     * @param {string} value - The numerical value.
+     * @param {string} unit - The unit abbreviation.
+     * @param {string} borderColor - The color for the left border.
+     */
+    function renderResult(name, value, unit, borderColor) {
+        const item = document.createElement('div');
+        item.classList.add('list-group-item');
+        item.style.borderLeftColor = `#${borderColor}`;
+
+        item.innerHTML = `
+            <div class="unit-name">${name}</div>
+            <div class="unit-value">
+                ${value} <span style="font-size: 0.8em; font-weight: normal; color: #ffc107;">${unit}</span>
+            </div>
+        `;
+        resultsList.appendChild(item);
+    }
+    
+    // --- Initialization & Event Listeners ---
+    
+    function setupListeners() {
+        // Use 'input' event for live updates on value change
+        inputValue.addEventListener('input', convertCharge);
+        // Use 'change' event for direction switch
+        directionSelect.addEventListener('change', convertCharge);
+    }
+
+    window.onload = function() {
+        setupListeners();
+        convertCharge(); // Run initial conversion on load
+    };
+
+</script>
+{% endblock %}

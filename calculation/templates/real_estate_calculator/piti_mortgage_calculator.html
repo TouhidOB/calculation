@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}PITI Mortgage Calculator (Principal, Interest, Taxes, Insurance){% endblock %}
+
+{% block meta_description %}Calculate your total monthly PITI payment (Principal, Interest, Taxes, Insurance) for a mortgage, providing a true estimate of monthly homeownership costs.{% endblock %}
+
+{% block meta_keywords %}PITI calculator, mortgage payment, taxes and insurance, monthly home cost, principal interest taxes insurance, home finance, bootstrap{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .result-display-box {
+        background-color: #eff6ff;
+        border: 2px solid #bfdbfe;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #1e40af;
+        line-height: 1;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .breakdown-row {
+        border-bottom: 1px dashed #cbd5e1;
+        padding: 0.75rem 0;
+    }
+
+    .breakdown-row:last-child {
+        border-bottom: none;
+    }
+
+    .form-control-custom {
+        border: 1.5px solid #cbd5e1;
+        transition: all 0.2s;
+    }
+
+    .form-control-custom:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-house-gear-fill text-primary me-2"></i>PITI Mortgage Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Go beyond the base loan payment. Estimate your complete monthly homeownership cost including Principal, Interest, Taxes, and Insurance.
+        </p>
+    </div>
+
+    
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-sliders me-2"></i>Loan & Property Details</h5>
+                
+                <form id="piti-form">
+                    <div class="mb-4">
+                        <label class="form-label">Loan Principal</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="principal-input" class="form-control form-control-custom" placeholder="e.g. 250000">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-4">
+                            <label class="form-label">Annual Rate</label>
+                            <div class="input-group">
+                                <input type="number" id="rate-input" class="form-control form-control-custom" placeholder="6.5" step="0.01">
+                                <span class="input-group-text bg-white">%</span>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4">
+                            <label class="form-label">Term (Years)</label>
+                            <input type="number" id="term-input" class="form-control form-control-custom" placeholder="30">
+                        </div>
+                    </div>
+
+                    <hr class="my-4 opacity-10">
+
+                    <div class="mb-4">
+                        <label class="form-label">Annual Property Taxes</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="taxes-input" class="form-control form-control-custom" placeholder="e.g. 3000">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Annual Home Insurance</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="insurance-input" class="form-control form-control-custom" placeholder="e.g. 1200">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold mt-2 shadow-sm">
+                        Calculate Total Payment
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white d-flex align-items-center">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-wallet2 display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Ready for Calculation</h4>
+                    <p>Provide your mortgage details to generate a full PITI breakdown and long-term cost analysis.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-5 shadow-sm">
+                        <span class="form-label text-primary opacity-75">Estimated Monthly PITI</span>
+                        <div class="result-value my-2" id="monthly-piti-display">$0.00</div>
+                        <p class="mb-0 text-dark fw-bold">Total Payment</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart me-2"></i>Monthly Breakdown</h6>
+                            <div class="small">
+                                <div class="d-flex justify-content-between breakdown-row">
+                                    <span>Principal & Interest</span>
+                                    <span class="fw-bold" id="breakdown-pi">$0.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between breakdown-row">
+                                    <span>Monthly Taxes</span>
+                                    <span class="fw-bold" id="breakdown-t">$0.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between breakdown-row">
+                                    <span>Monthly Insurance</span>
+                                    <span class="fw-bold" id="breakdown-i">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-graph-up-arrow me-2"></i>Total Life Cost</h6>
+                            <div class="p-3 bg-light rounded shadow-sm">
+                                <div class="mb-2">
+                                    <span class="text-muted small d-block">Interest + Tax + Insurance</span>
+                                    <span class="h5 fw-bold text-dark" id="total-extra-cost">$0.00</span>
+                                </div>
+                                <div>
+                                    <span class="text-muted small d-block">Total Lifetime Repayment</span>
+                                    <span class="h6 fw-bold text-primary" id="total-repaid">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center p-4">
+                    <div class="alert alert-danger rounded-4 py-4">
+                        <i class="bi bi-exclamation-triangle display-4 mb-3 d-block"></i>
+                        <h5 class="fw-bold">Invalid Inputs</h5>
+                        <p class="mb-0">Please ensure all fields are filled with positive numbers. Annual values can be zero if applicable.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const form = document.getElementById('piti-form');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const resultsUi = document.getElementById('results-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    function formatCurrency(num) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(num);
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const P = parseFloat(document.getElementById('principal-input').value);
+        const R = parseFloat(document.getElementById('rate-input').value);
+        const N = parseFloat(document.getElementById('term-input').value);
+        const T_annual = parseFloat(document.getElementById('taxes-input').value);
+        const I_annual = parseFloat(document.getElementById('insurance-input').value);
+
+        // Hide UI states
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        // Validation
+        if (isNaN(P) || isNaN(R) || isNaN(N) || isNaN(T_annual) || isNaN(I_annual) || 
+            P <= 0 || R < 0 || N <= 0 || T_annual < 0 || I_annual < 0) {
+            errorUi.classList.remove('d-none');
+            return;
+        }
+
+        // Calculation
+        const i = (R / 100) / 12;
+        const n = N * 12;
+        let monthlyPI;
+
+        if (i === 0) {
+            monthlyPI = P / n;
+        } else {
+            const pow = Math.pow(1 + i, n);
+            monthlyPI = P * (i * pow) / (pow - 1);
+        }
+
+        const monthlyT = T_annual / 12;
+        const monthlyI = I_annual / 12;
+        const totalMonthly = monthlyPI + monthlyT + monthlyI;
+
+        const totalPI = monthlyPI * n;
+        const totalInterest = totalPI - P;
+        const totalT = T_annual * N;
+        const totalI = I_annual * N;
+        const grandTotal = totalPI + totalT + totalI;
+
+        // Display results
+        resultsUi.classList.remove('d-none');
+        document.getElementById('monthly-piti-display').textContent = formatCurrency(totalMonthly);
+        document.getElementById('breakdown-pi').textContent = formatCurrency(monthlyPI);
+        document.getElementById('breakdown-t').textContent = formatCurrency(monthlyT);
+        document.getElementById('breakdown-i').textContent = formatCurrency(monthlyI);
+        document.getElementById('total-extra-cost').textContent = formatCurrency(totalInterest + totalT + totalI);
+        document.getElementById('total-repaid').textContent = formatCurrency(grandTotal);
+    });
+</script>
+{% endblock %}

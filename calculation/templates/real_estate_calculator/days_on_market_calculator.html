@@ -2,442 +2,227 @@
 
 {% block title %}Days on Market (DOM) Analyzer{% endblock %}
 
-{% block meta_description %}Calculate a property's Days on Market (DOM) and compare it against a target average to analyze market velocity and pricing strategy.{% endblock %}
+{% block meta_description %}Calculate a property's Days on Market (DOM) and compare it against market averages to analyze pricing strategy.{% endblock %}
 
-{% block meta_keywords %}days on market, DOM calculator, real estate analysis, market velocity, listing time, closing date{% endblock %}
+{% block meta_keywords %}days on market, DOM calculator, real estate analysis, market velocity, listing time{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKyc/iM85rEkg9nO8g19z0c4n1qJkI15d9yI5M9I4KjD4+gN2V01GjJ8F4/1043K2b+I7Sg/q2N5oQ2A==" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Market Analysis Grey" Theme */
     :root {
-        --main-dark: #374151; /* Slate Grey */
-        --light-grey: #f9fafb; /* Very light background */
-        --dark-text: #1f2937;   /* Dark text */
-        --accent-green: #10b981; /* Success Green */
-        --accent-yellow: #f59e0b; /* Caution Yellow */
-        --accent-red: #ef4444; /* Alert Red */
-    }
-    
-    .solver-wrapper {
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 700px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: var(--light-grey);
-        border: 2px solid var(--main-dark);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--dark-text);
-        display: block;
-        margin-bottom: 5px;
+        --main-dark: #334155; 
+        --accent-teal: #0d9488;
+        --accent-amber: #d97706;
+        --accent-rose: #e11d48;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #9ca3af; 
-        border-radius: 8px;
-        font-weight: 600;
-        color: var(--dark-text);
-    }
-    .form-control-custom:focus {
-        border-color: var(--main-dark);
-        box-shadow: 0 0 0 0.25rem rgba(55, 65, 81, 0.25);
+    body { background-color: #f8fafc; }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
     }
 
-    .result-section {
-        margin-top: 30px;
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
     }
 
-    .summary-card {
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #ffffff;
-        border-left: 5px solid var(--main-dark);
-        text-align: center;
-    }
-
-    .result-error {
-        border-left: 5px solid var(--accent-red);
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Metrics display */
-    .metric-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--dark-text);
-    }
-    
-    .metric-value {
-        font-size: 4.0rem;
-        font-weight: 900;
-        color: var(--main-dark);
-        line-height: 1;
-        margin-bottom: 10px;
-    }
-    
-    .feedback-box {
-        padding: 15px;
-        border-radius: 8px;
+    .form-label {
         font-weight: 700;
-        font-size: 1.1rem;
-        margin-top: 20px;
-        text-align: left;
+        color: #475569;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
     }
-    
-    /* Radial Progress Bar Styling (Simple CSS implementation) */
+
+    /* Radial Progress Logic */
     .progress-container {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        position: relative;
+        margin: 0 auto 1.5rem;
+    }
+
+    .progress-bar-overlay {
+        position: absolute;
+        top: 15px;
+        left: 15px;
         width: 150px;
         height: 150px;
         border-radius: 50%;
-        background-color: var(--light-grey);
-        position: relative;
-        margin: 0 auto 20px;
-        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
-    }
-    .progress-circle {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        clip: rect(0, 150px, 150px, 75px);
-        position: absolute;
-    }
-    .progress-circle .half {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        position: absolute;
-        clip: rect(0, 75px, 150px, 0);
-        background-color: var(--accent-green);
-        transition: transform 1s;
-    }
-    .progress-circle .half.right {
-        clip: rect(0, 75px, 150px, 0);
-        transform: rotate(0deg);
-        background-color: var(--accent-green);
-    }
-    .progress-circle .half.left {
-        clip: rect(0, 75px, 150px, 0);
-        transform: rotate(180deg);
-        background-color: var(--accent-green);
-        visibility: hidden;
-    }
-    .progress-bar-overlay {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
         background: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        z-index: 5;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
         text-align: center;
-        line-height: 130px;
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: var(--dark-text);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        color: #94a3b8;
     }
-    
-    .target-marker {
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background-color: var(--main-dark);
-        z-index: 10;
-        transform-origin: 75px 75px; /* Center of the circle */
-        top: 71px; /* Center Y */
-        left: 71px; /* Center X */
-        transition: transform 1s;
+
+    .feedback-badge {
+        padding: 1rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
     }
-    
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">⏱️ Days on Market (DOM) Analyzer</h1>
-    <p class="text-secondary mb-5 text-center">
-        Calculate the exact number of days a property spent on the market and compare it to the local average.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-clock-history text-secondary me-2"></i>Days on Market (DOM) Analyzer</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">
+            Evaluate listing performance by comparing the property's time on market against local velocity trends.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="dom-form" class="row g-4">
-            
-            <div class="col-lg-12">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-dark-text p-2 rounded mb-4">Property Timeline & Market Context</h4>
-                    
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="listing-date">Listing Date:</label>
-                            <input type="date" id="listing-date" required class="form-control form-control-custom">
-                        </div>
-                        
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="closing-date">Closing/Sale Date:</label>
-                            <input type="date" id="closing-date" required class="form-control form-control-custom">
-                        </div>
-                    </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="avg-dom">Local Market Average DOM (Days):</label>
-                        <input type="number" id="avg-dom" value="60" min="1" step="1" required class="form-control form-control-custom">
-                        <small class="text-muted">The average days a comparable property is on the market.</small>
+    
+
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4"><i class="bi bi-calendar-check me-2"></i>Timeline Data</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Listing Date</label>
+                    <input type="date" id="listing-date" class="form-control py-2 shadow-sm border-0">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Sale/Closing Date</label>
+                    <input type="date" id="closing-date" class="form-control py-2 shadow-sm border-0">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Market Average DOM</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text border-0 bg-white text-muted">Days</span>
+                        <input type="number" id="avg-dom" class="form-control border-0" placeholder="e.g. 60">
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: var(--main-dark); border: none;">
-                Calculate Days on Market
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                <button id="calculate-btn" class="btn btn-dark w-100 py-3 fw-bold mt-3">
+                    Analyze Market Position
+                </button>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white d-flex align-items-center">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-speedometer2 display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Ready for Analysis</h4>
+                    <p>Enter the property timeline to calculate DOM and market health feedback.</p>
+                </div>
+
+                <div id="result-ui" class="w-100 d-none text-center">
+                    <div class="progress-container">
+                        <div class="progress-bar-overlay">
+                            <span class="display-4 fw-black text-dark" id="dom-value">0</span>
+                            <span class="small text-muted fw-bold">TOTAL DAYS</span>
+                        </div>
+                    </div>
+
+                    <h3 class="fw-bold mb-1" id="status-title">Market Standard</h3>
+                    <p class="text-muted mb-4">Compared to <span id="ref-avg">60</span> day average</p>
+
+                    <div id="feedback-container" class="feedback-badge text-start mb-4">
+                        </div>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="p-3 border rounded text-start">
+                                <span class="small text-muted d-block">Market Speed</span>
+                                <span class="fw-bold" id="speed-pct">0% faster</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 border rounded text-start">
+                                <span class="small text-muted d-block">Timeline Status</span>
+                                <span class="fw-bold" id="timeline-status">Closed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Gathers and validates all inputs from the form.
-     */
-    function getInputs() {
-        const listingDateStr = document.getElementById('listing-date').value;
-        const closingDateStr = document.getElementById('closing-date').value;
+    document.getElementById('calculate-btn').addEventListener('click', function() {
+        const listingDateVal = document.getElementById('listing-date').value;
+        const closingDateVal = document.getElementById('closing-date').value;
         const avgDOM = parseInt(document.getElementById('avg-dom').value);
 
-        if (!listingDateStr || !closingDateStr || isNaN(avgDOM) || avgDOM <= 0) {
-            throw new Error("Please ensure all fields are filled with valid data.");
-        }
-        
-        const listingDate = new Date(listingDateStr);
-        const closingDate = new Date(closingDateStr);
-        
-        if (closingDate <= listingDate) {
-            throw new Error("The Closing/Sale Date must be after the Listing Date.");
+        if (!listingDateVal || !closingDateVal || isNaN(avgDOM)) {
+            alert("Please fill in all dates and the market average.");
+            return;
         }
 
-        return { listingDate, closingDate, avgDOM };
-    }
-    
-    /**
-     * Calculates the DOM in days.
-     */
-    function calculateDOM(listingDate, closingDate) {
-        // Difference in milliseconds
-        const diffTime = Math.abs(closingDate.getTime() - listingDate.getTime());
-        // Convert to days (1000ms/s * 60s/m * 60m/h * 24h/day)
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-        return diffDays;
-    }
-    
-    /**
-     * Generates HTML feedback based on the comparison to the average.
-     */
-    function getDOMFeedback(dom, avgDOM) {
-        let backgroundColor, color, message, icon;
+        const listing = new Date(listingDateVal);
+        const closing = new Date(closingDateVal);
+
+        if (closing <= listing) {
+            alert("Closing date must be after the listing date.");
+            return;
+        }
+
+        // Logic
+        const diffTime = Math.abs(closing - listing);
+        const dom = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
-        if (dom <= avgDOM * 0.75) {
-            // Sold significantly faster (great success)
-            backgroundColor = 'var(--accent-green)';
-            color = 'white';
-            icon = '✅';
-            message = `**Outstanding Performance:** The property sold significantly faster than the local average. This suggests aggressive pricing and high demand.`;
-        } else if (dom <= avgDOM * 1.1) {
-            // Sold close to or slightly above average (good/normal)
-            backgroundColor = '#d1fae5'; /* Lighter Green */
-            color = 'var(--dark-text)';
-            icon = '👍';
-            message = `**Market Standard:** The sale time is well aligned with the local market average, indicating effective pricing and solid market presence.`;
-        } else if (dom <= avgDOM * 1.5) {
-            // Took noticeably longer (caution)
-            backgroundColor = 'var(--accent-yellow)';
-            color = 'var(--dark-text)';
-            icon = '⚠️';
-            message = `**High DOM:** The property took longer than average to sell. This could indicate a need to re-evaluate pricing or staging/marketing.`;
+        // UI States
+        document.getElementById('placeholder-ui').classList.add('d-none');
+        document.getElementById('result-ui').classList.remove('d-none');
+
+        // Update DOM
+        document.getElementById('dom-value').textContent = dom;
+        document.getElementById('ref-avg').textContent = avgDOM;
+
+        // Feedback Logic
+        const feedbackBox = document.getElementById('feedback-container');
+        const statusTitle = document.getElementById('status-title');
+        const speedPct = document.getElementById('speed-pct');
+        
+        let color, bg, title, msg, speedMsg;
+        const diffPct = ((avgDOM - dom) / avgDOM * 100).toFixed(0);
+
+        if (dom <= avgDOM * 0.8) {
+            color = "#0d9488"; bg = "#f0fdfa"; title = "Hot Listing";
+            msg = "Excellent! The property sold significantly faster than average, indicating high demand or strategic pricing.";
+            speedMsg = `${diffPct}% faster`;
+        } else if (dom <= avgDOM * 1.2) {
+            color = "#475569"; bg = "#f8fafc"; title = "Market Average";
+            msg = "This property moved at a standard pace for the local area. Pricing was likely well-aligned with buyer expectations.";
+            speedMsg = dom <= avgDOM ? `${Math.abs(diffPct)}% faster` : `${Math.abs(diffPct)}% slower`;
         } else {
-            // Took much longer (high alert)
-            backgroundColor = 'var(--accent-red)';
-            color = 'white';
-            icon = '🛑';
-            message = `**Excessive DOM:** The time on market is significantly higher than the average. This usually points to overpricing relative to market demand.`;
+            color = "#e11d48"; bg = "#fff1f2"; title = "Stale Listing";
+            msg = "High DOM Alert. This property took noticeably longer to sell. Re-evaluating historical pricing or marketing may be necessary.";
+            speedMsg = `${Math.abs(diffPct)}% slower`;
         }
-        
-        return {
-            html: `<div class="feedback-box" style="background-color: ${backgroundColor}; color: ${color};">${icon} ${message}</div>`,
-            color: (dom <= avgDOM) ? 'var(--accent-green)' : 'var(--accent-red)'
-        };
-    }
 
-    /**
-     * Calculates the CSS transform for the radial progress bar.
-     * The rotation is measured from the 12 o'clock position (0 degrees) clockwise.
-     * The circle represents a fixed max DOM relative to the average (e.g., 200% of avg DOM).
-     */
-    function getRadialProgress(dom, avgDOM) {
-        const MAX_DAYS_IN_CIRCLE = avgDOM * 2; // Full circle represents 200% of avg DOM
-        let percentage = Math.min(dom / MAX_DAYS_IN_CIRCLE, 1);
-        let rotation = percentage * 360;
-        
-        // Target marker rotation (e.g., 60 days in a 120-day circle = 50% = 180deg)
-        const targetRotation = (avgDOM / MAX_DAYS_IN_CIRCLE) * 360;
-
-        // Determine if left half needs rotation and visibility
-        let rightRotation = Math.min(rotation, 180);
-        let leftRotation = Math.max(0, rotation - 180);
-        let leftVisibility = rotation > 180 ? 'visible' : 'hidden';
-
-        return { rightRotation, leftRotation, leftVisibility, targetRotation };
-    }
-
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleDOMCalc(e) {
-        e.preventDefault();
-
-        try {
-            const i = getInputs();
-            
-            const calculatedDOM = calculateDOM(i.listingDate, i.closingDate);
-            const feedback = getDOMFeedback(calculatedDOM, i.avgDOM);
-            const radialData = getRadialProgress(calculatedDOM, i.avgDOM);
-
-            
-            // --- Build Summary HTML ---
-            
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-text mb-4">Days on Market (DOM) Result</h4>
-                
-                <div class="progress-container">
-                    <!-- Target Marker -->
-                    <div class="target-marker" style="transform: rotate(${radialData.targetRotation}deg) translate(75px); background-color: var(--accent-yellow);" 
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="Local Average: ${i.avgDOM} Days">
-                    </div>
-
-                    <!-- Progress Bar -->
-                    <div class="progress-circle" style="transform: rotate(${radialData.rightRotation}deg);">
-                        <div class="half right" style="transform: rotate(0deg); background-color: ${feedback.color};"></div>
-                    </div>
-                    <div class="progress-circle">
-                        <div class="half left" style="transform: rotate(${radialData.leftRotation}deg); background-color: ${feedback.color}; visibility: ${radialData.leftVisibility};"></div>
-                    </div>
-                    
-                    <!-- DOM Value Overlay -->
-                    <div class="progress-bar-overlay">
-                        ${calculatedDOM}
-                        <small class="d-block fw-normal mt-n3" style="font-size: 0.7rem;">DAYS</small>
-                    </div>
-                </div>
-
-                <p class="metric-label mb-0">TOTAL DAYS ON MARKET</p>
-                <p class="metric-value mb-3" style="color: ${feedback.color};">
-                    ${calculatedDOM}
-                </p>
-                
-                <div class="row">
-                    <div class="col-md-6 text-md-end text-sm-center">
-                        <p class="small text-muted mb-1">Listing Date: <strong>${i.listingDate.toLocaleDateString()}</strong></p>
-                    </div>
-                    <div class="col-md-6 text-md-start text-sm-center">
-                        <p class="small text-muted mb-1">Closing Date: <strong>${i.closingDate.toLocaleDateString()}</strong></p>
-                    </div>
-                </div>
-
-                ${feedback.html}
-                
-                <div class="mt-4 p-3 border rounded text-start small bg-light">
-                    <p class="fw-bold text-dark-text mb-1">Market Comparison:</p>
-                    <ul class="list-unstyled mb-0">
-                        <li>Local Average DOM: **${i.avgDOM} days**</li>
-                        <li>Property DOM: **${calculatedDOM} days**</li>
-                        <li>Difference: **${calculatedDOM - i.avgDOM} days**</li>
-                    </ul>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-            // Re-initialize tooltips after rendering new content
-            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
-
-    // --- Initialization ---
-
-    // Set today's date as default for closing date
-    document.getElementById('closing-date').valueAsDate = new Date();
-    // Set a reasonable default listing date (e.g., 30 days ago)
-    const defaultListingDate = new Date();
-    defaultListingDate.setDate(defaultListingDate.getDate() - 30);
-    document.getElementById('listing-date').valueAsDate = defaultListingDate;
-
-
-    // Attach handler to the form
-    document.getElementById('dom-form').addEventListener('submit', handleDOMCalc);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('dom-form').dispatchEvent(new Event('submit'));
-    };
+        statusTitle.style.color = color;
+        statusTitle.textContent = title;
+        feedbackBox.style.backgroundColor = bg;
+        feedbackBox.style.color = color;
+        feedbackBox.innerHTML = `<i class="bi bi-info-circle-fill me-2"></i>${msg}`;
+        speedPct.textContent = speedMsg;
+        speedPct.style.color = color;
+    });
 </script>
 {% endblock %}
