@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Event Permit & License Cost Calculator{% endblock %}
+
+{% block meta_description %}Estimate the cost of municipal permits and licenses for your event. Calculate fees for street closures, noise permits, and health department filings.{% endblock %}
+
+{% block meta_keywords %}event permit calculator, street closure fee, noise permit cost, food license calculator, municipal event fees{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 71, 85, 105; /* Slate 600 */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 30px rgba(71, 85, 105, 0.1);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #334155;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Permit Type Cards */
+    .permit-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: all 0.2s ease;
+    }
+
+    .card-closure { border-left-color: #ef4444; } /* Red - Street/Public Space */
+    .card-health { border-left-color: #f59e0b; }   /* Amber - Food/Vendors */
+    .card-noise { border-left-color: #3b82f6; }    /* Blue - Sound/Late Hours */
+    .card-admin { border-left-color: #64748b; }    /* Slate - Filing Fees */
+
+    .result-display-box {
+        background: #334155;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        color: white;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #f1f5f9;
+        line-height: 1;
+    }
+
+    .filing-deadline-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: #fee2e2;
+        color: #991b1b;
+        display: inline-block;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-800"><i class="bi bi-file-earmark-ruled text-secondary me-2"></i>Permit & License Planner</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Estimate the regulatory costs for your public event. Note: Filing fees vary by city; these estimates use average metropolitan rates.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-slate-800"><i class="bi bi-geo-alt me-2"></i>Event Logistics</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Event Duration (Days)</label>
+                    <input type="number" id="permit-days" class="form-control shadow-sm" value="1">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Number of Food Vendors</label>
+                    <input type="number" id="vendor-count" class="form-control shadow-sm" placeholder="0">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Location Type</label>
+                    <select id="location-type" class="form-select shadow-sm">
+                        <option value="private">Private Venue (Indoor)</option>
+                        <option value="public_park">Public Park / Plaza</option>
+                        <option value="street">Street Closure Required</option>
+                    </select>
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-3">
+                        <span class="form-label text-slate-400 opacity-75">Total Permit Budget</span>
+                        <div class="result-value my-1" id="total-permit-cost">$0</div>
+                        <div class="filing-deadline-badge">
+                            <i class="bi bi-calendar-x me-1"></i> File 60 Days Prior
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-building-lock display-1 mb-3 text-muted opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Regulatory Analysis</h4>
+                    <p class="text-muted">Set your event duration and location to view required licenses.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Estimated Filing Fees</h5>
+                    
+                    <div class="permit-card card-closure">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0">Use of Public Space</h6>
+                                <p class="small text-muted mb-0">Park permits or street closure application.</p>
+                            </div>
+                            <h5 class="fw-bold mb-0" id="cost-closure">$0</h5>
+                        </div>
+                    </div>
+
+                    <div class="permit-card card-health">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-warning">Health & Food Licensing</h6>
+                                <p class="small text-muted mb-0">Temporary food service permits per vendor.</p>
+                            </div>
+                            <h5 class="fw-bold mb-0" id="cost-health">$0</h5>
+                        </div>
+                    </div>
+
+                    <div class="permit-card card-noise">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-primary">Sound & Amplification</h6>
+                                <p class="small text-muted mb-0">Noise variance for speakers/live music.</p>
+                            </div>
+                            <h5 class="fw-bold mb-0" id="cost-noise">$0</h5>
+                        </div>
+                    </div>
+
+                    <div class="permit-card card-admin">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-secondary">General Admin Filing</h6>
+                                <p class="small text-muted mb-0">Non-refundable processing & safety review.</p>
+                            </div>
+                            <h5 class="fw-bold mb-0" id="cost-admin">$150</h5>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded mt-4 border">
+                        <h6 class="fw-bold small mb-2"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Critical Warning:</h6>
+                        <p class="small text-muted mb-0">
+                            Failure to obtain a <strong>Noise Variance</strong> or <strong>Street Closure Permit</strong> can result in immediate event shutdown and fines exceeding $2,500.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculatePermits() {
+        const days = parseFloat(document.getElementById('permit-days').value) || 1;
+        const vendors = parseFloat(document.getElementById('vendor-count').value) || 0;
+        const locType = document.getElementById('location-type').value;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (days <= 0 && vendors === 0 && locType === 'private') {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic: Public Space
+        let closure = 0;
+        if (locType === 'public_park') closure = 250 * days;
+        if (locType === 'street') closure = 750 * days;
+
+        // Logic: Health
+        let health = vendors * 75;
+
+        // Logic: Noise
+        let noise = locType !== 'private' ? 100 * days : 0;
+
+        // Base Admin
+        let admin = 150;
+
+        const total = closure + health + noise + admin;
+
+        // Display
+        document.getElementById('cost-closure').textContent = '$' + closure;
+        document.getElementById('cost-health').textContent = '$' + health;
+        document.getElementById('cost-noise').textContent = '$' + noise;
+        document.getElementById('cost-admin').textContent = '$' + admin;
+        document.getElementById('total-permit-cost').textContent = '$' + total.toLocaleString();
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('input', calculatePermits);
+        });
+    };
+</script>
+{% endblock %}

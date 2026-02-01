@@ -1,0 +1,48 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.event_dashboard, name="event_dashboard"),
+    path("event_budget_calculator/", views.event_budget_calculator, name="event_budget_calculator"),
+    path("venue_capacity_calculator/", views.venue_capacity_calculator, name="venue_capacity_calculator"),
+    path("guest_list_cost_per_person_calculator/", views.guest_list_cost_per_person_calculator, name="guest_list_cost_per_person_calculator"),
+    path("catering_cost_calculator/", views.catering_cost_calculator, name="catering_cost_calculator"),
+    path("event_seating_chart_planner/", views.event_seating_chart_planner, name="event_seating_chart_planner"),
+    path("event_timeline_run_sheet_generator/", views.event_timeline_run_sheet_generator, name="event_timeline_run_sheet_generator"),
+    path("audio_visual_equipment_calculator/", views.audio_visual_equipment_calculator, name="audio_visual_equipment_calculator"),
+    path("event_lighting_requirements_calculator/", views.event_lighting_requirements_calculator, name="event_lighting_requirements_calculator"),
+    path("wedding_budget_calculator/", views.wedding_budget_calculator, name="wedding_budget_calculator"),
+    path("conference_budget_calculator/", views.conference_budget_calculator, name="conference_budget_calculator"),
+    path("party_budget_calculator/", views.party_budget_calculator, name="party_budget_calculator"),
+    path("event_staffing_calculator/", views.event_staffing_calculator, name="event_staffing_calculator"),
+    path("event_insurance_cost_calculator/", views.event_insurance_cost_calculator, name="event_insurance_cost_calculator"),
+    path("event_permit_license_cost_calculator/", views.event_permit_license_cost_calculator, name="event_permit_license_cost_calculator"),
+    path("event_roi_calculator/", views.event_roi_calculator, name="event_roi_calculator"),
+    path("ticket_price_break_even_calculator/", views.ticket_price_break_even_calculator, name="ticket_price_break_even_calculator"),
+    path("event_registration_fee_tax_calculator/", views.event_registration_fee_tax_calculator, name="event_registration_fee_tax_calculator"),
+    path("event_sponsorship_value_calculator/", views.event_sponsorship_value_calculator, name="event_sponsorship_value_calculator"),
+    path("event_marketing_cost_calculator/", views.event_marketing_cost_calculator, name="event_marketing_cost_calculator"),
+    path("event_decor_florist_cost_calculator/", views.event_decor_florist_cost_calculator, name="event_decor_florist_cost_calculator"),
+    path("event_transportation_parking_calculator/", views.event_transportation_parking_calculator, name="event_transportation_parking_calculator"),
+    path("event_power_generator_requirements_calculator/", views.event_power_generator_requirements_calculator, name="event_power_generator_requirements_calculator"),
+    path("event_wi_fi_bandwidth_calculator/", views.event_wi_fi_bandwidth_calculator, name="event_wi_fi_bandwidth_calculator"),
+    path("event_waste_management_bin_calculator/", views.event_waste_management_bin_calculator, name="event_waste_management_bin_calculator"),
+    path("event_security_staff_risk_calculator/", views.event_security_staff_risk_calculator, name="event_security_staff_risk_calculator"),
+    path("event_photography_videography_calculator/", views.event_photography_videography_calculator, name="event_photography_videography_calculator"),
+    path("event_stage_backdrop_size_calculator/", views.event_stage_backdrop_size_calculator, name="event_stage_backdrop_size_calculator"),
+    path("event_sound_system_pa_coverage_calculator/", views.event_sound_system_pa_coverage_calculator, name="event_sound_system_pa_coverage_calculator"),
+    path("event_tent_size_capacity_calculator/", views.event_tent_size_capacity_calculator, name="event_tent_size_capacity_calculator"),
+    path("event_table_chair_rental_calculator/", views.event_table_chair_rental_calculator, name="event_table_chair_rental_calculator"),
+    path("event_menu_planning_food_quantity_calculator/", views.event_menu_planning_food_quantity_calculator, name="event_menu_planning_food_quantity_calculator"),
+    path("event_beverage_alcohol_calculator/", views.event_beverage_alcohol_calculator, name="event_beverage_alcohol_calculator"),
+    path("event_cake_serving_tier_calculator/", views.event_cake_serving_tier_calculator, name="event_cake_serving_tier_calculator"),
+    path("event_invitation_stationery_cost_calculator/", views.event_invitation_stationery_cost_calculator, name="event_invitation_stationery_cost_calculator"),
+    path("event_gift_bag_welcome_kit_calculator/", views.event_gift_bag_welcome_kit_calculator, name="event_gift_bag_welcome_kit_calculator"),
+    path("event_speaker_fee_budget_calculator/", views.event_speaker_fee_budget_calculator, name="event_speaker_fee_budget_calculator"),
+    path("event_travel_accommodation_calculator/", views.event_travel_accommodation_calculator, name="event_travel_accommodation_calculator"),
+    path("event_networking_social_time_calculator/", views.event_networking_social_time_calculator, name="event_networking_social_time_calculator"),
+    path("event_breakout_session_scheduler_capacity_calculator/", views.event_breakout_session_scheduler_capacity_calculator, name="event_breakout_session_scheduler_capacity_calculator"),
+
+
+]
+

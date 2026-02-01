@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Event Menu Planning & Food Quantity Calculator{% endblock %}
+
+{% block meta_description %}Estimate food quantities for your event. Calculate pounds of meat, sides, and appetizers based on guest count and service style.{% endblock %}
+
+{% block meta_keywords %}event catering calculator, food quantity planner, wedding menu portions, catering portion guide, bulk food calculator{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 234, 88, 12; /* Orange 600 */
+    }
+
+    body {
+        background-color: #fff7ed; /* Orange 50 */
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px rgba(234, 88, 12, 0.1);
+        border: 1px solid #ffedd5;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #7c2d12; /* Orange 900 */
+        color: #fff7ed;
+        border-right: 1px solid #9a3412;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #fed7aa;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Food Category Cards */
+    .food-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: transform 0.2s ease;
+    }
+
+    .card-protein { border-left-color: #ea580c; } /* Orange - Meat */
+    .card-sides { border-left-color: #10b981; }   /* Emerald - Veggies */
+    .card-apps { border-left-color: #6366f1; }    /* Indigo - Small Bites */
+
+    .result-display-box {
+        background: #431407;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #ea580c;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #fb923c;
+        line-height: 1;
+    }
+
+    .portion-stat {
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .chef-hat-bg {
+        position: absolute;
+        bottom: -20px;
+        right: -10px;
+        font-size: 7rem;
+        color: #ffedd5;
+        opacity: 0.5;
+        z-index: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-900"><i class="bi bi-egg-fried text-orange-600 me-2"></i>Menu Quantity Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Eliminate the guesswork in catering. Calculate the raw and cooked weights needed to feed your guests based on meal type and variety.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-cart4 me-2"></i>Order Estimates</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Guest Count</label>
+                    <input type="number" id="food-guests" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 100">
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-orange-200">Total Main Protein</span>
+                        <div class="result-value my-1" id="total-meat-lbs">0</div>
+                        <p class="mb-0 small fw-bold text-orange-100">Lbs Raw Weight</p>
+                    </div>
+
+                    <div class="portion-stat">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-orange-200">Side Dishes (Total):</span>
+                            <span class="fw-bold text-white" id="stat-sides">0 lbs</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-orange-200">Appetizer Pieces:</span>
+                            <span class="fw-bold text-white" id="stat-apps">0 pcs</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white position-relative overflow-hidden">
+                <i class="bi bi-cup-hot chef-hat-bg"></i>
+                
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-journal-text display-1 mb-3 text-orange-100"></i>
+                    <h4 class="fw-bold text-dark">Build Your Menu</h4>
+                    <p class="text-muted">Set your guest count to see suggested portions for proteins, sides, and bites.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none position-relative">
+                    <h5 class="fw-bold mb-4 text-dark">Portion Guidelines</h5>
+
+                    <div class="food-card card-protein">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-orange">Main Protein</h6>
+                                <p class="small text-muted mb-0">Beef, Chicken, or Pork portions.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="protein-variety" class="form-select food-input">
+                                    <option value="0.5">Single Choice (1/2 lb)</option>
+                                    <option value="0.75" selected>Buffet (3/4 lb total)</option>
+                                    <option value="0.33">Light Lunch (1/3 lb)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="food-card card-sides">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-success">Starches & Veggies</h6>
+                                <p class="small text-muted mb-0">Recommended 4-6oz per side.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="sides-count" class="form-select food-input">
+                                    <option value="1">1 Side Dish</option>
+                                    <option value="2" selected>2 Side Dishes</option>
+                                    <option value="3">3+ Side Dishes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="food-card card-apps">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-indigo">Cocktail Appetizers</h6>
+                                <p class="small text-muted mb-0">Calculated per hour of service.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="app-duration" class="form-select food-input">
+                                    <option value="0">None</option>
+                                    <option value="4">Pre-Dinner (4 pcs/guest)</option>
+                                    <option value="8">Cocktail Party (8 pcs/guest)</option>
+                                    <option value="12">Appetizer-Only Event (12+)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-orange mt-4 bg-light border-0 small">
+                        <i class="bi bi-info-circle-fill text-orange-600 me-2"></i>
+                        <strong>The Shrinkage Rule:</strong> Most meats lose <strong>25–30%</strong> of their weight during cooking. This calculator uses "Raw Weight" targets to ensure your cooked yield is sufficient.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateFood() {
+        const guests = parseFloat(document.getElementById('food-guests').value) || 0;
+        const meatRate = parseFloat(document.getElementById('protein-variety').value);
+        const sidesCount = parseFloat(document.getElementById('sides-count').value);
+        const appRate = parseFloat(document.getElementById('app-duration').value);
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (guests <= 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic
+        // Protein: Lbs = Guests * portion rate
+        const totalMeat = Math.round(guests * meatRate);
+        
+        // Sides: Assumes ~5oz (0.31 lbs) per guest per side
+        const totalSidesLbs = Math.round(guests * 0.31 * sidesCount);
+        
+        // Appetizers: Simple piece count
+        const totalAppPieces = Math.round(guests * appRate);
+
+        document.getElementById('total-meat-lbs').textContent = totalMeat.toLocaleString();
+        document.getElementById('stat-sides').textContent = totalSidesLbs.toLocaleString() + " lbs";
+        document.getElementById('stat-apps').textContent = totalAppPieces.toLocaleString() + " pcs";
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('.food-input, #food-guests').forEach(el => {
+            el.addEventListener('input', calculateFood);
+        });
+    };
+</script>
+{% endblock %}

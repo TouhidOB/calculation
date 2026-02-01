@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Event Registration Fee & Tax Calculator{% endblock %}
+
+{% block meta_description %}Calculate final event registration fees. Account for ticket platform commissions, credit card processing, and sales tax to find your net profit per ticket.{% endblock %}
+
+{% block meta_keywords %}registration fee calculator, ticket fee planner, eventbrite fee calculator, credit card processing event, ticket tax calculator{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 79, 70, 229; /* Indigo 600 */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.1);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Fee Component Cards */
+    .fee-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: transform 0.2s ease;
+    }
+
+    .card-base { border-left-color: #4f46e5; }    /* Indigo - Base Price */
+    .card-platform { border-left-color: #f43f5e; } /* Rose - Platform Fees */
+    .card-tax { border-left-color: #10b981; }      /* Emerald - Taxes */
+
+    .result-display-box {
+        background: #1e293b;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        color: white;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #818cf8;
+        line-height: 1;
+    }
+
+    .net-profit-box {
+        background: #ecfdf5;
+        border: 1px solid #10b981;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 15px;
+        color: #065f46;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-900"><i class="bi bi-ticket-perforated text-primary me-2"></i>Registration Fee Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Calculate the true cost of your tickets. Balance platform commissions and merchant fees to ensure your event hits its revenue targets.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-wallet2 me-2"></i>Financial Summary</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Fee Handling</label>
+                    <select id="fee-strategy" class="form-select shadow-sm">
+                        <option value="pass">Pass fees to Attendee</option>
+                        <option value="absorb">Absorb fees (Deduct from profit)</option>
+                    </select>
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-3">
+                        <span class="form-label text-slate-400 opacity-75">Price for Attendee</span>
+                        <div class="result-value my-1" id="total-attendee-price">$0</div>
+                        <p class="mb-0 small fw-bold">Grand Total at Checkout</p>
+                    </div>
+
+                    <div class="net-profit-box text-center">
+                        <span class="form-label d-block mb-1" style="color: #059669;">Your Net Profit</span>
+                        <h4 class="fw-bold mb-0" id="net-profit-per-ticket">$0.00</h4>
+                        <p class="x-small mb-0" style="font-size: 0.7rem;">Per ticket sold</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-calculator-fill display-1 mb-3 text-muted opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Configure Your Ticket</h4>
+                    <p class="text-muted">Enter your desired base price to see the breakdown of fees and taxes.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Fee Breakdown</h5>
+
+                    
+
+                    <div class="fee-card card-base">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0">Base Ticket Price</h6>
+                                <p class="small text-muted mb-0">Your desired revenue per head.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="base-price" class="form-control reg-input" placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fee-card card-platform">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-danger">Platform & Merchant Fees</h6>
+                                <p class="small text-muted mb-0">Commission + Credit Card Processing.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group input-group-sm mb-2">
+                                    <input type="number" id="fee-percent" class="form-control reg-input" value="3.5">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="fee-flat" class="form-control reg-input" value="0.99">
+                                    <span class="input-group-text">Flat</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fee-card card-tax">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-success">Sales Tax / VAT</h6>
+                                <p class="small text-muted mb-0">Applicable regional taxes.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <input type="number" id="tax-percent" class="form-control reg-input" placeholder="0">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning mt-4 small border-0 py-2">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Typical merchant fees (Stripe/PayPal) are <strong>2.9% + $0.30</strong>. Platform fees (Eventbrite/Ticketmaster) vary significantly.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateFees() {
+        const base = parseFloat(document.getElementById('base-price').value) || 0;
+        const feePct = (parseFloat(document.getElementById('fee-percent').value) || 0) / 100;
+        const feeFlat = parseFloat(document.getElementById('fee-flat').value) || 0;
+        const taxPct = (parseFloat(document.getElementById('tax-percent').value) || 0) / 100;
+        const strategy = document.getElementById('fee-strategy').value;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (base <= 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        let attendeePrice, netProfit;
+        const totalFees = (base * feePct) + feeFlat;
+        const totalTax = base * taxPct;
+
+        if (strategy === 'pass') {
+            // Attendee pays base + fees + tax
+            attendeePrice = base + totalFees + totalTax;
+            netProfit = base;
+        } else {
+            // Attendee pays base, you cover fees and tax
+            attendeePrice = base;
+            netProfit = base - totalFees - totalTax;
+        }
+
+        document.getElementById('total-attendee-price').textContent = '$' + attendeePrice.toFixed(2);
+        document.getElementById('net-profit-per-ticket').textContent = '$' + netProfit.toFixed(2);
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('.reg-input, #fee-strategy').forEach(el => {
+            el.addEventListener('input', calculateFees);
+        });
+    };
+</script>
+{% endblock %}

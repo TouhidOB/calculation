@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Event Table & Chair Rental Calculator{% endblock %}
+
+{% block meta_description %}Estimate your event rental inventory. Calculate the number of round or rectangular tables and chairs needed based on your guest count.{% endblock %}
+
+{% block meta_keywords %}event rental calculator, table and chair planner, wedding rentals budget, party seating calculator, event inventory tool{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 79, 70, 229; /* Indigo 600 */
+    }
+
+    body {
+        background-color: #f5f3ff; /* Indigo 50 */
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.1);
+        border: 1px solid #ddd6fe;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #312e81; /* Indigo 900 */
+        color: #f5f3ff;
+        border-right: 1px solid #3730a3;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #c7d2fe;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Inventory Cards */
+    .rental-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #e5e7eb;
+        transition: transform 0.2s ease;
+    }
+
+    .card-chairs { border-left-color: #6366f1; }  /* Indigo - Seating */
+    .card-tables { border-left-color: #10b981; }  /* Emerald - Surfaces */
+    .card-linens { border-left-color: #f43f5e; }  /* Rose - Decor */
+
+    .result-display-box {
+        background: #1e1b4b;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #4f46e5;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #818cf8;
+        line-height: 1;
+    }
+
+    .inventory-stat {
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .chair-icon-bg {
+        position: absolute;
+        bottom: -20px;
+        right: -10px;
+        font-size: 7rem;
+        color: #e0e7ff;
+        opacity: 0.4;
+        z-index: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-900"><i class="bi bi-grid-3x3-gap-fill text-indigo-600 me-2"></i>Table & Chair Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Optimize your inventory orders. Calculate the exact number of tables and chairs required for your guest count, plus estimated rental costs.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-cart-check me-2"></i>Order Summary</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Guest Count</label>
+                    <input type="number" id="rental-guests" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 120">
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-indigo-300">Est. Rental Total</span>
+                        <div class="result-value my-1" id="total-rental-cost">$0</div>
+                        <p class="mb-0 small fw-bold text-indigo-100">Excluding Delivery</p>
+                    </div>
+
+                    <div class="inventory-stat">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-indigo-200">Total Chairs:</span>
+                            <span class="fw-bold text-white" id="stat-chairs">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-indigo-200">Total Tables:</span>
+                            <span class="fw-bold text-white" id="stat-tables">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white position-relative overflow-hidden">
+                <i class="bi bi-house-door chair-icon-bg"></i>
+                
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-stack display-1 mb-3 text-indigo-100"></i>
+                    <h4 class="fw-bold text-dark">Build Your Rental List</h4>
+                    <p class="text-muted">Enter your guest count to see inventory and pricing breakdowns.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none position-relative">
+                    <h5 class="fw-bold mb-4 text-dark">Configuration</h5>
+
+                    <div class="rental-card card-chairs">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-indigo">Chair Selection</h6>
+                                <p class="small text-muted mb-0">Select style and price point.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="chair-tier" class="form-select rental-input">
+                                    <option value="2.50">Folding / Resin ($2.50)</option>
+                                    <option value="8.00" selected>Chiavari / Ghost ($8.00)</option>
+                                    <option value="15.00">Luxury Velvet / Armed ($15.00)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rental-card card-tables">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-success">Table Capacity</h6>
+                                <p class="small text-muted mb-0">Standard rentals (60" Round or 8' Rect).</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="table-capacity" class="form-select rental-input">
+                                    <option value="8">Round 60" (Seats 8)</option>
+                                    <option value="10" selected>Round 72" (Seats 10)</option>
+                                    <option value="8">8' Rectangle (Seats 8)</option>
+                                    <option value="6">6' Rectangle (Seats 6)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rental-card card-linens">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-danger">Table & Linen Rate</h6>
+                                <p class="small text-muted mb-0">Includes table and basic cloth.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="table-price" class="form-control rental-input" value="35">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-indigo mt-4 bg-light border-0 small">
+                        <i class="bi bi-info-circle-fill text-indigo-600 me-2"></i>
+                        <strong>Pro Tip:</strong> Order <strong>5% extra chairs</strong>. Guests often leave gaps between themselves, and you'll want spares for broken items or late arrivals.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateRentals() {
+        const guests = parseFloat(document.getElementById('rental-guests').value) || 0;
+        const chairPrice = parseFloat(document.getElementById('chair-tier').value);
+        const tableCap = parseFloat(document.getElementById('table-capacity').value);
+        const tablePrice = parseFloat(document.getElementById('table-price').value) || 0;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (guests <= 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic
+        const numChairs = Math.ceil(guests * 1.05); // Includes 5% safety margin
+        const numTables = Math.ceil(guests / tableCap);
+        
+        const totalCost = (numChairs * chairPrice) + (numTables * tablePrice);
+
+        document.getElementById('total-rental-cost').textContent = '$' + totalCost.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('stat-chairs').textContent = numChairs;
+        document.getElementById('stat-tables').textContent = numTables;
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('.rental-input, #rental-guests').forEach(el => {
+            el.addEventListener('input', calculateRentals);
+        });
+    };
+</script>
+{% endblock %}

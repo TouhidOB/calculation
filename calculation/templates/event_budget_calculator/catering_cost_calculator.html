@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Catering Cost Calculator (Per Head & Total){% endblock %}
+
+{% block meta_description %}Calculate catering costs per guest including appetizers, main courses, desserts, and service fees. Visualize your catering budget breakdown.{% endblock %}
+
+{% block meta_keywords %}catering calculator, cost per head, wedding catering, event food planner, catering budget, menu cost calculator{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 249, 115, 22; /* Orange 500 */
+    }
+
+    body {
+        background-color: #fffaf5;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(249, 115, 22, 0.08);
+        border: 1px solid #ffedd5;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #fff7ed;
+        border-right: 1px solid #ffedd5;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #7c2d12;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    /* Catering Category Cards */
+    .menu-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border-top: 1px solid #f1f5f9;
+        border-right: 1px solid #f1f5f9;
+        border-bottom: 1px solid #f1f5f9;
+        transition: transform 0.2s ease;
+    }
+
+    .menu-card:hover { transform: translateY(-2px); }
+
+    .card-food { border-left-color: #f97316; }   /* Orange - Main */
+    .card-drink { border-left-color: #0ea5e9; }  /* Sky - Drinks */
+    .card-service { border-left-color: #10b981; } /* Emerald - Fees */
+
+    .result-display-box {
+        background-color: #ffffff;
+        border: 2px solid #f97316;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #c2410c;
+        line-height: 1;
+    }
+
+    .catering-bar {
+        height: 40px;
+        border-radius: 10px;
+        overflow: hidden;
+        display: flex;
+        background: #f1f5f9;
+    }
+
+    .bar-segment {
+        height: 100%;
+        color: white;
+        font-weight: 700;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: width 0.6s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-cup-straw text-orange me-2"></i>Catering Cost Planner</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Estimate your total catering investment by breaking down menu items, beverage packages, and service gratuities.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-people me-2"></i>Attendance</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Guest Count</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-white"><i class="bi bi-person-check"></i></span>
+                        <input type="number" id="catering-guests" class="form-control" placeholder="e.g. 50">
+                    </div>
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label text-orange opacity-75">Estimated Total</span>
+                        <div class="result-value my-1" id="total-catering-bill">$0</div>
+                        <p class="mb-0 small fw-bold text-dark" id="per-head-label">$0.00 / person</p>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-white rounded border border-orange-subtle small mt-auto">
+                    <i class="bi bi-info-circle-fill text-orange me-1"></i>
+                    <strong>Catering Tip:</strong> Don't forget to include a 18-22% service fee and local sales tax in your "Service & Fees" section.
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-egg-fried display-1 mb-3 text-muted opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Build Your Menu</h4>
+                    <p>Enter the number of guests and estimated per-person costs for each category.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Menu & Service Breakdown</h5>
+                    
+                    <div class="menu-card card-food">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-orange">Food Selection</h6>
+                                <p class="small text-muted mb-0">Appetizers, Mains, and Sides.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="menu-food" class="form-control menu-input" placeholder="Per Person">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-card card-drink">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-info">Beverage Package</h6>
+                                <p class="small text-muted mb-0">Soft drinks, coffee, or open bar.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="menu-drinks" class="form-control menu-input" placeholder="Per Person">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-card card-service">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-success">Service & Fees</h6>
+                                <p class="small text-muted mb-0">Staffing, Gratuity, and Rentals.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="menu-service" class="form-control menu-input" placeholder="Per Person">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mt-5 mb-3"><i class="bi bi-graph-up-arrow me-2"></i>Budget Distribution</h6>
+                    <div class="catering-bar shadow-sm" id="catering-distribution-bar"></div>
+                    
+                    <div class="mt-4 p-3 rounded-3 bg-light border-0">
+                        <div class="row text-center">
+                            <div class="col-4 border-end">
+                                <div class="small text-muted">Food</div>
+                                <div class="fw-bold text-orange" id="total-food-sum">$0</div>
+                            </div>
+                            <div class="col-4 border-end">
+                                <div class="small text-muted">Drinks</div>
+                                <div class="fw-bold text-info" id="total-drinks-sum">$0</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small text-muted">Fees</div>
+                                <div class="fw-bold text-success" id="total-service-sum">$0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const menuInputs = ['menu-food', 'menu-drinks', 'menu-service'];
+    const colors = { 'menu-food': '#f97316', 'menu-drinks': '#0ea5e9', 'menu-service': '#10b981' };
+    const labels = { 'menu-food': 'Food', 'menu-drinks': 'Drinks', 'menu-service': 'Fees' };
+
+    function calculateCatering() {
+        const guests = parseFloat(document.getElementById('catering-guests').value) || 0;
+        let perHeadTotal = 0;
+        let costs = {};
+
+        menuInputs.forEach(id => {
+            const val = parseFloat(document.getElementById(id).value) || 0;
+            perHeadTotal += val;
+            costs[id] = val;
+        });
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (guests <= 0 || perHeadTotal <= 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        const totalBill = perHeadTotal * guests;
+
+        // Update Summary
+        document.getElementById('total-catering-bill').textContent = '$' + totalBill.toLocaleString();
+        document.getElementById('per-head-label').textContent = '$' + perHeadTotal.toFixed(2) + ' / person';
+        
+        // Update Bottom Stats
+        document.getElementById('total-food-sum').textContent = '$' + (costs['menu-food'] * guests).toLocaleString();
+        document.getElementById('total-drinks-sum').textContent = '$' + (costs['menu-drinks'] * guests).toLocaleString();
+        document.getElementById('total-service-sum').textContent = '$' + (costs['menu-service'] * guests).toLocaleString();
+
+        // Update Visual Bar
+        const bar = document.getElementById('catering-distribution-bar');
+        bar.innerHTML = '';
+
+        menuInputs.forEach(id => {
+            if (costs[id] > 0) {
+                const pct = (costs[id] / perHeadTotal) * 100;
+                const segment = document.createElement('div');
+                segment.className = 'bar-segment';
+                segment.style.width = pct + '%';
+                segment.style.backgroundColor = colors[id];
+                segment.textContent = pct > 15 ? labels[id] : '';
+                segment.title = `${labels[id]}: $${costs[id]} per person`;
+                bar.appendChild(segment);
+            }
+        });
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateCatering);
+        });
+    };
+</script>
+{% endblock %}

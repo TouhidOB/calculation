@@ -4,7 +4,7 @@
 
 {% block meta_description %}See the total interest savings and the shorter loan term achieved by switching from monthly to bi-weekly mortgage payments (26 payments per year).{% endblock %}
 
-{% block meta_keywords %}bi-weekly mortgage, interest savings, accelerate payoff, loan term reduction, 13th payment, finance calculator{% endendblock %}
+{% block meta_keywords %}bi-weekly mortgage, interest savings, accelerate payoff, loan term reduction, 13th payment, finance calculator{% endblock %}
 
 {% block extra_head %}
 <!-- Include Bootstrap 5 CSS -->
@@ -243,14 +243,6 @@
         }
     }
     
-    /**
-     * Simulates the amortization schedule for a given payment frequency.
-     * @param {number} P - Principal
-     * @param {number} R_annual - Annual Rate (percentage)
-     * @param {number} N_years - Loan Term (years)
-     * @param {number} paymentsPerYear - 12 for monthly, 26 for bi-weekly
-     * @returns {{totalInterest: number, totalPayments: number}}
-     */
     function simulateAmortization(P, R_annual, N_years, paymentsPerYear) {
         const monthlyPI = calculateMonthlyPI(P, R_annual, N_years);
         

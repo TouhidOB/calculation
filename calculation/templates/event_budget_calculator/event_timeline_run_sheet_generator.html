@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Event Timeline & Run Sheet Generator{% endblock %}
+
+{% block meta_description %}Create a professional event run sheet and timeline. Calculate segment durations and visualize your event schedule from start to finish.{% endblock %}
+
+{% block meta_keywords %}event timeline, run sheet, event schedule, wedding timeline, itinerary generator, event planning tool{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 79, 70, 229; /* Indigo 600 */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #eff6ff;
+        border-right: 1px solid #dbeafe;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #1e3a8a;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    /* Timeline Segment Cards */
+    .timeline-card {
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border-left: 6px solid;
+        background: white;
+        border-top: 1px solid #e2e8f0;
+        border-right: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        transition: transform 0.2s;
+    }
+
+    .card-setup { border-left-color: #94a3b8; }    /* Setup - Gray */
+    .card-main { border-left-color: #4f46e5; }     /* Main - Indigo */
+    .card-break { border-left-color: #f59e0b; }    /* Break - Amber */
+    .card-cleanup { border-left-color: #ef4444; }  /* Cleanup - Red */
+
+    .result-display-box {
+        background-color: #ffffff;
+        border: 2px solid #3b82f6;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1e40af;
+        line-height: 1;
+    }
+
+    /* Progress Bar for Timeline */
+    .timeline-visual-bar {
+        height: 30px;
+        border-radius: 6px;
+        overflow: hidden;
+        display: flex;
+        background: #e2e8f0;
+    }
+
+    .time-segment {
+        height: 100%;
+        color: white;
+        font-weight: 600;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: width 0.4s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-clock-history text-primary me-2"></i>Event Run Sheet Generator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Map out your event schedule. Enter the duration (in minutes) for each phase to calculate your total event time and visualize the day.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-calendar-event me-2"></i>Event Logistics</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Event Start Time</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-white"><i class="bi bi-play-circle"></i></span>
+                        <input type="time" id="start-time" class="form-control" value="18:00">
+                    </div>
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label text-primary opacity-75">Total Duration</span>
+                        <div class="result-value my-1" id="total-duration-display">0h 0m</div>
+                        <p class="mb-0 small fw-bold text-dark" id="end-time-display">Ends at: --:--</p>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-white rounded border border-blue-subtle small mt-auto">
+                    <i class="bi bi-lightning-fill text-warning me-1"></i>
+                    <strong>Buffer Tip:</strong> Always add 5-10 minutes of "buffer" between major transitions to account for guest movement.
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-hourglass-split display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Build Your Itinerary</h4>
+                    <p>Enter duration in minutes for each phase to generate your run sheet.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Schedule Phases</h5>
+                    
+                    <div class="timeline-card card-setup">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0">Pre-Event Setup</h6>
+                            <div class="input-group w-25">
+                                <input type="number" id="time-setup" class="form-control form-control-sm time-input" placeholder="Min">
+                                <span class="input-group-text py-0 small">m</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-card card-main">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-primary">Main Event / Program</h6>
+                            <div class="input-group w-25">
+                                <input type="number" id="time-main" class="form-control form-control-sm time-input" placeholder="Min">
+                                <span class="input-group-text py-0 small">m</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-card card-break">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-warning">Intermission / Meal</h6>
+                            <div class="input-group w-25">
+                                <input type="number" id="time-break" class="form-control form-control-sm time-input" placeholder="Min">
+                                <span class="input-group-text py-0 small">m</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-card card-cleanup">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-danger">Cleanup & Bump-out</h6>
+                            <div class="input-group w-25">
+                                <input type="number" id="time-cleanup" class="form-control form-control-sm time-input" placeholder="Min">
+                                <span class="input-group-text py-0 small">m</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mt-5 mb-3"><i class="bi bi-bar-chart-steps me-2"></i>Visual Timeline Flow</h6>
+                    <div class="timeline-visual-bar shadow-sm" id="timeline-bar"></div>
+                    
+                    <div id="itinerary-list" class="mt-4 small">
+                        </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const inputs = ['time-setup', 'time-main', 'time-break', 'time-cleanup'];
+    const labels = { 'time-setup': 'Setup', 'time-main': 'Main', 'time-break': 'Break', 'time-cleanup': 'Exit' };
+    const colors = { 'time-setup': '#94a3b8', 'time-main': '#4f46e5', 'time-break': '#f59e0b', 'time-cleanup': '#ef4444' };
+
+    function calculateTimeline() {
+        const startTimeStr = document.getElementById('start-time').value;
+        let totalMinutes = 0;
+        let segments = [];
+        
+        inputs.forEach(id => {
+            const val = parseInt(document.getElementById(id).value) || 0;
+            totalMinutes += val;
+            segments.push({ id, val });
+        });
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (totalMinutes === 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Total Duration Display
+        const hours = Math.floor(totalMinutes / 60);
+        const mins = totalMinutes % 60;
+        document.getElementById('total-duration-display').textContent = `${hours}h ${mins}m`;
+
+        // End Time Calculation
+        if (startTimeStr) {
+            let [h, m] = startTimeStr.split(':').map(Number);
+            let startDate = new Date();
+            startDate.setHours(h, m, 0);
+            let endDate = new Date(startDate.getTime() + totalMinutes * 60000);
+            document.getElementById('end-time-display').textContent = `Ends at: ${endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            
+            // Build Detailed List
+            const list = document.getElementById('itinerary-list');
+            list.innerHTML = '<strong>Calculated Run Sheet:</strong><br>';
+            let rollingTime = new Date(startDate.getTime());
+            
+            segments.forEach(s => {
+                if (s.val > 0) {
+                    let endSeg = new Date(rollingTime.getTime() + s.val * 60000);
+                    list.innerHTML += `<div class="d-flex justify-content-between border-bottom py-1">
+                        <span>${labels[s.id]}</span>
+                        <span class="text-muted">${rollingTime.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} - ${endSeg.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                    </div>`;
+                    rollingTime = endSeg;
+                }
+            });
+        }
+
+        // Update Bar
+        const bar = document.getElementById('timeline-bar');
+        bar.innerHTML = '';
+        segments.forEach(s => {
+            if (s.val > 0) {
+                const pct = (s.val / totalMinutes) * 100;
+                const div = document.createElement('div');
+                div.className = 'time-segment';
+                div.style.width = pct + '%';
+                div.style.backgroundColor = colors[s.id];
+                div.textContent = pct > 10 ? labels[s.id] : '';
+                bar.appendChild(div);
+            }
+        });
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateTimeline);
+        });
+    };
+</script>
+{% endblock %}

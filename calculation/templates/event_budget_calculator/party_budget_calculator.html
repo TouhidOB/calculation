@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Party Budget Calculator (Birthday & Anniversary){% endblock %}
+
+{% block meta_description %}Plan your party budget with ease. Track expenses for venues, cake, entertainment, and decor for your next birthday or anniversary celebration.{% endblock %}
+
+{% block meta_keywords %}party budget, birthday planner, anniversary calculator, event cost, party expense tracker, celebration budget{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 245, 158, 11; /* Amber 500 */
+    }
+
+    body {
+        background-color: #fffbeb; /* Amber 50 */
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 15px 35px rgba(245, 158, 11, 0.12);
+        border: 1px solid #fde68a;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #fef3c7;
+        border-right: 1px solid #fde68a;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #92400e;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Party Category Cards */
+    .party-card {
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.85rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: all 0.2s ease;
+    }
+
+    .party-card:hover { 
+        transform: translateX(5px);
+        background-color: #fafaf9;
+    }
+
+    .card-core { border-left-color: #f59e0b; }    /* Amber - Venue/Food */
+    .card-sweet { border-left-color: #ec4899; }   /* Pink - Cake/Sweets */
+    .card-fun { border-left-color: #8b5cf6; }     /* Violet - Entertainment */
+    .card-style { border-left-color: #10b981; }   /* Emerald - Decor */
+
+    .result-display-box {
+        background: #ffffff;
+        border: 3px dashed #f59e0b;
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 900;
+        color: #b45309;
+        line-height: 1;
+    }
+
+    .celebration-bar {
+        height: 35px;
+        border-radius: 10px;
+        overflow: hidden;
+        display: flex;
+        background: #f1f5f9;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .bar-segment {
+        height: 100%;
+        color: white;
+        font-weight: 700;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-balloon-heart text-warning me-2"></i>Party Budget Planner</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Planning a birthday or anniversary? Set your budget and track your spending on food, fun, and frosting.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-gift me-2"></i>Budget Goal</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Ideal Max Spend</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-white border-warning-subtle">$</span>
+                        <input type="number" id="target-party-budget" class="form-control border-warning-subtle" placeholder="e.g. 1500">
+                    </div>
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label text-warning">Current Total</span>
+                        <div class="result-value my-1" id="party-allocated">$0</div>
+                        <p class="mb-0 small fw-bold" id="party-remaining">Left to spend: $0</p>
+                    </div>
+                    
+                    <div class="text-center small text-muted">
+                        <span id="party-status-msg">Enter costs to see breakdown</span>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-white bg-opacity-50 rounded border border-warning-subtle small mt-5">
+                    <i class="bi bi-stars text-warning me-1"></i>
+                    <strong>Party Tip:</strong> Allocate 15% for "Extras" like ice, napkins, and last-minute party favors.
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-cup-hot display-1 mb-3 text-warning opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Ready to Celebrate?</h4>
+                    <p class="text-muted">Enter your target budget and start adding your party items.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Where the Money Goes</h5>
+                    
+                    <div class="party-card card-core">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0">Venue & Food</h6>
+                                <p class="small text-muted mb-0">Rentals, catering, drinks.</p>
+                            </div>
+                            <div class="col-5">
+                                <input type="number" id="p-cost-core" class="form-control p-input" placeholder="$">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="party-card card-sweet">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-pink">Cake & Sweets</h6>
+                                <p class="small text-muted mb-0">The cake, desserts, candy bar.</p>
+                            </div>
+                            <div class="col-5">
+                                <input type="number" id="p-cost-sweet" class="form-control p-input" placeholder="$">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="party-card card-fun">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-purple">Entertainment</h6>
+                                <p class="small text-muted mb-0">DJ, photo booth, games.</p>
+                            </div>
+                            <div class="col-5">
+                                <input type="number" id="p-cost-fun" class="form-control p-input" placeholder="$">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="party-card card-style">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-success">Decor & Themes</h6>
+                                <p class="small text-muted mb-0">Balloons, flowers, lighting.</p>
+                            </div>
+                            <div class="col-5">
+                                <input type="number" id="p-cost-style" class="form-control p-input" placeholder="$">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mt-5 mb-3">Budget Visualizer</h6>
+                    <div class="celebration-bar shadow-sm" id="party-bar"></div>
+                    <div class="d-flex justify-content-between mt-2 small text-muted">
+                        <span>Core</span><span>Sweets</span><span>Fun</span><span>Style</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const pFields = ['p-cost-core', 'p-cost-sweet', 'p-cost-fun', 'p-cost-style'];
+    const pColors = { 'p-cost-core': '#f59e0b', 'p-cost-sweet': '#ec4899', 'p-cost-fun': '#8b5cf6', 'p-cost-style': '#10b981' };
+
+    function updatePartyBudget() {
+        const target = parseFloat(document.getElementById('target-party-budget').value) || 0;
+        let total = 0;
+        let vals = {};
+
+        pFields.forEach(id => {
+            const v = parseFloat(document.getElementById(id).value) || 0;
+            total += v;
+            vals[id] = v;
+        });
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (total === 0 && target === 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Update Summary
+        document.getElementById('party-allocated').textContent = '$' + total.toLocaleString();
+        
+        const remaining = target - total;
+        const remEl = document.getElementById('party-remaining');
+        remEl.textContent = remaining >= 0 ? `Left to spend: $${remaining.toLocaleString()}` : `Over budget by: $${Math.abs(remaining).toLocaleString()}`;
+        remEl.style.color = remaining >= 0 ? '#059669' : '#dc2626';
+
+        // Message
+        const msgEl = document.getElementById('party-status-msg');
+        if (total > target && target > 0) msgEl.innerHTML = '<span class="text-danger fw-bold">⚠️ Over Goal</span>';
+        else if (total > 0) msgEl.innerHTML = '<span class="text-success fw-bold">✅ On Track</span>';
+
+        // Bar Update
+        const bar = document.getElementById('party-bar');
+        bar.innerHTML = '';
+        pFields.forEach(id => {
+            if (vals[id] > 0) {
+                const pct = (vals[id] / total) * 100;
+                const seg = document.createElement('div');
+                seg.className = 'bar-segment';
+                seg.style.width = pct + '%';
+                seg.style.backgroundColor = pColors[id];
+                bar.appendChild(seg);
+            }
+        });
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', updatePartyBudget);
+        });
+    };
+</script>
+{% endblock %}

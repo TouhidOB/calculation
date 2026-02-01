@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Event Marketing Cost Calculator{% endblock %}
+
+{% block meta_description %}Plan your event promotion budget. Calculate costs for social ads, email marketing, and influencer outreach while tracking your cost per acquisition.{% endblock %}
+
+{% block meta_keywords %}event marketing budget, social media ad spend, influencer marketing cost, event promotion calculator, CPA calculator{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 79, 70, 229; /* Indigo 600 */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #1e293b;
+        color: #f8fafc;
+        border-right: 1px solid #334155;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #94a3b8;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Channel Cards */
+    .channel-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: transform 0.2s ease;
+    }
+
+    .card-paid { border-left-color: #4f46e5; }    /* Indigo - Meta/Google Ads */
+    .card-social { border-left-color: #ec4899; }  /* Pink - Influencers/Social */
+    .card-creative { border-left-color: #10b981; } /* Emerald - Design/Content */
+
+    .result-display-box {
+        background: #0f172a;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #334155;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #818cf8;
+        line-height: 1;
+    }
+
+    .efficiency-metric {
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 15px;
+    }
+
+    .stat-label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; }
+    .stat-value { font-size: 1.1rem; font-weight: 700; color: #f8fafc; display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-900"><i class="bi bi-megaphone-fill text-primary me-2"></i>Event Marketing Planner</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Optimize your promotional spend. Track your creative and advertising costs against your attendee goals to measure marketing efficiency.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-bar-chart-line me-2"></i>Efficiency ROI</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Target Attendee Count</label>
+                    <input type="number" id="mkt-guests" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 500">
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label text-slate-400">Total Marketing Budget</span>
+                        <div class="result-value my-1" id="total-mkt-spend">$0</div>
+                    </div>
+
+                    <div class="efficiency-metric">
+                        <div class="row">
+                            <div class="col-6 border-end border-secondary">
+                                <span class="stat-label">CPA</span>
+                                <span class="stat-value" id="mkt-cpa">$0.00</span>
+                                <span class="x-small text-muted" style="font-size: 0.6rem;">Cost Per Acquisition</span>
+                            </div>
+                            <div class="col-6 ps-3">
+                                <span class="stat-label">Spend Ratio</span>
+                                <span class="stat-value" id="mkt-ratio">0%</span>
+                                <span class="x-small text-muted" style="font-size: 0.6rem;">of Budget</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-rocket-takeoff display-1 mb-3 text-muted opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Launch Your Campaign</h4>
+                    <p class="text-muted">Enter your target attendee count and planned spend per channel.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Channel Breakdown</h5>
+
+                    <div class="channel-card card-paid">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0">Paid Advertising</h6>
+                                <p class="small text-muted mb-0">Meta Ads, Google Search, LinkedIn.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="cost-paid" class="form-control mkt-input" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="channel-card card-social">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-pink">Influencers & PR</h6>
+                                <p class="small text-muted mb-0">Partner fees and press release distribution.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="cost-social" class="form-control mkt-input" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="channel-card card-creative">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-success">Creative & Content</h6>
+                                <p class="small text-muted mb-0">Video production, graphic design, web.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="cost-creative" class="form-control mkt-input" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-indigo mt-4 bg-light border-0 small">
+                        <i class="bi bi-lightbulb-fill text-primary me-2"></i>
+                        <strong>Marketing Rule of Thumb:</strong> For B2B conferences, marketing spend typically represents <strong>15–25%</strong> of the total event budget.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateMarketing() {
+        const guests = parseFloat(document.getElementById('mkt-guests').value) || 0;
+        const paid = parseFloat(document.getElementById('cost-paid').value) || 0;
+        const social = parseFloat(document.getElementById('cost-social').value) || 0;
+        const creative = parseFloat(document.getElementById('cost-creative').value) || 0;
+
+        const total = paid + social + creative;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (total === 0 && guests === 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Results
+        document.getElementById('total-mkt-spend').textContent = '$' + total.toLocaleString();
+        
+        const cpa = guests > 0 ? (total / guests) : 0;
+        document.getElementById('mkt-cpa').textContent = '$' + cpa.toFixed(2);
+
+        // Efficiency Analysis (Mock comparison - assuming a $1000 avg event budget per guest)
+        const ratio = guests > 0 ? ((total / (guests * 500)) * 100).toFixed(1) : 0;
+        document.getElementById('mkt-ratio').textContent = ratio + '%';
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateMarketing);
+        });
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Event Photography & Videography Calculator{% endblock %}
+
+{% block meta_description %}Estimate costs for event photography and videography. Calculate packages based on coverage hours, number of shooters, and post-production deliverables.{% endblock %}
+
+{% block meta_keywords %}photography cost calculator, event videography pricing, wedding video planner, media coverage budget, photo package tool{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 139, 92, 246; /* Violet 500 */
+    }
+
+    body {
+        background-color: #fafafa;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 40px rgba(139, 92, 246, 0.1);
+        border: 1px solid #ede9fe;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #2e1065; /* Deep Violet */
+        color: #f5f3ff;
+        border-right: 1px solid #4c1d95;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #ddd6fe;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Media Cards */
+    .media-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: all 0.2s ease;
+    }
+
+    .card-photo { border-left-color: #8b5cf6; }  /* Violet - Photography */
+    .card-video { border-left-color: #ec4899; }  /* Pink - Videography */
+    .card-bonus { border-left-color: #10b981; }  /* Emerald - Add-ons */
+
+    .result-display-box {
+        background: #4c1d95;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #7c3aed;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #ffffff;
+        line-height: 1;
+    }
+
+    .lens-decoration {
+        position: absolute;
+        bottom: -30px;
+        right: -20px;
+        font-size: 8rem;
+        color: #f3f4f6;
+        z-index: 0;
+        transform: rotate(-15deg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-camera-reels-fill text-primary me-2"></i>Media Package Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Capture every moment perfectly. Build your custom photography and videography package by selecting coverage time, team size, and editing requirements.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-film me-2"></i>Investment Summary</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Coverage Hours</label>
+                    <input type="number" id="media-hours" class="form-control bg-dark text-white border-secondary" value="4">
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label text-violet-200 opacity-75">Estimated Total</span>
+                        <div class="result-value my-1" id="total-media-cost">$0</div>
+                        <p class="mb-0 small fw-bold text-violet-200">Full Commercial License</p>
+                    </div>
+
+                    <div class="p-3 bg-white bg-opacity-10 rounded small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Labor Cost:</span>
+                            <span class="fw-bold" id="labor-total">$0</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Editing Time:</span>
+                            <span class="fw-bold text-info" id="edit-estimate">0 days</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white position-relative overflow-hidden">
+                <i class="bi bi-camera lens-decoration"></i>
+                
+                <div id="placeholder-ui" class="text-center py-5 position-relative">
+                    <i class="bi bi-images display-1 mb-3 text-violet-200"></i>
+                    <h4 class="fw-bold text-dark">Select Your Services</h4>
+                    <p class="text-muted">Set your coverage hours to begin building your media package.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none position-relative">
+                    <h5 class="fw-bold mb-4 text-dark">Service Configuration</h5>
+
+                    <div class="media-card card-photo">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0">Photography Detail</h6>
+                                <p class="small text-muted mb-0">High-res edited digital gallery.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="photo-staff" class="form-select form-select-sm media-input">
+                                    <option value="0">No Photography</option>
+                                    <option value="150" selected>1 Lead Photographer</option>
+                                    <option value="250">2 Shooters (Lead + Assist)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="media-card card-video">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-pink">Videography Detail</h6>
+                                <p class="small text-muted mb-0">4K footage and cinematic editing.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="video-staff" class="form-select form-select-sm media-input">
+                                    <option value="0">No Videography</option>
+                                    <option value="200">1 Lead Videographer</option>
+                                    <option value="350">2 Shooters + Drone</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="media-card card-bonus">
+                        <h6 class="fw-bold mb-3 text-success">Deliverable Add-ons</h6>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="form-check small">
+                                    <input class="form-check-input media-input" type="checkbox" id="add-highlight" value="500">
+                                    <label class="form-check-label">Highlight Reel ($500)</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check small">
+                                    <input class="form-check-input media-input" type="checkbox" id="add-raw" value="250">
+                                    <label class="form-check-label">Raw Footage ($250)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-violet mt-4 bg-light border-0 small">
+                        <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                        <strong>The Editing Ratio:</strong> Professional editing typically takes <strong>3-4 hours</strong> for every 1 hour of event footage captured.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateMedia() {
+        const hours = parseFloat(document.getElementById('media-hours').value) || 0;
+        const pRate = parseFloat(document.getElementById('photo-staff').value);
+        const vRate = parseFloat(document.getElementById('video-staff').value);
+        
+        const highlightPrice = document.getElementById('add-highlight').checked ? parseFloat(document.getElementById('add-highlight').value) : 0;
+        const rawPrice = document.getElementById('add-raw').checked ? parseFloat(document.getElementById('add-raw').value) : 0;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (hours <= 0 || (pRate === 0 && vRate === 0)) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic
+        const laborCost = (pRate + vRate) * hours;
+        const totalCost = laborCost + highlightPrice + rawPrice;
+        
+        // Editing estimate (Roughly 1.5 days for every 4 hours of multi-media coverage)
+        const editDays = Math.ceil((hours * 0.4) + (highlightPrice > 0 ? 2 : 0));
+
+        document.getElementById('total-media-cost').textContent = '$' + totalCost.toLocaleString();
+        document.getElementById('labor-total').textContent = '$' + laborCost.toLocaleString();
+        document.getElementById('edit-estimate').textContent = editDays + ' - ' + (editDays + 2) + ' days';
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('.media-input, #media-hours').forEach(el => {
+            el.addEventListener('input', calculateMedia);
+        });
+    };
+</script>
+{% endblock %}

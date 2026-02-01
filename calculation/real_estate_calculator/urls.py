@@ -52,5 +52,6 @@ urlpatterns = [
     path("net_operating_income_calculator/", views.net_operating_income_calculator, name="net_operating_income_calculator"),
     path("internal_rate_of_return_calculator/", views.internal_rate_of_return_calculator, name="internal_rate_of_return_calculator"),
     path("tenant_rent_to_income_ratio_calculator/", views.tenant_rent_to_income_ratio_calculator, name="tenant_rent_to_income_ratio_calculator"),
+    path("capital_gains_tax_on_real_estate_calculator/", views.capital_gains_tax_on_real_estate_calculator, name="capital_gains_tax_on_real_estate_calculator"),
 
 ]

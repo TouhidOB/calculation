@@ -39,7 +39,8 @@ urlpatterns = [
     path('education_calculator/', include('education.urls')),
     path('conversion_calculator/', include('conversion_calculator.urls')),
     path('real_estate_calculator/', include('real_estate_calculator.urls')),
-    path('vehicle_calculator/', include('vehicle_calculator.urls')),
+    # path('vehicle_calculator/', include('vehicle_calculator.urls')),
+    path('event_calculator/', include('event_budget_calculator.urls')),
 
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
 ]

@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Event Tent Size & Capacity Calculator{% endblock %}
+
+{% block meta_description %}Calculate the ideal tent size for your outdoor event. Estimate square footage for round tables, theater seating, dance floors, and buffet lines.{% endblock %}
+
+{% block meta_keywords %}event tent calculator, wedding tent size, marquee capacity planner, outdoor event square footage, party tent size tool{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 20, 184, 166; /* Teal 500 */
+    }
+
+    body {
+        background-color: #f0fdfa; /* Teal 50 */
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px rgba(20, 184, 166, 0.1);
+        border: 1px solid #ccfbf1;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #134e4a; /* Teal 900 */
+        color: #f0fdfa;
+        border-right: 1px solid #115e59;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #99f6e4;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Layout Cards */
+    .tent-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: transform 0.2s ease;
+    }
+
+    .card-seating { border-left-color: #14b8a6; } /* Teal - Main Space */
+    .card-feature { border-left-color: #f59e0b; } /* Amber - Dance/Stage */
+    .card-service { border-left-color: #6366f1; } /* Indigo - Buffet/Bar */
+
+    .result-display-box {
+        background: #042f2e;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #14b8a6;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #5eead4;
+        line-height: 1.1;
+    }
+
+    .tent-icon-bg {
+        position: absolute;
+        bottom: -20px;
+        right: -10px;
+        font-size: 7rem;
+        color: #ccfbf1;
+        opacity: 0.5;
+        z-index: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-900"><i class="bi bi-tent text-teal-600 me-2"></i>Event Tent Size Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Don't get cramped under the canopy. Calculate your total tent footprint by combining guest seating, dance floor requirements, and service areas.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-geo-alt me-2"></i>Total Footprint</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Guest Count</label>
+                    <input type="number" id="tent-guests" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 150">
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-teal-300">Minimum Square Footage</span>
+                        <div class="result-value my-2" id="total-sqft">0</div>
+                        <p class="mb-0 small fw-bold text-teal-100" id="suggested-tent">Suggested: 40' x 60'</p>
+                    </div>
+
+                    <div class="p-3 bg-white bg-opacity-10 rounded small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Guest Area:</span>
+                            <span class="fw-bold text-white" id="stat-guest-sqft">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Add-on Area:</span>
+                            <span class="fw-bold text-info" id="stat-addon-sqft">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white position-relative overflow-hidden">
+                <i class="bi bi-triangle tent-icon-bg"></i>
+                
+                <div id="placeholder-ui" class="text-center py-5 position-relative">
+                    <i class="bi bi-rulers display-1 mb-3 text-teal-100"></i>
+                    <h4 class="fw-bold text-dark">Plan Your Canopy</h4>
+                    <p class="text-muted">Enter your guest count and choose your layout to see size recommendations.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none position-relative">
+                    <h5 class="fw-bold mb-4 text-dark">Space Allocation</h5>
+
+                    <div class="tent-card card-seating">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0">Seating Configuration</h6>
+                                <p class="small text-muted mb-0">Determines space per guest.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="seating-style" class="form-select tent-input">
+                                    <option value="12">Round Tables (12 sqft/guest)</option>
+                                    <option value="10" selected>Rectangular Tables (10 sqft/guest)</option>
+                                    <option value="8">Theater Rows (8 sqft/guest)</option>
+                                    <option value="6">Cocktail / Standing (6 sqft/guest)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tent-card card-feature">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-warning">Entertainment Space</h6>
+                                <p class="small text-muted mb-0">Dance floor and DJ/Band stage.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="feature-space" class="form-select tent-input">
+                                    <option value="0">None</option>
+                                    <option value="400" selected>Small (20'x20' Dance Floor)</option>
+                                    <option value="800">Large (Dance Floor + Stage)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tent-card card-service">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-indigo">Service Requirements</h6>
+                                <p class="small text-muted mb-0">Buffet lines, gift tables, and bars.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="service-space" class="form-select tent-input">
+                                    <option value="0">None</option>
+                                    <option value="200" selected>Standard (Buffet + Bar)</option>
+                                    <option value="500">Full (Catering Kitchen + Multiple Bars)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-teal mt-4 bg-light border-0 small">
+                        <i class="bi bi-info-circle-fill text-teal-600 me-2"></i>
+                        <strong>The Perimeter Rule:</strong> Always leave at least <strong>5–10 feet</strong> of space around the tent exterior for guy-lines, stakes, and guest walkways.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateTent() {
+        const guests = parseFloat(document.getElementById('tent-guests').value) || 0;
+        const seatRate = parseFloat(document.getElementById('seating-style').value);
+        const featureSqft = parseFloat(document.getElementById('feature-space').value);
+        const serviceSqft = parseFloat(document.getElementById('service-space').value);
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (guests <= 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic
+        const guestSqft = guests * seatRate;
+        const totalSqft = guestSqft + featureSqft + serviceSqft;
+
+        // Suggested Tent Sizes (Standard industry dimensions)
+        const commonSizes = [
+            {w: 20, l: 20}, {w: 20, l: 30}, {w: 20, l: 40},
+            {w: 30, l: 30}, {w: 30, l: 45}, {w: 30, l: 60},
+            {w: 40, l: 40}, {w: 40, l: 60}, {w: 40, l: 80},
+            {w: 40, l: 100}, {w: 60, l: 90}, {w: 60, l: 120}
+        ];
+
+        let suggestion = "Custom Sizing Required";
+        for (let size of commonSizes) {
+            if ((size.w * size.l) >= totalSqft) {
+                suggestion = `Suggested: ${size.w}' x ${size.l}'`;
+                break;
+            }
+        }
+
+        document.getElementById('total-sqft').textContent = totalSqft.toLocaleString() + " sq. ft.";
+        document.getElementById('stat-guest-sqft').textContent = guestSqft.toLocaleString() + " sq. ft.";
+        document.getElementById('stat-addon-sqft').textContent = (featureSqft + serviceSqft).toLocaleString() + " sq. ft.";
+        document.getElementById('suggested-tent').textContent = suggestion;
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('.tent-input, #tent-guests').forEach(el => {
+            el.addEventListener('input', calculateTent);
+        });
+    };
+</script>
+{% endblock %}

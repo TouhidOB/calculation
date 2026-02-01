@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Event Beverage & Alcohol Calculator{% endblock %}
+
+{% block meta_description %}Calculate the amount of alcohol and non-alcoholic drinks needed for your event. Estimate wine, beer, spirits, and mixer quantities based on guest count and duration.{% endblock %}
+
+{% block meta_keywords %}event drink calculator, wedding bar planner, alcohol quantity estimator, party beverage calculator, drink portion guide{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 220, 38, 38; /* Red 600 */
+    }
+
+    body {
+        background-color: #fef2f2; /* Red 50 */
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px rgba(220, 38, 38, 0.1);
+        border: 1px solid #fee2e2;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #450a0a; /* Red 950 */
+        color: #fef2f2;
+        border-right: 1px solid #7f1d1d;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #fecaca;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Bar Cards */
+    .bar-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: transform 0.2s ease;
+    }
+
+    .card-wine { border-left-color: #991b1b; }   /* Maroon - Wine */
+    .card-beer { border-left-color: #d97706; }   /* Amber - Beer */
+    .card-soft { border-left-color: #0891b2; }   /* Cyan - Non-Alc */
+
+    .result-display-box {
+        background: #1e0000;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #dc2626;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #f87171;
+        line-height: 1;
+    }
+
+    .bar-stat {
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .glass-bg-icon {
+        position: absolute;
+        bottom: -20px;
+        right: -10px;
+        font-size: 7rem;
+        color: #fee2e2;
+        opacity: 0.5;
+        z-index: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-900"><i class="bi bi-glass-cocktail text-danger me-2"></i>Event Beverage Planner</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Stock your bar with confidence. Calculate the total number of servings and bottles needed to keep the party flowing without running dry.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-clipboard-check me-2"></i>Drink Totals</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Adult Guests</label>
+                    <input type="number" id="bev-guests" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 150">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Bar Service Hours</label>
+                    <input type="number" id="bev-hours" class="form-control bg-dark text-white border-secondary" value="4">
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-red-300">Total Servings</span>
+                        <div class="result-value my-1" id="total-servings">0</div>
+                        <p class="mb-0 small fw-bold text-red-200">Total Drinks</p>
+                    </div>
+
+                    <div class="bar-stat">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-red-200">Wine (750ml):</span>
+                            <span class="fw-bold text-white" id="stat-wine">0 btls</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-red-200">Beer (Individual):</span>
+                            <span class="fw-bold text-white" id="stat-beer">0 cans</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-red-200">Spirits (750ml):</span>
+                            <span class="fw-bold text-white" id="stat-spirits">0 btls</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white position-relative overflow-hidden">
+                <i class="bi bi-cup-straw glass-bg-icon"></i>
+                
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-droplet display-1 mb-3 text-red-100"></i>
+                    <h4 class="fw-bold text-dark">Configure Your Bar</h4>
+                    <p class="text-muted">Enter your guest count and hours to see a detailed inventory breakdown.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none position-relative">
+                    <h5 class="fw-bold mb-4 text-dark">Bar Profile</h5>
+
+                    <div class="bar-card card-wine">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-danger">Event Vibe</h6>
+                                <p class="small text-muted mb-0">Average drinks per person, per hour.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="thirst-level" class="form-select bev-input">
+                                    <option value="1">Light (1 drink/hr)</option>
+                                    <option value="1.5" selected>Standard (1.5 drinks/hr)</option>
+                                    <option value="2">Heavy (2+ drinks/hr)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bar-card card-beer">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-warning">Drink Preference Split</h6>
+                                <p class="small text-muted mb-0">How is the alcohol distributed?</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="drink-split" class="form-select bev-input">
+                                    <option value="balanced" selected>Beer/Wine/Spirits (40/30/30)</option>
+                                    <option value="beer-wine">Beer & Wine Only (50/50)</option>
+                                    <option value="party">Spirits Heavy (20/20/60)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bar-card card-soft">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-info">Water & Mixers</h6>
+                                <p class="small text-muted mb-0">Recommended for every event.</p>
+                            </div>
+                            <div class="col-5 text-end">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input bev-input" type="checkbox" id="add-ice" checked>
+                                    <label class="form-check-label small">Show Ice/Soft Needs</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mixer-alert" class="alert alert-info mt-4 border-0 small">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>The Ice Rule:</strong> Plan for <strong>1.5 lbs</strong> of ice per guest for serving, or <strong>2.5 lbs</strong> per guest if you are also using it to chill bottles/cans.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateBeverages() {
+        const guests = parseFloat(document.getElementById('bev-guests').value) || 0;
+        const hours = parseFloat(document.getElementById('bev-hours').value) || 0;
+        const thirst = parseFloat(document.getElementById('thirst-level').value);
+        const split = document.getElementById('drink-split').value;
+        const showMixers = document.getElementById('add-ice').checked;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (guests <= 0 || hours <= 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic
+        // Total Drinks = Guests * (First Hour: 2, Subsequent Hours: 1.25) * Thirst Mod
+        // A simpler rule: Total Drinks = Guests * Hours * Thirst
+        const totalDrinks = Math.round(guests * hours * thirst);
+        
+        let beerRatio, wineRatio, spiritRatio;
+        if (split === 'balanced') {
+            beerRatio = 0.4; wineRatio = 0.3; spiritRatio = 0.3;
+        } else if (split === 'beer-wine') {
+            beerRatio = 0.5; wineRatio = 0.5; spiritRatio = 0;
+        } else {
+            beerRatio = 0.2; wineRatio = 0.2; spiritRatio = 0.6;
+        }
+
+        // Conversions
+        // Wine: 5 glasses per 750ml bottle
+        const wineBtls = Math.ceil((totalDrinks * wineRatio) / 5);
+        // Beer: 1 drink = 1 can/btl
+        const beerCans = Math.ceil(totalDrinks * beerRatio);
+        // Spirits: 18 drinks per 750ml bottle (1.25oz - 1.5oz pour)
+        const spiritBtls = Math.ceil((totalDrinks * spiritRatio) / 18);
+
+        document.getElementById('total-servings').textContent = totalDrinks.toLocaleString();
+        document.getElementById('stat-wine').textContent = wineBtls + " btls";
+        document.getElementById('stat-beer').textContent = beerCans + " units";
+        document.getElementById('stat-spirits').textContent = spiritBtls + " btls";
+
+        const alertBox = document.getElementById('mixer-alert');
+        if (showMixers) {
+            const waterBottles = Math.ceil(guests * 1.5);
+            const iceLbs = Math.ceil(guests * 2);
+            alertBox.innerHTML = `<i class="bi bi-snow2 me-2"></i> <strong>Provisions:</strong> Order approx. <strong>${waterBottles}</strong> waters and <strong>${iceLbs} lbs</strong> of ice.`;
+            alertBox.classList.remove('d-none');
+        } else {
+            alertBox.classList.add('d-none');
+        }
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('.bev-input, #bev-guests, #bev-hours').forEach(el => {
+            el.addEventListener('input', calculateBeverages);
+        });
+    };
+</script>
+{% endblock %}

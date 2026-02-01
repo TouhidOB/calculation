@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Event Cake Serving & Tier Calculator{% endblock %}
+
+{% block meta_description %}Calculate cake serving sizes and tier dimensions. Determine how many guests a multi-tiered cake will feed based on wedding or party portions.{% endblock %}
+
+{% block meta_keywords %}cake serving calculator, wedding cake size, cake tier planner, party cake portions, baking serving guide{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 219, 39, 119; /* Pink 600 */
+    }
+
+    body {
+        background-color: #fdf2f8; /* Pink 50 */
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px rgba(219, 39, 119, 0.1);
+        border: 1px solid #fbcfe8;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #831843; /* Pink 900 */
+        color: #fdf2f8;
+        border-right: 1px solid #9d174d;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #f9a8d4;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Cake Stream Cards */
+    .cake-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: transform 0.2s ease;
+    }
+
+    .card-portion { border-left-color: #db2777; } /* Pink - Portion Size */
+    .card-tiers { border-left-color: #f472b6; }   /* Light Pink - Tiers */
+    .card-extra { border-left-color: #fb7185; }   /* Rose - Extras */
+
+    .result-display-box {
+        background: #500724;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #db2777;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #f472b6;
+        line-height: 1;
+    }
+
+    .cake-stat {
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+
+    .cake-icon-bg {
+        position: absolute;
+        bottom: -20px;
+        right: -10px;
+        font-size: 7rem;
+        color: #fce7f3;
+        opacity: 0.6;
+        z-index: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-900"><i class="bi bi-cake2-fill text-pink-600 me-2"></i>Cake Serving Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Perfectly portioned every time. Calculate exactly how many tiers you need and the correct dimensions to feed your guest list based on industry-standard slice sizes.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-calculator me-2"></i>Tier Analysis</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Guests</label>
+                    <input type="number" id="cake-guests" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 100">
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-pink-300">Total Tiers Needed</span>
+                        <div class="result-value my-1" id="total-tiers">0</div>
+                        <p class="mb-0 small fw-bold text-pink-200" id="tier-stack">Stack: 6", 8", 10"</p>
+                    </div>
+
+                    <div class="cake-stat">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-pink-200">Total Slices:</span>
+                            <span class="fw-bold text-white" id="stat-slices">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-pink-200">Portion Size:</span>
+                            <span class="fw-bold text-white" id="stat-portion">Wedding</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white position-relative overflow-hidden">
+                <i class="bi bi-heart-fill cake-icon-bg"></i>
+                
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-cake2 display-1 mb-3 text-pink-100"></i>
+                    <h4 class="fw-bold text-dark">Plan Your Dessert</h4>
+                    <p class="text-muted">Enter your guest count to calculate the ideal cake dimensions and slice count.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none position-relative">
+                    <h5 class="fw-bold mb-4 text-dark">Portion & Style</h5>
+
+                    <div class="cake-card card-portion">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-pink">Slice Portion Style</h6>
+                                <p class="small text-muted mb-0">Wedding (1x2") vs Party (2x2").</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="slice-style" class="form-select cake-input">
+                                    <option value="1" selected>Wedding Style (Small)</option>
+                                    <option value="1.5">Standard Party (Large)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cake-card card-tiers">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-pink-400">Tier Height</h6>
+                                <p class="small text-muted mb-0">Tall tiers provide more servings per inch.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="tier-height" class="form-select cake-input">
+                                    <option value="4">Standard (4" High)</option>
+                                    <option value="6">Tall (6" High)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cake-card card-extra">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-rose-500">Service Buffer</h6>
+                                <p class="small text-muted mb-0">Extra slices for display or mishaps.</p>
+                            </div>
+                            <div class="col-5 text-end">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input cake-input" type="checkbox" id="add-buffer" checked>
+                                    <label class="form-check-label small">Add 10% Extra</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-pink mt-4 bg-light border-0 small text-pink-800">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>The Tier Rule:</strong> Round cake tiers typically increase by <strong>2-inch</strong> increments (e.g., 6", 8", 10"). Always place the heaviest tier at the base with proper dowel support.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateCake() {
+        const guests = parseFloat(document.getElementById('cake-guests').value) || 0;
+        const sliceMod = parseFloat(document.getElementById('slice-style').value);
+        const heightMod = document.getElementById('tier-height').value === "6" ? 1.2 : 1;
+        const addBuffer = document.getElementById('add-buffer').checked;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (guests <= 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic
+        let totalSlices = guests * sliceMod;
+        if (addBuffer) totalSlices *= 1.1;
+        totalSlices = Math.ceil(totalSlices);
+
+        // Serving capacities for 4" high round cakes (Standard Wedding)
+        const roundServings = {
+            6: 12, 8: 24, 10: 38, 12: 56, 14: 78, 16: 100
+        };
+
+        let tiers = [];
+        let runningTotal = 0;
+        
+        // Tier selection logic based on common stack configurations
+        if (totalSlices <= 12) { tiers = ["6\""]; }
+        else if (totalSlices <= 36) { tiers = ["6\"", "8\""]; }
+        else if (totalSlices <= 74) { tiers = ["6\"", "8\"", "10\""]; }
+        else if (totalSlices <= 130) { tiers = ["6\"", "8\"", "10\"", "12\""]; }
+        else if (totalSlices <= 208) { tiers = ["8\"", "10\"", "12\"", "14\""]; }
+        else { tiers = ["10\"", "12\"", "14\"", "16\""]; }
+
+        document.getElementById('total-tiers').textContent = tiers.length;
+        document.getElementById('tier-stack').textContent = "Stack: " + tiers.join(", ");
+        document.getElementById('stat-slices').textContent = totalSlices;
+        document.getElementById('stat-portion').textContent = sliceMod === 1 ? "Wedding (1x2\")" : "Party (2x2\")";
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('.cake-input, #cake-guests').forEach(el => {
+            el.addEventListener('input', calculateCake);
+        });
+    };
+</script>
+{% endblock %}

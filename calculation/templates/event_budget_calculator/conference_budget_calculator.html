@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Conference Budget Calculator{% endblock %}
+
+{% block meta_description %}A professional tool for planning conference expenses. Track speaker fees, venue rentals, marketing, and delegate costs with an integrated break-even analysis.{% endblock %}
+
+{% block meta_keywords %}conference budget, event planning tool, corporate event cost, seminar budget calculator, summit planner{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 15, 23, 42; /* Slate 900 */
+    }
+
+    body {
+        background-color: #f1f5f9;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #1e293b;
+        color: #f8fafc;
+        border-right: 1px solid #334155;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #94a3b8;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Professional Category Cards */
+    .conf-card {
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 0.75rem;
+        border-left: 5px solid;
+        background: #ffffff;
+        border-top: 1px solid #f1f5f9;
+        border-right: 1px solid #f1f5f9;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.2s;
+    }
+
+    .conf-card:hover { background-color: #f8fafc; }
+
+    .card-ops { border-left-color: #334155; }     /* Venue/Ops */
+    .card-talent { border-left-color: #3b82f6; }  /* Speakers */
+    .card-marketing { border-left-color: #10b981; } /* Marketing */
+    .card-delegate { border-left-color: #f59e0b; }  /* F&B/Swag */
+
+    .result-display-box {
+        background-color: #0f172a;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #334155;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #38bdf8;
+        line-height: 1;
+    }
+
+    .summary-stat {
+        font-size: 0.85rem;
+        color: #cbd5e1;
+    }
+
+    .stat-highlight {
+        color: #f8fafc;
+        font-weight: 700;
+    }
+
+    .distribution-bar {
+        height: 12px;
+        border-radius: 6px;
+        overflow: hidden;
+        display: flex;
+        background: #e2e8f0;
+        margin-top: 2rem;
+    }
+
+    .bar-seg {
+        height: 100%;
+        transition: width 0.4s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-900"><i class="bi bi-briefcase-fill text-primary me-2"></i>Conference Budget Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">
+            A strategic tool for corporate summits and industry conferences. track your overheads and calculate the required revenue per attendee.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white">Event Economics</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Anticipated Delegates</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-white"><i class="bi bi-people"></i></span>
+                        <input type="number" id="attendee-count" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 500">
+                    </div>
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label opacity-75">Total Expenditure</span>
+                        <div class="result-value my-1" id="total-expenditure">$0</div>
+                        <p class="mb-0 summary-stat">Break-even: <span class="stat-highlight" id="break-even-price">$0</span> / head</p>
+                    </div>
+
+                    <div class="mt-4 border-top border-secondary pt-3">
+                        <p class="small text-muted mb-1">Cost Efficiency:</p>
+                        <div class="d-flex justify-content-between">
+                            <span class="small">Per Attendee:</span>
+                            <span class="small fw-bold" id="cost-per-delegate">$0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 p-3 rounded bg-secondary bg-opacity-10 small text-light opacity-75 border border-secondary">
+                    <i class="bi bi-shield-lock-fill me-1"></i>
+                    <strong>Risk Note:</strong> Allocate at least 10% for "Contingency" to cover last-minute AV needs or speaker travel fluctuations.
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-file-earmark-spreadsheet display-1 mb-3 text-muted opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Awaiting Financial Inputs</h4>
+                    <p>Enter your delegate count and projected costs to generate the conference analysis.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Operational Categories</h5>
+                    
+                    <div class="conf-card card-ops">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0">Venue & Production</h6>
+                                <p class="small text-muted mb-0">Rental, AV, WiFi, Stage Set.</p>
+                            </div>
+                            <div class="col-5">
+                                <input type="number" id="cost-ops" class="form-control budget-input" placeholder="$ 0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="conf-card card-talent">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-primary">Speakers & Program</h6>
+                                <p class="small text-muted mb-0">Honoria, Travel, Accommodations.</p>
+                            </div>
+                            <div class="col-5">
+                                <input type="number" id="cost-talent" class="form-control budget-input" placeholder="$ 0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="conf-card card-marketing">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-success">Marketing & PR</h6>
+                                <p class="small text-muted mb-0">Ads, Web, Graphic Design, Signage.</p>
+                            </div>
+                            <div class="col-5">
+                                <input type="number" id="cost-marketing" class="form-control budget-input" placeholder="$ 0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="conf-card card-delegate">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-warning">Delegate Services</h6>
+                                <p class="small text-muted mb-0">Catering, Badges, Apps, Swag.</p>
+                            </div>
+                            <div class="col-5">
+                                <input type="number" id="cost-delegate" class="form-control budget-input" placeholder="$ 0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="distribution-bar" id="dist-bar">
+                        <div id="seg-ops" class="bar-seg" style="background: #334155"></div>
+                        <div id="seg-talent" class="bar-seg" style="background: #3b82f6"></div>
+                        <div id="seg-marketing" class="bar-seg" style="background: #10b981"></div>
+                        <div id="seg-delegate" class="bar-seg" style="background: #f59e0b"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2 small text-muted px-1">
+                        <span>Ops</span><span>Talent</span><span>Marketing</span><span>Delegates</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const fields = ['cost-ops', 'cost-talent', 'cost-marketing', 'cost-delegate'];
+
+    function updateConferenceBudget() {
+        const attendees = parseFloat(document.getElementById('attendee-count').value) || 0;
+        let total = 0;
+        let vals = {};
+
+        fields.forEach(id => {
+            const v = parseFloat(document.getElementById(id).value) || 0;
+            total += v;
+            vals[id] = v;
+        });
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (total === 0 && attendees === 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Results
+        document.getElementById('total-expenditure').textContent = '$' + total.toLocaleString();
+        
+        const perHead = attendees > 0 ? (total / attendees) : 0;
+        document.getElementById('break-even-price').textContent = '$' + perHead.toFixed(2);
+        document.getElementById('cost-per-delegate').textContent = '$' + perHead.toLocaleString();
+
+        // Bar Logic
+        fields.forEach(id => {
+            const pct = total > 0 ? (vals[id] / total * 100) : 0;
+            const segmentId = id.replace('cost', 'seg');
+            document.getElementById(segmentId).style.width = pct + '%';
+        });
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', updateConferenceBudget);
+        });
+    };
+</script>
+{% endblock %}

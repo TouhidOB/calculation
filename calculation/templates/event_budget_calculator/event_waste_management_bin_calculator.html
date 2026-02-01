@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Event Waste Management & Bin Calculator{% endblock %}
+
+{% block meta_description %}Estimate event waste generation and bin requirements. Calculate the number of trash, recycling, and compost stations needed based on guest count and meal types.{% endblock %}
+
+{% block meta_keywords %}event waste calculator, trash bin planner, event recycling calculator, waste management tool, sustainable event planning{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 22, 163, 74; /* Green 600 */
+    }
+
+    body {
+        background-color: #f0fdf4; /* Green 50 */
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px rgba(22, 163, 74, 0.1);
+        border: 1px solid #dcfce7;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #064e3b;
+        color: #f0fdf4;
+        border-right: 1px solid #065f46;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #86efac;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Waste Stream Cards */
+    .waste-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: transform 0.2s ease;
+    }
+
+    .card-landfill { border-left-color: #475569; } /* Slate - Trash */
+    .card-recycle { border-left-color: #2563eb; }  /* Blue - Recycling */
+    .card-compost { border-left-color: #16a34a; }  /* Green - Compost */
+
+    .result-display-box {
+        background: #022c22;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #10b981;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #4ade80;
+        line-height: 1;
+    }
+
+    .waste-metric {
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 15px;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-900"><i class="bi bi-recycle text-success me-2"></i>Event Waste Planner</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Plan for a cleaner event. Calculate waste volume and infrastructure needs based on your guest count, event duration, and catering style.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-trash3 me-2"></i>Waste Summary</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Estimated Attendance</label>
+                    <input type="number" id="waste-guests" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 1000">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Event Hours</label>
+                    <input type="number" id="waste-hours" class="form-control bg-dark text-white border-secondary" value="4">
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-green-300 opacity-75">Total Waste Weight</span>
+                        <div class="result-value my-1" id="total-weight">0</div>
+                        <p class="mb-0 small fw-bold text-green-100">Estimated Lbs</p>
+                    </div>
+
+                    <div class="waste-metric">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-green-200">Total Bin Stations:</span>
+                            <span class="fw-bold text-white" id="total-stations">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-green-200">Diversion Goal:</span>
+                            <span class="fw-bold text-info" id="diversion-rate">50%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-tree display-1 mb-3 text-success opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Sustainability Analysis</h4>
+                    <p class="text-muted">Enter your event size to calculate required cleanup infrastructure.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Waste Stream Configurations</h5>
+
+                    <div class="waste-card card-landfill">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0">Catering Style</h6>
+                                <p class="small text-muted mb-0">Determines weight per guest.</p>
+                            </div>
+                            <div class="col-5">
+                                <select id="waste-style" class="form-select waste-input">
+                                    <option value="0.5">Light Snacks (0.5 lb/guest)</option>
+                                    <option value="1.5" selected>Full Meal (1.5 lb/guest)</option>
+                                    <option value="2.5">Heavy Festival (2.5 lb/guest)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="waste-card card-recycle">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-primary">Recycling Infrastructure</h6>
+                                <p class="small text-muted mb-0">Bottles, cans, and clean paper.</p>
+                            </div>
+                            <div class="col-5 text-end">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input waste-input" type="checkbox" id="has-recycle" checked>
+                                    <label class="form-check-label small">Enabled</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="waste-card card-compost">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-success">Compost / Organics</h6>
+                                <p class="small text-muted mb-0">Food scraps and compostable plates.</p>
+                            </div>
+                            <div class="col-5 text-end">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input waste-input" type="checkbox" id="has-compost">
+                                    <label class="form-check-label small">Enabled</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success mt-4 border-0 small">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>The Station Rule:</strong> For large events, place one 3-stream waste station every <strong>50–75 feet</strong> in high-traffic food areas and one per <strong>100 guests</strong> in seating areas.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateWaste() {
+        const guests = parseFloat(document.getElementById('waste-guests').value) || 0;
+        const hours = parseFloat(document.getElementById('waste-hours').value) || 0;
+        const perGuestLoad = parseFloat(document.getElementById('waste-style').value);
+        
+        const hasRecycle = document.getElementById('has-recycle').checked;
+        const hasCompost = document.getElementById('has-compost').checked;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (guests <= 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic: Total lbs = Guests * lbs per guest + a slight factor for duration
+        const totalLbs = Math.round(guests * (perGuestLoad + (hours * 0.05)));
+        
+        // Bin Stations: 1 station per 100 guests for small events, 1 per 150 for massive ones
+        const stationsNeeded = Math.ceil(guests / 100);
+
+        // Diversion Rate Estimate
+        let diversion = 10; // Base landfill diversion (e.g. pallets/packaging)
+        if (hasRecycle) diversion += 30;
+        if (hasCompost) diversion += 35;
+
+        document.getElementById('total-weight').textContent = totalLbs.toLocaleString();
+        document.getElementById('total-stations').textContent = stationsNeeded;
+        document.getElementById('diversion-rate').textContent = diversion + '%';
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('.waste-input, #waste-guests, #waste-hours').forEach(el => {
+            el.addEventListener('input', calculateWaste);
+        });
+    };
+</script>
+{% endblock %}

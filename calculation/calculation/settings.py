@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'education',
     'conversion_calculator',
     'real_estate_calculator',
-    'vehicle_calculator',
+    'event_budget_calculator',
 ]
 
 MIDDLEWARE = [

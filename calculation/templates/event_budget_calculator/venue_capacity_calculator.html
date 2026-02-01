@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Venue Capacity Calculator (by Layout){% endblock %}
+
+{% block meta_description %}Estimate venue capacity based on square footage and seating styles like Banquet, Theater, and Classroom layouts.{% endblock %}
+
+{% block meta_keywords %}venue capacity, seating layout, event planning, floor plan calculator, banquet capacity, theater seating{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 244, 63, 94; /* Rose 500 */
+    }
+
+    body {
+        background-color: #fef2f2;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(159, 18, 57, 0.1);
+        border: 1px solid #ffe4e6;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #fff1f2;
+        border-right: 1px solid #fecdd3;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #4c0519;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    /* Layout Cards */
+    .layout-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border-top: 1px solid #e2e8f0;
+        border-right: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .card-theater { border-left-color: #e11d48; }  /* Theater - Dense */
+    .card-banquet { border-left-color: #fb923c; }  /* Banquet - Spacious */
+    .card-class { border-left-color: #3b82f6; }    /* Classroom - Medium */
+    .card-cocktail { border-left-color: #a855f7; } /* Standing - Max */
+
+    .result-display-box {
+        background-color: #ffffff;
+        border: 2px solid #fb7185;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #9f1239;
+        line-height: 1;
+    }
+
+    .capacity-bar {
+        height: 35px;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        background: #f1f5f9;
+        margin-top: 10px;
+    }
+
+    .bar-segment {
+        height: 100%;
+        color: white;
+        font-weight: 700;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        transition: width 0.5s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-people-fill text-rose me-2"></i>Venue Capacity Planner</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Calculate how many guests your space can accommodate based on the square footage and your preferred seating arrangement.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-rulers me-2"></i>Room Dimensions</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Square Footage (sq ft)</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-white"><i class="bi bi-area"></i></span>
+                        <input type="number" id="total-sqft" class="form-control" placeholder="e.g. 2500">
+                    </div>
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label text-rose opacity-75">Recommended Max</span>
+                        <div class="result-value my-1" id="max-guests">0</div>
+                        <p class="mb-0 small fw-bold text-dark">Guests Total</p>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-white rounded border border-rose-subtle small mt-auto">
+                    <i class="bi bi-info-square-fill text-rose me-1"></i>
+                    <strong>Note:</strong> Estimates account for basic aisles. For stages or dance floors, subtract that area from the total sq ft first.
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="placeholder-state text-center py-5">
+                    <i class="bi bi-building-add display-1 mb-3 text-muted opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Enter Room Size</h4>
+                    <p>Enter the square footage of your venue to see capacity options.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Capacity by Layout Style</h5>
+                    
+                    <div class="layout-card card-theater">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-danger">Theater Style</h6>
+                                <p class="small text-muted mb-0">Rows of chairs (8-10 sq ft per person)</p>
+                            </div>
+                            <h4 class="fw-bold mb-0" id="cap-theater">0</h4>
+                        </div>
+                        <div class="capacity-bar"><div id="bar-theater" class="bar-segment" style="background:#e11d48"></div></div>
+                    </div>
+
+                    <div class="layout-card card-class">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-primary">Classroom Style</h6>
+                                <p class="small text-muted mb-0">Tables and chairs (15-20 sq ft per person)</p>
+                            </div>
+                            <h4 class="fw-bold mb-0" id="cap-class">0</h4>
+                        </div>
+                        <div class="capacity-bar"><div id="bar-class" class="bar-segment" style="background:#3b82f6"></div></div>
+                    </div>
+
+                    <div class="layout-card card-banquet">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-warning">Banquet (Round Tables)</h6>
+                                <p class="small text-muted mb-0">Dinner seating (12-15 sq ft per person)</p>
+                            </div>
+                            <h4 class="fw-bold mb-0" id="cap-banquet">0</h4>
+                        </div>
+                        <div class="capacity-bar"><div id="bar-banquet" class="bar-segment" style="background:#fb923c"></div></div>
+                    </div>
+
+                    <div class="layout-card card-cocktail">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-purple">Standing Cocktail</h6>
+                                <p class="small text-muted mb-0">No seating (6-7 sq ft per person)</p>
+                            </div>
+                            <h4 class="fw-bold mb-0" id="cap-cocktail">0</h4>
+                        </div>
+                        <div class="capacity-bar"><div id="bar-cocktail" class="bar-segment" style="background:#a855f7"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Industry standard sq ft per person for layout planning
+    const ratios = {
+        theater: 9,    // Average of 8-10
+        classroom: 17, // Average of 15-20
+        banquet: 13,   // Average of 12-15
+        cocktail: 6.5  // Average of 6-7
+    };
+
+    function calculateCapacity() {
+        const sqft = parseFloat(document.getElementById('total-sqft').value) || 0;
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (sqft <= 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Calculations
+        const theater = Math.floor(sqft / ratios.theater);
+        const classroom = Math.floor(sqft / ratios.classroom);
+        const banquet = Math.floor(sqft / ratios.banquet);
+        const cocktail = Math.floor(sqft / ratios.cocktail);
+
+        // Update Text
+        document.getElementById('cap-theater').textContent = theater;
+        document.getElementById('cap-class').textContent = classroom;
+        document.getElementById('cap-banquet').textContent = banquet;
+        document.getElementById('cap-cocktail').textContent = cocktail;
+        document.getElementById('max-guests').textContent = cocktail; // Use cocktail as max potential
+
+        // Update Bars (relative to max cocktail capacity)
+        document.getElementById('bar-theater').style.width = (theater / cocktail * 100) + '%';
+        document.getElementById('bar-class').style.width = (classroom / cocktail * 100) + '%';
+        document.getElementById('bar-banquet').style.width = (banquet / cocktail * 100) + '%';
+        document.getElementById('bar-cocktail').style.width = '100%';
+    }
+
+    window.onload = () => {
+        document.getElementById('total-sqft').addEventListener('input', calculateCapacity);
+    };
+</script>
+{% endblock %}

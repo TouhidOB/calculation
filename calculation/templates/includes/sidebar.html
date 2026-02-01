@@ -517,8 +517,46 @@
 
 
 
-    <h5 class="mt-5"><a href="{% url 'vehicle_dashboard' %}" class="{% if request.resolver_match.url_name == 'vehicle_dashboard' %}active{% endif %}">Vehicle Calculators</a></h5>
-    <a href="{% url 'car_affordability_calculator' %}" class="{% if request.resolver_match.url_name == 'car_affordability_calculator' %}active{% endif %}">Car Affordability Calculator</a>
+    <h5 class="mt-5"><a href="{% url 'event_dashboard' %}" class="{% if request.resolver_match.url_name == 'event_dashboard' %}active{% endif %}">Event Calculators</a></h5>
+    <a href="{% url 'event_budget_calculator' %}" class="{% if request.resolver_match.url_name == 'event_budget_calculator' %}active{% endif %}">Event Budget Calculator</a>
+    <a href="{% url 'venue_capacity_calculator' %}" class="{% if request.resolver_match.url_name == 'venue_capacity_calculator' %}active{% endif %}">Venue Capacity Calculator</a>
+    <a href="{% url 'guest_list_cost_per_person_calculator' %}" class="{% if request.resolver_match.url_name == 'guest_list_cost_per_person_calculator' %}active{% endif %}">Guest List Cost Per Person Calculator</a>
+    <a href="{% url 'catering_cost_calculator' %}" class="{% if request.resolver_match.url_name == 'catering_cost_calculator' %}active{% endif %}">Catering Cost Calculator</a>
+    <a href="{% url 'event_seating_chart_planner' %}" class="{% if request.resolver_match.url_name == 'event_seating_chart_planner' %}active{% endif %}">Event Seating Chart Planner</a>
+    <a href="{% url 'event_timeline_run_sheet_generator' %}" class="{% if request.resolver_match.url_name == 'event_timeline_run_sheet_generator' %}active{% endif %}">Event Timeline & Run Sheet Generator</a>
+    <a href="{% url 'audio_visual_equipment_calculator' %}" class="{% if request.resolver_match.url_name == 'audio_visual_equipment_calculator' %}active{% endif %}">Audio-Visual (AV) Equipment Calculator</a>
+    <a href="{% url 'event_lighting_requirements_calculator' %}" class="{% if request.resolver_match.url_name == 'event_lighting_requirements_calculator' %}active{% endif %}">Event Lighting Requirements Calculator</a>
+    <a href="{% url 'wedding_budget_calculator' %}" class="{% if request.resolver_match.url_name == 'wedding_budget_calculator' %}active{% endif %}">Wedding Budget Calculator</a>
+    <a href="{% url 'conference_budget_calculator' %}" class="{% if request.resolver_match.url_name == 'conference_budget_calculator' %}active{% endif %}">Conference Budget Calculator</a>
+    <a href="{% url 'party_budget_calculator' %}" class="{% if request.resolver_match.url_name == 'party_budget_calculator' %}active{% endif %}">Party Budget Calculator</a>
+    <a href="{% url 'event_staffing_calculator' %}" class="{% if request.resolver_match.url_name == 'event_staffing_calculator' %}active{% endif %}">Event Staffing Calculator</a>
+    <a href="{% url 'event_insurance_cost_calculator' %}" class="{% if request.resolver_match.url_name == 'event_insurance_cost_calculator' %}active{% endif %}">Event Insurance Cost Calculator</a>
+    <a href="{% url 'event_permit_license_cost_calculator' %}" class="{% if request.resolver_match.url_name == 'event_permit_license_cost_calculator' %}active{% endif %}">Event Permit & License Cost Calculator</a>
+    <a href="{% url 'event_roi_calculator' %}" class="{% if request.resolver_match.url_name == 'event_roi_calculator' %}active{% endif %}">Event ROI Calculator</a>
+    <a href="{% url 'ticket_price_break_even_calculator' %}" class="{% if request.resolver_match.url_name == 'ticket_price_break_even_calculator' %}active{% endif %}">Ticket Price & Break-even Calculator</a>
+    <a href="{% url 'event_registration_fee_tax_calculator' %}" class="{% if request.resolver_match.url_name == 'event_registration_fee_tax_calculator' %}active{% endif %}">Event Registration Fee & Tax Calculator</a>
+    <a href="{% url 'event_sponsorship_value_calculator' %}" class="{% if request.resolver_match.url_name == 'event_sponsorship_value_calculator' %}active{% endif %}">Event Sponsorship Value Calculator</a>
+    <a href="{% url 'event_marketing_cost_calculator' %}" class="{% if request.resolver_match.url_name == 'event_marketing_cost_calculator' %}active{% endif %}">Event Marketing Cost Calculator</a>
+    <a href="{% url 'event_decor_florist_cost_calculator' %}" class="{% if request.resolver_match.url_name == 'event_decor_florist_cost_calculator' %}active{% endif %}">Event Decor & Florist Cost Calculator</a>
+    <a href="{% url 'event_transportation_parking_calculator' %}" class="{% if request.resolver_match.url_name == 'event_transportation_parking_calculator' %}active{% endif %}">Event Transportation & Parking Calculator</a>
+    <a href="{% url 'event_power_generator_requirements_calculator' %}" class="{% if request.resolver_match.url_name == 'event_power_generator_requirements_calculator' %}active{% endif %}">Event Power & Generator Requirements Calculator</a>
+    <a href="{% url 'event_wi_fi_bandwidth_calculator' %}" class="{% if request.resolver_match.url_name == 'event_wi_fi_bandwidth_calculator' %}active{% endif %}">Event Wi-Fi & Bandwidth Calculator</a>
+    <a href="{% url 'event_waste_management_bin_calculator' %}" class="{% if request.resolver_match.url_name == 'event_waste_management_bin_calculator' %}active{% endif %}">Event Waste Management & Bin Calculator</a>
+    <a href="{% url 'event_security_staff_risk_calculator' %}" class="{% if request.resolver_match.url_name == 'event_security_staff_risk_calculator' %}active{% endif %}">Event Security Staff & Risk Calculator</a>
+    <a href="{% url 'event_photography_videography_calculator' %}" class="{% if request.resolver_match.url_name == 'event_photography_videography_calculator' %}active{% endif %}">Event Photography & Videography Calculator</a>
+    <a href="{% url 'event_stage_backdrop_size_calculator' %}" class="{% if request.resolver_match.url_name == 'event_stage_backdrop_size_calculator' %}active{% endif %}">Event Stage & Backdrop Size Calculator</a>
+    <a href="{% url 'event_sound_system_pa_coverage_calculator' %}" class="{% if request.resolver_match.url_name == 'event_sound_system_pa_coverage_calculator' %}active{% endif %}">Event Sound System & PA Coverage Calculator</a>
+    <a href="{% url 'event_tent_size_capacity_calculator' %}" class="{% if request.resolver_match.url_name == 'event_tent_size_capacity_calculator' %}active{% endif %}">Event Tent Size & Capacity Calculator</a>
+    <a href="{% url 'event_table_chair_rental_calculator' %}" class="{% if request.resolver_match.url_name == 'event_table_chair_rental_calculator' %}active{% endif %}">Event Table & Chair Rental Calculator</a>
+    <a href="{% url 'event_menu_planning_food_quantity_calculator' %}" class="{% if request.resolver_match.url_name == 'event_menu_planning_food_quantity_calculator' %}active{% endif %}">Event Menu Planning & Food Quantity Calculator</a>
+    <a href="{% url 'event_beverage_alcohol_calculator' %}" class="{% if request.resolver_match.url_name == 'event_beverage_alcohol_calculator' %}active{% endif %}">Event Beverage & Alcohol Calculator</a>
+    <a href="{% url 'event_cake_serving_tier_calculator' %}" class="{% if request.resolver_match.url_name == 'event_cake_serving_tier_calculator' %}active{% endif %}">Event Cake Serving & Tier Calculator</a>
+    <a href="{% url 'event_invitation_stationery_cost_calculator' %}" class="{% if request.resolver_match.url_name == 'event_invitation_stationery_cost_calculator' %}active{% endif %}">Event Invitation & Stationery Cost Calculator</a>
+    <a href="{% url 'event_gift_bag_welcome_kit_calculator' %}" class="{% if request.resolver_match.url_name == 'event_gift_bag_welcome_kit_calculator' %}active{% endif %}">Event Gift Bag & Welcome Kit Calculator</a>
+    <a href="{% url 'event_speaker_fee_budget_calculator' %}" class="{% if request.resolver_match.url_name == 'event_speaker_fee_budget_calculator' %}active{% endif %}">Event Speaker Fee & Budget Calculator</a>
+    <a href="{% url 'event_travel_accommodation_calculator' %}" class="{% if request.resolver_match.url_name == 'event_travel_accommodation_calculator' %}active{% endif %}">Event Travel & Accommodation Calculator</a>
+    <a href="{% url 'event_networking_social_time_calculator' %}" class="{% if request.resolver_match.url_name == 'event_networking_social_time_calculator' %}active{% endif %}">Event Networking & Social Time Calculator</a>
+    <a href="{% url 'event_breakout_session_scheduler_capacity_calculator' %}" class="{% if request.resolver_match.url_name == 'event_breakout_session_scheduler_capacity_calculator' %}active{% endif %}">Event Breakout Session Scheduler & Capacity Calculator</a>
 
 
 </div>

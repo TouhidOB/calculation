@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Event Sponsorship Value Calculator{% endblock %}
+
+{% block meta_description %}Determine the market value of your event sponsorship packages. Calculate asset value based on impressions, brand reach, and exclusive access.{% endblock %}
+
+{% block meta_keywords %}sponsorship calculator, event sponsorship value, sponsorship valuation model, marketing asset value, event branding cost{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 79, 70, 229; /* Indigo 600 */
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #0f172a;
+        color: #f8fafc;
+        border-right: 1px solid #1e293b;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #94a3b8;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Asset Cards */
+    .asset-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: all 0.2s ease;
+    }
+
+    .card-digital { border-left-color: #3b82f6; } /* Blue - Impressions */
+    .card-tangible { border-left-color: #10b981; } /* Green - Physical signage */
+    .card-access { border-left-color: #f59e0b; }   /* Amber - VIP/Speaking */
+
+    .result-display-box {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #334155;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #fbbf24;
+        line-height: 1;
+    }
+
+    .valuation-status {
+        font-size: 0.8rem;
+        padding: 4px 12px;
+        border-radius: 20px;
+        background: #334155;
+        color: #cbd5e1;
+        display: inline-block;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-slate-900"><i class="bi bi-award-fill text-warning me-2"></i>Sponsorship Value Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Move beyond "gut feelings." Calculate the tangible market value of your sponsorship assets to present a data-driven proposal to potential partners.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-pie-chart me-2"></i>Package Valuation</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Expected Attendees</label>
+                    <input type="number" id="spons-guests" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 1000">
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label text-slate-400">Total Fair Market Value</span>
+                        <div class="result-value my-1" id="total-spons-value">$0</div>
+                        <div class="valuation-status" id="valuation-type">Standard Industry CPM</div>
+                    </div>
+
+                    <div class="p-3 bg-white bg-opacity-10 rounded small">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Organizers Tip:</strong> Selling at 1.5x - 2x of this FMV is common to account for event prestige and exclusivity.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-gem display-1 mb-3 text-muted opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Value Your Assets</h4>
+                    <p class="text-muted">Enter your attendee count to begin valuing your digital and physical assets.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Asset Inventory</h5>
+
+                    <div class="asset-card card-digital">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0">Logo Impressions (Digital)</h6>
+                                <p class="small text-muted mb-0">Website, Emails, Mobile App.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <span class="input-group-text small">Total Reach</span>
+                                    <input type="number" id="asset-reach" class="form-control spons-input" placeholder="0">
+                                </div>
+                                <div class="form-text x-small" style="font-size: 0.7rem;">Valued at $15.00 CPM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="asset-card card-tangible">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-success">On-Site Signage</h6>
+                                <p class="small text-muted mb-0">Banners, Lanyards, Program Book.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="asset-signage" class="form-control spons-input" placeholder="Fixed Value">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="asset-card card-access">
+                        <div class="row align-items-center">
+                            <div class="col-7">
+                                <h6 class="fw-bold mb-0 text-warning">Speaking & Access</h6>
+                                <p class="small text-muted mb-0">Keynote slots or VIP Networking.</p>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="asset-access" class="form-control spons-input" placeholder="Fixed Value">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <h6 class="fw-bold text-dark small mb-3">Value Distribution Graph</h6>
+                        <div class="progress" style="height: 30px; border-radius: 8px;">
+                            <div id="bar-digital" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                            <div id="bar-tangible" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                            <div id="bar-access" class="progress-bar bg-warning text-dark" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2 x-small text-muted" style="font-size: 0.7rem;">
+                            <span>Digital Reach</span><span>Physical Assets</span><span>Access Value</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateSponsorship() {
+        const guests = parseFloat(document.getElementById('spons-guests').value) || 0;
+        const reach = parseFloat(document.getElementById('asset-reach').value) || 0;
+        const signage = parseFloat(document.getElementById('asset-signage').value) || 0;
+        const access = parseFloat(document.getElementById('asset-access').value) || 0;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (guests <= 0 && reach === 0 && signage === 0 && access === 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic
+        // Digital Value = (Reach / 1000) * $15.00 CPM
+        const digitalValue = (reach / 1000) * 15;
+        const totalValue = digitalValue + signage + access;
+
+        // Display
+        document.getElementById('total-spons-value').textContent = '$' + totalValue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+
+        // Bar logic
+        if (totalValue > 0) {
+            document.getElementById('bar-digital').style.width = (digitalValue / totalValue * 100) + '%';
+            document.getElementById('bar-tangible').style.width = (signage / totalValue * 100) + '%';
+            document.getElementById('bar-access').style.width = (access / totalValue * 100) + '%';
+        }
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateSponsorship);
+        });
+    };
+</script>
+{% endblock %}

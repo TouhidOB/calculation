@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Event Insurance Cost Calculator{% endblock %}
+
+{% block meta_description %}Estimate the cost of event liability and cancellation insurance. Calculate premiums based on guest count, liquor service, and total event budget.{% endblock %}
+
+{% block meta_keywords %}event insurance calculator, liability insurance cost, wedding insurance, event cancellation insurance, liquor liability cost{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 2, 132, 199; /* Cyan 600 */
+    }
+
+    body {
+        background-color: #f0f9ff;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 30px rgba(2, 132, 199, 0.1);
+        border: 1px solid #bae6fd;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #0369a1;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Insurance Category Cards */
+    .policy-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: transform 0.2s;
+    }
+
+    .card-liability { border-left-color: #0284c7; } /* Cyan - Liability */
+    .card-liquor { border-left-color: #f59e0b; }    /* Amber - Liquor */
+    .card-cancel { border-left-color: #10b981; }    /* Emerald - Cancellation */
+
+    .result-display-box {
+        background: #0c4a6e;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        color: white;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #38bdf8;
+        line-height: 1;
+    }
+
+    .risk-indicator {
+        font-size: 0.85rem;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-shield-check text-primary me-2"></i>Event Insurance Estimator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Protect your investment. Estimate your insurance premiums for liability, liquor, and event cancellation based on your specific event scale.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1050px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-file-earmark-text me-2"></i>Policy Factors</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Guests</label>
+                    <input type="number" id="ins-guests" class="form-control shadow-sm" placeholder="e.g. 150">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Total Event Budget</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text">$</span>
+                        <input type="number" id="ins-budget" class="form-control" placeholder="For Cancellation Cov.">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Liquor Service</label>
+                    <select id="ins-liquor-type" class="form-select shadow-sm">
+                        <option value="none">No Alcohol</option>
+                        <option value="host">Host Liquor (Open Bar)</option>
+                        <option value="retail">Retail/Cash Bar</option>
+                    </select>
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-3">
+                        <span class="form-label text-sky-200 opacity-75">Estimated Total Premium</span>
+                        <div class="result-value my-1" id="total-premium">$0</div>
+                        <p class="mb-0 small fw-bold" id="risk-rating">Risk Level: Low</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-safe2 display-1 mb-3 text-muted opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Secure Your Event</h4>
+                    <p class="text-muted">Enter your guest count and budget to view estimated coverage premiums.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Premium Breakdown</h5>
+                    
+                    <div class="policy-card card-liability">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0">General Liability</h6>
+                                <p class="small text-muted mb-0">Bodily injury and property damage ($1M/$2M).</p>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-primary" id="cost-liability">$0</h5>
+                        </div>
+                    </div>
+
+                    <div class="policy-card card-liquor">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-warning">Liquor Liability</h6>
+                                <p class="small text-muted mb-0">Incidents involving alcohol consumption.</p>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-warning" id="cost-liquor">$0</h5>
+                        </div>
+                    </div>
+
+                    <div class="policy-card card-cancel">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-success">Cancellation & Postponement</h6>
+                                <p class="small text-muted mb-0">Coverage for lost deposits and re-booking.</p>
+                            </div>
+                            <h5 class="fw-bold mb-0 text-success" id="cost-cancel">$0</h5>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4 py-2 border-0 small">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Note: These are estimates. Actual premiums depend on venue location and historical claims.
+                    </div>
+
+                    <div class="p-3 bg-light rounded mt-4">
+                        <h6 class="fw-bold small mb-2"><i class="bi bi-clipboard-check me-2"></i>Standard Coverage Limits:</h6>
+                        <ul class="small text-muted mb-0">
+                            <li><strong>$1,000,000</strong> Per Occurrence</li>
+                            <li><strong>$2,000,000</strong> General Aggregate</li>
+                            <li><strong>$100,000</strong> Damage to Rented Premises</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateInsurance() {
+        const guests = parseFloat(document.getElementById('ins-guests').value) || 0;
+        const budget = parseFloat(document.getElementById('ins-budget').value) || 0;
+        const liquorType = document.getElementById('ins-liquor-type').value;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (guests <= 0 && budget <= 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic: Liability ($100 base + scale)
+        let liability = 0;
+        if (guests > 0) {
+            liability = 125 + (Math.floor(guests / 100) * 35);
+        }
+
+        // Logic: Liquor Liability
+        let liquor = 0;
+        if (liquorType === 'host') liquor = 50 + (guests * 0.40);
+        else if (liquorType === 'retail') liquor = 75 + (guests * 0.60);
+
+        // Logic: Cancellation (Approx 1% - 1.5% of budget)
+        let cancel = budget * 0.012;
+
+        const total = liability + liquor + cancel;
+
+        // Display
+        document.getElementById('cost-liability').textContent = '$' + liability.toFixed(0);
+        document.getElementById('cost-liquor').textContent = '$' + liquor.toFixed(0);
+        document.getElementById('cost-cancel').textContent = '$' + cancel.toFixed(0);
+        document.getElementById('total-premium').textContent = '$' + total.toFixed(0);
+
+        const riskEl = document.getElementById('risk-rating');
+        if (liquorType !== 'none' && guests > 200) {
+            riskEl.textContent = "Risk Level: Moderate";
+            riskEl.className = "mb-0 small fw-bold text-warning";
+        } else {
+            riskEl.textContent = "Risk Level: Low";
+            riskEl.className = "mb-0 small fw-bold text-info";
+        }
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('input', calculateInsurance);
+        });
+    };
+</script>
+{% endblock %}

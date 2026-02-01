@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket Price & Break-even Calculator{% endblock %}
+
+{% block meta_description %}Calculate the ideal ticket price for your event. Perform break-even analysis based on fixed costs, variable costs, and target profit margins.{% endblock %}
+
+{% block meta_keywords %}ticket price calculator, break even analysis, event pricing tool, profit margin calculator, ticket sales tracker{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 99, 102, 241; /* Indigo 500 */
+    }
+
+    body {
+        background-color: #f5f7ff;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 40px rgba(99, 102, 241, 0.1);
+        border: 1px solid #e0e7ff;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #1e1b4b; /* Deep Indigo */
+        color: #e0e7ff;
+        border-right: 1px solid #312e81;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #a5b4fc;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Pricing Card Styles */
+    .price-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        transition: transform 0.2s;
+    }
+
+    .card-fixed { border-left-color: #6366f1; }    /* Indigo - Venue/AV */
+    .card-variable { border-left-color: #ec4899; } /* Pink - F&B per person */
+    .card-target { border-left-color: #10b981; }   /* Emerald - Profit */
+
+    .result-display-box {
+        background: #2e1065;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #4c1d95;
+    }
+
+    .result-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: #fbbf24; /* Gold */
+        line-height: 1;
+    }
+
+    .break-even-metric {
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-tags-fill text-primary me-2"></i>Ticket Price Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Determine your break-even point. Calculate the minimum ticket price needed to cover expenses or find out how many tickets you must sell to hit your profit goal.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-activity me-2"></i>Revenue Analysis</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Anticipated Guests</label>
+                    <input type="number" id="calc-guests" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 100">
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label text-indigo-200 opacity-75">Break-even Price</span>
+                        <div class="result-value my-1" id="be-price">$0</div>
+                        <p class="mb-0 small fw-bold text-white-50">Minimum to cover costs</p>
+                    </div>
+
+                    <div class="break-even-metric">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Total Expenses:</span>
+                            <span class="fw-bold" id="total-expenses-summary">$0</span>
+                        </div>
+                        <div class="d-flex justify-content-between small">
+                            <span>Target Profit:</span>
+                            <span class="fw-bold text-success" id="target-profit-summary">$0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-cash-coin display-1 mb-3 text-muted opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Price Your Experience</h4>
+                    <p class="text-muted">Enter your guest count and costs to generate a pricing strategy.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Cost & Profit Assumptions</h5>
+
+                    <div class="price-card card-fixed">
+                        <h6 class="fw-bold text-indigo mb-3">Fixed Costs (Overhead)</h6>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label small">Venue, AV, & Marketing</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="cost-fixed" class="form-control price-input" placeholder="Total sum of fixed costs">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="price-card card-variable">
+                        <h6 class="fw-bold text-pink mb-3">Variable Costs (Per Person)</h6>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label small">Catering, Materials, & Swag</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="cost-variable" class="form-control price-input" placeholder="Cost per individual guest">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="price-card card-target">
+                        <h6 class="fw-bold text-success mb-3">Desired Outcome</h6>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label small">Total Target Profit</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="target-profit" class="form-control price-input" placeholder="Amount you want to make">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-indigo-50 rounded border border-indigo-100 mt-4">
+                        <h6 class="fw-bold text-indigo small mb-1">Recommended Ticket Price:</h6>
+                        <h3 class="fw-bold text-indigo mb-0" id="recommended-price">$0.00</h3>
+                        <p class="small text-muted mt-1 mb-0">Includes variable costs + fixed cost share + profit share.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculatePricing() {
+        const guests = parseFloat(document.getElementById('calc-guests').value) || 0;
+        const fixed = parseFloat(document.getElementById('cost-fixed').value) || 0;
+        const variable = parseFloat(document.getElementById('cost-variable').value) || 0;
+        const profit = parseFloat(document.getElementById('target-profit').value) || 0;
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (guests <= 0 && fixed === 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Logic
+        const totalVariable = guests * variable;
+        const totalExpenses = fixed + totalVariable;
+        
+        // Break-even price = Total Fixed / Guests + Variable Cost
+        const bePrice = (guests > 0) ? (fixed / guests) + variable : 0;
+        
+        // Recommended price (with profit)
+        const recPrice = (guests > 0) ? ((fixed + profit) / guests) + variable : 0;
+
+        // Display
+        document.getElementById('be-price').textContent = '$' + bePrice.toFixed(2);
+        document.getElementById('total-expenses-summary').textContent = '$' + totalExpenses.toLocaleString();
+        document.getElementById('target-profit-summary').textContent = '$' + profit.toLocaleString();
+        document.getElementById('recommended-price').textContent = '$' + recPrice.toFixed(2);
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculatePricing);
+        });
+    };
+</script>
+{% endblock %}

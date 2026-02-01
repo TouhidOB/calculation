@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Wedding Budget Calculator (Detailed Planner){% endblock %}
+
+{% block meta_description %}Plan every detail of your wedding budget. Track spending across venue, attire, photography, and entertainment with our interactive visual planner.{% endblock %}
+
+{% block meta_keywords %}wedding budget, bridal planner, wedding cost calculator, marriage expenses, wedding planning tool{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+    :root {
+        --bs-primary-rgb: 219, 39, 119; /* Pink 600 */
+    }
+
+    body {
+        background-color: #fff1f2; /* Rose 50 */
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 15px 35px rgba(219, 39, 119, 0.1);
+        border: 1px solid #fbcfe8;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #fff1f2;
+        border-right: 1px solid #fce7f3;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #831843;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Budget Item Cards */
+    .wedding-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        background: white;
+        border: 1px solid #f1f5f9;
+        border-left-width: 6px;
+        transition: transform 0.2s ease;
+    }
+
+    .wedding-card:hover { transform: scale(1.01); }
+
+    .card-venue { border-left-color: #db2777; }   /* Pink - Reception/Food */
+    .card-attire { border-left-color: #9333ea; }  /* Purple - Fashion */
+    .card-media { border-left-color: #0ea5e9; }   /* Sky - Photo/Video */
+    .card-decor { border-left-color: #10b981; }   /* Emerald - Flowers */
+    .card-other { border-left-color: #64748b; }   /* Slate - Admin/Misc */
+
+    .result-display-box {
+        background: white;
+        border: 2px solid #db2777;
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #9d174d;
+        line-height: 1;
+    }
+
+    .progress-bar-container {
+        height: 12px;
+        background: #fce7f3;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 15px 0;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: #db2777;
+        width: 0%;
+        transition: width 0.5s ease;
+    }
+
+    .visual-breakdown-bar {
+        height: 35px;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        background: #f1f5f9;
+    }
+
+    .bar-segment {
+        height: 100%;
+        color: white;
+        font-weight: 700;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: width 0.4s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-heart-fill text-danger me-2"></i>Wedding Budget Planner</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            A comprehensive tool to track your wedding expenses. Set your target and watch your allocations across every major category.
+        </p>
+    </div>
+
+    <div class="calc-card mx-auto" style="max-width: 1150px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-piggy-bank me-2"></i>Financial Tracker</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label">Total Wedding Budget</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-white">$</span>
+                        <input type="number" id="target-wedding-budget" class="form-control" placeholder="e.g. 30000">
+                    </div>
+                </div>
+
+                <div id="summary-section" class="d-none">
+                    <div class="result-display-box mb-4">
+                        <span class="form-label text-pink opacity-75">Allocated Total</span>
+                        <div class="result-value my-1" id="total-allocated">$0</div>
+                        <div class="progress-bar-container">
+                            <div id="budget-progress" class="progress-fill"></div>
+                        </div>
+                        <p class="mb-0 small fw-bold" id="remaining-budget">Remaining: $0</p>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-white rounded border border-pink-200 small mt-auto">
+                    <i class="bi bi-info-circle-fill text-pink-500 me-1"></i>
+                    <strong>Planning Tip:</strong> The reception (venue + catering) typically accounts for 40-50% of a total wedding budget.
+                </div>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                <div id="placeholder-ui" class="text-center py-5">
+                    <i class="bi bi-envelope-heart display-1 mb-3 text-pink-200 opacity-50"></i>
+                    <h4 class="fw-bold text-dark">Start Your Wedding Plan</h4>
+                    <p class="text-muted">Enter your target budget and start filling in the categories below.</p>
+                </div>
+
+                <div id="planner-ui" class="d-none">
+                    <h5 class="fw-bold mb-4 text-dark">Category Breakdown</h5>
+                    
+                    
+
+                    <div class="wedding-card card-venue">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-pink">Venue & Catering</h6>
+                            <input type="number" id="cost-venue" class="form-control form-control-sm w-25 budget-input" placeholder="$">
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">Rental fees, food, bar, and rentals (tables/chairs).</p>
+                    </div>
+
+                    <div class="wedding-card card-attire">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-purple">Attire & Beauty</h6>
+                            <input type="number" id="cost-attire" class="form-control form-control-sm w-25 budget-input" placeholder="$">
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">Dress, suit, rings, hair, and makeup.</p>
+                    </div>
+
+                    <div class="wedding-card card-media">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-info">Photography & Video</h6>
+                            <input type="number" id="cost-media" class="form-control form-control-sm w-25 budget-input" placeholder="$">
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">Engagement shoot, wedding day coverage, and albums.</p>
+                    </div>
+
+                    <div class="wedding-card card-decor">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-success">Flowers & Decor</h6>
+                            <input type="number" id="cost-decor" class="form-control form-control-sm w-25 budget-input" placeholder="$">
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">Bouquets, centerpieces, and ceremony styling.</p>
+                    </div>
+
+                    <div class="wedding-card card-other">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold mb-0 text-secondary">Entertainment & Other</h6>
+                            <input type="number" id="cost-other" class="form-control form-control-sm w-25 budget-input" placeholder="$">
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">DJ/Band, stationery, and marriage license.</p>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mt-5 mb-3"><i class="bi bi-palette me-2"></i>Visual Distribution</h6>
+                    <div class="visual-breakdown-bar shadow-sm" id="wedding-distribution-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const inputs = ['cost-venue', 'cost-attire', 'cost-media', 'cost-decor', 'cost-other'];
+    const colors = { 'cost-venue': '#db2777', 'cost-attire': '#9333ea', 'cost-media': '#0ea5e9', 'cost-decor': '#10b981', 'cost-other': '#64748b' };
+    const labels = { 'cost-venue': 'Venue', 'cost-attire': 'Attire', 'cost-media': 'Media', 'cost-decor': 'Decor', 'cost-other': 'Misc' };
+
+    function calculateWeddingBudget() {
+        const target = parseFloat(document.getElementById('target-wedding-budget').value) || 0;
+        let totalAllocated = 0;
+        let data = [];
+        
+        inputs.forEach(id => {
+            const val = parseFloat(document.getElementById(id).value) || 0;
+            totalAllocated += val;
+            data.push({ id, val });
+        });
+
+        const placeholder = document.getElementById('placeholder-ui');
+        const planner = document.getElementById('planner-ui');
+        const summary = document.getElementById('summary-section');
+
+        if (target === 0 && totalAllocated === 0) {
+            placeholder.classList.remove('d-none');
+            planner.classList.add('d-none');
+            summary.classList.add('d-none');
+            return;
+        }
+
+        placeholder.classList.add('d-none');
+        planner.classList.remove('d-none');
+        summary.classList.remove('d-none');
+
+        // Update Summary
+        document.getElementById('total-allocated').textContent = '$' + totalAllocated.toLocaleString();
+        
+        const remaining = target - totalAllocated;
+        const remainingEl = document.getElementById('remaining-budget');
+        remainingEl.textContent = `Remaining: $${remaining.toLocaleString()}`;
+        remainingEl.className = remaining < 0 ? 'mb-0 small fw-bold text-danger' : 'mb-0 small fw-bold text-success';
+
+        // Update Progress Bar
+        const progressPct = target > 0 ? Math.min((totalAllocated / target) * 100, 100) : 0;
+        document.getElementById('budget-progress').style.width = progressPct + '%';
+        if (totalAllocated > target) document.getElementById('budget-progress').style.backgroundColor = '#ef4444';
+        else document.getElementById('budget-progress').style.backgroundColor = '#db2777';
+
+        // Update Visual Bar
+        const bar = document.getElementById('wedding-distribution-bar');
+        bar.innerHTML = '';
+        data.forEach(item => { 
+            if (item.val > 0) {
+                const pct = (item.val / totalAllocated) * 100;
+                const segment = document.createElement('div');
+                segment.className = 'bar-segment';
+                segment.style.width = pct + '%';
+                segment.style.backgroundColor = colors[item.id];
+                segment.textContent = pct > 12 ? labels[item.id] : '';
+                segment.title = `${labels[item.id]}: $${item.val.toLocaleString()}`;
+                bar.appendChild(segment);
+            }
+        });
+    }
+
+    window.onload = () => {
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateWeddingBudget);
+        });
+    };
+</script>
+{% endblock %}
