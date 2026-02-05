@@ -4,379 +4,261 @@
 
 {% block meta_description %}Estimate the maximum principal limit (loan amount) available from a reverse mortgage (HECM) based on home value, borrower age, and expected interest rate.{% endblock %}
 
-{% block meta_keywords %}reverse mortgage calculator, HECM calculator, principal limit, borrower age, home equity conversion mortgage, senior finance{% endblock %}
-
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for an "Antique Gold/Bronze" Theme */
-    .solver-wrapper {
-        background: #fcf8f0; /* Very light gold/cream */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 950px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #fae8c6; /* Light Gold */
-        border: 2px solid #b8860b; /* Goldenrod/Bronze accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #8b5e2d; /* Dark Bronze */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --hecm-gold: #b8860b;
+        --hecm-bronze: #8b5e2d;
+        --hecm-bg: #fdfaf3;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #ffd700; /* Gold */
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9d5ff;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--hecm-bg);
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #b8860b;
-    }
-    .form-control-custom:focus {
-        border-color: #b8860b;
-        box-shadow: 0 0 0 0.25rem rgba(184, 134, 11, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--hecm-bronze);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #fffaf0; /* Ivory */
-        border-left: 5px solid #b8860b; /* Bronze accent */
+    .result-display-box {
+        background-color: white;
+        border: 2px solid #fde68a;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Principal Limit display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #8b5e2d; /* Dark Bronze */
-    }
-    
-    .principal-limit-value {
+    .value-large {
         font-size: 3.5rem;
-        font-weight: 900;
-        color: #b8860b; /* Goldenrod */
+        font-weight: 800;
+        color: var(--hecm-gold);
+        line-height: 1;
     }
-    
-    .text-bronze { color: #8b5e2d !important; }
 
+    .stat-card-mini {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .disclaimer-box {
+        font-size: 0.75rem;
+        background-color: #fefce8;
+        border: 1px solid #fef08a;
+        color: #854d0e;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">💰 Reverse Mortgage (HECM) Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Estimate the maximum **Principal Limit** (loan amount) you can receive from a Home Equity Conversion Mortgage (HECM).
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-safe2 text-warning me-2"></i>HECM Equity Access Tool</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Determine how much of your home equity you can convert into cash or a line of credit. HECM limits are based on HUD guidelines, interest rates, and the youngest borrower's age.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="reverse-mortgage-form" class="row g-4 justify-content-center">
-            
-            <div class="col-lg-12">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-bronze p-2 rounded mb-4">HECM Eligibility & Value Inputs</h4>
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="reverse-mortgage-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Eligibility & Value</h6>
                     
-                    <div class="row">
-                        <div class="col-md-4 input-box mb-4">
-                            <label for="home-value">Home Appraised Value:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="home-value" 
-                                   value="450000" 
-                                   min="100000"
-                                   step="1000"
-                                   required
-                                   class="form-control form-control-custom">
-                            </div>
-                            <small class="text-muted">Or the HUD Max Claim Amount ($1,149,825 for 2024), whichever is lower.</small>
-                        </div>
-                        
-                        <div class="col-md-4 input-box mb-4">
-                            <label for="borrower-age">Youngest Borrower's Age:</label>
-                            <div class="input-group">
-                                <input type="number" id="borrower-age" 
-                                   value="68" 
-                                   min="62" 
-                                   max="100"
-                                   step="1"
-                                   required 
-                                   class="form-control form-control-custom">
-                                <span class="input-group-text">Yrs</span>
-                            </div>
-                            <small class="text-muted">Must be 62 or older.</small>
-                        </div>
-
-                        <div class="col-md-4 input-box mb-4">
-                            <label for="expected-rate">Expected Interest Rate (%):</label>
-                            <div class="input-group">
-                                <input type="number" id="expected-rate" 
-                                   value="7.00" 
-                                   min="0.1" 
-                                   max="15"
-                                   step="0.01"
-                                   required 
-                                   class="form-control form-control-custom">
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <small class="text-muted">Based on 10-year CMT plus margin.</small>
+                    <div class="mb-3">
+                        <label class="form-label">Estimated Home Value</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="home-value" class="form-control border-start-0 ps-0" placeholder="e.g. 500000" required>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="current-debt">Current Mortgage/Lien Balance:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="current-debt" 
-                                   value="100000" 
-                                   min="0"
-                                   step="1000"
-                                   required
-                                   class="form-control form-control-custom">
-                            </div>
-                            <small class="text-muted">The amount that must be paid off by the HECM.</small>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Borrower Age</label>
+                            <input type="number" id="borrower-age" class="form-control shadow-sm" placeholder="62+" min="62" required>
                         </div>
-                        
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="initial-mips">Initial MIP (Mortgage Insurance Premium):</label>
-                            <div class="input-group">
-                                <input type="number" id="initial-mips" 
-                                   value="0.5" 
-                                   min="0.01" 
-                                   max="2.5"
-                                   step="0.1"
-                                   required 
-                                   class="form-control form-control-custom">
-                                <span class="input-group-text">%</span>
+                        <div class="col-6">
+                            <label class="form-label">Expected Rate</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" step="0.01" id="expected-rate" class="form-control border-end-0" placeholder="7.00" required>
+                                <span class="input-group-text bg-white border-start-0 text-muted">%</span>
                             </div>
-                            <small class="text-muted">Typically 0.5% or 2.5% of the appraised value/limit.</small>
                         </div>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">Current Mortgage Debt</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="current-debt" class="form-control border-start-0 ps-0" placeholder="e.g. 150000" required>
+                        </div>
+                        <small class="x-small text-muted mt-1 d-block">This must be paid off at closing.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 py-3 fw-bold shadow-sm text-dark" style="background-color: var(--hecm-gold); border: none; color: white !important;">
+                        Estimate Principal Limit <i class="bi bi-chevron-right ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear All Data</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-person-heart display-1 mb-3 opacity-25" style="color: var(--hecm-gold);"></i>
+                    <h4 class="fw-bold text-dark">HUD Calculation Model</h4>
+                    <p>Enter your details to calculate the <strong>Principal Limit Factor (PLF)</strong>. This determines the percentage of your home's value you can access based on current federal guidelines.</p>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: #b8860b; border: none;">
-                Calculate Maximum Principal Limit
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Max Principal Limit (Total Pool)</span>
+                        <div class="value-large mb-2" id="pl-display">$0</div>
+                        <div class="text-muted fw-bold small text-uppercase" id="plf-text">PLF: 0.00%</div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Net Cash Available</span>
+                                <div class="h4 fw-bold mb-0 text-success" id="net-cash-display">$0</div>
+                                <small class="text-muted">After debt payoff & MIP</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Initial MIP Cost</span>
+                                <div class="h4 fw-bold mb-0 text-danger" id="mip-display">$0</div>
+                                <small class="text-muted">Federal Insurance (2.0%)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="disclaimer-box p-3 rounded-4 border shadow-sm">
+                        <h6 class="fw-bold mb-1 small"><i class="bi bi-info-circle-fill me-2"></i>Understanding Net Proceeds</h6>
+                        <p class="x-small mb-0">
+                            A Reverse Mortgage must be the primary lien. The "Net Cash" shown is the liquidity remaining <strong>after</strong> your existing mortgage is cleared and federal insurance premiums are deducted.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-octagon-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Assessment Failed</h5>
+                        <p id="error-msg" class="mb-0 small"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('reverse-mortgage-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
 
     /**
-     * Formats a number as USD currency (with cents).
+     * Simplified PLF approximation based on HUD tables.
+     * PLF increases with age and decreases with rate.
      */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
+    function calculatePLF(age, rate) {
+        let base = 0.40; // Floor for younger seniors at higher rates
+        const ageCredit = (age - 62) * 0.006;
+        const rateDebit = (rate - 3.0) * 0.045;
+        let plf = base + ageCredit - rateDebit;
+        return Math.min(0.75, Math.max(0.10, plf));
     }
 
-    /**
-     * This function approximates the Principal Limit Factor (PLF) used in HECM loans.
-     * PLF is based on the Expected Interest Rate (EIR) and the age of the youngest borrower.
-     * Note: This is a SIMPLIFIED approximation, as actual HECM PLF tables are complex and set by HUD.
-     * The true formula uses complex actuarial tables. We'll use a basic inverse relationship to simulate the key principle.
-     */
-    function approximatePrincipalLimitFactor(age, rate) {
-        // Base PLF is higher for older borrowers and lower for higher rates.
-        let baseFactor = 0.5; // Placeholder starting point for 62 years old
-        
-        // Age adjustment (Older = higher factor)
-        const ageModifier = (age - 62) * 0.007; // 0.7% increase per year over 62
-        
-        // Rate adjustment (Higher rate = lower factor)
-        const rateModifier = (rate - 5.0) * 0.04; // 4% decrease for every point over 5%
-        
-        // Combine (simplified)
-        let PLF = baseFactor + ageModifier - rateModifier;
-        
-        // Clamp the result to realistic bounds (e.g., 40% to 70%)
-        return Math.min(0.70, Math.max(0.40, PLF));
-    }
-
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleReverseMortgageCalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const homeValue = parseFloat(document.getElementById('home-value').value);
-            const borrowerAge = parseInt(document.getElementById('borrower-age').value);
-            const expectedRate = parseFloat(document.getElementById('expected-rate').value);
-            const currentDebt = parseFloat(document.getElementById('current-debt').value);
-            const initialMIPSPercent = parseFloat(document.getElementById('initial-mips').value);
+        const val = parseFloat(document.getElementById('home-value').value);
+        const age = parseInt(document.getElementById('borrower-age').value);
+        const rate = parseFloat(document.getElementById('expected-rate').value);
+        const debt = parseFloat(document.getElementById('current-debt').value);
 
-            // 1. Validation
-            const maxHUDValue = 1149825; // 2024 HUD Limit
-            const maxClaimValue = Math.min(homeValue, maxHUDValue);
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            if (borrowerAge < 62) {
-                throw new Error("The youngest borrower must be at least 62 years old for a HECM.");
-            }
-            if (currentDebt >= maxClaimValue) {
-                throw new Error("The current debt exceeds the maximum claim amount. You may not qualify.");
-            }
-            
-            // 2. Calculate Principal Limit Factor (PLF)
-            const PLF = approximatePrincipalLimitFactor(borrowerAge, expectedRate);
-            
-            // 3. Calculate Maximum Principal Limit (Total amount loan can accrue)
-            const maxPrincipalLimit = maxClaimValue * PLF;
-            
-            // 4. Calculate Mortgage Insurance Premium (MIP)
-            const initialMIPCost = maxPrincipalLimit * (initialMIPSPercent / 100);
-            
-            // 5. Calculate Net Proceeds (Amount available after paying debt and fees)
-            const totalRequiredPayoff = currentDebt + initialMIPCost; // Simplified: includes debt and initial MIP
-            const netAvailableProceeds = Math.max(0, maxPrincipalLimit - totalRequiredPayoff);
+        // Validation
+        const hudLimit = 1215850; // Updated 2026 HUD Limit (Example)
+        const claimAmt = Math.min(val, hudLimit);
 
-
-            // 6. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-bronze mb-4">HECM Principal Limit Estimate</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <div class="col-md-6 mb-3 border-end border-gold">
-                        <p class="result-label">MAXIMUM PRINCIPAL LIMIT</p>
-                        <p class="principal-limit-value mb-0">
-                            ${currencyFormatter.format(maxPrincipalLimit)}
-                        </p>
-                        <small class="text-muted">This is the total amount of debt (including interest and fees) the loan can accrue.</small>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">ESTIMATED NET AVAILABLE PROCEEDS</p>
-                        <p class="principal-limit-value mb-0 text-success" style="font-size: 2.5rem;">
-                            ${currencyFormatter.format(netAvailableProceeds)}
-                        </p>
-                        <small class="text-muted">The cash amount available to you after paying off the current debt and initial MIP.</small>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-bronze mb-3">Loan Factor Breakdown</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-9">
-                        <table class="table table-sm table-striped">
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold">Maximum Claim Value</td>
-                                    <td class="text-end">${currencyFormatter.format(maxClaimValue)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Approximate Principal Limit Factor (PLF)</td>
-                                    <td class="text-end">${(PLF * 100).toFixed(2)}%</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Initial Mortgage Insurance Premium (${initialMIPSPercent.toFixed(1)}%)</td>
-                                    <td class="text-end text-danger">(${currencyFormatter.format(initialMIPCost)})</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Current Debt Payoff Required</td>
-                                    <td class="text-end text-danger">(${currencyFormatter.format(currentDebt)})</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-3 p-3 bg-light rounded">
-                    <p class="mb-0 text-muted small">**Disclaimer:** This is an estimate. Actual Principal Limit Factors (PLFs) are set by HUD and depend precisely on the current Expected Interest Rate.</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (age < 62) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Youngest borrower must be at least 62 years old.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('reverse-mortgage-form').addEventListener('submit', handleReverseMortgageCalc);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('reverse-mortgage-form').dispatchEvent(new Event('submit'));
-    };
+        const plf = calculatePLF(age, rate);
+        const pl = claimAmt * plf;
+        const mip = claimAmt * 0.02; // Initial MIP is typically 2% of Claim Amt
+        const netCash = Math.max(0, pl - debt - mip);
+
+        if (debt > pl) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Current debt exceeds the available Principal Limit. A HECM cannot close unless the gap is paid in cash.";
+            return;
+        }
+
+        // UI Update
+        resultsUi.classList.remove('d-none');
+        document.getElementById('pl-display').textContent = currency.format(pl);
+        document.getElementById('plf-text').textContent = `PLF: ${(plf * 100).toFixed(2)}%`;
+        document.getElementById('net-cash-display').textContent = currency.format(netCash);
+        document.getElementById('mip-display').textContent = currency.format(mip);
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

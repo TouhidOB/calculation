@@ -2,308 +2,224 @@
 
 {% block title %}Tenant Rent-to-Income Ratio Calculator{% endblock %}
 
-{% block meta_description %}Calculate a tenant's rent-to-income ratio and determine if they meet common financial screening criteria (e.g., 3x monthly rent).{% endblock %}
-
-{% block meta_keywords %}rent to income ratio, tenant screening, landlord calculator, 3x rent rule, gross monthly income{% endblock %}
+{% block meta_description %}Quickly screen tenants by calculating their rent-to-income ratio. Determine if they meet the 3x rent rule and other industry standards.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKyc/iM85rEkg9nO8g19z0c4n1qJkI15d9yI5M9I4KjD4+gN2V01GjJ8F4/1043K2b+I7Sg/q2N5oQ2A==" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Screening Blue" Theme */
     :root {
-        --main-blue: #3b82f6; /* Bright Blue */
-        --light-grey: #f1f5f9; /* Very light background */
-        --dark-text: #1e293b;   /* Dark slate text */
-        --accent-green: #10b981; /* Success Green */
-        --accent-yellow: #f59e0b; /* Caution Yellow */
-        --accent-red: #ef4444; /* Alert Red */
-    }
-    
-    .solver-wrapper {
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 800px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: var(--light-grey);
-        border: 2px solid var(--main-blue);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--dark-text);
-        display: block;
-        margin-bottom: 5px;
+        --screen-blue: #2563eb;
+        --screen-bg: #f8fafc;
+        --screen-border: #e2e8f0;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
-        font-weight: 700;
-        color: var(--dark-text);
-    }
-    .form-control-custom:focus {
-        border-color: var(--main-blue);
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+    body {
+        background-color: var(--screen-bg);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
-    .result-section {
-        margin-top: 30px;
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--screen-border);
+        overflow: hidden;
     }
 
-    .summary-card {
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    .input-sidebar {
         background-color: #ffffff;
-        border-left: 5px solid var(--main-blue);
-        text-align: center;
+        border-right: 1px solid var(--screen-border);
     }
 
-    .result-error {
-        border-left: 5px solid var(--accent-red);
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Metrics display */
-    .metric-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--dark-text);
-    }
-    
-    .metric-value {
-        font-size: 3.5rem;
-        font-weight: 900;
-        color: var(--main-blue);
-        line-height: 1;
-        margin-bottom: 10px;
-    }
-    
-    .feedback-box {
-        padding: 15px;
-        border-radius: 8px;
+    .form-label {
         font-weight: 700;
-        font-size: 1.1rem;
-        margin-top: 20px;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
+    .metric-hero {
+        padding: 2.5rem;
+        border-radius: 1rem;
+        background: var(--screen-bg);
+        text-align: center;
+        border: 2px dashed var(--screen-border);
+        transition: all 0.3s ease;
+    }
+
+    .value-hero {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--screen-blue);
+        line-height: 1;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .feedback-pill {
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 700;
+        display: inline-block;
+        margin-top: 1.5rem;
+    }
+
+    .rule-box {
+        background: white;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--screen-border);
+        font-size: 0.85rem;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">📊 Tenant Rent-to-Income Ratio Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Determine if a prospective tenant meets the minimum income requirements for a property.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-person-check text-primary me-2"></i>Tenant Income Screener</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">
+            The industry standard for a qualified tenant is a <strong>3x Rent-to-Income</strong> ratio. Use this tool to verify applicant affordability.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="income-ratio-form" class="row g-4">
-            
-            <div class="col-lg-12">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-dark-text p-2 rounded mb-4">Applicant's Financial Data</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="screening-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Applicant Financials</h6>
                     
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="monthly-income">Tenant's Gross Monthly Income:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="monthly-income" value="6000" min="100" step="100" required class="form-control form-control-custom">
-                            </div>
-                            <small class="text-muted">Before taxes/deductions (Gross).</small>
+                    <div class="mb-4">
+                        <label class="form-label">Gross Monthly Income</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="monthly-income" class="form-control border-start-0 ps-0" placeholder="e.g. 5000" required>
                         </div>
-                        
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="monthly-rent">Monthly Rent Amount:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="monthly-rent" value="2000" min="100" step="100" required class="form-control form-control-custom">
+                        <small class="x-small text-muted">Total income before taxes and deductions.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Proposed Monthly Rent</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="monthly-rent" class="form-control border-start-0 ps-0" placeholder="e.g. 1500" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm mb-3" style="background-color: var(--screen-blue);">
+                        Analyze Qualification <i class="bi bi-search ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 text-decoration-none text-muted small">Clear Applicant Data</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white d-flex flex-column justify-content-center">
+                
+                <div id="placeholder-ui" class="placeholder-state">
+                    <i class="bi bi-file-earmark-person display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Awaiting Input</h4>
+                    <p>Enter the applicant's gross income and the rent amount to see the affordability breakdown.</p>
+                </div>
+
+                <div id="results-ui" class="d-none text-center">
+                    <span class="form-label d-block mb-3">Calculated Rent-to-Income Ratio</span>
+                    <div class="metric-hero" id="hero-box">
+                        <div class="value-hero" id="ratio-display">0%</div>
+                        <div id="multiplier-display" class="fw-bold mt-2 text-muted">0.0x Income Multiplier</div>
+                    </div>
+
+                    <div id="feedback-message" class="feedback-pill"></div>
+
+                    
+
+                    <div class="row g-3 mt-5 text-start">
+                        <div class="col-md-6">
+                            <div class="rule-box h-100">
+                                <p class="fw-bold mb-1 text-success">The 3x Rule</p>
+                                <p class="text-muted mb-0 small">Landlords typically require income to be at least 3 times the rent (33% ratio).</p>
                             </div>
-                            <small class="text-muted">The advertised monthly rent price.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="rule-box h-100">
+                                <p class="fw-bold mb-1 text-primary">The 30% Rule</p>
+                                <p class="text-muted mb-0 small">Financial experts suggest spending no more than 30% of gross income on housing.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: var(--main-blue); border: none;">
-                Analyze Ratio
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency.
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    });
+    const form = document.getElementById('screening-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const ratioDisplay = document.getElementById('ratio-display');
+    const multiplierDisplay = document.getElementById('multiplier-display');
+    const feedback = document.getElementById('feedback-message');
+    const heroBox = document.getElementById('hero-box');
 
-    /**
-     * Formats a number as a percentage.
-     */
-    const percentFormatter = new Intl.NumberFormat('en-US', {
-        style: 'percent',
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-    });
-
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Gathers and validates all inputs from the form.
-     */
-    function getInputs() {
-        const monthlyIncome = parseFloat(document.getElementById('monthly-income').value);
-        const monthlyRent = parseFloat(document.getElementById('monthly-rent').value);
-        
-        if (isNaN(monthlyIncome) || monthlyIncome <= 0 || isNaN(monthlyRent) || monthlyRent <= 0) {
-            throw new Error("Both Monthly Income and Monthly Rent must be valid positive values.");
-        }
-
-        return { monthlyIncome, monthlyRent };
-    }
-    
-    /**
-     * Generates HTML feedback based on the calculated ratio.
-     */
-    function getRatioFeedback(ratio) {
-        let backgroundColor, color, message, multiplier;
-        
-        multiplier = (100 / ratio).toFixed(2);
-
-        // Standard 3x rule (Ratio <= 33.33%)
-        if (ratio <= 33.33) {
-            backgroundColor = 'var(--accent-green)';
-            color = 'white';
-            message = `EXCELLENT. The tenant's income is ${multiplier}x the monthly rent. This meets all common landlord requirements.`;
-        } 
-        // Standard 40% rule (Ratio <= 40%)
-        else if (ratio <= 40) {
-            backgroundColor = 'var(--accent-yellow)';
-            color = 'var(--dark-text)';
-            message = `ACCEPTABLE. The ratio is slightly above the standard 33.3% but still manageable. The income is ${multiplier}x the rent.`;
-        } 
-        // High risk (Ratio > 40%)
-        else {
-            backgroundColor = 'var(--accent-red)';
-            color = 'white';
-            message = `HIGH RISK. The tenant's income only covers the rent ${multiplier}x. This is outside the comfort zone for most landlords.`;
-        }
-        
-        return `<div class="feedback-box" style="background-color: ${backgroundColor}; color: ${color};">${message}</div>`;
-    }
-
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleRatioCalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
-            
-            // Calculate Ratio: (Rent / Income) * 100
-            const ratio = (i.monthlyRent / i.monthlyIncome) * 100;
-            
-            const feedbackHtml = getRatioFeedback(ratio);
-            
-            // --- Build Summary HTML ---
-            
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-text mb-4">Tenant Financial Screening Result</h4>
-                
-                <p class="metric-label mb-0">RENT-TO-GROSS-INCOME RATIO</p>
-                <p class="metric-value mb-1" style="color: ${ratio <= 33.33 ? 'var(--accent-green)' : 'var(--accent-red)'};">
-                    ${percentFormatter.format(ratio / 100)}
-                </p>
-                
-                <p class="text-muted fw-bold">
-                    This means ${percentFormatter.format(ratio / 100)} of the tenant's gross monthly income 
-                    (${currencyFormatter.format(i.monthlyIncome)}) is used for rent (${currencyFormatter.format(i.monthlyRent)}).
-                </p>
-                
-                ${feedbackHtml}
-                
-                <div class="mt-4 p-3 border rounded text-start small bg-light">
-                    <p class="fw-bold text-dark-text mb-1">Common Screening Standards:</p>
-                    <ul class="list-unstyled mb-0">
-                        <li><span class="text-success">Ideal:</span> Ratio $\le 30\%$ (Income $\ge 3.33\times$ Rent)</li>
-                        <li><span class="text-warning">Common Minimum:</span> Ratio $\le 33.33\%$ (Income $\ge 3\times$ Rent)</li>
-                    </ul>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
+        const income = parseFloat(document.getElementById('monthly-income').value);
+        const rent = parseFloat(document.getElementById('monthly-rent').value);
 
-    // Attach handler to the form
-    document.getElementById('income-ratio-form').addEventListener('submit', handleRatioCalc);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('income-ratio-form').dispatchEvent(new Event('submit'));
-    };
+        if (isNaN(income) || income <= 0 || isNaN(rent) || rent <= 0) return;
+
+        const ratio = (rent / income) * 100;
+        const multiplier = (income / rent).toFixed(2);
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.remove('d-none');
+
+        ratioDisplay.textContent = ratio.toFixed(1) + "%";
+        multiplierDisplay.textContent = multiplier + "x Income Multiplier";
+
+        // Assessment Logic
+        heroBox.style.background = "#ffffff";
+        heroBox.style.borderStyle = "solid";
+
+        if (ratio <= 30) {
+            feedback.textContent = "✓ Excellent Qualification";
+            feedback.style.backgroundColor = "#d1fae5";
+            feedback.style.color = "#065f46";
+            heroBox.style.borderColor = "#10b981";
+        } else if (ratio <= 35) {
+            feedback.textContent = "⚠ Borderline - Review Credit";
+            feedback.style.backgroundColor = "#fef3c7";
+            feedback.style.color = "#92400e";
+            heroBox.style.borderColor = "#f59e0b";
+        } else {
+            feedback.textContent = "✕ High Risk - Potential Decline";
+            feedback.style.backgroundColor = "#fee2e2";
+            feedback.style.color = "#991b1b";
+            heroBox.style.borderColor = "#ef4444";
+        }
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+    });
 </script>
 {% endblock %}

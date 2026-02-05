@@ -4,287 +4,235 @@
 
 {% block meta_description %}Quickly check if a rental property meets the 1% Rule: Gross Monthly Rent should equal or exceed 1% of the Purchase Price.{% endblock %}
 
-{% block meta_keywords %}1 percent rule calculator, rental property screening, quick real estate analysis, investment analysis, gross rent rule{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a Clean Silver/Teal Theme (Quick Analysis) */
-    .solver-wrapper {
-        background: #f7f7f7; /* Light silver/grey */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 700px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #e0f2f1; /* Light Teal */
-        border: 2px solid #009688; /* Dark Teal accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #004d40; /* Very Dark Teal */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --teal-700: #0f766e;
+        --teal-600: #0d9488;
+        --teal-50: #f0fdfa;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #80cbc4; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--teal-50);
+        border-right: 1px solid #ccfbf1;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #00796b;
-    }
-    .form-control-custom:focus {
-        border-color: #009688;
-        box-shadow: 0 0 0 0.25rem rgba(0, 150, 136, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--teal-700);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #e0f7fa; /* Pale Cyan */
-        border-left: 5px solid #004d40; /* Dark Teal accent */
+    .status-display-box {
+        background-color: white;
+        border: 2px solid #99f6e4;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Pass/Fail display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #004d40; /* Dark Teal */
-    }
-    
-    .status-badge {
-        font-size: 2.5rem;
+    .status-text-large {
+        font-size: 3.5rem;
         font-weight: 900;
-        padding: 10px 20px;
-        border-radius: 10px;
-        display: inline-block;
-        margin-top: 10px;
-    }
-    
-    .status-pass {
-        color: #065f46; /* Darker Green */
-        background-color: #d1fae5; /* Pale Green */
-        border: 2px solid #10b981;
+        line-height: 1;
+        margin-bottom: 0.5rem;
     }
 
-    .status-fail {
-        color: #991b1b; /* Darker Red */
-        background-color: #fee2e2; /* Pale Red */
-        border: 2px solid #ef4444;
+    .stat-card-mini {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
     }
 
-    .text-teal { color: #009688 !important; }
-    .text-dark-teal { color: #004d40 !important; }
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
 
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">✅ 1% Rule Quick Rental Analysis</h1>
-    <p class="text-secondary mb-5 text-center">
-        Quickly determine if a property passes the **1% Rule** by comparing its gross monthly rent to 1% of its purchase price.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-lightning-charge-fill text-teal-600 me-2"></i>1% Rule Screener</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            A quick "Rule of Thumb" used by investors to filter out properties that likely won't cash flow after expenses.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="one-percent-form" class="row g-4 justify-content-center">
-            
-            <!-- Input Section -->
-            <div class="col-lg-10">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-dark-teal p-2 rounded mb-4">Input Property Data</h4>
+    <div class="calc-card mx-auto" style="max-width: 900px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="one-percent-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Property Data</h6>
                     
-                    <div class="input-box mb-4">
-                        <label for="purchase-price">Property Purchase Price:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="purchase-price" 
-                               value="250000" 
-                               min="1000"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-4">
+                        <label class="form-label">Purchase Price</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="purchase-price" class="form-control border-start-0 ps-0" placeholder="e.g. 250000" required>
                         </div>
-                        <small class="text-muted">The total cost of the investment property.</small>
-                    </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="monthly-rent">Actual Gross Monthly Rent:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="monthly-rent" 
-                               value="2500" 
-                               min="1" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">Total rent collected from all units per month.</small>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">Gross Monthly Rent</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="monthly-rent" class="form-control border-start-0 ps-0" placeholder="e.g. 2500" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-teal w-100 py-3 fw-bold shadow-sm text-white" style="background-color: var(--teal-600); border: none;">
+                        Run Analysis <i class="bi bi-search ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Screening</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-clipboard-check display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Screening Dashboard</h4>
+                    <p>Enter a price and rent to see if the property meets the baseline 1% criteria.</p>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Check 1% Rule Status
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="status-display-box mb-4 shadow-sm" id="status-box">
+                        <span class="form-label text-muted mb-2 d-block">1% Rule Status</span>
+                        <div class="status-text-large" id="status-text">---</div>
+                        <div id="status-percentage" class="fw-bold">0.00% of Price</div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1 text-muted">Target Rent (1%)</span>
+                                <div class="h4 fw-bold mb-0 text-dark" id="target-rent-display">$0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1 text-muted">Rent Gap</span>
+                                <div class="h4 fw-bold mb-0" id="rent-gap-display">$0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light">
+                        <h6 class="fw-bold text-dark mb-2">Investor's Note</h6>
+                        <p class="small text-muted mb-0" id="analysis-message">
+                            The 1% Rule is a screening tool, not a final decision maker. Markets with high appreciation often fail the 1% rule but still make great investments.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-octagon fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (with cents for precision).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
+    const form = document.getElementById('one-percent-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
 
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleOnePercent(e) {
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
+    });
+
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const purchasePrice = parseFloat(document.getElementById('purchase-price').value);
-        const monthlyRent = parseFloat(document.getElementById('monthly-rent').value);
-        
-        // 2. Input Validation
-        if (isNaN(purchasePrice) || purchasePrice <= 0 || isNaN(monthlyRent) || monthlyRent <= 0) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter positive values for both Purchase Price and Monthly Rent.</p>`;
-            displayResult(true, htmlContent);
+        const price = parseFloat(document.getElementById('purchase-price').value);
+        const rent = parseFloat(document.getElementById('monthly-rent').value);
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(price) || price <= 0 || isNaN(rent) || rent <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please enter valid price and rent amounts.";
             return;
         }
 
-        try {
-            // 3. Calculation
-            // Required Rent = Purchase Price * 0.01 (1%)
-            const requiredRent = purchasePrice * 0.01;
-            const meetsRule = monthlyRent >= requiredRent;
-            const rentDifference = monthlyRent - requiredRent;
-            
-            // 4. Determine Status and Styling
-            let statusText;
-            let statusClass;
-            let message;
+        // Calculation
+        const actualPercentage = (rent / price) * 100;
+        const targetRent = price * 0.01;
+        const gap = rent - targetRent;
+        const passes = rent >= targetRent;
 
-            if (meetsRule) {
-                statusText = "PASSES";
-                statusClass = "status-pass";
-                message = `The property is generating ${currencyFormatter.format(rentDifference)} **above** the 1% threshold, making it a strong candidate for further analysis.`;
-            } else {
-                statusText = "FAILS";
-                statusClass = "status-fail";
-                message = `The property is generating ${currencyFormatter.format(Math.abs(rentDifference))} **below** the 1% threshold. It may not provide sufficient gross income to be cash-flow positive.`;
-            }
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        
+        const statusTextEl = document.getElementById('status-text');
+        const statusBox = document.getElementById('status-box');
+        const gapEl = document.getElementById('rent-gap-display');
 
-            // 5. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-teal mb-4">1% Rule Quick Analysis Result</h4>
-                
-                <div class="text-center mb-4">
-                    <p class="result-label">RULE STATUS</p>
-                    <div class="${statusClass} status-badge">${statusText}</div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark-teal mb-3">Comparison Breakdown</h5>
-                <div class="row text-center">
-                    <div class="col-md-6 border-end border-teal-400">
-                        <p class="result-label mb-2">Required Monthly Rent (1% of Price)</p>
-                        <p class="fs-4 fw-bold text-teal">${currencyFormatter.format(requiredRent)}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="result-label mb-2">Actual Gross Monthly Rent</p>
-                        <p class="fs-4 fw-bold text-teal">${currencyFormatter.format(monthlyRent)}</p>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4 p-3 bg-light rounded">
-                    <p class="text-muted fw-bold mb-0">${message}</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
+        statusTextEl.textContent = passes ? "PASS" : "FAIL";
+        document.getElementById('status-percentage').textContent = actualPercentage.toFixed(2) + "% of Price";
+        document.getElementById('target-rent-display').textContent = currency.format(targetRent);
+        gapEl.textContent = (gap >= 0 ? "+" : "") + currency.format(gap);
+        
+        // Dynamic Styling
+        if (passes) {
+            statusTextEl.style.color = "#059669";
+            statusBox.style.borderColor = "#6ee7b7";
+            statusBox.style.backgroundColor = "#f0fdf4";
+            gapEl.className = "h4 fw-bold mb-0 text-success";
+            document.getElementById('analysis-message').innerText = "Excellent. This property meets the threshold, suggesting it may cover all operating expenses and debt service with a healthy margin.";
+        } else {
+            statusTextEl.style.color = "#dc2626";
+            statusBox.style.borderColor = "#fecaca";
+            statusBox.style.backgroundColor = "#fef2f2";
+            gapEl.className = "h4 fw-bold mb-0 text-danger";
+            document.getElementById('analysis-message').innerText = "Caution. This property falls below the 1% rule. In many markets, this suggests the property might be cash-flow neutral or negative after expenses.";
         }
-    }
+    });
 
-    // Attach handler to the form
-    document.getElementById('one-percent-form').addEventListener('submit', handleOnePercent);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('one-percent-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

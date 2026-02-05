@@ -4,355 +4,262 @@
 
 {% block meta_description %}Calculate the Maximum Allowable Offer (MAO) for a house flip using the 70% Rule (70% of ARV minus Repairs).{% endblock %}
 
-{% block meta_keywords %}70 percent rule calculator, house flipping, maximum allowable offer, arv, repair costs, real estate investment analysis{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a Construction Yellow/Grey Theme (Flipping) */
-    .solver-wrapper {
-        background: #fafafa; /* Light Grey */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 900px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #fffbeb; /* Light Yellow */
-        border: 2px solid #facc15; /* Yellow accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #78350f; /* Dark Brown/Yellow */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --construction-yellow: #facc15;
+        --construction-dark: #78350f;
+        --flip-bg: #fffbeb;
+        --slate-900: #0f172a;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #fde68a; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--flip-bg);
+        border-right: 1px solid #fef3c7;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #b45309;
-    }
-    .form-control-custom:focus {
-        border-color: #facc15;
-        box-shadow: 0 0 0 0.25rem rgba(250, 204, 21, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--construction-dark);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f5f5f5; /* Medium Grey */
-        border-left: 5px solid #293444; /* Dark Grey/Black accent */
+    .mao-display-box {
+        background-color: var(--slate-900);
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
+        color: white;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
+    .mao-value-large {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--construction-yellow);
+        line-height: 1;
     }
-    
-    /* Styles for MAO display */
-    .result-label {
-        font-size: 1.2rem;
+
+    .stat-card-mini {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .badge-status {
+        font-size: 0.9rem;
+        padding: 0.5rem 1.25rem;
+        border-radius: 2rem;
         font-weight: 600;
-        color: #293444; /* Dark Grey */
     }
-    
-    .mao-value {
-        font-size: 3.5rem;
-        font-weight: 900;
-        color: #facc15; /* Bright Yellow */
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-    }
-    
-    .text-dark-grey { color: #293444 !important; }
-    .text-yellow { color: #facc15 !important; }
-    .text-success { color: #10b981 !important; }
-    .text-danger { color: #ef4444 !important; }
 
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🚧 70% Rule Maximum Allowable Offer (MAO) Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Determine the maximum price you can pay for a flip, ensuring you stick to the **70% Rule** (70% of After Repair Value minus Repair Costs).
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-hammer text-warning me-2"></i>70% Rule Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Professional-grade tool to determine your <strong>Maximum Allowable Offer (MAO)</strong>. Ensure your flip has enough margin for profit, holding costs, and selling fees.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="seventy-percent-form" class="row g-4 justify-content-center">
-            
-            <!-- Core Inputs -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-grey p-2 rounded mb-4">1. Property Value & Repairs</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="mao-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Project Estimates</h6>
                     
-                    <div class="input-box mb-4">
-                        <label for="arv">After Repair Value (ARV):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="arv" 
-                               value="400000" 
-                               min="10000"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-4">
+                        <label class="form-label">After Repair Value (ARV)</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="arv" class="form-control border-start-0 ps-0" placeholder="Estimated resale price" required>
                         </div>
-                        <small class="text-muted">The estimated selling price after all renovations are complete.</small>
-                    </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="repairs">Estimated Repair Costs:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="repairs" 
-                               value="50000" 
-                               min="0" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">Total cost for renovation, remodeling, and repairs.</small>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">Estimated Repairs</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="repairs" class="form-control border-start-0 ps-0" placeholder="Rehab budget" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Purchase Price / Asking</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="offer" class="form-control border-start-0 ps-0" placeholder="What are they asking?">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Profit Margin Rule (%)</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="rule" class="form-control border-end-0" placeholder="70" value="70">
+                            <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                        </div>
+                        <small class="text-muted x-small d-block mt-1">Standard is 70% for most markets.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 py-3 fw-bold shadow-sm" style="background-color: var(--construction-yellow); color: var(--construction-dark); border: none;">
+                        Calculate MAO <i class="bi bi-calculator-fill ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Project</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-cone-striped display-1 mb-3 opacity-25 text-warning"></i>
+                    <h4 class="fw-bold text-dark">Offer Analysis Dashboard</h4>
+                    <p>Enter your ARV and repair estimates to determine the highest price you can pay while maintaining your profit margins.</p>
                 </div>
-            </div>
-            
-            <!-- Comparison & Rule -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-grey p-2 rounded mb-4">2. Your Offer & Target</h4>
-                    
-                    <div class="input-box mb-4">
-                        <label for="offer-price">Current Asking Price / Your Proposed Offer:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="offer-price" 
-                               value="230000" 
-                               min="1" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">The price you are currently negotiating or being asked to pay.</small>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="mao-display-box mb-4 shadow-sm">
+                        <span class="form-label text-white-50 mb-2 d-block">Maximum Allowable Offer (MAO)</span>
+                        <div class="mao-value-large mb-2" id="mao-display">$0</div>
+                        <div id="status-badge" class="badge-status bg-white text-dark mt-3 d-inline-block">Pending Analysis</div>
                     </div>
+
                     
-                    <div class="input-box mb-4">
-                        <label for="rule-percentage">Rule Percentage (70% is standard):</label>
-                        <div class="input-group">
-                            <input type="number" id="rule-percentage" 
-                               value="70" 
-                               min="50" 
-                               max="100" 
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
+
+                    <div class="row g-3 mb-4 text-center">
+                        <div class="col-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1 text-muted">Fixed Margin</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="margin-display">$0</div>
+                                <small class="text-muted small">30% buffer</small>
+                            </div>
                         </div>
-                        <small class="text-muted">Adjust this if your market or strategy requires a different margin (e.g., 75% or 65%).</small>
+                        <div class="col-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1 text-muted">Profit Potential</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="profit-display">$0</div>
+                                <small class="text-muted small">Projected</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light border">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle-fill me-2"></i>Strategy Insight</h6>
+                        <p class="small text-muted mb-0" id="strategy-msg">
+                            The 70% rule is designed to cover the costs of buying, holding, and selling, while leaving approximately a 15-20% net profit for the investor.
+                        </p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg bg-dark text-yellow border-0">
-                Calculate Maximum Offer (MAO)
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Invalid Project Data</h5>
+                        <p id="error-msg" class="mb-0"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('mao-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
 
-    /**
-     * Gathers all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            arv: parseFloat(document.getElementById('arv').value),
-            repairs: parseFloat(document.getElementById('repairs').value),
-            rulePercentage: parseFloat(document.getElementById('rule-percentage').value),
-            offerPrice: parseFloat(document.getElementById('offer-price').value),
-        };
-        
-        for (const key in inputs) {
-            if (isNaN(inputs[key])) {
-                throw new Error(`Invalid Input: Please ensure all fields are valid numbers.`);
-            }
-        }
-        return inputs;
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleSeventyPercent(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        const arv = parseFloat(document.getElementById('arv').value);
+        const repairs = parseFloat(document.getElementById('repairs').value);
+        const offer = parseFloat(document.getElementById('offer').value) || 0;
+        const rulePercent = parseFloat(document.getElementById('rule').value) || 70;
 
-            // 1. Validation
-            if (i.arv <= 0 || i.repairs < 0 || i.rulePercentage <= 0) {
-                throw new Error("ARV and Rule Percentage must be positive values.");
-            }
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // 2. Calculation
-            const ruleDecimal = i.rulePercentage / 100;
-            
-            // MAO = (ARV * Rule %) - Repairs
-            const mao = (i.arv * ruleDecimal) - i.repairs;
-            const mao_formatted = currencyFormatter.format(mao);
-            
-            // 3. Comparison
-            const comparisonDifference = mao - i.offerPrice;
-            
-            let comparisonStatus;
-            let comparisonClass;
-            let comparisonMessage;
-            
-            if (i.offerPrice <= mao) {
-                comparisonClass = 'text-success';
-                comparisonStatus = `**GOOD:** The proposed price is below the Maximum Allowable Offer.`;
-                comparisonMessage = `Your margin is ${currencyFormatter.format(comparisonDifference)} above the minimum required by the ${i.rulePercentage}% rule.`;
-            } else {
-                comparisonClass = 'text-danger';
-                comparisonStatus = `**CAUTION:** The proposed price is above the Maximum Allowable Offer.`;
-                comparisonMessage = `The current price is ${currencyFormatter.format(Math.abs(comparisonDifference))} over the limit set by the ${i.rulePercentage}% rule. You may need to renegotiate or reconsider.`;
-            }
-
-            // 4. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-grey mb-4">Calculation Results</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- MAO -->
-                    <div class="col-md-6 mb-3 border-end border-dark-grey">
-                        <p class="result-label">MAXIMUM ALLOWABLE OFFER (MAO)</p>
-                        <p class="mao-value mb-0">
-                            ${mao_formatted}
-                        </p>
-                    </div>
-
-                    <!-- Comparison -->
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">PROPOSED OFFER VS. MAO</p>
-                         <p class="fs-3 fw-bold mb-0 ${comparisonClass}">
-                            ${comparisonStatus}
-                        </p>
-                        <p class="text-muted small mt-2">${comparisonMessage}</p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark-grey mb-3">Breakdown: MAO Calculation</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-8">
-                        <table class="table table-sm table-striped">
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold">After Repair Value (ARV)</td>
-                                    <td class="text-end">${currencyFormatter.format(i.arv)}</td>
-                                </tr>
-                                <tr>
-                                    <td>${i.rulePercentage}% of ARV (Target Price)</td>
-                                    <td class="text-end">${currencyFormatter.format(i.arv * ruleDecimal)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Minus Estimated Repairs</td>
-                                    <td class="text-end text-danger">(${currencyFormatter.format(i.repairs)})</td>
-                                </tr>
-                                <tr class="table-success text-dark-grey">
-                                    <td class="fw-bolder fs-6">Maximum Allowable Offer (MAO)</td>
-                                    <td class="text-end fw-bolder fs-6">${mao_formatted}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (isNaN(arv) || arv <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please provide a valid After Repair Value (ARV).";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('seventy-percent-form').addEventListener('submit', handleSeventyPercent);
+        // 70% Rule Calculation: MAO = (ARV * Rule%) - Repairs
+        const mao = (arv * (rulePercent / 100)) - repairs;
+        const marginValue = arv * ((100 - rulePercent) / 100);
+        const projectedProfit = marginValue * 0.5; // Rough estimate of net after fees
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('seventy-percent-form').dispatchEvent(new Event('submit'));
-    };
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('mao-display').textContent = currency.format(mao);
+        document.getElementById('margin-display').textContent = currency.format(marginValue);
+        document.getElementById('profit-display').textContent = currency.format(projectedProfit);
+
+        // Offer Status Logic
+        const badge = document.getElementById('status-badge');
+        const strategyMsg = document.getElementById('strategy-msg');
+
+        if (offer === 0) {
+            badge.innerText = "Target MAO Calculated";
+            badge.className = "badge-status bg-secondary text-white mt-3 d-inline-block";
+        } else if (offer <= mao) {
+            badge.innerText = "Deal Approved: Below MAO";
+            badge.className = "badge-status bg-success text-white mt-3 d-inline-block";
+            strategyMsg.innerHTML = `<strong>Strong Offer:</strong> Your offer is ${currency.format(mao - offer)} below the MAO limit. This provides an extra safety net for unexpected repair overruns.`;
+        } else {
+            badge.innerText = "Caution: Above MAO";
+            badge.className = "badge-status bg-danger text-white mt-3 d-inline-block";
+            strategyMsg.innerHTML = `<strong>High Risk:</strong> This offer exceeds the ${rulePercent}% rule by ${currencyFormatter.format(offer - mao)}. You are significantly cutting into your profit margins or safety buffer.`;
+        }
+    });
+
+    const currencyFormatter = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

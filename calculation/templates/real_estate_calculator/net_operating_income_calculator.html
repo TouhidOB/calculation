@@ -2,443 +2,273 @@
 
 {% block title %}Net Operating Income (NOI) Calculator{% endblock %}
 
-{% block meta_description %}Calculate a property's Net Operating Income (NOI) by subtracting total operating expenses from Gross Operating Income (GOI).{% endblock %}
-
-{% block meta_keywords %}NOI calculator, net operating income, real estate finance, profitability, operating expenses, GOI, GSI{% endblock %}
+{% block meta_description %}Determine your property's profitability by calculating Net Operating Income (NOI). Subtract annual operating expenses from Gross Operating Income.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKyc/iM85rEkg9nO8g19z0c4n1qJkI15d9yI5M9I4KjD4+gN2V01GjJ8F4/1043K2b+I7Sg/q2N5oQ2A==" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Investment Blue" Theme */
     :root {
-        --main-blue: #1e3a8a; /* Dark Blue */
-        --light-blue: #eff6ff; /* Pale Blue */
-        --dark-text: #172554;   /* Very Dark Blue text */
-        --accent-gold: #fcd34d; /* Yellow/Gold Accent */
-    }
-    
-    .solver-wrapper {
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1000px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: var(--light-blue);
-        border: 2px solid var(--main-blue);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--dark-text);
-        display: block;
-        margin-bottom: 5px;
+        --noi-blue: #1e3a8a;
+        --noi-light: #f8fafc;
+        --noi-border: #cbd5e1;
+        --noi-accent: #0ea5e9;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--noi-border);
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #ffffff;
+        border-right: 1px solid var(--noi-border);
+    }
+
+    .form-label {
         font-weight: 700;
-        color: var(--dark-text);
-    }
-    .form-control-custom:focus {
-        border-color: var(--main-blue);
-        box-shadow: 0 0 0 0.25rem rgba(30, 58, 138, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--noi-blue);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f7fbff; /* Very Light Blue */
-        border-left: 5px solid var(--main-blue);
+    .hero-metric {
+        background: linear-gradient(135deg, var(--noi-blue), #1e40af);
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for NOI display */
-    .metric-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--dark-text);
-    }
-    
-    .metric-value {
+    .hero-value {
         font-size: 3.5rem;
-        font-weight: 900;
-        color: var(--main-blue);
-        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.02em;
     }
 
-    .table-noi td, .table-noi th {
-        vertical-align: middle;
-        padding: 10px;
+    .table-ledger {
+        font-size: 0.95rem;
     }
 
-    .total-row td {
-        background-color: var(--light-blue) !important;
-        font-weight: 700;
-        border-top: 2px solid var(--main-blue);
-    }
-    .noi-row td {
-        background-color: #fcd34d50 !important;
-        font-weight: 900;
-        font-size: 1.1rem;
+    .table-ledger td:last-child {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        text-align: right;
+        font-weight: 600;
     }
 
+    .placeholder-state {
+        padding: 6rem 2rem;
+        text-align: center;
+        color: #64748b;
+    }
+
+    .section-header {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #64748b;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">💸 Net Operating Income (NOI) Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Calculate the annual cash flow before debt service (Net Operating Income) for your rental property.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-graph-up-arrow text-primary me-2"></i>NOI Analysis Engine</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Net Operating Income is the cornerstone of real estate valuation. It measures a property's ability to generate income <strong>before</strong> considering debt or taxes.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="noi-form" class="row g-4">
-            
-            <!-- Part 1: Annual Income -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-text p-2 rounded mb-3">1. Annual Income & Loss</h4>
+    <div class="calc-card mx-auto" style="max-width: 1200px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="noi-form">
+                    <div class="section-header">Revenue Stream</div>
                     
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="units">Number of Units:</label>
-                            <input type="number" id="units" value="4" min="1" step="1" required class="form-control form-control-custom">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Units</label>
+                            <input type="number" id="units" class="form-control form-control-lg" placeholder="e.g. 10" required>
                         </div>
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="monthly-rent">Monthly Rent Per Unit:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="monthly-rent" value="1500" min="100" step="100" required class="form-control form-control-custom">
+                        <div class="col-6">
+                            <label class="form-label">Avg Rent</label>
+                            <input type="number" id="monthly-rent" class="form-control form-control-lg" placeholder="1200" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Vacancy & Credit Loss (%)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.1" id="vacancy-rate" class="form-control" placeholder="5">
+                            <span class="input-group-text bg-white">%</span>
+                        </div>
+                    </div>
+
+                    <div class="section-header pt-3">Operating Load</div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Annual Taxes & Insurance</label>
+                        <input type="number" id="fixed-costs" class="form-control" placeholder="Annual total" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Annual Repairs & Mgmt</label>
+                        <input type="number" id="variable-costs" class="form-control" placeholder="Annual total" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-lg mb-3">
+                        Calculate Annual NOI
+                    </button>
+                    
+                    <button type="reset" class="btn btn-outline-secondary w-100 btn-sm text-uppercase fw-bold" style="font-size: 0.7rem;">Clear Workbook</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-calculator display-1 mb-3 opacity-25 text-primary"></i>
+                    <h4 class="fw-bold text-dark">Awaiting Financial Inputs</h4>
+                    <p>Enter your rental income and expense assumptions to generate a professional Income Statement.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="hero-metric mb-5 shadow-sm">
+                        <span class="text-uppercase fw-bold small opacity-75">Calculated Net Operating Income</span>
+                        <div class="hero-value" id="noi-display">$0</div>
+                        <div class="mt-2 opacity-75 small">Annualized before Debt Service</div>
+                    </div>
+
+                    
+
+                    <div class="row mt-5">
+                        <div class="col-md-7">
+                            <h6 class="fw-bold text-dark mb-3 text-uppercase small">Statement of Operations</h6>
+                            <table class="table table-borderless table-ledger">
+                                <tbody>
+                                    <tr>
+                                        <td class="text-muted">Gross Scheduled Income</td>
+                                        <td id="gsi-table">$0</td>
+                                    </tr>
+                                    <tr class="border-bottom">
+                                        <td class="text-muted">Vacancy Allowance</td>
+                                        <td id="vcl-table" class="text-danger">($0)</td>
+                                    </tr>
+                                    <tr class="fw-bold">
+                                        <td>Effective Gross Income (EGI)</td>
+                                        <td id="egi-table">$0</td>
+                                    </tr>
+                                    <tr class="border-bottom">
+                                        <td class="text-muted">Total Operating Expenses</td>
+                                        <td id="opex-table" class="text-danger">($0)</td>
+                                    </tr>
+                                    <tr class="table-primary fw-bold" style="border-radius: 8px;">
+                                        <td>NET OPERATING INCOME</td>
+                                        <td id="noi-table" class="text-primary">$0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="p-4 rounded-4 border bg-light h-100">
+                                <h6 class="fw-bold text-dark mb-2 small text-uppercase">Valuation Impact</h6>
+                                <p class="x-small text-muted mb-3">At a <strong>6% Market Cap Rate</strong>, this property's estimated value would be:</p>
+                                <h4 class="fw-bold text-dark" id="valuation-hint">$0</h4>
+                                <hr>
+                                <p class="x-small text-muted mb-0"><i class="bi bi-info-circle me-1"></i> NOI does not include principal/interest payments, capital expenditures, or income taxes.</p>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="vacancy-rate">Vacancy & Credit Loss Rate (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="vacancy-rate" value="5" min="0" max="100" step="0.5" required class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">Expected loss of income due to vacancy/unpaid rent.</small>
-                    </div>
-
-                    <div class="input-box mb-4">
-                        <label for="other-income">Other Annual Income (Laundry, Fees, Parking):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="other-income" value="500" min="0" step="100" required class="form-control form-control-custom">
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Part 2: Annual Expenses -->
-            <div class="col-lg-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-text p-2 rounded mb-3">2. Annual Operating Expenses</h4>
-                    
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="taxes">Property Taxes:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="taxes" value="5000" min="0" step="100" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="insurance">Property Insurance:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="insurance" value="2500" min="0" step="100" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="utilities">Utilities (Owner Paid):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="utilities" value="1200" min="0" step="100" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="repairs">Repairs & Maintenance:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="repairs" value="3000" min="0" step="100" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="management-fee">Property Management Fee:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="management-fee" value="4000" min="0" step="100" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="other-expenses">Administrative/Other Expenses:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="other-expenses" value="500" min="0" step="100" required class="form-control form-control-custom">
-                            </div>
-                        </div>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger border-0 rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Calculation Halted</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: var(--main-blue); border: none;">
-                Calculate Net Operating Income
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents for clean display).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('noi-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0
     });
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Gathers and validates all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            units: parseInt(document.getElementById('units').value),
-            monthlyRent: parseFloat(document.getElementById('monthly-rent').value),
-            vacancyRate: parseFloat(document.getElementById('vacancy-rate').value) / 100, // Convert to decimal
-            otherIncome: parseFloat(document.getElementById('other-income').value),
-            taxes: parseFloat(document.getElementById('taxes').value),
-            insurance: parseFloat(document.getElementById('insurance').value),
-            utilities: parseFloat(document.getElementById('utilities').value),
-            repairs: parseFloat(document.getElementById('repairs').value),
-            managementFee: parseFloat(document.getElementById('management-fee').value),
-            otherExpenses: parseFloat(document.getElementById('other-expenses').value),
-        };
-        
-        // Basic validation
-        for (const key in inputs) {
-            if (isNaN(inputs[key]) || (key !== 'vacancyRate' && inputs[key] < 0)) {
-                throw new Error(`Invalid input for ${key}. Please check all fields.`);
-            }
-        }
-
-        return inputs;
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleNOICalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
-            let breakdown = {};
+        const units = parseInt(document.getElementById('units').value);
+        const rent = parseFloat(document.getElementById('monthly-rent').value);
+        const vacancyPct = parseFloat(document.getElementById('vacancy-rate').value || 0) / 100;
+        const fixed = parseFloat(document.getElementById('fixed-costs').value);
+        const variable = parseFloat(document.getElementById('variable-costs').value);
 
-            // --- 1. GROSS SCHEDULED INCOME (GSI) ---
-            const gsi = i.units * i.monthlyRent * 12;
-            breakdown.gsi = gsi;
-            
-            // --- 2. VACANCY & CREDIT LOSS (VCL) ---
-            const vcl = gsi * i.vacancyRate;
-            breakdown.vcl = vcl;
-            
-            // --- 3. GROSS OPERATING INCOME (GOI) ---
-            const goi = gsi - vcl + i.otherIncome;
-            breakdown.goi = goi;
-            
-            // --- 4. TOTAL OPERATING EXPENSES ---
-            const totalOperatingExpenses = i.taxes + i.insurance + i.utilities + i.repairs + i.managementFee + i.otherExpenses;
-            breakdown.expenses = {
-                taxes: i.taxes,
-                insurance: i.insurance,
-                utilities: i.utilities,
-                repairs: i.repairs,
-                managementFee: i.managementFee,
-                other: i.otherExpenses,
-                total: totalOperatingExpenses
-            };
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // --- 5. NET OPERATING INCOME (NOI) ---
-            const noi = goi - totalOperatingExpenses;
-            breakdown.noi = noi;
+        // Logic
+        const gsi = units * rent * 12;
+        const vcl = gsi * vacancyPct;
+        const egi = gsi - vcl;
+        const totalOpex = fixed + variable;
+        const noi = egi - totalOpex;
 
-            // --- Build Summary HTML ---
-            
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-text mb-4">Net Operating Income Calculation</h4>
-                
-                <div class="row text-center mb-4 justify-content-center">
-                    
-                    <div class="col-md-6 mb-3">
-                        <p class="metric-label mb-0">NET OPERATING INCOME (NOI)</p>
-                        <p class="metric-value mb-0 ${breakdown.noi >= 0 ? 'text-success' : 'text-danger'}">
-                            ${currencyFormatter.format(breakdown.noi)}
-                        </p>
-                        <small class="text-muted fw-bold">NOI is before accounting for debt service.</small>
-                    </div>
-
-                    <div class="col-md-6 mb-3 border-start">
-                        <p class="metric-label mb-0">CAPITALIZATION RATE (If you know the Purchase Price)</p>
-                        <p class="metric-value mb-0" style="color: var(--accent-gold); font-size: 2.5rem;">
-                            NOI / Price
-                        </p>
-                        <small class="text-muted fw-bold">${currencyFormatter.format(breakdown.noi)} / Price = Cap Rate</small>
-                    </div>
-
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark-text mb-3">Income & Expense Breakdown</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-10">
-                        <table class="table table-sm table-borderless table-noi">
-                            <tbody>
-                                <!-- Income Section -->
-                                <tr class="fw-bold">
-                                    <td>GROSS SCHEDULED INCOME (GSI)</td>
-                                    <td class="text-end" style="color: #059669;">${currencyFormatter.format(breakdown.gsi)}</td>
-                                </tr>
-                                <tr>
-                                    <td>- Vacancy & Credit Loss (${(i.vacancyRate * 100).toFixed(1)}%)</td>
-                                    <td class="text-end text-danger">${currencyFormatter.format(breakdown.vcl)}</td>
-                                </tr>
-                                <tr>
-                                    <td>+ Other Income (Parking, Laundry, etc.)</td>
-                                    <td class="text-end text-success">${currencyFormatter.format(i.otherIncome)}</td>
-                                </tr>
-                                <tr class="total-row">
-                                    <td>GROSS OPERATING INCOME (GOI)</td>
-                                    <td class="text-end text-dark-text">${currencyFormatter.format(breakdown.goi)}</td>
-                                </tr>
-                                <!-- Expense Section -->
-                                <tr>
-                                    <td colspan="2" class="pt-4 fw-bold">OPERATING EXPENSES (OPE):</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Property Taxes</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.taxes)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Property Insurance</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.insurance)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Utilities (Owner Paid)</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.utilities)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Repairs & Maintenance</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.repairs)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Property Management Fee</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.managementFee)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Administrative/Other</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.other)}</td>
-                                </tr>
-                                <tr class="total-row">
-                                    <td>TOTAL OPERATING EXPENSES</td>
-                                    <td class="text-end text-dark-text">${currencyFormatter.format(breakdown.expenses.total)}</td>
-                                </tr>
-                                <!-- NOI Final -->
-                                <tr class="noi-row">
-                                    <td>NET OPERATING INCOME (NOI)</td>
-                                    <td class="text-end ${breakdown.noi >= 0 ? 'text-success' : 'text-danger'}">${currencyFormatter.format(breakdown.noi)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div class="p-3 bg-light rounded small text-muted">
-                            <p class="mb-0 fw-bold text-danger">NOTE: Mortgage payments (debt service) are NOT included in the NOI calculation.</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (isNaN(noi)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please ensure all financial fields are filled with positive numbers.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('noi-form').addEventListener('submit', handleNOICalc);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('noi-form').dispatchEvent(new Event('submit'));
-    };
+        // Update UI
+        resultsUi.classList.remove('d-none');
+        document.getElementById('noi-display').textContent = currency.format(noi);
+        
+        // Table Updates
+        document.getElementById('gsi-table').textContent = currency.format(gsi);
+        document.getElementById('vcl-table').textContent = "(" + currency.format(vcl) + ")";
+        document.getElementById('egi-table').textContent = currency.format(egi);
+        document.getElementById('opex-table').textContent = "(" + currency.format(totalOpex) + ")";
+        document.getElementById('noi-table').textContent = currency.format(noi);
+
+        // Valuation Hint (assuming 6% cap)
+        const estValue = noi / 0.06;
+        document.getElementById('valuation-hint').textContent = currency.format(estValue > 0 ? estValue : 0);
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

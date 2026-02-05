@@ -2,325 +2,266 @@
 
 {% block title %}Loan-to-Value (LTV) Ratio Calculator{% endblock %}
 
-{% block meta_description %}Calculate your essential Loan-to-Value (LTV) ratio, a key metric used by lenders to assess risk and determine if Private Mortgage Insurance (PMI) is required.{% endblock %}
-
-{% block meta_keywords %}LTV calculator, loan to value ratio, mortgage LTV, down payment, PMI, home value, loan amount{% endblock %}
+{% block meta_description %}Calculate your Loan-to-Value (LTV) ratio, a key metric used by lenders to assess risk and determine if Private Mortgage Insurance (PMI) is required.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling to match the original Blue Theme */
-    .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 900px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+        --dark-cyan: #0891b2;
+        --bright-cyan: #06b6d4;
+        --emerald: #059669;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1d4ed8;
-    }
-    .form-control-custom:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f0f9ff; /* Very Light Cyan for LTV */
-        border-left: 5px solid #06b6d4; /* Cyan accent */
+    .result-display-box {
+        background-color: #ecfeff;
+        border: 2px solid #a5f3fc;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for LTV display */
-    .ltv-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #0891b2; /* Dark Cyan */
-    }
-    
     .ltv-value {
-        font-size: 3rem;
-        font-weight: 900;
-        color: #06b6d4; /* Bright Cyan */
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--bright-cyan);
+        line-height: 1;
     }
 
-    .ltv-unit {
-        font-size: 1.8rem;
+    .stat-card-mini {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .assessment-pill {
+        display: inline-block;
+        padding: 0.35rem 1rem;
+        border-radius: 50rem;
+        font-size: 0.85rem;
         font-weight: 700;
-        color: #06b6d4;
-        margin-left: 5px;
-    }
-    
-    .analysis-text {
-        font-size: 1rem;
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px dashed #a7f3d0;
-    }
-    
-    .loan-input-field {
-        border-color: #f97316 !important; /* Orange */
-        color: #f97316 !important;
-    }
-    .value-input-field {
-        border-color: #16a34a !important; /* Green */
-        color: #16a34a !important;
+        margin-top: 1rem;
     }
 
-
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+        .col-lg-8 { width: 100% !important; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🏠 Loan-to-Value (LTV) Ratio Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Calculate the **LTV Ratio** to understand your equity and determine the likelihood of needing Private Mortgage Insurance (PMI).
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-pie-chart-fill text-primary me-2"></i>LTV Ratio Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Determine your home equity level. Lenders use the Loan-to-Value (LTV) ratio to set your interest rates and decide if PMI is required.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="ltv-form" class="row g-4">
-            
-            <!-- Loan Amount Input -->
-            <div class="col-md-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-orange-600 p-2 rounded mb-3 text-orange-600">Loan Amount</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="ltv-form">
+                    <div class="mb-4">
+                        <label class="form-label text-primary">Loan Amount</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0">$</span>
+                            <input type="number" id="loan-amount" class="form-control border-start-0 ps-0" placeholder="e.g. 280000" required>
+                        </div>
+                        <small class="text-muted d-block mt-1">Amount you plan to borrow.</small>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label text-success">Property Value</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0">$</span>
+                            <input type="number" id="property-value" class="form-control border-start-0 ps-0" placeholder="e.g. 350000" required>
+                        </div>
+                        <small class="text-muted d-block mt-1">Appraised market value.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Calculate LTV <i class="bi bi-arrow-right-short ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Reset Values</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-shield-lock display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Risk Assessment</h4>
+                    <p>Enter your loan and property details to see your equity percentage and lender risk profile.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-info mb-2 d-block">Your LTV Ratio</span>
+                        <div class="ltv-value mb-1" id="ltv-display">0%</div>
+                        <div id="assessment-status" class="assessment-pill">Standard</div>
+                    </div>
+
                     
-                    <div class="input-box mb-3">
-                        <label for="loan-amount">Total Loan Amount (or Mortgage Balance):</label>
-                        <div class="input-group">
-                            <span class="input-group-text fw-bold text-lg text-orange-500">$</span>
-                            <input type="number" id="loan-amount" 
-                               value="280000" 
-                               min="1"
-                               step="any"
-                               required
-                               class="form-control form-control-custom loan-input-field">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="stat-card-mini shadow-sm border-0 bg-light">
+                                <span class="form-label d-block mb-1">Down Payment / Equity</span>
+                                <div class="h4 fw-bold text-success mb-0" id="equity-cash-display">$0</div>
+                                <small class="text-muted" id="equity-percent-display">0% Equity</small>
+                            </div>
                         </div>
-                        <small class="text-muted">The amount you are borrowing or still owe.</small>
+                        <div class="col-md-6">
+                            <div class="stat-card-mini shadow-sm border-0 bg-light">
+                                <span class="form-label d-block mb-1">PMI Status</span>
+                                <div class="h4 fw-bold text-dark mb-0" id="pmi-status-display">Required</div>
+                                <small class="text-muted">Based on 80% threshold</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-4 rounded-4 bg-white border border-info border-opacity-25 shadow-sm">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle-fill text-info me-2"></i>Lender Analysis</h6>
+                        <p class="small text-muted mb-0" id="analysis-text"></p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Property Value Input -->
-            <div class="col-md-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-green-600 p-2 rounded mb-3 text-green-600">Property Value</h4>
-
-                    <div class="input-box mb-3">
-                        <label for="property-value">Appraised Fair Market Value of Property:</label>
-                        <div class="input-group">
-                            <span class="input-group-text fw-bold text-lg text-green-500">$</span>
-                            <input type="number" id="property-value" 
-                               value="350000" 
-                               min="1" 
-                               required 
-                               class="form-control form-control-custom value-input-field">
-                        </div>
-                        <small class="text-muted">The official value used by the lender.</small>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-diamond fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Calculation Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate LTV Ratio
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency.
-     */
+    const form = document.getElementById('ltv-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
     const formatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
-    
-    /**
-     * Gets the analysis text based on the LTV ratio.
-     */
-    function getAnalysis(ltvRatio) {
-        const percentage = ltvRatio * 100;
-        let analysis = "";
-        let color = "text-success"; // Green for good LTV
 
-        if (percentage <= 80) {
-            analysis = "Excellent: Your LTV is **80% or below**. You have strong equity, will likely secure the best rates, and will not be required to pay Private Mortgage Insurance (PMI).";
-        } else if (percentage <= 90) {
-            analysis = "Good: Your LTV is between 80% and 90%. You may qualify for lower-cost PMI options. You typically need at least 10% down.";
-            color = "text-warning"; // Yellow for caution
-        } else if (percentage <= 95) {
-            analysis = "Acceptable: Your LTV is between 90% and 95%. This is common for FHA loans or conventional loans with standard PMI. You typically need 5% down.";
-            color = "text-orange-500";
-        } else {
-            analysis = "High: Your LTV is **over 95%**. This usually indicates a small down payment. Expect higher interest rates and mandatory, potentially expensive, Private Mortgage Insurance (PMI) or FHA mortgage insurance premiums.";
-            color = "text-danger"; // Red for high risk
-        }
-        
-        return `<p class="${color} fw-bold">${analysis}</p>`;
+    function getAnalysisData(ltv) {
+        if (ltv <= 80) return {
+            label: 'Excellent (Low Risk)',
+            color: '#059669',
+            bg: '#ecfdf5',
+            pmi: 'No PMI Required',
+            text: 'You have at least 20% equity. Most lenders will not require Private Mortgage Insurance (PMI) and you likely qualify for the most competitive interest rates.'
+        };
+        if (ltv <= 90) return {
+            label: 'Good (Moderate Risk)',
+            color: '#d97706',
+            bg: '#fffbeb',
+            pmi: 'PMI Required',
+            text: 'Your equity is between 10% and 20%. You will likely be required to pay PMI, though your rates may be better than those with higher LTVs.'
+        };
+        return {
+            label: 'High (Elevated Risk)',
+            color: '#dc2626',
+            bg: '#fef2f2',
+            pmi: 'PMI Required',
+            text: 'With an LTV above 90%, you are in a high-leverage position. Expect mandatory PMI and potentially higher mortgage insurance premiums.'
+        };
     }
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Handles form submission and triggers the LTV calculation.
-     */
-    function handleLTV(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const loanAmount = parseFloat(document.getElementById('loan-amount').value);
-        const propertyValue = parseFloat(document.getElementById('property-value').value);
-        
-        // 2. Input Validation
-        if (isNaN(loanAmount) || isNaN(propertyValue) || loanAmount <= 0 || propertyValue <= 0) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter positive values for both the Loan Amount and the Property Value.</p>`;
-            displayResult(true, htmlContent);
-            return;
-        }
-        
-        if (loanAmount > propertyValue) {
-            const htmlContent = `<p class="fw-bold text-center">Warning: Loan Exceeds Value</p><p class="text-center">Your Loan Amount (${formatter.format(loanAmount)}) is higher than the Property Value (${formatter.format(propertyValue)}). This results in an LTV ratio greater than 100%, which is generally not possible for standard mortgages (unless cash-out refinancing is involved).</p>`;
-            displayResult(true, htmlContent);
+        const loan = parseFloat(document.getElementById('loan-amount').value);
+        const property = parseFloat(document.getElementById('property-value').value);
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(loan) || isNaN(property) || loan <= 0 || property <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please provide valid positive numbers for both fields.";
             return;
         }
 
-        try {
-            // 3. Calculate Ratio
-            const ltvRatio = loanAmount / propertyValue;
-            const ltvPercentage = (ltvRatio * 100).toFixed(1);
-            
-            // 4. Calculate Down Payment / Equity
-            const equityAmount = propertyValue - loanAmount;
-            const equityPercentage = ((propertyValue - loanAmount) / propertyValue * 100).toFixed(1);
-
-            // 5. Analysis
-            const analysisHtml = getAnalysis(ltvRatio);
-
-            // 6. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-primary mb-4">Your Calculated Loan-to-Value Ratio</h4>
-                
-                <div class="row text-center align-items-center">
-                    <!-- LTV Ratio -->
-                    <div class="col-md-6 mb-4 border-end border-info">
-                        <p class="ltv-label">LTV Ratio</p>
-                        <p class="ltv-value">
-                            ${ltvPercentage}
-                            <span class="ltv-unit">%</span>
-                        </p>
-                        <p class="text-muted small">Calculation: ($${loanAmount.toFixed(0)} / $${propertyValue.toFixed(0)})</p>
-                    </div>
-
-                    <!-- Equity -->
-                    <div class="col-md-6 mb-4">
-                        <p class="ltv-label">Down Payment / Equity</p>
-                        <p class="fs-4 fw-bold text-green-600">
-                            ${formatter.format(equityAmount)}
-                        </p>
-                        <p class="text-muted small">
-                            (This represents **${equityPercentage}%** equity in the property)
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="analysis-text text-center">
-                    <span class="fw-bold text-dark">Lender Assessment:</span>
-                    ${analysisHtml}
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
+        if (loan > property) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Loan amount cannot exceed property value for a standard LTV calculation.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('ltv-form').addEventListener('submit', handleLTV);
+        const ltv = (loan / property) * 100;
+        const equityAmount = property - loan;
+        const equityPercent = 100 - ltv;
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('ltv-form').dispatchEvent(new Event('submit'));
-    };
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        
+        const ltvDisp = document.getElementById('ltv-display');
+        ltvDisp.textContent = ltv.toFixed(1) + '%';
+
+        const info = getAnalysisData(ltv);
+        
+        const statusPill = document.getElementById('assessment-status');
+        statusPill.textContent = info.label;
+        statusPill.style.color = info.color;
+        statusPill.style.backgroundColor = info.bg;
+        ltvDisp.style.color = info.color;
+
+        document.getElementById('equity-cash-display').textContent = formatter.format(equityAmount);
+        document.getElementById('equity-percent-display').textContent = equityPercent.toFixed(1) + '% Equity';
+        document.getElementById('pmi-status-display').textContent = info.pmi;
+        document.getElementById('analysis-text').textContent = info.text;
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

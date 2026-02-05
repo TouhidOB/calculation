@@ -4,354 +4,252 @@
 
 {% block meta_description %}Estimate your annual Homeowners Insurance (HOI) premium based on dwelling coverage, deductible, construction type, and location risk factors.{% endblock %}
 
-{% block meta_keywords %}home insurance calculator, HOI premium, homeowners insurance, dwelling coverage, deductible, property insurance estimate{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a Trustworthy Blue/White Theme (Security/Insurance) */
-    .solver-wrapper {
-        background: #ffffff; /* White */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 900px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #eff6ff; /* Very Light Blue */
-        border: 2px solid #2563eb; /* Strong Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --insurance-blue: #2563eb;
+        --insurance-dark: #1e3a8a;
+        --insurance-bg: #f8faff;
     }
 
-    .form-control-custom, .form-select-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f0f7ff;
+        border-right: 1px solid #dbeafe;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #2563eb;
-    }
-    .form-control-custom:focus, .form-select-custom:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--insurance-dark);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f0f8ff; /* Pale Sky Blue */
-        border-left: 5px solid #2563eb; /* Strong Blue accent */
+    .quote-display-box {
+        background-color: white;
+        border: 2px solid #bfdbfe;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
+    .premium-value-large {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--insurance-blue);
+        line-height: 1;
     }
-    
-    /* Styles for Premium display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-    }
-    
-    .premium-value {
-        font-size: 3.5rem;
-        font-weight: 900;
-        color: #2563eb; /* Bright Blue */
-    }
-    
-    .text-dark-blue { color: #1e3a8a !important; }
-    .text-blue { color: #2563eb !important; }
 
+    .stat-card-mini {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🛡️ Homeowners Insurance Premium Estimator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Estimate your annual insurance cost using dwelling coverage and key risk factors.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-shield-check text-primary me-2"></i>HOI Premium Estimator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Get a high-level estimate of your homeowners insurance premium based on replacement costs and localized risk factors.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="hoi-form" class="row g-4 justify-content-center">
-            
-            <!-- Coverage and Cost -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-blue p-2 rounded mb-4">1. Coverage & Deductible</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="hoi-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Policy Details</h6>
                     
-                    <div class="input-box mb-4">
-                        <label for="dwelling-cost">Dwelling Replacement Cost (Coverage A):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="dwelling-cost" 
-                               value="300000" 
-                               min="50000"
-                               step="1000"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-4">
+                        <label class="form-label">Dwelling Replacement Cost</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="dwelling-cost" class="form-control border-start-0 ps-0" placeholder="e.g. 350000" required>
                         </div>
-                        <small class="text-muted">The cost to rebuild the home (NOT the market value).</small>
-                    </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="deductible">Policy Deductible:</label>
-                        <select id="deductible" 
-                               required 
-                               class="form-select form-select-custom">
-                             <option value="500">$500 (Highest Premium)</option>
-                             <option value="1000" selected>$1,000 (Standard)</option>
-                             <option value="2500">$2,500</option>
-                             <option value="5000">$5,000 (Lowest Premium)</option>
-                        </select>
-                        <small class="text-muted">The amount you pay out-of-pocket before insurance covers a loss.</small>
+                        <small class="text-muted x-small d-block mt-1">Cost to rebuild, not current market value.</small>
                     </div>
 
-                </div>
-            </div>
-            
-            <!-- Risk Factors -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-blue p-2 rounded mb-4">2. Property Risk Factors</h4>
-                    
-                    <div class="input-box mb-4">
-                        <label for="construction">Primary Construction Material:</label>
-                        <select id="construction" 
-                               required 
-                               class="form-select form-select-custom">
-                             <option value="Brick/Masonry" selected>Brick / Concrete (Lower Fire Risk)</option>
-                             <option value="Frame">Wood Frame (Higher Fire Risk)</option>
-                             <option value="Other">Other / Unknown</option>
+                    <div class="mb-4">
+                        <label class="form-label">Policy Deductible</label>
+                        <select id="deductible" class="form-select shadow-sm" required>
+                            <option value="" disabled selected>Select deductible...</option>
+                            <option value="500">$500 (Lower deductible)</option>
+                            <option value="1000">$1,000 (Standard)</option>
+                            <option value="2500">$2,500 (Higher deductible)</option>
+                            <option value="5000">$5,000 (Lowest premium)</option>
                         </select>
-                        <small class="text-muted">Affects risk calculation, particularly for fire and wind.</small>
                     </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="risk-zone">General Location Risk Assessment:</label>
-                        <select id="risk-zone" 
-                               required 
-                               class="form-select form-select-custom">
-                             <option value="Low" selected>Low Risk (Suburban/Low Crime)</option>
-                             <option value="Medium">Medium Risk (Standard Urban/Coastal)</option>
-                             <option value="High">High Risk (Coastal/Flood/High Crime)</option>
-                        </select>
-                        <small class="text-muted">A proxy for natural disaster, crime, or specialized risk areas.</small>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg bg-blue border-0">
-                Estimate Annual Premium
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                    <div class="mb-4">
+                        <label class="form-label">Construction Type</label>
+                        <select id="construction" class="form-select shadow-sm" required>
+                            <option value="" disabled selected>Select material...</option>
+                            <option value="Brick/Masonry">Brick / Masonry</option>
+                            <option value="Frame">Wood Frame</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Location Risk Zone</label>
+                        <select id="risk-zone" class="form-select shadow-sm" required>
+                            <option value="" disabled selected>Select risk level...</option>
+                            <option value="Low">Low Risk (Suburban)</option>
+                            <option value="Medium">Medium Risk (Urban)</option>
+                            <option value="High">High Risk (Coastal/Catastrophe)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" style="background-color: var(--insurance-blue); border: none;">
+                        Calculate Estimate <i class="bi bi-calculator ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Inputs</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white text-center">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-house-lock display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Policy Summary</h4>
+                    <p>Provide your coverage requirements to generate an estimated insurance premium breakdown.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="quote-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Estimated Annual Premium</span>
+                        <div class="premium-value-large mb-2" id="annual-premium-display">$0</div>
+                        <div id="monthly-text" class="text-muted fw-bold">~$0.00 per month</div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Risk Profile</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="risk-summary">Standard</div>
+                                <small class="text-muted" id="risk-desc">Baseline rate applied</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Deductible Impact</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="deductible-impact">None</div>
+                                <small class="text-muted" id="deductible-desc">Standard choice</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light text-start border">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle-fill me-2 text-primary"></i>Underwriting Note</h6>
+                        <p class="small text-muted mb-0">
+                            This estimate uses a simplified base rate of $3.50 per $1,000 of coverage. Real-world premiums fluctuate based on credit scores, claims history, and local fire protection ratings.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Invalid Entry</h5>
+                        <p id="error-msg" class="mb-0"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (with cents for accuracy).
-     */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const form = document.getElementById('hoi-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     });
-    
-    // --- Simplified Actuarial Factors ---
-    const BASE_RATE_PER_1000 = 3.5; // Base annual rate factor per $1000 of dwelling coverage
 
-    const deductibleFactors = {
-        '500': 1.15, // Low deductible = higher premium
-        '1000': 1.0,  // Standard
-        '2500': 0.90,
-        '5000': 0.85  // High deductible = lower premium
+    const BASE_RATE_PER_1000 = 3.5;
+    const factors = {
+        deductible: { '500': 1.15, '1000': 1.0, '2500': 0.90, '5000': 0.85 },
+        construction: { 'Frame': 1.08, 'Brick/Masonry': 0.95 },
+        risk: { 'Low': 0.90, 'Medium': 1.0, 'High': 1.25 }
     };
 
-    const constructionFactors = {
-        'Frame': 1.08, // Frame construction is riskier
-        'Brick/Masonry': 0.95, // Masonry is safer
-        'Other': 1.0
-    };
-
-    const riskFactors = {
-        'Low': 0.90, // Low-risk area discount
-        'Medium': 1.0, // Baseline risk
-        'High': 1.20 // High-risk area surcharge (e.g., hurricane zone)
-    };
-    // -----------------------------------
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Gathers all inputs from the form.
-     */
-    function getInputs() {
-        const dwellingCost = parseFloat(document.getElementById('dwelling-cost').value);
-        const deductible = document.getElementById('deductible').value;
-        const construction = document.getElementById('construction').value;
-        const riskZone = document.getElementById('risk-zone').value;
-        
-        if (isNaN(dwellingCost) || dwellingCost <= 0) {
-            throw new Error(`Invalid Input: Please ensure Dwelling Replacement Cost is a valid positive number.`);
-        }
-        
-        return { dwellingCost, deductible, construction, riskZone };
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleHOICalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        const cost = parseFloat(document.getElementById('dwelling-cost').value);
+        const dedValue = document.getElementById('deductible').value;
+        const conValue = document.getElementById('construction').value;
+        const riskValue = document.getElementById('risk-zone').value;
 
-            // 1. Get Factors
-            const deductibleFactor = deductibleFactors[i.deductible] || 1.0;
-            const constructionFactor = constructionFactors[i.construction] || 1.0;
-            const riskFactor = riskFactors[i.riskZone] || 1.0;
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // 2. Base Premium Calculation
-            const basePremium = (i.dwellingCost / 1000) * BASE_RATE_PER_1000;
-            
-            // 3. Final Annual Premium
-            const annualPremium = basePremium * deductibleFactor * constructionFactor * riskFactor;
-
-            // 4. Monthly Premium
-            const monthlyPremium = annualPremium / 12;
-
-            // 5. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-blue mb-4">Estimated Homeowners Insurance Premium</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Annual Tax -->
-                    <div class="col-md-6 mb-3 border-end border-primary">
-                        <p class="result-label">ESTIMATED ANNUAL PREMIUM</p>
-                        <p class="premium-value mb-0 text-blue">
-                            ${currencyFormatterCents.format(annualPremium)}
-                        </p>
-                    </div>
-
-                    <!-- Monthly Tax -->
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">ESTIMATED MONTHLY COST</p>
-                        <p class="premium-value mb-0 text-dark-blue" style="font-size: 2.5rem;">
-                            ${currencyFormatterCents.format(monthlyPremium)}
-                        </p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark-blue mb-3">Rate Factor Summary</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-8">
-                        <table class="table table-sm table-striped">
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold">Dwelling Coverage (A)</td>
-                                    <td class="text-end">${currencyFormatterCents.format(i.dwellingCost)}</td>
-                                </tr>
-                                <tr>
-                                    <td>Deductible Factor ($${i.deductible})</td>
-                                    <td class="text-end text-success">${((deductibleFactor - 1) * 100).toFixed(1)}% Adjustment</td>
-                                </tr>
-                                <tr>
-                                    <td>Construction Factor (${i.construction})</td>
-                                    <td class="text-end text-success">${((constructionFactor - 1) * 100).toFixed(1)}% Adjustment</td>
-                                </tr>
-                                <tr>
-                                    <td>Location Risk (${i.riskZone})</td>
-                                    <td class="text-end text-success">${((riskFactor - 1) * 100).toFixed(1)}% Adjustment</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4 p-3 bg-light rounded">
-                    <p class="text-muted fw-bold mb-0">Note: This is an estimate based on simplified factors. Actual quotes require professional appraisal and underwriting.</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (isNaN(cost) || cost <= 0 || !dedValue || !conValue || !riskValue) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please complete all fields with valid information.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('hoi-form').addEventListener('submit', handleHOICalc);
+        // Calculation
+        const base = (cost / 1000) * BASE_RATE_PER_1000;
+        const annual = base * factors.deductible[dedValue] * factors.construction[conValue] * factors.risk[riskValue];
+        
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('annual-premium-display').textContent = currency.format(annual);
+        document.getElementById('monthly-text').textContent = `~${currency.format(annual / 12)} per month`;
+        
+        // Dynamic Feedback
+        document.getElementById('risk-summary').textContent = riskValue + " Risk Area";
+        document.getElementById('risk-desc').textContent = riskValue === 'High' ? "Includes risk surcharge" : "Standard or discounted rate";
+        
+        const dedImpact = ((factors.deductible[dedValue] - 1) * 100).toFixed(0);
+        document.getElementById('deductible-impact').textContent = (dedImpact > 0 ? "+" : "") + dedImpact + "%";
+        document.getElementById('deductible-desc').textContent = "Relative to $1,000 standard";
+    });
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('hoi-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

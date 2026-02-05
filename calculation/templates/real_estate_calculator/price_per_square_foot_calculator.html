@@ -4,272 +4,216 @@
 
 {% block meta_description %}Quickly calculate the price per square foot (PPSF) of a property by entering its sale price and total square footage.{% endblock %}
 
-{% block meta_keywords %}price per square foot calculator, ppsf calculator, property valuation, real estate metrics, cost per square foot{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.npm.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a Clean, Analytical Grey/Blue Theme */
-    .solver-wrapper {
-        background: #f8f9fa; /* Light Grey */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 800px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #e9ecef; /* Medium Grey */
-        border: 2px solid #6c757d; /* Dark Grey accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #212529; /* Dark Text */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --analytical-navy: #1e293b;
+        --analytical-grey: #64748b;
+        --analytical-bg: #f8fafc;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #adb5bd; 
-        border-radius: 8px;
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--analytical-bg);
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #495057;
-    }
-    .form-control-custom:focus {
-        border-color: #6c757d;
-        box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--analytical-navy);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #ffffff; /* Clean White */
-        border-left: 5px solid #6c757d; /* Dark Grey accent */
+    .ppsf-display-box {
+        background-color: white;
+        border: 2px solid #cbd5e1;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
+    .ppsf-value-large {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--analytical-navy);
+        line-height: 1;
     }
-    
-    /* Styles for PPSF display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #495057; /* Dark Grey */
-    }
-    
-    .pps-value {
-        font-size: 3.5rem;
-        font-weight: 900;
-        color: #212529; /* Black/Dark Grey */
-    }
-    .text-dark { color: #212529 !important; }
-    .text-grey { color: #6c757d !important; }
 
+    .stat-card-mini {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">📏 Price per Square Foot (PPSF) Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Calculate the Price per Square Foot (PPSF) based on a property's price and total area.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-rulers text-secondary me-2"></i>PPSF Analysis Tool</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Normalize property values to compare different homes regardless of their size. A critical metric for real estate appraisal and market analysis.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="pps-form" class="row g-4 justify-content-center">
-            
-            <!-- Inputs -->
-            <div class="col-lg-12">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-dark p-2 rounded mb-4">Property Details</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="ppsf-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Property Metrics</h6>
                     
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="property-price">Property Sale Price:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="property-price" 
-                                   value="300000" 
-                                   min="1000"
-                                   step="any"
-                                   required
-                                   class="form-control form-control-custom">
+                    <div class="mb-4">
+                        <label class="form-label">Total Purchase Price</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="property-price" class="form-control border-start-0 ps-0" placeholder="e.g. 350000" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Total Living Area</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="square-footage" class="form-control border-end-0" placeholder="e.g. 2100" required>
+                            <span class="input-group-text bg-white border-start-0 text-muted">Sq. Ft.</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-dark w-100 py-3 fw-bold shadow-sm">
+                        Calculate PPSF <i class="bi bi-calculator-fill ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Data</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white text-center">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-bar-chart-steps display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Valuation Summary</h4>
+                    <p>Enter the property price and square footage to determine the unit cost of the real estate.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="ppsf-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Price Per Square Foot</span>
+                        <div class="ppsf-value-large mb-2" id="ppsf-display">$0.00</div>
+                        <div class="text-muted fw-bold">Unit Valuation Metric</div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Market Price</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="price-summary">$0</div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="square-footage">Total Square Footage (Sq. Ft.):</label>
-                            <div class="input-group">
-                                <input type="number" id="square-footage" 
-                                   value="1500" 
-                                   min="1" 
-                                   step="any"
-                                   required 
-                                   class="form-control form-control-custom">
-                                <span class="input-group-text">Sq. Ft.</span>
+                        <div class="col-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Living Space</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="sqft-summary">0 Sq. Ft.</div>
                             </div>
                         </div>
                     </div>
 
+                    <div class="p-4 rounded-4 bg-light text-start border">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle-fill me-2 text-primary"></i>Analytical Insight</h6>
+                        <p class="small text-muted mb-0">
+                            PPSF is most effective when comparing "apples to apples"—homes with similar age, condition, and location. A higher PPSF doesn't always mean a home is overpriced; it may reflect premium finishes or a superior lot.
+                        </p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate Price per Sq. Ft.
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('ppsf-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     });
     
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const currencyNoCents = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
-    
-    /**
-     * Formats a number with commas.
-     */
-    const numberFormatter = new Intl.NumberFormat('en-US');
 
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
+    const numberFormat = new Intl.NumberFormat('en-US');
 
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handlePpsf(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
         const price = parseFloat(document.getElementById('property-price').value);
         const sqft = parseFloat(document.getElementById('square-footage').value);
-        
-        // 2. Input Validation
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
         if (isNaN(price) || price <= 0 || isNaN(sqft) || sqft <= 0) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter positive values for both Property Price and Square Footage.</p>`;
-            displayResult(true, htmlContent);
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please provide a valid price and square footage (values must be greater than zero).";
             return;
         }
 
-        try {
-            // 3. Calculation
-            // PPSF = Price / Square Footage
-            const ppsf = price / sqft;
-            
-            // 4. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark mb-4">Price per Square Foot Result</h4>
-                
-                <div class="text-center mb-4">
-                    <p class="result-label">PRICE PER SQUARE FOOT (PPSF)</p>
-                    <p class="pps-value mb-0">
-                        ${currencyFormatterCents.format(ppsf)}
-                    </p>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark mb-3">Formula Breakdown</h5>
-                <div class="row text-center">
-                    <div class="col-md-6 border-end border-grey-400">
-                        <p class="result-label mb-2">Property Price</p>
-                        <p class="fs-4 fw-bold text-grey">${currencyFormatter.format(price)}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="result-label mb-2">Total Square Footage</p>
-                        <p class="fs-4 fw-bold text-grey">${numberFormatter.format(sqft)} sq. ft.</p>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4 p-3 bg-light rounded">
-                    <p class="text-muted fw-bold mb-0">Note: PPSF is a key metric for comparing properties in the same neighborhood. A lower PPSF often suggests better value.</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
+        // Calculation
+        const ppsf = price / sqft;
+        
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('ppsf-display').textContent = currency.format(ppsf);
+        document.getElementById('price-summary').textContent = currencyNoCents.format(price);
+        document.getElementById('sqft-summary').textContent = numberFormat.format(sqft) + " Sq. Ft.";
+    });
 
-    // Attach handler to the form
-    document.getElementById('pps-form').addEventListener('submit', handlePpsf);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('pps-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

@@ -4,320 +4,235 @@
 
 {% block meta_description %}Calculate your agent commission (take-home pay) based on the sale price, total commission rate, and your splits with the brokerage.{% endblock %}
 
-{% block meta_keywords %}real estate commission calculator, agent commission, brokerage split, take-home pay, sales commission, real estate finance{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Money" Green Theme */
-    .solver-wrapper {
-        background: #f8fff8; /* Very light green/white */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 900px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dcfce7; /* Light Mint Green */
-        border: 2px solid #10b981; /* Green accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #065f46; /* Dark Green */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --money-green: #059669;
+        --money-dark: #064e3b;
+        --money-bg: #f0fdf4;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #6ee7b7; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #d1fae5;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--money-bg);
+        border-right: 1px solid #d1fae5;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #059669;
-    }
-    .form-control-custom:focus {
-        border-color: #10b981;
-        box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--money-dark);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #ecfdf5; /* Very Light Green */
-        border-left: 5px solid #059669; /* Darker Green accent */
+    .commission-display-box {
+        background-color: white;
+        border: 2px solid #6ee7b7;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
+    .value-large {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--money-green);
+        line-height: 1;
     }
-    
-    /* Styles for Commission display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #064e3b; /* Very Dark Green */
-    }
-    
-    .commission-value {
-        font-size: 3.5rem;
-        font-weight: 900;
-        color: #10b981; /* Bright Green */
-    }
-    
-    .text-dark-green { color: #064e3b !important; }
-    .text-success { color: #10b981 !important; }
-    .text-danger { color: #ef4444 !important; }
 
+    .stat-card-mini {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">💸 Real Estate Agent Commission Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Calculate your **take-home commission** by breaking down the Sale Price, Total Commission, and Brokerage Splits.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-cash-stack text-success me-2"></i>Agent Earnings Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Professional tool for agents to project net commissions. Visualize the "waterfall" from total sale price down to your actual take-home pay.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="commission-form" class="row g-4 justify-content-center">
-            
-            <!-- Input Section -->
-            <div class="col-lg-12">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-dark-green p-2 rounded mb-4">Input Sale & Split Details</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="commission-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Transaction Data</h6>
                     
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="sale-price">Property Sale Price:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="sale-price" 
-                                   value="500000" 
-                                   min="1000"
-                                   step="any"
-                                   required
-                                   class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="total-commission-rate">Total Commission Rate (%):</label>
-                            <div class="input-group">
-                                <input type="number" id="total-commission-rate" 
-                                   value="6" 
-                                   min="1" 
-                                   max="20"
-                                   step="0.1"
-                                   required 
-                                   class="form-control form-control-custom">
-                                <span class="input-group-text">%</span>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="brokerage-share">My Brokerage's Share (%):</label>
-                            <div class="input-group">
-                                <input type="number" id="brokerage-share" 
-                                   value="50" 
-                                   min="1" 
-                                   max="100"
-                                   step="1"
-                                   required 
-                                   class="form-control form-control-custom">
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <small class="text-muted">The portion of the total commission that goes to your brokerage (e.g., 50% if you are the buyer's agent).</small>
-                        </div>
-                        
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="agent-split">My Agent Split (%):</label>
-                            <div class="input-group">
-                                <input type="number" id="agent-split" 
-                                   value="70" 
-                                   min="1" 
-                                   max="100"
-                                   step="1"
-                                   required 
-                                   class="form-control form-control-custom">
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <small class="text-muted">The percentage you keep from your brokerage's share (e.g., 70% in a 70/30 split).</small>
+                    <div class="mb-4">
+                        <label class="form-label">Property Sale Price</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="sale-price" class="form-control border-start-0 ps-0" placeholder="e.g. 500000" required>
                         </div>
                     </div>
 
-                </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg bg-success border-0">
-                Calculate My Take-Home Commission
-            </button>
-            </div>
-        </form>
+                    <div class="mb-4">
+                        <label class="form-label">Total Commission Rate (%)</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" step="0.1" id="total-rate" class="form-control border-end-0" placeholder="e.g. 6.0" required>
+                            <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                        </div>
+                    </div>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                    <h6 class="fw-bold text-dark mb-4 mt-5 text-uppercase small">Brokerage & Split</h6>
+
+                    <div class="mb-4">
+                        <label class="form-label">Your Side's Share (%)</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="side-share" class="form-control border-end-0" placeholder="e.g. 50" required>
+                            <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                        </div>
+                        <small class="text-muted x-small d-block mt-1">Percentage of total commission allocated to your side.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Agent Split (%)</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="agent-split" class="form-control border-end-0" placeholder="e.g. 70" required>
+                            <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                        </div>
+                        <small class="text-muted x-small d-block mt-1">The portion of your side's share you keep.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm" style="background-color: var(--money-green); border: none;">
+                        Calculate Earnings <i class="bi bi-wallet2 ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Reset Data</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-graph-down-arrow display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Commission Waterfall</h4>
+                    <p>Enter your transaction details to see the net breakdown of your earnings.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="commission-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Estimated Net Commission</span>
+                        <div class="value-large mb-2" id="net-display">$0.00</div>
+                        <div class="badge rounded-pill bg-light text-dark border py-2 px-3 small">Before Taxes & Fees</div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4 mt-4">
+                        <div class="col-md-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Gross Comm. (Total)</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="gross-total-display">$0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Brokerage Kept</span>
+                                <div class="h5 fw-bold mb-0 text-danger" id="brokerage-kept-display">$0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light text-start border">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle-fill me-2 text-success"></i>Business Note</h6>
+                        <p class="small text-muted mb-0">
+                            Remember that as an independent contractor, you are responsible for self-employment taxes, insurance, and professional fees. Your net "profit" will be lower than this commission check.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-octagon-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Calculation Failed</h5>
+                        <p id="error-msg" class="mb-0"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const form = document.getElementById('commission-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
 
-    /**
-     * Gathers all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            salePrice: parseFloat(document.getElementById('sale-price').value),
-            totalRate: parseFloat(document.getElementById('total-commission-rate').value),
-            brokerageShare: parseFloat(document.getElementById('brokerage-share').value),
-            agentSplit: parseFloat(document.getElementById('agent-split').value),
-        };
-        
-        for (const key in inputs) {
-            if (isNaN(inputs[key]) || inputs[key] <= 0) {
-                throw new Error(`Invalid Input: Please ensure all fields are positive numbers.`);
-            }
-        }
-        return inputs;
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleCommission(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        const price = parseFloat(document.getElementById('sale-price').value);
+        const rate = parseFloat(document.getElementById('total-rate').value);
+        const sideShare = parseFloat(document.getElementById('side-share').value);
+        const agentSplit = parseFloat(document.getElementById('agent-split').value);
 
-            // 1. Calculate Total Commission (paid by seller)
-            const totalCommission = i.salePrice * (i.totalRate / 100);
-            
-            // 2. Calculate "My Side" (Gross Commission to my brokerage)
-            const myBrokerageGross = totalCommission * (i.brokerageShare / 100);
-            
-            // 3. Calculate My Take-Home (Net to Agent)
-            const myTakeHome = myBrokerageGross * (i.agentSplit / 100);
-            
-            // 4. Calculate My Broker's Share
-            const myBrokerShare = myBrokerageGross - myTakeHome;
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-
-            // 5. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-green mb-4">Your Commission Breakdown</h4>
-                
-                <div class="text-center mb-4">
-                    <p class="result-label">YOUR ESTIMATED TAKE-HOME PAY</p>
-                    <p class="commission-value mb-0">
-                        ${currencyFormatter.format(myTakeHome)}
-                    </p>
-                    <p class="text-muted small mt-2">(Before taxes, desk fees, or other personal expenses)</p>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark-green mb-3">Commission Distribution</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-9">
-                        <table class="table table-sm table-striped">
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold">1. Total Commission (${i.totalRate.toFixed(1)}%)</td>
-                                    <td class="text-end text-dark-green fw-bold">${currencyFormatter.format(totalCommission)}</td>
-                                </tr>
-                                <tr>
-                                    <td>2. My Brokerage's Gross Share (${i.brokerageShare.toFixed(0)}%)</td>
-                                    <td class="text-end text-primary fw-bold">${currencyFormatter.format(myBrokerageGross)}</td>
-                                </tr>
-                                <tr>
-                                    <td>3. Broker's Share (Kept by Broker)</td>
-                                    <td class="text-end text-danger fw-bold">(${currencyFormatter.format(myBrokerShare)})</td>
-                                </tr>
-                                <tr class="table-success">
-                                    <td class="fw-bolder fs-6">4. My Take-Home Share (${i.agentSplit.toFixed(0)}%)</td>
-                                    <td class="text-end fw-bolder fs-6">${currencyFormatter.format(myTakeHome)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (isNaN(price) || price <= 0 || isNaN(rate) || isNaN(sideShare) || isNaN(agentSplit)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please complete all fields with positive numerical values.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('commission-form').addEventListener('submit', handleCommission);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('commission-form').dispatchEvent(new Event('submit'));
-    };
+        // Calculation
+        const totalGross = price * (rate / 100);
+        const sideGross = totalGross * (sideShare / 100);
+        const agentNet = sideGross * (agentSplit / 100);
+        const brokerKept = sideGross - agentNet;
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('net-display').textContent = currency.format(agentNet);
+        document.getElementById('gross-total-display').textContent = currency.format(totalGross);
+        document.getElementById('brokerage-kept-display').textContent = "-" + currency.format(brokerKept);
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

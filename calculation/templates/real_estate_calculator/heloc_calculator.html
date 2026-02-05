@@ -4,417 +4,285 @@
 
 {% block meta_description %}Calculate your maximum HELOC limit and estimate the monthly payments for both the interest-only draw phase and the P&I repayment phase.{% endblock %}
 
-{% block meta_keywords %}heloc calculator, home equity line of credit, interest-only payment, repayment phase, cltv, revolving credit, home equity{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Teal/Cyan" Theme (Flexibility/Revolving Credit) */
-    .solver-wrapper {
-        background: #f0fdfa; /* Very light teal/white */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1000px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #ccfbf1; /* Light Cyan */
-        border: 2px solid #14b8a6; /* Teal accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #0d9488; /* Dark Teal */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --heloc-teal: #0d9488;
+        --heloc-light: #f0fdfa;
+        --heloc-border: #99f6e4;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #5eead4; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--heloc-border);
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--heloc-light);
+        border-right: 1px solid var(--heloc-border);
+    }
+
+    .form-label {
         font-weight: 700;
         color: #0f766e;
-    }
-    .form-control-custom:focus {
-        border-color: #14b8a6;
-        box-shadow: 0 0 0 0.25rem rgba(20, 184, 166, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f0fdfa; /* Lighter Teal */
-        border-left: 5px solid #0d9488; /* Darker Teal accent */
+    .limit-display-box {
+        background-color: white;
+        border: 2px solid #5eead4;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for HELOC display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #0d9488; /* Dark Teal */
-    }
-    
-    .result-value-box {
-        background-color: #e0f2f1; /* Pale Cyan */
-        padding: 15px;
-        border-radius: 8px;
-        border: 2px solid #4ade80;
-    }
-    
-    .result-value {
-        font-size: 2.8rem;
-        font-weight: 900;
-        color: #0d9488;
+    .value-large {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--heloc-teal);
+        line-height: 1;
     }
 
+    .phase-card {
+        background: #f1f5f9;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .badge-draw { background-color: #ccfbf1; color: #0d9488; }
+    .badge-repay { background-color: #fee2e2; color: #991b1b; }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🔄 HELOC (Home Equity Line of Credit) Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Calculate your **Maximum Credit Limit** and estimate the **Interest-Only Payment** during the draw phase and the **P&I Payment** during the repayment phase.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-arrow-repeat text-teal me-2"></i>HELOC Phase Forecaster</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            A HELOC has two distinct lives: the <strong>Draw Period</strong> (flexible borrowing) and the <strong>Repayment Period</strong> (fixed payoff). Model both phases below.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="heloc-form" class="row g-4">
-            
-            <!-- Part 1: Credit Limit & Rate -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Equity & Rate Inputs</h4>
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="heloc-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Property & Credit</h6>
                     
-                    <div class="input-box mb-3">
-                        <label for="home-value">Current Home Appraised Value:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="home-value" 
-                               value="500000" 
-                               min="1000"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-3">
+                        <label class="form-label">Appraised Home Value</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="home-value" class="form-control border-start-0 ps-0" placeholder="e.g. 600000" required>
                         </div>
-                    </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="mortgage-balance">Current Mortgage Balance:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="mortgage-balance" 
-                               value="250000" 
-                               min="0" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                    </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="max-cltv">Lender's Max CLTV (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="max-cltv" 
-                               value="85" 
-                               min="50" 
-                               max="100"
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">Combined Loan-to-Value limit (e.g., 80%-85%).</small>
                     </div>
 
-                     <div class="input-box">
-                        <label for="interest-rate">HELOC Variable Interest Rate (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="interest-rate" 
-                               value="9.0" 
-                               min="0.01" 
-                               max="20"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
+                    <div class="mb-3">
+                        <label class="form-label">Current Mortgage Bal.</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="mortgage-balance" class="form-control border-start-0 ps-0" placeholder="e.g. 300000" required>
                         </div>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-7">
+                            <label class="form-label">Interest Rate</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" step="0.01" id="interest-rate" class="form-control border-end-0" placeholder="9.0" required>
+                                <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label">Max CLTV</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" id="max-cltv" class="form-control border-end-0" placeholder="85" required>
+                                <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small pt-3 border-top">Usage & Timing</h6>
+
+                    <div class="mb-3">
+                        <label class="form-label">Est. Amount to Draw</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="draw-amount" class="form-control border-start-0 ps-0" placeholder="e.g. 50000" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">Draw Yrs</label>
+                            <input type="number" id="draw-term" class="form-control shadow-sm" placeholder="10" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Repay Yrs</label>
+                            <input type="number" id="repayment-term" class="form-control shadow-sm" placeholder="20" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-teal w-100 py-3 fw-bold shadow-sm text-white" style="background-color: var(--heloc-teal); border: none;">
+                        Calculate HELOC <i class="bi bi-arrow-right-circle ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear All Fields</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-calendar-range display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Phase Analysis Pending</h4>
+                    <p>Provide your home equity details and planned usage to visualize your monthly payments during both the interest-only and principal-plus-interest stages.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="limit-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Max HELOC Credit Limit</span>
+                        <div class="value-large mb-2" id="max-limit-display">$0</div>
+                        <div class="text-muted fw-bold small text-uppercase" id="usage-warning">Based on <span id="cltv-val">0</span>% CLTV Capacity</div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="phase-card h-100 border-start border-4 border-teal">
+                                <span class="badge badge-draw mb-2 px-2 py-1 rounded small fw-bold">Draw Phase</span>
+                                <div class="h4 fw-bold mb-0 text-dark" id="draw-payment-display">$0.00</div>
+                                <div class="small text-muted">Interest-Only Payment</div>
+                                <div class="mt-2 pt-2 border-top x-small text-muted" id="draw-term-text">For 0 years</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="phase-card h-100 border-start border-4 border-danger">
+                                <span class="badge badge-repay mb-2 px-2 py-1 rounded small fw-bold">Repayment Phase</span>
+                                <div class="h4 fw-bold mb-0 text-dark" id="repay-payment-display">$0.00</div>
+                                <div class="small text-muted">Principal & Interest</div>
+                                <div class="mt-2 pt-2 border-top x-small text-muted" id="repay-term-text">For 0 years</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-4 bg-light text-start border shadow-sm">
+                        <h6 class="fw-bold text-dark mb-1 small"><i class="bi bi-info-circle-fill me-2 text-teal"></i>Payment Shock Awareness</h6>
+                        <p class="x-small text-muted mb-0">
+                            When the Draw Period ends, your payment <strong>will increase</strong> because you begin paying back the principal. Model your budget based on the Repayment Phase to avoid "payment shock."
+                        </p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Part 2: Draw and Repayment Terms -->
-            <div class="col-lg-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. Estimated Usage & Term</h4>
-                    
-                    <div class="input-box mb-3">
-                        <label for="draw-amount">Estimated Amount Drawn (Usage):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="draw-amount" 
-                               value="80000" 
-                               min="0" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">The amount you plan to borrow on the line of credit.</small>
-                    </div>
-
-                    <div class="input-box mb-3">
-                        <label for="draw-term">Draw Period Length (Years):</label>
-                        <div class="input-group">
-                            <input type="number" id="draw-term" 
-                               value="10" 
-                               min="1" 
-                               max="20"
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">Yrs</span>
-                        </div>
-                        <small class="text-muted">Interest-only payment phase.</small>
-                    </div>
-                    
-                    <div class="input-box">
-                        <label for="repayment-term">Repayment Period Length (Years):</label>
-                        <div class="input-group">
-                            <input type="number" id="repayment-term" 
-                               value="20" 
-                               min="1" 
-                               max="30"
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">Yrs</span>
-                        </div>
-                        <small class="text-muted">P&I payment phase (e.g., 10 or 20 years).</small>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Invalid Parameters</h5>
+                        <p id="error-msg" class="mb-0 small"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: #0d9488; border: none;">
-                Calculate HELOC Limits & Payments
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Calculates the monthly mortgage payment (P&I) using the amortization formula.
-     * P: Principal (Loan Amount)
-     * R_annual: Annual Interest Rate (as percentage)
-     * N_years: Loan Term in years
-     */
-    function calculateMonthlyPI(P, R_annual, N_years) {
-        const i = (R_annual / 100) / 12; // Monthly interest rate
-        const n = N_years * 12; // Total number of payments
+    const form = document.getElementById('heloc-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
 
-        if (i === 0) return P / n; // Simple interest if rate is zero
-
-        const i_plus_1_pow_n = Math.pow(1 + i, n);
-        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
-    }
-    
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
-    
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const currencyCents = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
 
-    /**
-     * Gathers and validates all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            homeValue: parseFloat(document.getElementById('home-value').value),
-            mortgageBalance: parseFloat(document.getElementById('mortgage-balance').value),
-            maxCLTV: parseFloat(document.getElementById('max-cltv').value),
-            interestRate: parseFloat(document.getElementById('interest-rate').value),
-            drawAmount: parseFloat(document.getElementById('draw-amount').value),
-            drawTerm: parseInt(document.getElementById('draw-term').value),
-            repaymentTerm: parseInt(document.getElementById('repayment-term').value),
-        };
-        
-        if (Object.values(inputs).some(isNaN) || inputs.homeValue <= 0 || inputs.interestRate <= 0) {
-            throw new Error("Please ensure all inputs are valid positive numbers.");
-        }
-        
-        if (inputs.mortgageBalance > inputs.homeValue) {
-             throw new Error("Mortgage Balance cannot exceed Home Value.");
-        }
-        
-        return inputs;
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleHELOCCalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        const val = parseFloat(document.getElementById('home-value').value);
+        const bal = parseFloat(document.getElementById('mortgage-balance').value);
+        const ltv = parseFloat(document.getElementById('max-cltv').value);
+        const rate = parseFloat(document.getElementById('interest-rate').value);
+        const drawAmt = parseFloat(document.getElementById('draw-amount').value);
+        const dTerm = parseInt(document.getElementById('draw-term').value);
+        const rTerm = parseInt(document.getElementById('repayment-term').value);
 
-            // --- 1. Calculate Maximum Credit Limit ---
-            const maxTotalDebt = i.homeValue * (i.maxCLTV / 100);
-            const maxCreditLimit = Math.max(0, maxTotalDebt - i.mortgageBalance);
-            
-            if (i.drawAmount > maxCreditLimit) {
-                // If the user's estimated draw exceeds the limit, use the limit for payment calculation
-                i.drawAmount = maxCreditLimit;
-            }
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // --- 2. Calculate Draw Phase Payment (Interest Only) ---
-            const monthlyRate = (i.interestRate / 100) / 12;
-            const drawPayment = i.drawAmount * monthlyRate; 
-            
-            // --- 3. Calculate Repayment Phase Payment (P&I) ---
-            const repaymentPayment = calculateMonthlyPI(i.drawAmount, i.interestRate, i.repaymentTerm);
-            
-            // --- 4. Build Summary HTML ---
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-primary mb-4">HELOC Financial Summary</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Maximum Credit Limit -->
-                    <div class="col-md-6 mb-3 border-end border-teal-400">
-                        <p class="result-label">MAXIMUM AVAILABLE CREDIT LIMIT</p>
-                        <div class="result-value-box d-inline-block">
-                             <p class="result-value mb-0">
-                                ${currencyFormatter.format(maxCreditLimit)}
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Monthly Payments -->
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">ESTIMATED MONTHLY PAYMENTS</p>
-                        <div class="p-3 rounded" style="background-color: #e0f2f1; border: 1px solid #14b8a6;">
-                            <p class="fs-5 fw-bold text-dark mb-1">
-                                <span class="text-teal-600">${currencyFormatterCents.format(drawPayment)}</span> (Interest Only)
-                            </p>
-                            <small class="text-muted">During the ${i.drawTerm} year Draw Period</small>
-                            
-                            <hr class="my-2">
-                            
-                            <p class="fs-5 fw-bold text-dark mb-1">
-                                <span class="text-danger">${currencyFormatterCents.format(repaymentPayment)}</span> (P&I)
-                            </p>
-                            <small class="text-muted">During the ${i.repaymentTerm} year Repayment Period</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-primary mb-3">Key Estimates (Based on ${currencyFormatter.format(i.drawAmount)} Drawn)</h5>
-                
-                <div class="row justify-content-center text-center">
-                    <div class="col-md-6">
-                        <p class="result-label mb-2">Total Interest Paid in Draw Phase</p>
-                        <p class="fs-4 fw-bold text-danger">${currencyFormatter.format(drawPayment * i.drawTerm * 12)}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="result-label mb-2">Total Repayment Phase Principal & Interest</p>
-                        <p class="fs-4 fw-bold text-dark">${currencyFormatter.format(repaymentPayment * i.repaymentTerm * 12)}</p>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-3 p-3 bg-light rounded">
-                    <p class="mb-0 text-muted small">**Note:** HELOC rates are variable. These payments are estimated using the current ${i.interestRate}% rate.</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if ([val, bal, ltv, rate, drawAmt, dTerm, rTerm].some(isNaN)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "All fields are required and must be numeric.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('heloc-form').addEventListener('submit', handleHELOCCalc);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('heloc-form').dispatchEvent(new Event('submit'));
-    };
+        // 1. Credit Limit
+        const maxLimit = Math.max(0, (val * (ltv / 100)) - bal);
+        
+        // 2. Calculations
+        const effectiveDraw = Math.min(drawAmt, maxLimit);
+        const monthlyRate = (rate / 100) / 12;
+        
+        // Draw Payment (Interest Only)
+        const drawPayment = effectiveDraw * monthlyRate;
+        
+        // Repayment Payment (Amortized P&I)
+        const nRepay = rTerm * 12;
+        const repayPayment = effectiveDraw * (monthlyRate * Math.pow(1 + monthlyRate, nRepay)) / (Math.pow(1 + monthlyRate, nRepay) - 1);
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('max-limit-display').textContent = currency.format(maxLimit);
+        document.getElementById('cltv-val').textContent = ltv;
+        document.getElementById('draw-payment-display').textContent = currencyCents.format(drawPayment);
+        document.getElementById('repay-payment-display').textContent = currencyCents.format(repayPayment);
+        document.getElementById('draw-term-text').textContent = `For ${dTerm} years`;
+        document.getElementById('repay-term-text').textContent = `For ${rTerm} years`;
+
+        const usageWarn = document.getElementById('usage-warning');
+        if (drawAmt > maxLimit) {
+            usageWarn.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-exclamation-circle"></i> Request exceeds limit of ${currency.format(maxLimit)}</span>`;
+        } else {
+            usageWarn.textContent = `Based on ${ltv}% CLTV Capacity`;
+            usageWarn.classList.remove('text-danger');
+        }
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

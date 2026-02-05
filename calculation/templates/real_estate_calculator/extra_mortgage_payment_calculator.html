@@ -2,403 +2,330 @@
 
 {% block title %}Extra Mortgage Payment Calculator (Payoff Savings){% endblock %}
 
-{% block meta_description %}Calculate how much interest you can save and how much faster you can pay off your mortgage by making extra principal payments monthly, annually, or one-time.{% endblock %}
-
-{% block meta_keywords %}extra mortgage payment, principal savings, pay off early, loan acceleration, interest savings, amortization{% endblock %}
+{% block meta_description %}Calculate how much interest you can save and how much faster you can pay off your mortgage by making extra principal payments.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling to match the original Blue Theme */
-    .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1200px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+        --dark-blue: #1e40af;
+        --success-green: #059669;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1d4ed8;
-    }
-    .form-control-custom:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
     }
 
-    .summary-card {
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #d1fae5; /* Very Light Green for Savings Focus */
-        border-left: 5px solid #10b981; /* Green accent */
+    .result-display-box {
+        background-color: #ecfdf5; /* Light green for savings */
+        border: 2px solid #a7f3d0;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for savings display */
-    .summary-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #065f46; /* Dark Green */
-    }
-    
-    .summary-value {
-        font-size: 1.8rem;
-        font-weight: 900;
-        color: #10b981; /* Bright Green */
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--success-green);
+        line-height: 1;
     }
 
-    .schedule-table-container {
-        max-height: 40vh; /* Shorter for this view */
+    .stat-card-mini {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    /* Table Customization */
+    .schedule-wrapper {
+        max-height: 350px;
         overflow-y: auto;
-        border: 1px solid #bfdbfe;
-        border-radius: 8px;
-        margin-top: 20px;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
     }
 
-    .schedule-table-container table {
-        margin-bottom: 0;
-    }
-
-    .schedule-table-container thead th {
-        background-color: #1d4ed8;
-        color: white;
+    .table thead th {
+        background-color: #f8fafc;
         position: sticky;
         top: 0;
-        z-index: 10;
+        z-index: 5;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #64748b;
     }
-    
-    .schedule-table-container tbody tr:nth-child(even) {
-        background-color: #eff6ff;
+
+    .extra-tag {
+        font-size: 0.7rem;
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 700;
     }
-    
-    .original-term-text {
-        color: #9333ea; /* Purple for clarity */
-        font-weight: 600;
-    }
-    
-    .new-term-text {
-        color: #059669; /* Darker Green */
-        font-weight: 800;
-        font-size: 1.1em;
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+        .col-lg-8 { width: 100% !important; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🚀 Extra Payment Mortgage Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        See how much time and interest you can save by consistently making an **additional payment toward the principal**.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-rocket-takeoff text-primary me-2"></i>Payoff Accelerator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Discover how small extra monthly payments can shave years off your mortgage and save you thousands in interest.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <div class="input-section">
-            <form id="extra-payment-form" class="row g-3">
+    <div class="calc-card mx-auto" style="max-width: 1150px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-pencil-square me-2"></i>Loan Adjustments</h5>
                 
-                <!-- Loan Inputs -->
-                <div class="col-md-3 input-box">
-                    <label for="principal-input">Loan Principal (P):</label>
-                    <div class="input-group">
-                        <span class="input-group-text fw-bold text-lg text-secondary">$</span>
-                        <input type="number" id="principal-input" value="250000" min="1" step="any" required class="form-control form-control-custom">
+                <form id="extra-payment-form">
+                    <div class="mb-3">
+                        <label class="form-label text-primary">Remaining Principal</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="principal-input" class="form-control" placeholder="e.g. 250000" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Rate (%)</label>
+                            <input type="number" id="rate-input" class="form-control" placeholder="6.5" step="0.01" required>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Term (Yrs)</label>
+                            <input type="number" id="term-input" class="form-control" placeholder="30" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 pt-3 border-top">
+                        <label class="form-label text-danger">Extra Monthly Payment</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white text-danger">$</span>
+                            <input type="number" id="extra-payment-input" class="form-control border-danger" placeholder="e.g. 200" required>
+                        </div>
+                        <small class="text-muted italic">Applied directly to principal.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Calculate Savings <i class="bi bi-lightning-charge-fill ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Form</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-piggy-bank display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Savings Analysis</h4>
+                    <p>Enter your loan details to see your potential interest and time savings.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="result-display-box h-100 shadow-sm">
+                                <span class="form-label text-success">Total Interest Saved</span>
+                                <div class="result-value my-1" id="total-interest-saved">$0</div>
+                                <small class="text-dark fw-bold" id="time-saved-label"></small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <div class="stat-card-mini bg-light border-0">
+                                        <div class="form-label mb-1" style="font-size: 0.7rem;">New Payoff Term</div>
+                                        <div class="h5 fw-bold text-dark mb-0" id="new-term-display">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="stat-card-mini">
+                                        <div class="form-label mb-1" style="font-size: 0.7rem;">New Monthly Payment</div>
+                                        <div class="fw-bold text-primary" id="new-payment-display">$0.00</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-calendar-check me-2"></i>Payment Comparison (First 12 Months)</h6>
+                        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary btn-no-print">
+                            <i class="bi bi-printer"></i>
+                        </button>
+                    </div>
+
+                    <div class="schedule-wrapper">
+                        <table class="table table-hover table-sm align-middle mb-0" id="amortization-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Total Payment</th>
+                                    <th>Interest</th>
+                                    <th>Principal</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody class="small text-muted">
+                                </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div class="col-md-3 input-box">
-                    <label for="rate-input">Annual Rate (R):</label>
-                    <div class="input-group">
-                        <input type="number" id="rate-input" value="6.5" min="0.01" step="any" required class="form-control form-control-custom">
-                        <span class="input-group-text fw-bold text-lg text-secondary">%</span>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4">
+                        <i class="bi bi-exclamation-triangle fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-                
-                <div class="col-md-3 input-box">
-                    <label for="term-input">Loan Term in Years:</label>
-                    <input type="number" id="term-input" value="30" min="1" max="60" required class="form-control form-control-custom">
-                </div>
-                
-                <!-- Extra Payment Input -->
-                <div class="col-md-3 input-box">
-                    <label for="extra-payment-input">Additional Monthly Payment:</label>
-                    <div class="input-group">
-                        <span class="input-group-text fw-bold text-lg text-danger">$</span>
-                        <input type="number" id="extra-payment-input" value="100" min="0" step="any" required class="form-control form-control-custom border-danger text-danger">
-                    </div>
-                    <small class="text-danger fw-bold">This amount goes directly to principal.</small>
-                </div>
-                
-                <div class="col-12 mt-4">
-                    <button type="submit"
-                        class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                    Calculate Savings & New Term
-                </button>
-                </div>
-            </form>
-        </div>
 
-        <div id="result-container" class="result-section">
-            <!-- Amortization Summary will be placed here -->
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
-            
-            <!-- Amortization Schedule Table (showing only key points) -->
-            <div id="schedule-output" class="d-none">
-                <h4 class="h6 text-dark fw-bold mb-3 text-center">First 12 Payments with Extra Principal</h4>
-                <div class="schedule-table-container">
-                    <table class="table table-sm table-striped table-hover align-middle" id="amortization-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Total Payment</th>
-                                <th scope="col">Interest</th>
-                                <th scope="col">Principal</th>
-                                <th scope="col">Remaining Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Schedule rows go here -->
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Calculates the monthly mortgage payment (P&I) using the amortization formula.
-     */
-    function calculateMonthlyPI(P, R_annual, N_years) {
-        const i = (R_annual / 100) / 12; 
-        const n = N_years * 12;
+    const form = document.getElementById('extra-payment-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
 
-        if (i === 0) return P / n;
-
-        const i_plus_1_pow_n = Math.pow(1 + i, n);
-        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
-    }
-
-    /**
-     * Formats a number as USD currency.
-     */
     const formatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
     });
-    
-    /**
-     * Converts total months into Years and Months string.
-     */
+
     function formatTerm(totalMonths) {
         const years = Math.floor(totalMonths / 12);
         const months = totalMonths % 12;
         if (years === 0) return `${months} months`;
-        return `${years} years and ${months} months`;
+        return `${years} yrs, ${months} mos`;
     }
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        const scheduleDiv = document.getElementById('schedule-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        scheduleDiv.classList.add('d-none');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-            scheduleDiv.classList.remove('d-none');
-        }
-    }
-
-    /**
-     * Generates the amortization schedule and calculates savings.
-     */
-    function calculateSavings(P, R_annual, N_years, extraMonthlyPayment) {
-        const monthlyPI = calculateMonthlyPI(P, R_annual, N_years);
-        const totalLoanMonths = N_years * 12;
-        const monthlyRateDecimal = (R_annual / 100) / 12;
-
-        // --- 1. Baseline Calculation (No Extra Payments) ---
-        // This calculates the total interest paid for the original loan term.
-        let originalInterestPaid = 0;
-        let tempBalance = P;
-
-        for (let month = 1; month <= totalLoanMonths; month++) {
-            if (tempBalance <= 0) break;
-            originalInterestPaid += tempBalance * monthlyRateDecimal;
-            
-            let principalPayment = monthlyPI - (tempBalance * monthlyRateDecimal);
-            tempBalance -= principalPayment;
-        }
-
-        // --- 2. Extra Payment Calculation (New Payoff) ---
-        let balance = P;
-        let totalInterestPaidNew = 0;
-        let newTotalMonths = 0;
-        let tableHtml = '';
-        const scheduleLimit = 12; // Only show the first year of payments
-
-        for (let month = 1; ; month++) {
-            if (balance <= 0) break;
-            
-            const interestPayment = balance * monthlyRateDecimal;
-            let principalPayment = monthlyPI - interestPayment;
-            
-            // Apply extra payment to principal
-            let totalPrincipalPayment = principalPayment + extraMonthlyPayment;
-            
-            // Adjust if the extra payment overpays the remaining balance
-            if (totalPrincipalPayment >= balance) {
-                totalPrincipalPayment = balance;
-                principalPayment = balance - extraMonthlyPayment; // Recalculate component for table accuracy
-                if (principalPayment < 0) principalPayment = 0;
-                
-                balance = 0; // Loan is paid off
-            } else {
-                balance -= totalPrincipalPayment;
-            }
-            
-            totalInterestPaidNew += interestPayment;
-            newTotalMonths = month;
-
-            // Generate table row for the first 12 payments
-            if (month <= scheduleLimit) {
-                tableHtml += `
-                    <tr>
-                        <td>${month}</td>
-                        <td>${formatter.format(monthlyPI + extraMonthlyPayment)}</td>
-                        <td>${formatter.format(interestPayment)}</td>
-                        <td>${formatter.format(principalPayment)} <span class="text-danger fw-bold">(+${formatter.format(extraMonthlyPayment)})</span></td>
-                        <td>${formatter.format(balance)}</td>
-                    </tr>
-                `;
-            }
-        }
-        
-        // --- 3. Calculate Results ---
-        const totalInterestSaved = originalInterestPaid - totalInterestPaidNew;
-        const monthsSaved = totalLoanMonths - newTotalMonths;
-        const yearsSaved = Math.floor(monthsSaved / 12);
-        const remainingMonthsSaved = monthsSaved % 12;
-        
-        const originalTermFormatted = formatTerm(totalLoanMonths);
-        const newTermFormatted = formatTerm(newTotalMonths);
-        
-        // --- 4. Build Summary HTML ---
-        const summaryHtml = `
-            <div class="row text-center align-items-center">
-                <div class="col-md-4 mb-3">
-                    <p class="summary-label">Total Interest Saved:</p>
-                    <p class="summary-value text-success">${formatter.format(totalInterestSaved)}</p>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <p class="summary-label">Time Saved (Payoff Accelerated):</p>
-                    <p class="summary-value">${yearsSaved} Yrs, ${remainingMonthsSaved} Mos</p>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <p class="summary-label">New Total Loan Term:</p>
-                    <p class="new-term-text">${newTermFormatted}</p>
-                    <small class="original-term-text">(Original Term: ${originalTermFormatted})</small>
-                </div>
-            </div>
-            <div class="pt-3 mt-3 border-top text-center">
-                 <p class="mb-0 text-secondary">Regular P&I Payment: ${formatter.format(monthlyPI)} | Total New Monthly Payment: <span class="fw-bold text-dark">${formatter.format(monthlyPI + extraMonthlyPayment)}</span></p>
-            </div>
-        `;
-        
-        // 5. Display Results
-        document.getElementById('amortization-table').getElementsByTagName('tbody')[0].innerHTML = tableHtml;
-        displayResult(false, summaryHtml);
-    }
-
-    /**
-     * Handles form submission and triggers the schedule generation.
-     */
-    function handleExtraPayment(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         const P = parseFloat(document.getElementById('principal-input').value);
         const R = parseFloat(document.getElementById('rate-input').value);
         const N = parseFloat(document.getElementById('term-input').value);
-        const X = parseFloat(document.getElementById('extra-payment-input').value);
+        const extra = parseFloat(document.getElementById('extra-payment-input').value);
 
-        // Input Validation
-        if (isNaN(P) || isNaN(R) || isNaN(N) || isNaN(X) || P <= 0 || R < 0 || N <= 0 || X < 0) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid positive numbers for Principal, Annual Rate (R &ge; 0), Term, and Extra Payment (X &ge; 0).</p>`;
-            displayResult(true, htmlContent);
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(P) || isNaN(R) || isNaN(N) || isNaN(extra)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please provide valid numbers for all inputs.";
             return;
         }
 
-        try {
-            calculateSavings(P, R, N, X);
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
+        const monthlyR = (R / 100) / 12;
+        const totalLoanMonths = N * 12;
+        const baseMonthlyPI = P * (monthlyR * Math.pow(1 + monthlyR, totalLoanMonths)) / (Math.pow(1 + monthlyR, totalLoanMonths) - 1);
+
+        // 1. Baseline Interest
+        let originalInterest = 0;
+        let tempBal = P;
+        for (let m = 1; m <= totalLoanMonths; m++) {
+            let int = tempBal * monthlyR;
+            originalInterest += int;
+            tempBal -= (baseMonthlyPI - int);
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('extra-payment-form').addEventListener('submit', handleExtraPayment);
+        // 2. Extra Payment Calculation
+        let balance = P;
+        let totalInterestNew = 0;
+        let newMonths = 0;
+        let tableHtml = '';
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('extra-payment-form').dispatchEvent(new Event('submit'));
-    };
+        for (let month = 1; ; month++) {
+            if (balance <= 0) break;
+            
+            let interestP = balance * monthlyR;
+            let principalP = baseMonthlyPI - interestP;
+            let totalPrincipalPaid = principalP + extra;
+
+            if (totalPrincipalPaid >= balance) {
+                totalPrincipalPaid = balance;
+                balance = 0;
+            } else {
+                balance -= totalPrincipalPaid;
+            }
+            
+            totalInterestNew += interestP;
+            newMonths = month;
+
+            if (month <= 12) {
+                tableHtml += `
+                    <tr>
+                        <td class="fw-bold">${month}</td>
+                        <td class="text-dark">${formatter.format(baseMonthlyPI + extra)}</td>
+                        <td>${formatter.format(interestP)}</td>
+                        <td>${formatter.format(principalP)} <span class="extra-tag">+${formatter.format(extra)}</span></td>
+                        <td class="fw-bold text-dark">${formatter.format(Math.max(0, balance))}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Update UI
+        resultsUi.classList.remove('d-none');
+        document.getElementById('total-interest-saved').textContent = formatter.format(originalInterest - totalInterestNew);
+        document.getElementById('new-term-display').textContent = formatTerm(newMonths);
+        document.getElementById('time-saved-label').textContent = `Saves ${formatTerm(totalLoanMonths - newMonths)} in time`;
+        document.getElementById('new-payment-display').textContent = formatter.format(baseMonthlyPI + extra);
+        document.querySelector('#amortization-table tbody').innerHTML = tableHtml;
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

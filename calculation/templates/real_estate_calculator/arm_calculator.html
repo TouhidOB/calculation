@@ -2,500 +2,322 @@
 
 {% block title %}ARM (Adjustable Rate Mortgage) Calculator{% endblock %}
 
-{% block meta_description %}Calculate the initial payment and forecast the first adjusted payment for an Adjustable Rate Mortgage (ARM), factoring in index, margin, and rate caps.{% endblock %}
-
-{% block meta_keywords %}ARM calculator, adjustable rate mortgage, fixed period, adjusted payment, rate cap, margin, index rate{% endblock %}
+{% block meta_description %}Forecast your initial and adjusted mortgage payments using index rates, lender margins, and adjustment caps.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling to match the original Blue Theme */
-    .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1100px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 79, 70, 229;
+        --arm-indigo: #4f46e5;
+        --arm-pink: #f43f5e;
+        --slate-bg: #f8fafc;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: var(--slate-bg);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1d4ed8;
-    }
-    .form-control-custom:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #eef2ff; /* Very Light Indigo */
-        border-left: 5px solid #6366f1; /* Indigo accent */
+    .result-display-box {
+        background-color: #f5f3ff;
+        border: 2px solid #ddd6fe;
+        border-radius: 1rem;
+        padding: 2rem;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for ARM display */
-    .result-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #4f46e5; /* Dark Indigo */
-    }
-    
-    .result-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: #6366f1; /* Bright Indigo */
+    .payment-value {
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: var(--arm-indigo);
+        line-height: 1.1;
     }
 
-    .monthly-payment-box {
-        background-color: #e0e7ff; /* Lighter Indigo */
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #a5b4fc;
-    }
-    
-    .adjusted-rate-box {
-        background-color: #ffe4e6; /* Light Pink for warning/change */
-        border: 1px solid #fda4af;
-    }
-    .adjusted-rate-value {
-        color: #ef4444; /* Red */
+    .stat-card-mini {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        height: 100%;
     }
 
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .cap-warning {
+        background-color: #fff1f2;
+        border: 1px solid #fecdd3;
+        color: #be123c;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🔄 ARM (Adjustable Rate Mortgage) Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Calculate your initial payment and estimate the first adjustment based on current index rates and loan caps. (e.g., 5/1 ARM with a 2/2/5 cap structure).
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-arrow-repeat text-primary me-2"></i>ARM Loan Forecaster</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Adjustable Rate Mortgages (ARMs) feature a fixed initial rate followed by periodic adjustments based on market indices. 
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="arm-form" class="row g-4">
-            
-            <!-- Loan Details -->
-            <div class="col-lg-4 col-md-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Fixed Period Details</h4>
+    <div class="calc-card mx-auto" style="max-width: 1150px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="arm-form">
+                    <h6 class="fw-bold text-dark mb-4">Initial Fixed Period</h6>
                     
-                    <div class="input-box mb-3">
-                        <label for="loan-amount">Loan Principal Amount ($):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="loan-amount" 
-                               value="400000" 
-                               min="1000"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-3">
+                        <label class="form-label text-primary">Loan Principal</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0">$</span>
+                            <input type="number" id="loan-amount" class="form-control border-start-0 ps-0" placeholder="e.g. 400000" required>
                         </div>
                     </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="initial-rate">Initial Interest Rate (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="initial-rate" 
-                               value="6.0" 
-                               min="0.01" 
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-7">
+                            <label class="form-label">Start Rate</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" id="initial-rate" class="form-control border-end-0" placeholder="6.0" step="0.01" required>
+                                <span class="input-group-text bg-white border-start-0">%</span>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label">Fixed Yrs</label>
+                            <input type="number" id="fixed-years" class="form-control shadow-sm" placeholder="5" required>
                         </div>
                     </div>
+
+                    <hr class="my-4 opacity-50">
+
+                    <h6 class="fw-bold text-dark mb-3">Adjustment Mechanics</h6>
                     
-                    <div class="input-box mb-3">
-                        <label for="fixed-years">Initial Fixed Term (Years, e.g., 5 for 5/1 ARM):</label>
-                        <input type="number" id="fixed-years" 
-                               value="5" 
-                               min="1" 
-                               max="30"
-                               required 
-                               class="form-control form-control-custom">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Current Index</label>
+                            <input type="number" id="index-rate" class="form-control shadow-sm" placeholder="4.0" step="0.01" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Margin</label>
+                            <input type="number" id="margin" class="form-control shadow-sm" placeholder="2.5" step="0.01" required>
+                        </div>
                     </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">Initial Cap</label>
+                            <input type="number" id="periodic-cap" class="form-control shadow-sm" placeholder="2.0" step="0.1" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Lifetime Cap</label>
+                            <input type="number" id="lifetime-cap" class="form-control shadow-sm" placeholder="5.0" step="0.1" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Calculate ARM Forecast <i class="bi bi-graph-up-arrow ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Form</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-clock-history display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Forecast Results</h4>
+                    <p>Enter your loan amount and cap structure to see how your payment might change after the fixed period ends.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="result-display-box h-100 shadow-sm">
+                                <span class="form-label text-va-dark mb-2 d-block">Initial P&I Payment</span>
+                                <div class="payment-value mb-2" id="initial-payment-display">$0.00</div>
+                                <p class="text-muted small mb-0 fw-bold" id="fixed-term-label">For the first 5 years</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="result-display-box h-100 shadow-sm bg-white border-warning border-opacity-50">
+                                <span class="form-label text-warning mb-2 d-block">Adjusted P&I Payment</span>
+                                <div class="payment-value mb-2 text-dark" id="adjusted-payment-display">$0.00</div>
+                                <p class="text-muted small mb-0" id="adjusted-rate-label">At a rate of 0.00%</p>
+                            </div>
+                        </div>
+                    </div>
+
                     
-                    <div class="input-box">
-                        <label for="total-term">Total Loan Term (Years):</label>
-                        <input type="number" id="total-term" 
-                               value="30" 
-                               min="10" 
-                               max="30"
-                               required 
-                               class="form-control form-control-custom">
+
+                    <div id="cap-alert-box" class="cap-warning mb-4 d-none">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <span id="cap-alert-text">The adjustment was limited by a rate cap.</span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1">Fully Indexed Rate</span>
+                                <div class="h5 fw-bold text-dark mb-0" id="indexed-rate-display">0.00%</div>
+                                <small class="text-muted">Index + Margin</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1">Remaining Principal</span>
+                                <div class="h4 fw-bold text-indigo mb-0" id="remaining-principal-display">$0</div>
+                                <small class="text-muted">Balance after fixed term</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1">Lifetime Max Rate</span>
+                                <div class="h4 fw-bold text-danger mb-0" id="max-lifetime-rate-display">0.00%</div>
+                                <small class="text-muted">Hard ceiling</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Index and Margin -->
-            <div class="col-lg-4 col-md-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. Index & Margin Details</h4>
-
-                    <div class="input-box mb-3">
-                        <label for="index-rate">Current Index Rate (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="index-rate" 
-                               value="4.0" 
-                               min="0.01" 
-                               max="15.0"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">The variable rate benchmark (e.g., SOFR).</small>
-                    </div>
-
-                    <div class="input-box mb-3">
-                        <label for="margin">Lender Margin (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="margin" 
-                               value="2.5" 
-                               min="0.01" 
-                               max="10.0"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">The fixed amount added to the Index Rate.</small>
-                    </div>
-                    
-                    <div class="input-box">
-                        <p class="result-label mt-4">Calculated Fully Indexed Rate:</p>
-                        <p class="fs-4 fw-bold text-secondary" id="fully-indexed-rate-display">6.50%</p>
-                        <small class="text-muted">(Index + Margin)</small>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-shield-exclamation fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Validation Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Rate Caps -->
-            <div class="col-lg-4 col-md-12">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">3. Adjustment Caps (e.g., 2/2/5)</h4>
 
-                    <div class="input-box mb-3">
-                        <label for="periodic-cap">Periodic Cap (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="periodic-cap" 
-                               value="2.0" 
-                               min="0.01" 
-                               max="5.0"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">Max rate increase for the *first* adjustment.</small>
-                    </div>
-                    
-                    <div class="input-box">
-                        <label for="lifetime-cap">Lifetime Cap (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="lifetime-cap" 
-                               value="5.0" 
-                               min="0.01" 
-                               max="10.0"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">Max total increase over the initial rate.</small>
-                    </div>
-                </div>
             </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate Initial and Adjusted Payments
-            </button>
-            </div>
-        </form>
-
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Calculates the monthly mortgage payment (P&I) using the amortization formula.
-     * P: Principal
-     * R_annual: Annual Interest Rate (as percentage)
-     * N_years: Loan Term in years
-     */
-    function calculateMonthlyPI(P, R_annual, N_years) {
-        const i = (R_annual / 100) / 12; // Monthly interest rate
-        const n = N_years * 12; // Total number of payments
+    const form = document.getElementById('arm-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+    const capAlert = document.getElementById('cap-alert-box');
 
-        if (i === 0) return P / n; // Simple interest if rate is zero
-
-        const i_plus_1_pow_n = Math.pow(1 + i, n);
-        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
-    }
-
-    /**
-     * Calculates the remaining principal balance after k payments.
-     * P_0: Original Principal
-     * R_annual: Annual Interest Rate (as percentage)
-     * N_years: Original Loan Term in years
-     * k_payments: Number of payments made
-     */
-    function calculateRemainingPrincipal(P_0, R_annual, N_years, k_payments) {
-        const i = (R_annual / 100) / 12; 
-        const n = N_years * 12;
-
-        if (i === 0) return P_0 * (1 - k_payments / n); // Simple linear reduction if i=0
-
-        const P_rem = P_0 * (Math.pow(1 + i, n) - Math.pow(1 + i, k_payments)) / (Math.pow(1 + i, n) - 1);
-        return P_rem;
-    }
-    
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
+
+    function calcPI(P, R, Y) {
+        const i = (R / 100) / 12;
+        const n = Y * 12;
+        if (i === 0) return P / n;
+        return P * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
     }
-    
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleARMCalc(e) {
+
+    function calcRemaining(P, R, Y_total, Y_passed) {
+        const i = (R / 100) / 12;
+        const n = Y_total * 12;
+        const k = Y_passed * 12;
+        if (i === 0) return P * (1 - k / n);
+        return P * (Math.pow(1 + i, n) - Math.pow(1 + i, k)) / (Math.pow(1 + i, n) - 1);
+    }
+
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const P_0 = parseFloat(document.getElementById('loan-amount').value);
-        const R_initial = parseFloat(document.getElementById('initial-rate').value);
-        const N_fixed = parseFloat(document.getElementById('fixed-years').value);
-        const N_total = parseFloat(document.getElementById('total-term').value);
-        const R_index = parseFloat(document.getElementById('index-rate').value);
-        const R_margin = parseFloat(document.getElementById('margin').value);
-        const cap_periodic = parseFloat(document.getElementById('periodic-cap').value);
-        const cap_lifetime = parseFloat(document.getElementById('lifetime-cap').value);
-        
-        // 2. Input Validation
-        if (isNaN(P_0) || isNaN(R_initial) || isNaN(N_fixed) || isNaN(N_total) || isNaN(R_index) || isNaN(R_margin) || isNaN(cap_periodic) || isNaN(cap_lifetime) ||
-            P_0 <= 0 || R_initial <= 0 || N_fixed <= 0 || N_total <= 0 || N_fixed >= N_total) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please ensure all required fields have positive values, and the Fixed Term is less than the Total Term.</p>`;
-            displayResult(true, htmlContent);
+        const p0 = parseFloat(document.getElementById('loan-amount').value);
+        const rInit = parseFloat(document.getElementById('initial-rate').value);
+        const yFixed = parseFloat(document.getElementById('fixed-years').value);
+        const rIdx = parseFloat(document.getElementById('index-rate').value);
+        const rMargin = parseFloat(document.getElementById('margin').value);
+        const cPeriodic = parseFloat(document.getElementById('periodic-cap').value);
+        const cLife = parseFloat(document.getElementById('lifetime-cap').value);
+        const yTotal = 30; // Standard term
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+        capAlert.classList.add('d-none');
+
+        if ([p0, rInit, yFixed, rIdx, rMargin].some(isNaN) || yFixed >= yTotal) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please ensure all values are positive and the fixed term is shorter than the 30-year total term.";
             return;
         }
 
-        try {
-            // --- Part 1: Fixed Period Calculation ---
-            
-            const monthlyPI_initial = calculateMonthlyPI(P_0, R_initial, N_total);
-            const k_payments = N_fixed * 12;
-            const P_rem = calculateRemainingPrincipal(P_0, R_initial, N_total, k_payments);
-            const N_remaining = N_total - N_fixed;
-            
-            // --- Part 2: Adjusted Rate Calculation (First Adjustment) ---
-            
-            // The unconstrained rate is Index + Margin
-            const R_indexed_rate = R_index + R_margin;
-            
-            // Calculate Cap Limits
-            const R_max_periodic = R_initial + cap_periodic;
-            const R_max_lifetime = R_initial + cap_lifetime;
-            
-            // Apply Caps
-            let R_adjusted = R_indexed_rate;
+        // 1. Initial Phase
+        const initPayment = calcPI(p0, rInit, yTotal);
+        const remPrincipal = calcRemaining(p0, rInit, yTotal, yFixed);
 
-            // 1. Apply Periodic Cap (cannot increase more than the cap from the initial rate)
-            if (R_adjusted > R_max_periodic) {
-                R_adjusted = R_max_periodic;
-            }
+        // 2. Adjustment Phase
+        const fullyIndexed = rIdx + rMargin;
+        const periodicMax = rInit + cPeriodic;
+        const lifetimeMax = rInit + cLife;
 
-            // 2. Apply Lifetime Cap (cannot exceed the total lifetime limit)
-            if (R_adjusted > R_max_lifetime) {
-                R_adjusted = R_max_lifetime;
-            }
-            
-            // 3. Rate Floor (usually the margin, but for simplicity, we use the greater of (Index + Margin) or 0.01)
-            R_adjusted = Math.max(0.01, R_adjusted);
-            
-            // --- Part 3: Adjusted Payment Calculation ---
+        let rAdjusted = fullyIndexed;
+        let isCapped = false;
 
-            const monthlyPI_adjusted = calculateMonthlyPI(P_rem, R_adjusted, N_remaining);
-
-            // 4. Build Summary HTML
-            const rateChange = R_adjusted - R_initial;
-            let capMessage = "";
-            let adjustedPaymentColor = "text-primary";
-            
-            if (rateChange > 0.01) {
-                capMessage = `(Rate increased by ${rateChange.toFixed(2)}%)`;
-                adjustedPaymentColor = "adjusted-rate-value";
-            } else if (rateChange < -0.01) {
-                capMessage = `(Rate decreased by ${Math.abs(rateChange).toFixed(2)}%)`;
-            } else {
-                 capMessage = `(Rate remained stable or nearly so)`;
-            }
-
-            if (R_adjusted === R_max_periodic) {
-                capMessage += `<br><span class="text-danger fw-bold">Periodic Cap Activated!</span>`;
-            } else if (R_adjusted === R_max_lifetime) {
-                 capMessage += `<br><span class="text-danger fw-bold">Lifetime Cap Activated!</span>`;
-            }
-
-
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-indigo-600 mb-4">ARM Payment Forecast (First Adjustment)</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Initial Payment -->
-                    <div class="col-md-6 mb-3 border-end border-indigo-400">
-                        <p class="result-label">INITIAL MONTHLY P&I PAYMENT (${N_fixed}-Year Fixed)</p>
-                        <div class="monthly-payment-box">
-                             <p class="result-value mb-0">
-                                ${currencyFormatter.format(monthlyPI_initial)}
-                            </p>
-                        </div>
-                        <p class="text-muted small mt-2">@ ${R_initial.toFixed(2)}% interest.</p>
-                    </div>
-
-                    <!-- Adjusted Payment -->
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">ESTIMATED ADJUSTED MONTHLY P&I PAYMENT</p>
-                        <div class="monthly-payment-box adjusted-rate-box">
-                             <p class="result-value mb-0 ${adjustedPaymentColor}">
-                                ${currencyFormatter.format(monthlyPI_adjusted)}
-                            </p>
-                        </div>
-                        <p class="text-muted small mt-2">@ ${R_adjusted.toFixed(2)}% adjusted rate ${capMessage}</p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-primary mb-3">Loan Status at Adjustment (${N_fixed} Years)</h5>
-                <div class="row text-center">
-                    <div class="col-md-4">
-                        <p class="result-label">Principal Paid</p>
-                        <p class="fs-4 fw-bold text-success">${currencyFormatter.format(P_0 - P_rem)}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="result-label">Remaining Principal</p>
-                        <p class="fs-4 fw-bold text-warning">${currencyFormatter.format(P_rem)}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="result-label">Remaining Term</p>
-                        <p class="fs-4 fw-bold text-info">${N_remaining} Years</p>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-            // Update the display for the fully indexed rate
-            document.getElementById('fully-indexed-rate-display').textContent = `${R_indexed_rate.toFixed(2)}%`;
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
+        if (rAdjusted > periodicMax) {
+            rAdjusted = periodicMax;
+            isCapped = true;
+            document.getElementById('cap-alert-text').innerText = "Initial Periodic Cap triggered: Rate limited to " + periodicMax.toFixed(2) + "%.";
         }
-    }
-    
-    // Function to update the fully indexed rate display whenever index or margin changes
-    function updateIndexedRateDisplay() {
-        const R_index = parseFloat(document.getElementById('index-rate').value);
-        const R_margin = parseFloat(document.getElementById('margin').value);
-        
-        if (isNaN(R_index) || isNaN(R_margin)) {
-            document.getElementById('fully-indexed-rate-display').textContent = 'N/A';
-            return;
+        if (rAdjusted > lifetimeMax) {
+            rAdjusted = lifetimeMax;
+            isCapped = true;
+            document.getElementById('cap-alert-text').innerText = "Lifetime Cap triggered: Rate limited to " + lifetimeMax.toFixed(2) + "%.";
         }
-        
-        const R_indexed_rate = R_index + R_margin;
-        document.getElementById('fully-indexed-rate-display').textContent = `${R_indexed_rate.toFixed(2)}%`;
-    }
 
-    // Attach handler to the form
-    document.getElementById('arm-form').addEventListener('submit', handleARMCalc);
+        const adjPayment = calcPI(remPrincipal, rAdjusted, yTotal - yFixed);
 
-    // Attach event listeners to update the indexed rate display immediately upon input changes
-    document.getElementById('index-rate').addEventListener('input', updateIndexedRateDisplay);
-    document.getElementById('margin').addEventListener('input', updateIndexedRateDisplay);
+        // 3. UI Update
+        resultsUi.classList.remove('d-none');
+        if (isCapped) capAlert.classList.remove('d-none');
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        updateIndexedRateDisplay();
-        document.getElementById('arm-form').dispatchEvent(new Event('submit'));
-    };
+        document.getElementById('initial-payment-display').textContent = currency.format(initPayment);
+        document.getElementById('adjusted-payment-display').textContent = currency.format(adjPayment);
+        document.getElementById('fixed-term-label').textContent = `Fixed for the first ${yFixed} years`;
+        document.getElementById('adjusted-rate-label').textContent = `At an adjusted rate of ${rAdjusted.toFixed(2)}%`;
+        document.getElementById('indexed-rate-display').textContent = `${fullyIndexed.toFixed(2)}%`;
+        document.getElementById('remaining-principal-display').textContent = currency.format(remPrincipal).split('.')[0];
+        document.getElementById('max-lifetime-rate-display').textContent = `${lifetimeMax.toFixed(2)}%`;
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

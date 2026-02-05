@@ -4,394 +4,279 @@
 
 {% block meta_description %}Calculate taxable boot (recognized gain) and total tax deferral for a 1031 like-kind exchange based on property values and debt levels.{% endblock %}
 
-{% block meta_keywords %}1031 exchange, like-kind exchange, taxable boot, tax deferral, recognized gain, debt boot, cost basis{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKyc/iM85rEkg9nO8g19z0c4n1qJkI15d9yI5M9I4KjD4+gN2V01GjJ8F4/1043K2b+I7Sg/q2N5oQ2A==" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Legal Document Gold" Theme */
     :root {
-        --main-gold: #b45309; /* Dark Orange/Gold */
-        --light-gold: #fef3c7; /* Pale Yellow/Gold */
-        --dark-text: #78350f;   /* Dark Brown/Gold text */
-    }
-    
-    .solver-wrapper {
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1000px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: var(--light-gold);
-        border: 2px solid var(--main-gold);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--dark-text);
-        display: block;
-        margin-bottom: 5px;
+        --exchange-gold: #b45309;
+        --exchange-light: #fffbeb;
+        --exchange-border: #fcd34d;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #fcd34d; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--exchange-border);
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--exchange-light);
+        border-right: 1px solid var(--exchange-border);
+    }
+
+    .form-label {
         font-weight: 700;
-        color: var(--dark-text);
-    }
-    .form-control-custom:focus {
-        border-color: var(--main-gold);
-        box-shadow: 0 0 0 0.25rem rgba(180, 83, 9, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #78350f;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #fffbeb; /* Very Light Gold */
-        border-left: 5px solid var(--main-gold);
+    .result-display-box {
+        background-color: white;
+        border: 2px solid var(--exchange-gold);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
+    .value-large {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .boot-warning {
         background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
+        border-left: 4px solid #dc2626;
+        padding: 1rem;
+        margin-top: 1rem;
     }
-    
-    /* Styles for Estimate display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--dark-text);
-    }
-    
-    .estimate-value {
-        font-size: 2.8rem;
-        font-weight: 900;
-        color: var(--main-gold);
-    }
-    
-    .text-gold-primary { color: var(--main-gold) !important; }
 
+    .requirement-pill {
+        background: white;
+        border: 1px solid var(--exchange-border);
+        padding: 8px 15px;
+        border-radius: 50px;
+        display: inline-block;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--exchange-gold);
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">📜 1031 Exchange Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Determine the **Taxable Boot** (Recognized Gain) and the **Deferred Gain** from your Like-Kind Exchange.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-file-earmark-ruled text-warning me-2"></i>1031 Exchange Modeler</h1>
+        <p class="text-muted mx-auto" style="max-width: 750px;">
+            A Section 1031 exchange allows an investor to defer capital gains taxes by reinvesting sale proceeds into a "like-kind" property. 
+            Use this tool to identify "Boot"—the portion of the exchange that becomes taxable.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="exchange-form" class="row g-4">
-            
-            <!-- Relinquished Property -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-gold-primary p-2 rounded mb-3">Relinquished Property (Sold)</h4>
+    <div class="calc-card mx-auto" style="max-width: 1150px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="exchange-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Relinquished Asset (Sold)</h6>
                     
-                    <div class="input-box mb-3">
-                        <label for="sale-price">1. Sale Price (Contract Price):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="sale-price" value="800000" min="1000" step="1000" required class="form-control form-control-custom">
-                        </div>
-                    </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="adjusted-basis">2. Adjusted Basis (Original Cost + Improvements - Depreciation):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="adjusted-basis" value="500000" min="0" step="1000" required class="form-control form-control-custom">
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sale Price</label>
+                        <input type="number" id="sale-price" class="form-control shadow-sm" placeholder="e.g. 800000" required>
                     </div>
 
-                    <div class="input-box mb-3">
-                        <label for="old-mortgage">3. Mortgage Payoff (Debt on Relinquished Property):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="old-mortgage" value="200000" min="0" step="1000" required class="form-control form-control-custom">
+                    <div class="mb-3">
+                        <label class="form-label">Adjusted Basis</label>
+                        <input type="number" id="adjusted-basis" class="form-control shadow-sm" placeholder="e.g. 500000" required>
+                        <small class="x-small text-muted">Cost + Improvements - Depreciation</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Existing Mortgage</label>
+                        <input type="number" id="old-mortgage" class="form-control shadow-sm" placeholder="e.g. 200000" required>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-3 text-uppercase small pt-3 border-top">Replacement Asset (Purchased)</h6>
+
+                    <div class="mb-3">
+                        <label class="form-label">Purchase Price</label>
+                        <input type="number" id="purchase-price" class="form-control shadow-sm" placeholder="e.g. 850000" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">New Mortgage</label>
+                        <input type="number" id="new-mortgage" class="form-control shadow-sm" placeholder="e.g. 250000" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 py-3 fw-bold shadow-sm" style="background-color: var(--exchange-gold); color: white; border: none;">
+                        Analyze Exchange <i class="bi bi-calculator ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear All Data</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-arrow-left-right display-1 mb-3 opacity-25" style="color: var(--exchange-gold);"></i>
+                    <h4 class="fw-bold text-dark">Awaiting Transaction Data</h4>
+                    <p>Enter the financials for both the relinquished and replacement properties to calculate potential tax liability and deferred gains.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="result-display-box border-success">
+                                <span class="form-label text-muted mb-2 d-block">Deferred Gain</span>
+                                <div class="value-large text-success" id="deferred-gain-display">$0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="result-display-box border-danger">
+                                <span class="form-label text-muted mb-2 d-block">Taxable Boot</span>
+                                <div class="value-large text-danger" id="taxable-boot-display">$0</div>
+                            </div>
                         </div>
                     </div>
+
                     
-                    <div class="input-box mb-3">
-                        <label for="exchange-expenses">4. Exchange Expenses (Closing Costs, Commissions, etc.):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="exchange-expenses" value="50000" min="0" step="100" required class="form-control form-control-custom">
+
+                    <h6 class="fw-bold text-dark mb-3 text-uppercase small border-bottom pb-2 mt-5">Requirement Audit</h6>
+                    <div class="mb-4">
+                        <div class="mb-2">
+                            <span id="value-status-icon"></span> 
+                            Value Requirement: <div class="requirement-pill">Target $\geq$ <span id="req-value-target"></span></div>
                         </div>
+                        <div class="mb-2">
+                            <span id="debt-status-icon"></span> 
+                            Debt Requirement: <div class="requirement-pill">Target $\geq$ <span id="req-debt-target"></span></div>
+                        </div>
+                    </div>
+
+                    <div id="boot-alert-box" class="d-none boot-warning rounded-3 mb-4">
+                        <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Boot Identified</h6>
+                        <p class="small mb-0" id="boot-explanation"></p>
+                    </div>
+
+                    <div class="p-3 rounded-4 bg-light border shadow-sm">
+                        <h6 class="fw-bold text-dark mb-1 small"><i class="bi bi-info-circle-fill me-2 text-warning"></i>The 180-Day Rule</h6>
+                        <p class="x-small text-muted mb-0">
+                            To qualify for deferral, you must <strong>identify</strong> replacement property within 45 days and <strong>close</strong> within 180 days of the sale of your relinquished property.
+                        </p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Replacement Property -->
-            <div class="col-lg-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-gold-primary p-2 rounded mb-3">Replacement Property (Acquired)</h4>
-                    
-                    <div class="input-box mb-4">
-                        <label for="purchase-price">5. Purchase Price (Value of New Property):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="purchase-price" value="850000" min="1000" step="1000" required class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">Must be equal to or greater than Relinquished Sale Price to avoid value boot.</small>
-                    </div>
-
-                    <div class="input-box mb-4">
-                        <label for="new-mortgage">6. New Mortgage (Debt on Replacement Property):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="new-mortgage" value="250000" min="0" step="1000" required class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">Must be equal to or greater than Relinquished Debt to avoid mortgage boot.</small>
-                    </div>
-                    
-                    <div class="p-3 mt-4 border rounded" style="background-color: #fffdf6;">
-                        <p class="mb-1 fw-bold text-dark-text">Total Reinvestment Requirements:</p>
-                        <p class="mb-1 small">The new purchase price must be <strong id="req-value">--</strong> and the new debt must be <strong id="req-debt">--</strong> to maximize deferral.</p>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-slash-circle fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Invalid Data</h5>
+                        <p id="error-msg" class="mb-0 small"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: var(--main-gold); border: none;">
-                Calculate Taxable Boot & Deferral
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const form = document.getElementById('exchange-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0
     });
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Gathers and validates all inputs from the form.
-     */
-    function getInputs() {
-        const i = {
-            salePrice: parseFloat(document.getElementById('sale-price').value),
-            adjustedBasis: parseFloat(document.getElementById('adjusted-basis').value),
-            oldMortgage: parseFloat(document.getElementById('old-mortgage').value),
-            exchangeExpenses: parseFloat(document.getElementById('exchange-expenses').value),
-            purchasePrice: parseFloat(document.getElementById('purchase-price').value),
-            newMortgage: parseFloat(document.getElementById('new-mortgage').value),
-        };
-        
-        for (const key in i) {
-            if (isNaN(i[key]) || i[key] < 0) {
-                throw new Error(`All fields must contain valid positive numeric values. Issue with '${key}'.`);
-            }
-        }
-
-        if (i.adjustedBasis > i.salePrice) {
-            throw new Error("Adjusted Basis must be less than the Sale Price for a gain calculation to be relevant.");
-        }
-        
-        return i;
-    }
-
-    /**
-     * Updates the required reinvestment text dynamically.
-     */
-    function updateRequirementText() {
-        const salePrice = parseFloat(document.getElementById('sale-price').value);
-        const oldMortgage = parseFloat(document.getElementById('old-mortgage').value);
-
-        if (!isNaN(salePrice) && !isNaN(oldMortgage)) {
-             document.getElementById('req-value').textContent = currencyFormatterCents.format(salePrice) + ' (or higher)';
-             document.getElementById('req-debt').textContent = currencyFormatterCents.format(oldMortgage) + ' (or higher)';
-        }
-    }
-    
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleExchangeCalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        const salePrice = parseFloat(document.getElementById('sale-price').value);
+        const basis = parseFloat(document.getElementById('adjusted-basis').value);
+        const oldDebt = parseFloat(document.getElementById('old-mortgage').value);
+        const purchasePrice = parseFloat(document.getElementById('purchase-price').value);
+        const newDebt = parseFloat(document.getElementById('new-mortgage').value);
 
-            // --- CORE 1031 CALCULATIONS ---
-            
-            // 1. Total Potential Gain (The maximum amount that can be taxed)
-            const potentialGain = i.salePrice - i.adjustedBasis;
-            
-            // 2. Mortgage Boot (Debt Relief Boot)
-            // Taxable if the old mortgage is greater than the new mortgage.
-            const mortgageBoot = Math.max(0, i.oldMortgage - i.newMortgage);
-            
-            // 3. Cash Boot (Value Boot)
-            // Calculated as the cash received on the sale that was NOT reinvested into the equity of the new property.
-            
-            // Net Cash Received (after paying off mortgage and expenses)
-            const netCashReceived = i.salePrice - i.oldMortgage - i.exchangeExpenses; 
-            
-            // Equity Reinvested (Amount of cash/equity put into the new property)
-            const equityReinvested = i.purchasePrice - i.newMortgage;
-            
-            // Cash Boot is the positive difference between the cash generated and the equity reinvested.
-            const cashBoot = Math.max(0, netCashReceived - equityReinvested);
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // 4. Total Taxable Boot (Sum of the two types of boot)
-            const totalTaxableBoot = mortgageBoot + cashBoot;
-
-            // 5. Recognized Gain (Taxable income from the exchange)
-            // The recognized gain is the lesser of the total boot or the total potential gain.
-            const recognizedGain = Math.min(potentialGain, totalTaxableBoot);
-
-            // 6. Tax Deferral
-            const taxDeferral = potentialGain - recognizedGain;
-
-            // --- Build Summary HTML ---
-            
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-gold-primary mb-4">Exchange Outcome Summary</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Taxable Boot (Recognized Gain) -->
-                    <div class="col-md-6 mb-3 border-end border-warning">
-                        <p class="result-label mb-1">TAXABLE BOOT (RECOGNIZED GAIN)</p>
-                        <p class="estimate-value mb-0 text-danger">
-                            ${currencyFormatterCents.format(recognizedGain)}
-                        </p>
-                        <small class="text-muted fw-bold">This is the amount subject to capital gains tax.</small>
-                    </div>
-
-                    <!-- Deferred Gain -->
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label mb-1">TOTAL TAX DEFERRED</p>
-                        <p class="estimate-value mb-0 text-success">
-                            ${currencyFormatterCents.format(taxDeferral)}
-                        </p>
-                        <small class="text-muted fw-bold">This gain is deferred until the new property is sold.</small>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-gold-primary mb-3">Detailed Boot Breakdown</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-10">
-                        <table class="table table-sm table-striped">
-                            <tbody>
-                                <tr style="background-color: #fef9c3;">
-                                    <td class="fw-bold">TOTAL POTENTIAL GAIN ($${currencyFormatterCents.format(i.salePrice)} - $${currencyFormatterCents.format(i.adjustedBasis)})</td>
-                                    <td class="text-end fw-bolder">${currencyFormatterCents.format(potentialGain)}</td>
-                                </tr>
-                                <tr>
-                                    <td>Required Replacement Value (Must be $\geq$ Relinquished Sale Price)</td>
-                                    <td class="text-end">${currencyFormatterCents.format(i.salePrice)}</td>
-                                </tr>
-                                <tr>
-                                    <td>Actual Replacement Value (New Purchase Price)</td>
-                                    <td class="text-end">${currencyFormatterCents.format(i.purchasePrice)}</td>
-                                </tr>
-                                <tr class="${mortgageBoot > 0 ? 'table-danger' : ''}">
-                                    <td class="fw-bold">MORTGAGE BOOT (Debt Relief)</td>
-                                    <td class="text-end fw-bolder">${currencyFormatterCents.format(mortgageBoot)}</td>
-                                </tr>
-                                <tr class="${cashBoot > 0 ? 'table-danger' : ''}">
-                                    <td class="fw-bold">CASH BOOT (Equity Received)</td>
-                                    <td class="text-end fw-bolder">${currencyFormatterCents.format(cashBoot)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold text-gold-primary">TOTAL BOOT RECEIVED</td>
-                                    <td class="text-end fw-bolder text-gold-primary">${currencyFormatterCents.format(totalTaxableBoot)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div class="p-3 bg-light rounded small text-muted">
-                            <p class="mb-0">Boot (non-like-kind property) is only taxable up to the amount of the Potential Gain. The lower of the two is the **Recognized Gain**.</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (basis > salePrice) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Adjusted basis exceeds sale price (No gain to defer).";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('exchange-form').addEventListener('submit', handleExchangeCalc);
-    
-    // Initial setup and calculation for default value on load
-    window.onload = function() {
-        updateRequirementText();
-        document.getElementById('sale-price').addEventListener('input', updateRequirementText);
-        document.getElementById('old-mortgage').addEventListener('input', updateRequirementText);
+        // Logic
+        const potentialGain = salePrice - basis;
         
-        // Trigger initial calculation
-        document.getElementById('exchange-form').dispatchEvent(new Event('submit'));
-    };
+        // 1. Mortgage Boot (Debt relief)
+        const mortgageBoot = Math.max(0, oldDebt - newDebt);
+        
+        // 2. Value Boot (Cash boot)
+        const relinquishedEquity = salePrice - oldDebt;
+        const replacementEquity = purchasePrice - newDebt;
+        const cashBoot = Math.max(0, relinquishedEquity - replacementEquity);
+        
+        const totalBoot = Math.min(potentialGain, mortgageBoot + cashBoot);
+        const deferredGain = potentialGain - totalBoot;
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('deferred-gain-display').textContent = currency.format(deferredGain);
+        document.getElementById('taxable-boot-display').textContent = currency.format(totalBoot);
+        
+        // Requirement UI
+        document.getElementById('req-value-target').textContent = currency.format(salePrice);
+        document.getElementById('req-debt-target').textContent = currency.format(oldDebt);
+
+        const vIcon = document.getElementById('value-status-icon');
+        vIcon.className = purchasePrice >= salePrice ? "bi bi-check-circle-fill text-success" : "bi bi-exclamation-circle-fill text-danger";
+        
+        const dIcon = document.getElementById('debt-status-icon');
+        dIcon.className = newDebt >= oldDebt ? "bi bi-check-circle-fill text-success" : "bi bi-exclamation-circle-fill text-danger";
+
+        // Boot Explanation
+        const alertBox = document.getElementById('boot-alert-box');
+        if (totalBoot > 0) {
+            alertBox.classList.remove('d-none');
+            let reason = "";
+            if (mortgageBoot > 0) reason += `You reduced your debt by ${currency.format(mortgageBoot)}. `;
+            if (cashBoot > 0) reason += `You reinvested less equity than you received from the sale. `;
+            document.getElementById('boot-explanation').innerText = reason + "This amount is considered taxable 'Boot'.";
+        } else {
+            alertBox.classList.add('d-none');
+        }
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

@@ -1,378 +1,296 @@
 {% extends "base.html" %}
 
-{% block title %}FHA Loan Calculator{% endblock %}
+{% block title %}FHA Loan Calculator (UFMIP & MIP){% endblock %}
 
 {% block meta_description %}Calculate your total monthly payment and upfront costs for an FHA loan, including the Upfront MIP (UFMIP) and Annual MIP (MIP).{% endblock %}
 
-{% block meta_keywords %}FHA calculator, FHA loan, UFMIP, MIP, upfront mortgage insurance, monthly payment, FHA down payment{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling to match the original Blue Theme */
-    .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1000px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+        --fha-emerald: #059669;
+        --fha-dark-green: #064e3b;
+        --slate-bg: #f8fafc;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: var(--slate-bg);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1d4ed8;
-    }
-    .form-control-custom:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #ecfdf5; /* Very Light Green */
-        border-left: 5px solid #10b981; /* Green accent */
+    .result-display-box {
+        background-color: #ecfdf5;
+        border: 2px solid #6ee7b7;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for FHA display */
-    .result-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #065f46; /* Dark Green */
-    }
-    
-    .result-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: #10b981; /* Bright Green */
+    .payment-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--fha-emerald);
+        line-height: 1;
     }
 
-    .monthly-payment-box {
-        background-color: #d1fae5; /* Lighter Green */
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #6ee7b7;
+    .stat-card-mini {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        height: 100%;
     }
 
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .fha-badge {
+        background-color: #d1fae5;
+        color: #065f46;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50rem;
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+        .col-lg-8 { width: 100% !important; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🏡 FHA Loan Calculator (UFMIP & MIP)</h1>
-    <p class="text-secondary mb-5 text-center">
-        Calculate the **total monthly mortgage payment** and **upfront costs** associated with a federally backed FHA loan.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-house-heart text-primary me-2"></i>FHA Loan Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Estimate your total FHA monthly payment, including Mortgage Insurance Premiums (MIP) and financed upfront costs.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="fha-form" class="row g-4">
-            
-            <!-- Loan Details -->
-            <div class="col-md-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Loan & Home Details</h4>
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="fha-form">
+                    <h6 class="fw-bold text-dark mb-4 d-flex justify-content-between align-items-center">
+                        Loan Details <span class="fha-badge">3.5% Min DP</span>
+                    </h6>
                     
-                    <div class="input-box mb-3">
-                        <label for="home-price">Home Purchase Price:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="home-price" 
-                               value="300000" 
-                               min="1"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-3">
+                        <label class="form-label text-primary">Home Purchase Price</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0">$</span>
+                            <input type="number" id="home-price" class="form-control border-start-0 ps-0" placeholder="e.g. 300000" required>
                         </div>
                     </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="interest-rate">Annual Interest Rate (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="interest-rate" 
-                               value="6.5" 
-                               min="0.01" 
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-7">
+                            <label class="form-label">Interest Rate</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" id="interest-rate" class="form-control border-end-0" placeholder="6.5" step="0.01" required>
+                                <span class="input-group-text bg-white border-start-0">%</span>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label">Term (Yrs)</label>
+                            <input type="number" id="loan-term" class="form-control shadow-sm" placeholder="30" required>
                         </div>
                     </div>
+
+                    <hr class="my-4 opacity-50">
+
+                    <h6 class="fw-bold text-dark mb-3">Insurance & DP</h6>
                     
-                    <div class="input-box">
-                        <label for="loan-term">Loan Term (Years):</label>
-                        <input type="number" id="loan-term" 
-                               value="30" 
-                               min="10" 
-                               max="30"
-                               required 
-                               class="form-control form-control-custom">
+                    <div class="mb-3">
+                        <label class="form-label">Upfront MIP (UFMIP) %</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="ufmip-rate" class="form-control border-end-0" placeholder="1.75" step="0.01" required>
+                            <span class="input-group-text bg-white border-start-0">%</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Annual MIP %</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="annual-mip-rate" class="form-control border-end-0" placeholder="0.55" step="0.01" required>
+                            <span class="input-group-text bg-white border-start-0">%</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Down Payment %</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="dp-percent" class="form-control border-end-0" placeholder="3.5" step="0.1" required>
+                            <span class="input-group-text bg-white border-start-0">%</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Calculate FHA Costs <i class="bi bi-calculator ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Reset Calculator</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-house-check display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">FHA Payment Breakdown</h4>
+                    <p>Enter your loan details to see your monthly obligation and total financed amount.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-fha-dark-green mb-2 d-block">Monthly Payment (P&I + MIP)</span>
+                        <div class="payment-value mb-2" id="monthly-payment-display">$0.00</div>
+                        <p class="text-muted small mb-0">Excluding taxes, insurance, and HOA fees.</p>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1">Down Payment</span>
+                                <div class="h5 fw-bold text-dark mb-0" id="dp-cash-display">$0</div>
+                                <small class="text-success" id="dp-percent-summary">3.5% Cash</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1">Upfront MIP</span>
+                                <div class="h5 fw-bold text-danger mb-0" id="ufmip-cash-display">$0</div>
+                                <small class="text-muted">Financed into loan</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1">Total Loan</span>
+                                <div class="h5 fw-bold text-primary mb-0" id="total-loan-display">$0</div>
+                                <small class="text-muted">Principal + UFMIP</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light border border-info border-opacity-10">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Monthly Breakdown</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Principal & Interest</span>
+                            <span class="fw-bold small" id="pi-breakdown">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Monthly MIP</span>
+                            <span class="fw-bold text-danger small" id="mip-breakdown">$0.00</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- FHA Specific Inputs -->
-            <div class="col-md-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. FHA Insurance Rates</h4>
-
-                    <div class="input-box mb-3">
-                        <label for="ufmip-rate">Upfront MIP (UFMIP) Rate (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="ufmip-rate" 
-                               value="1.75" 
-                               min="0.01" 
-                               max="5.0"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom border-danger text-danger">
-                            <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">Standard FHA rate (Usually 1.75%).</small>
-                    </div>
-
-                    <div class="input-box mb-3">
-                        <label for="annual-mip-rate">Annual MIP Rate (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="annual-mip-rate" 
-                               value="0.55" 
-                               min="0.01" 
-                               max="5.0"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom border-warning text-warning">
-                            <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">This rate depends on LTV and term.</small>
-                    </div>
-                    
-                    <div class="input-box">
-                        <label for="minimum-down-payment-percent">Minimum Down Payment (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="minimum-down-payment-percent" 
-                               value="3.5" 
-                               min="3.5" 
-                               max="100"
-                               step="0.1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                         <small class="text-muted">FHA standard is 3.5% down.</small>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-octagon fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate FHA Payments & Costs
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Calculates the monthly mortgage payment (P&I) using the amortization formula.
-     */
-    function calculateMonthlyPI(P, R_annual, N_years) {
-        const i = (R_annual / 100) / 12; 
-        const n = N_years * 12;
+    const form = document.getElementById('fha-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
 
-        if (i === 0) return P / n;
-
-        const i_plus_1_pow_n = Math.pow(1 + i, n);
-        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
-    }
-    
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
+
+    function calculatePI(P, R, Y) {
+        const i = (R / 100) / 12;
+        const n = Y * 12;
+        if (i === 0) return P / n;
+        return P * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
     }
 
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleFHALoan(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const homePrice = parseFloat(document.getElementById('home-price').value);
-        const interestRate = parseFloat(document.getElementById('interest-rate').value);
-        const loanTerm = parseFloat(document.getElementById('loan-term').value);
-        const ufmipRate = parseFloat(document.getElementById('ufmip-rate').value);
-        const annualMipRate = parseFloat(document.getElementById('annual-mip-rate').value);
-        const dpPercent = parseFloat(document.getElementById('minimum-down-payment-percent').value);
-        
-        // 2. Input Validation
-        if (isNaN(homePrice) || isNaN(interestRate) || isNaN(loanTerm) || isNaN(ufmipRate) || isNaN(annualMipRate) || isNaN(dpPercent) ||
-            homePrice <= 0 || interestRate <= 0 || loanTerm < 10 || ufmipRate <= 0 || annualMipRate <= 0 || dpPercent < 3.5 || dpPercent > 100) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please ensure all values are positive and the Down Payment is at least 3.5%.</p>`;
-            displayResult(true, htmlContent);
+        const price = parseFloat(document.getElementById('home-price').value);
+        const rate = parseFloat(document.getElementById('interest-rate').value);
+        const term = parseFloat(document.getElementById('loan-term').value);
+        const ufmip = parseFloat(document.getElementById('ufmip-rate').value);
+        const amip = parseFloat(document.getElementById('annual-mip-rate').value);
+        const dp = parseFloat(document.getElementById('dp-percent').value);
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if ([price, rate, term, ufmip, amip, dp].some(isNaN) || price <= 0 || dp < 3.5) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please ensure all values are valid. FHA requires a minimum 3.5% down payment.";
             return;
         }
 
-        try {
-            // 3. Calculate Down Payment & Base Loan
-            const dpRatio = dpPercent / 100;
-            const downPaymentAmount = homePrice * dpRatio;
-            const baseLoanAmount = homePrice - downPaymentAmount;
+        const dpAmount = price * (dp / 100);
+        const baseLoan = price - dpAmount;
+        const ufmipAmount = baseLoan * (ufmip / 100);
+        const totalLoan = baseLoan + ufmipAmount;
+        
+        const monthlyPI = calculatePI(totalLoan, rate, term);
+        const monthlyMIP = (baseLoan * (amip / 100)) / 12;
+        const totalMonthly = monthlyPI + monthlyMIP;
 
-            // 4. Calculate UFMIP Cost
-            // UFMIP is calculated on the Base Loan Amount
-            const ufmipCost = baseLoanAmount * (ufmipRate / 100);
-            
-            // 5. Calculate Total Financed Principal
-            // FHA adds the UFMIP to the loan amount (it is financed)
-            const totalFinancedPrincipal = baseLoanAmount + ufmipCost;
-            
-            // 6. Calculate P&I Payment (on Total Financed Principal)
-            const monthlyPI = calculateMonthlyPI(totalFinancedPrincipal, interestRate, loanTerm);
-            
-            // 7. Calculate Monthly MIP (Annual MIP divided by 12)
-            // Monthly MIP is calculated on the Base Loan Amount
-            const annualMipCost = baseLoanAmount * (annualMipRate / 100);
-            const monthlyMIP = annualMipCost / 12;
-            
-            // 8. Calculate Total Monthly Payment (P&I + MIP)
-            // This excludes taxes, insurance, and HOA (PITI)
-            const totalMonthlyPayment = monthlyPI + monthlyMIP;
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('monthly-payment-display').textContent = currency.format(totalMonthly);
+        document.getElementById('dp-cash-display').textContent = currency.format(dpAmount).split('.')[0];
+        document.getElementById('dp-percent-summary').textContent = `${dp}% Cash Required`;
+        document.getElementById('ufmip-cash-display').textContent = currency.format(ufmipAmount).split('.')[0];
+        document.getElementById('total-loan-display').textContent = currency.format(totalLoan).split('.')[0];
+        document.getElementById('pi-breakdown').textContent = currency.format(monthlyPI);
+        document.getElementById('mip-breakdown').textContent = currency.format(monthlyMIP);
+    });
 
-            // 9. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-green-600 mb-4">FHA Monthly Payment & Upfront Cost Summary</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Total Monthly Payment -->
-                    <div class="col-md-6 mb-3 border-end border-green-400">
-                        <p class="result-label">ESTIMATED TOTAL MONTHLY PAYMENT (P&I + MIP)</p>
-                        <div class="monthly-payment-box">
-                             <p class="result-value mb-0">
-                                ${currencyFormatter.format(totalMonthlyPayment)}
-                            </p>
-                        </div>
-                        <p class="text-muted small mt-2">Does not include Property Taxes (T) or Insurance (I) / HOA.</p>
-                    </div>
-
-                    <!-- Components -->
-                    <div class="col-md-6 mb-3">
-                        <p class="text-muted fw-bold">Payment Breakdown:</p>
-                        <p class="mb-1 text-primary">Principal & Interest (P&I): ${currencyFormatter.format(monthlyPI)}</p>
-                        <p class="mb-1 text-danger">Monthly MIP: ${currencyFormatter.format(monthlyMIP)}</p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-primary mb-3">Upfront Costs & Loan Details</h5>
-                <div class="row text-center">
-                    <div class="col-md-4">
-                        <p class="result-label">Minimum Down Payment (${dpPercent}%)</p>
-                        <p class="fs-4 fw-bold text-success">${currencyFormatter.format(downPaymentAmount)}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="result-label">Upfront MIP (UFMIP) Cost</p>
-                        <p class="fs-4 fw-bold text-danger">${currencyFormatter.format(ufmipCost)}</p>
-                        <p class="text-muted small">(Financed into the loan)</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="result-label">Total Financed Loan Principal</p>
-                        <p class="fs-4 fw-bold text-primary">${currencyFormatter.format(totalFinancedPrincipal)}</p>
-                        <p class="text-muted small">(Base Loan + UFMIP)</p>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
-
-    // Attach handler to the form
-    document.getElementById('fha-form').addEventListener('submit', handleFHALoan);
-
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('fha-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

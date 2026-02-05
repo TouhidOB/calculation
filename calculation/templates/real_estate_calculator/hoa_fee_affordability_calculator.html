@@ -4,344 +4,251 @@
 
 {% block meta_description %}Determine the maximum affordable monthly HOA fee based on income and calculate the total annual cost of the fee.{% endblock %}
 
-{% block meta_keywords %}HOA fee calculator, affordability, housing costs, condo fees, budgeting, annual HOA cost{% endblock %}
-
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Red Brick/Gray" Theme (Home Maintenance) */
-    .solver-wrapper {
-        background: #f7f7f7; /* Light Gray */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 900px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #fce7f3; /* Light Pink/Rose for warmth */
-        border: 2px solid #be123c; /* Brick Red accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #831843; /* Darker Red */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --hoa-brick: #be123c;
+        --hoa-rose: #fff1f2;
+        --hoa-border: #f9a8d4;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #f9a8d4; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--hoa-border);
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #fdf2f8;
+        border-right: 1px solid #fce7f3;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #be123c;
-    }
-    .form-control-custom:focus {
-        border-color: #be123c;
-        box-shadow: 0 0 0 0.25rem rgba(190, 18, 60, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #831843;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #fff1f2; /* Pale Pink */
-        border-left: 5px solid #be123c; /* Brick Red accent */
+    .result-display-box {
+        background-color: white;
+        border: 2px solid var(--hoa-border);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Fee display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #831843; /* Dark Red */
-    }
-    
-    .fee-value {
+    .value-large {
         font-size: 3.5rem;
-        font-weight: 900;
-        color: #be123c; /* Brick Red */
+        font-weight: 800;
+        color: var(--hoa-brick);
+        line-height: 1;
     }
-    
-    .text-brick { color: #831843 !important; }
 
+    .status-banner {
+        padding: 1rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .stat-mini {
+        background: #f1f5f9;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🧱 HOA Fee Affordability Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Determine the **maximum affordable monthly HOA fee** based on your income, and calculate the **total annual cost** of a given fee.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-house-gear text-danger me-2"></i>HOA Cost Profiler</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Condo and HOA fees are "phantom mortgage payments." Use this tool to see how a monthly fee impacts your annual budget and income ratios.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="hoa-form" class="row g-4 justify-content-center">
-            
-            <div class="col-lg-12">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-brick p-2 rounded mb-4">Affordability & Cost Inputs</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="hoa-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Your Financial Profile</h6>
                     
-                    <div class="row">
-                        <div class="col-md-4 input-box mb-4">
-                            <label for="income-input">Gross Monthly Income:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="income-input" 
-                                   value="6000" 
-                                   min="100"
-                                   step="100"
-                                   required
-                                   class="form-control form-control-custom">
-                            </div>
-                            <small class="text-muted">Your total income before taxes.</small>
-                        </div>
-                        
-                        <div class="col-md-4 input-box mb-4">
-                            <label for="affordability-percent">Max % of Income for HOA Fee:</label>
-                            <div class="input-group">
-                                <input type="number" id="affordability-percent" 
-                                   value="1.5" 
-                                   min="0.1" 
-                                   max="10"
-                                   step="0.1"
-                                   required 
-                                   class="form-control form-control-custom">
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <small class="text-muted">How much of your income should go to the fee (often 1-3%).</small>
-                        </div>
-
-                        <div class="col-md-4 input-box mb-4">
-                            <label for="monthly-fee">Actual Monthly HOA Fee:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="monthly-fee" 
-                                   value="350" 
-                                   min="0" 
-                                   step="any"
-                                   required 
-                                   class="form-control form-control-custom">
-                            </div>
-                            <small class="text-muted">The fee for the property you're considering.</small>
+                    <div class="mb-3">
+                        <label class="form-label">Gross Monthly Income</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="income-input" class="form-control border-start-0 ps-0" placeholder="e.g. 6500" required>
                         </div>
                     </div>
 
-                </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: #be123c; border: none;">
-                Calculate Affordability
-            </button>
-            </div>
-        </form>
+                    <div class="mb-4">
+                        <label class="form-label">Desired HOA Allocation %</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" step="0.1" id="affordability-percent" class="form-control border-end-0" placeholder="1.5" required>
+                            <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                        </div>
+                        <small class="x-small text-muted mt-1 d-block">Lenders often factor HOA into your 28% front-end ratio.</small>
+                    </div>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small pt-3 border-top">HOA Property Details</h6>
+
+                    <div class="mb-4">
+                        <label class="form-label">Actual Monthly HOA Fee</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="monthly-fee" class="form-control border-start-0 ps-0" placeholder="e.g. 450" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100 py-3 fw-bold shadow-sm" style="background-color: var(--hoa-brick); border: none;">
+                        Assess Affordability <i class="bi bi-search ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Reset Analysis</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-wallet2 display-1 mb-3 opacity-25" style="color: var(--hoa-brick);"></i>
+                    <h4 class="fw-bold text-dark">Budget Analysis Pending</h4>
+                    <p>Enter your income and the proposed HOA fee to see if the property fits within your targeted financial ratios.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none text-center">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Monthly Affordability Ceiling</span>
+                        <div class="value-large mb-2" id="max-fee-display">$0</div>
+                        <small class="text-muted fw-bold text-uppercase">Target Budget Limit</small>
+                    </div>
+
+                    
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="stat-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Annual Total Cost</span>
+                                <div class="h4 fw-bold mb-0 text-dark" id="annual-cost-display">$0</div>
+                                <small class="text-muted">12 months of fees</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Income Ratio</span>
+                                <div class="h4 fw-bold mb-0 text-dark" id="actual-ratio-display">0.0%</div>
+                                <small class="text-muted">Actual fee vs income</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="status-banner" class="status-banner">
+                        </div>
+
+                    <div class="mt-4 p-3 rounded-4 bg-light text-start border shadow-sm">
+                        <h6 class="fw-bold text-dark mb-1 small"><i class="bi bi-info-circle-fill me-2 text-danger"></i>The "Hidden" Cost</h6>
+                        <p class="x-small text-muted mb-0">
+                            Remember: HOA fees are not fixed. They can increase annually and may include "Special Assessments" for major repairs not covered by monthly dues.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Missing Information</h5>
+                        <p id="error-msg" class="mb-0 small"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('hoa-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
-    
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const currencyCents = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     });
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Gathers and validates all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            income: parseFloat(document.getElementById('income-input').value),
-            affordabilityPercent: parseFloat(document.getElementById('affordability-percent').value),
-            monthlyFee: parseFloat(document.getElementById('monthly-fee').value),
-        };
-        
-        if (isNaN(inputs.income) || inputs.income <= 0) {
-            throw new Error("Gross Monthly Income must be a positive value.");
-        }
-        if (isNaN(inputs.affordabilityPercent) || inputs.affordabilityPercent <= 0 || inputs.affordabilityPercent > 100) {
-            throw new Error("Affordability percentage must be between 0.1 and 100.");
-        }
-        if (isNaN(inputs.monthlyFee) || inputs.monthlyFee < 0) {
-             throw new Error("Monthly HOA Fee cannot be negative.");
-        }
-        
-        return inputs;
-    }
-    
-    /**
-     * Determines affordability and sets status.
-     */
-    function getAffordabilityStatus(actualFee, maxAffordable) {
-        let statusText = "";
-        let color = "";
-        
-        if (actualFee <= maxAffordable) {
-            statusText = "AFFORDABLE: The current HOA fee is well within your budget target.";
-            color = "text-success";
-        } else if (actualFee <= maxAffordable * 1.25) { // 25% tolerance
-            statusText = "MANAGEABLE: The current HOA fee slightly exceeds your target but may be acceptable.";
-            color = "text-warning";
-        } else {
-            statusText = "HIGH: The current HOA fee significantly exceeds your affordability target.";
-            color = "text-danger";
-        }
-        
-        return { statusText, color };
-    }
-
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleHOACalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        const income = parseFloat(document.getElementById('income-input').value);
+        const targetPct = parseFloat(document.getElementById('affordability-percent').value);
+        const fee = parseFloat(document.getElementById('monthly-fee').value);
 
-            // 1. Calculate Maximum Affordable Monthly Fee
-            const maxAffordableFee = i.income * (i.affordabilityPercent / 100);
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // 2. Calculate Annual Cost
-            const annualCost = i.monthlyFee * 12;
-            
-            // 3. Determine Affordability Status
-            const { statusText, color } = getAffordabilityStatus(i.monthlyFee, maxAffordableFee);
-            
-            // 4. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-brick mb-4">HOA Fee Affordability Report</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <div class="col-md-6 mb-3 border-end border-brick">
-                        <p class="result-label">MAX AFFORDABLE MONTHLY FEE (${i.affordabilityPercent.toFixed(1)}% of Income)</p>
-                        <p class="fee-value mb-0">
-                            ${currencyFormatterCents.format(maxAffordableFee)}
-                        </p>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">TOTAL ANNUAL COST OF FEE</p>
-                        <p class="fee-value mb-0 text-brick" style="font-size: 2.5rem;">
-                            ${currencyFormatter.format(annualCost)}
-                        </p>
-                        <small class="text-muted">Equivalent to ${i.monthlyFee.toFixed(2)} per month.</small>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4 p-3 rounded ${color}" style="background-color: ${color === 'text-success' ? '#d1fae5' : color === 'text-warning' ? '#fef3c7' : '#fee2e2'}; border: 1px solid currentColor;">
-                    <p class="mb-0 fw-bold">Affordability Status:</p>
-                    <p class="mb-0 ${color}">${statusText}</p>
-                </div>
-
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-brick mb-3">Cost Analysis</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-9">
-                        <table class="table table-sm table-striped">
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold">Your Gross Monthly Income</td>
-                                    <td class="text-end">${currencyFormatter.format(i.income)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Actual Monthly Fee Being Reviewed</td>
-                                    <td class="text-end">${currencyFormatterCents.format(i.monthlyFee)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Difference (Actual Fee vs. Max Affordable)</td>
-                                    <td class="text-end">${currencyFormatterCents.format(i.monthlyFee - maxAffordableFee)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if ([income, targetPct, fee].some(isNaN)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please provide valid numbers for all fields.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('hoa-form').addEventListener('submit', handleHOACalc);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('hoa-form').dispatchEvent(new Event('submit'));
-    };
+        // Calculations
+        const maxAffordable = income * (targetPct / 100);
+        const annualCost = fee * 12;
+        const actualRatio = (fee / income) * 100;
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('max-fee-display').textContent = currencyCents.format(maxAffordable);
+        document.getElementById('annual-cost-display').textContent = currency.format(annualCost);
+        document.getElementById('actual-ratio-display').textContent = actualRatio.toFixed(1) + '%';
+
+        const statusBanner = document.getElementById('status-banner');
+        if (fee <= maxAffordable) {
+            statusBanner.className = "status-banner bg-success-subtle text-success border border-success";
+            statusBanner.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i> Within Target Budget`;
+        } else if (fee <= maxAffordable * 1.3) {
+            statusBanner.className = "status-banner bg-warning-subtle text-warning-emphasis border border-warning";
+            statusBanner.innerHTML = `<i class="bi bi-exclamation-circle-fill me-2"></i> Slightly Above Target`;
+        } else {
+            statusBanner.className = "status-banner bg-danger-subtle text-danger border border-danger";
+            statusBanner.innerHTML = `<i class="bi bi-x-circle-fill me-2"></i> Significantly Above Target`;
+        }
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

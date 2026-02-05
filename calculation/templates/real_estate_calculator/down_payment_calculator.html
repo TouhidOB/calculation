@@ -4,294 +4,248 @@
 
 {% block meta_description %}Calculate the exact down payment amount and resulting loan principal required based on your target home price and desired percentage.{% endblock %}
 
-{% block meta_keywords %}down payment calculator, mortgage principal, home price, LTV, loan amount, equity calculation{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling to match the original Blue Theme */
-    .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 900px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 79, 70, 229;
+        --indigo-dark: #3730a3;
+        --indigo-bright: #4f46e5;
+        --emerald: #059669;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1d4ed8;
-    }
-    .form-control-custom:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #eef2ff; /* Very Light Indigo */
-        border-left: 5px solid #6366f1; /* Indigo accent */
+    .result-display-box {
+        background-color: #eef2ff;
+        border: 2px solid #c7d2fe;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Down Payment display */
-    .result-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #3730a3; /* Dark Indigo */
-    }
-    
     .result-value {
-        font-size: 2.8rem;
-        font-weight: 900;
-        color: #4f46e5; /* Bright Indigo */
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--indigo-bright);
+        line-height: 1;
     }
 
-    .loan-principal-box {
-        background-color: #dbeafe;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #93c5fd;
+    .stat-card-mini {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        text-align: center;
     }
 
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .pmi-alert {
+        border-radius: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+        .col-lg-8 { width: 100% !important; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">💸 Down Payment Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Find out exactly how much cash you need upfront based on the home's price and your target down payment percentage.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-wallet2 text-primary me-2"></i>Down Payment Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Calculate exactly how much cash you'll need at closing and how much you'll need to finance based on your target home price.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="down-payment-form" class="row g-4">
-            
-            <!-- Home Price Input -->
-            <div class="col-md-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Home Purchase Price</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="dp-form">
+                    <div class="mb-4">
+                        <label class="form-label text-primary">Home Purchase Price</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0">$</span>
+                            <input type="number" id="home-price-input" class="form-control border-start-0 ps-0 form-control-lg" placeholder="e.g. 400000" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label">Down Payment Percentage</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="down-payment-percent" class="form-control border-end-0" placeholder="e.g. 20" min="0" max="100" required>
+                            <span class="input-group-text bg-white border-start-0">%</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="setPercent(3.5)">3.5%</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="setPercent(5)">5%</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="setPercent(10)">10%</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="setPercent(20)">20%</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Calculate Amounts <i class="bi bi-calculator ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Inputs</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-cash-coin display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Ready to Calculate</h4>
+                    <p>Enter a purchase price and percentage to see your cash requirements.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-indigo-dark mb-2 d-block">Cash Down Payment Required</span>
+                        <div class="result-value mb-1" id="dp-amount-display">$0</div>
+                        <p class="text-muted small mb-0" id="dp-ratio-text"></p>
+                    </div>
+
                     
-                    <div class="input-box mb-3">
-                        <label for="home-price-input">Total Price of the Home:</label>
-                        <div class="input-group">
-                            <span class="input-group-text fw-bold text-lg text-secondary">$</span>
-                            <input type="number" id="home-price-input" 
-                               value="400000" 
-                               min="1"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="stat-card-mini bg-light border-0 shadow-sm">
+                                <span class="form-label d-block mb-1">Mortgage Principal</span>
+                                <div class="h3 fw-bold text-dark mb-0" id="loan-amount-display">$0</div>
+                                <small class="text-muted">Total Amount Borrowed</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-card-mini bg-light border-0 shadow-sm">
+                                <span class="form-label d-block mb-1">LTV Ratio</span>
+                                <div class="h3 fw-bold text-dark mb-0" id="ltv-display">0%</div>
+                                <small class="text-muted">Loan-to-Value</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="pmi-box" class="p-3 pmi-alert border d-flex align-items-center">
+                        <i id="pmi-icon" class="bi fs-4 me-3"></i>
+                        <div>
+                            <p class="fw-bold mb-0" id="pmi-title"></p>
+                            <p class="small mb-0" id="pmi-desc"></p>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Down Payment Percentage Input -->
-            <div class="col-md-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. Desired Down Payment %</h4>
-
-                    <div class="input-box mb-3">
-                        <label for="down-payment-percent">Percentage of Down Payment (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="down-payment-percent" 
-                               value="20" 
-                               min="1" 
-                               max="100"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text fw-bold text-lg text-secondary">%</span>
-                        </div>
-                        <small class="text-muted">Tip: Aim for 20% to avoid PMI!</small>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4">
+                        <i class="bi bi-exclamation-circle fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Invalid Values</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate Amounts
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('dp-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
-    
-    /**
-     * Formats a number as a percentage (XX.X%).
-     */
-    function formatPercentage(ratio) {
-        return (ratio * 100).toFixed(1) + '%';
+
+    function setPercent(val) {
+        document.getElementById('down-payment-percent').value = val;
     }
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleDownPayment(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const homePrice = parseFloat(document.getElementById('home-price-input').value);
-        const dpPercent = parseFloat(document.getElementById('down-payment-percent').value);
-        
-        // 2. Input Validation
-        if (isNaN(homePrice) || isNaN(dpPercent) || homePrice <= 0 || dpPercent <= 0 || dpPercent > 100) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive value for Home Price and a percentage between 1% and 100%.</p>`;
-            displayResult(true, htmlContent);
+        const price = parseFloat(document.getElementById('home-price-input').value);
+        const percent = parseFloat(document.getElementById('down-payment-percent').value);
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(price) || price <= 0 || isNaN(percent) || percent < 0 || percent > 100) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please enter a valid home price and a percentage between 0 and 100.";
             return;
         }
 
-        try {
-            // Convert percentage to decimal
-            const dpRatio = dpPercent / 100;
-            
-            // 3. Calculate Amounts
-            const downPaymentAmount = homePrice * dpRatio;
-            const loanAmount = homePrice - downPaymentAmount;
-            
-            // 4. Calculate LTV
-            // LTV is the Loan Amount divided by the Home Price
-            const ltvRatio = loanAmount / homePrice; 
-            const ltvPercentage = formatPercentage(ltvRatio);
-            
-            // 5. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-indigo-600 mb-4">Required Upfront Funds & Mortgage Principal</h4>
-                
-                <div class="row text-center align-items-center">
-                    
-                    <!-- Down Payment Amount -->
-                    <div class="col-md-6 mb-4 border-end border-indigo-400">
-                        <p class="result-label">Required Down Payment (${dpPercent}%)</p>
-                        <p class="result-value text-success">
-                            ${currencyFormatter.format(downPaymentAmount)}
-                        </p>
-                        <p class="text-muted small">This is the cash you need upfront.</p>
-                    </div>
+        const dpAmount = price * (percent / 100);
+        const loanAmount = price - dpAmount;
+        const ltv = (loanAmount / price) * 100;
 
-                    <!-- Loan Amount -->
-                    <div class="col-md-6 mb-4">
-                        <p class="result-label">Loan Principal (Mortgage)</p>
-                        <div class="loan-principal-box">
-                             <p class="result-value text-primary mb-0">
-                                ${currencyFormatter.format(loanAmount)}
-                            </p>
-                        </div>
-                        <p class="text-muted small mt-2">This is the amount you will borrow.</p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
+        // UI Injection
+        resultsUi.classList.remove('d-none');
+        document.getElementById('dp-amount-display').textContent = formatter.format(dpAmount);
+        document.getElementById('dp-ratio-text').textContent = `${percent}% of ${formatter.format(price)}`;
+        document.getElementById('loan-amount-display').textContent = formatter.format(loanAmount);
+        document.getElementById('ltv-display').textContent = ltv.toFixed(1) + '%';
 
-                <!-- LTV Ratio -->
-                <div class="row text-center">
-                    <div class="col-12">
-                        <p class="result-label mb-2">Loan-to-Value (LTV) Ratio</p>
-                        <p class="fs-3 fw-bold ${ltvRatio <= 0.8 ? 'text-success' : 'text-danger'}">
-                            ${ltvPercentage}
-                        </p>
-                        <p class="text-muted small">
-                            ${ltvRatio > 0.8 ? 'Since LTV is > 80%, Private Mortgage Insurance (PMI) may be required.' : 'LTV is 80% or less! No PMI is typically required.'}
-                        </p>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
+        // PMI Logic
+        const pmiBox = document.getElementById('pmi-box');
+        const pmiIcon = document.getElementById('pmi-icon');
+        const pmiTitle = document.getElementById('pmi-title');
+        const pmiDesc = document.getElementById('pmi-desc');
+
+        if (ltv > 80) {
+            pmiBox.className = "p-3 pmi-alert border border-warning bg-warning bg-opacity-10 text-warning-emphasis d-flex align-items-center";
+            pmiIcon.className = "bi bi-exclamation-triangle-fill fs-4 me-3";
+            pmiTitle.textContent = "PMI Likely Required";
+            pmiDesc.textContent = "Since your down payment is less than 20%, lenders usually require Private Mortgage Insurance.";
+        } else {
+            pmiBox.className = "p-3 pmi-alert border border-success bg-success bg-opacity-10 text-success-emphasis d-flex align-items-center";
+            pmiIcon.className = "bi bi-check-circle-fill fs-4 me-3";
+            pmiTitle.textContent = "No PMI Required";
+            pmiDesc.textContent = "Your 20%+ down payment qualifies you to skip monthly mortgage insurance premiums!";
         }
-    }
+    });
 
-    // Attach handler to the form
-    document.getElementById('down-payment-form').addEventListener('submit', handleDownPayment);
-
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('down-payment-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

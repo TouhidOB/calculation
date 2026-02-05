@@ -2,418 +2,253 @@
 
 {% block title %}Home Appreciation Value Projection Calculator{% endblock %}
 
-{% block meta_description %}Project the future value of a home based on its initial purchase price, annual appreciation rate, and investment timeline. <ctrl46>,{type: "IMAGE", query: "stylized house with a positive trend line"}{% endblock %}
-
-{% block meta_keywords %}home appreciation calculator, future home value, property value projection, real estate investment forecast, appreciation rate calculator{% endblock %}
+{% block meta_description %}Project the future value of a home based on its initial purchase price, annual appreciation rate, and investment timeline.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-
 <style>
-    /* Custom Styling for a Warm Orange/Brown Theme (Growth/Stability) */
-    .solver-wrapper {
-        background: #fffdfa; /* Very light cream */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 900px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #ffedd5; /* Pale Orange */
-        border: 2px solid #ea580c; /* Dark Orange accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #7c2d12; /* Deep Brown */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --growth-orange: #ea580c;
+        --growth-brown: #7c2d12;
+        --growth-bg: #fffcf9;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #fed7aa; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #fed7aa;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #fff7ed;
+        border-right: 1px solid #ffedd5;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #c2410c;
-    }
-    .form-control-custom:focus {
-        border-color: #ea580c;
-        box-shadow: 0 0 0 0.25rem rgba(234, 88, 12, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--growth-brown);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #fef3c7; /* Pale Yellow */
-        border-left: 5px solid #c2410c; /* Deep Orange accent */
+    .projection-display-box {
+        background-color: white;
+        border: 2px solid #fdba74;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Value display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #7c2d12; /* Deep Brown */
-    }
-    
-    .value-projection {
+    .value-large {
         font-size: 3.5rem;
-        font-weight: 900;
-        color: #c2410c; /* Bright Orange */
+        font-weight: 800;
+        color: var(--growth-orange);
+        line-height: 1;
     }
-    
+
     .chart-container {
         position: relative;
-        height: 300px;
+        height: 320px;
         width: 100%;
-        margin-top: 20px;
+        margin-top: 2rem;
     }
 
-    .text-orange { color: #ea580c !important; }
-    .text-brown { color: #7c2d12 !important; }
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
 
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">📈 Home Appreciation Value Projection</h1>
-    <p class="text-secondary mb-5 text-center">
-        Forecast the future value of a property using compound annual appreciation.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-graph-up-arrow text-orange me-2"></i>Equity Growth Forecaster</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Visualize the potential long-term value of your real estate investment using the compound annual appreciation formula.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="appreciation-form" class="row g-4 justify-content-center">
-            
-            <!-- Financial Inputs -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-brown p-2 rounded mb-4">1. Initial Value & Rate</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="appreciation-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Investment Variables</h6>
                     
-                    <div class="input-box mb-4">
-                        <label for="initial-value">Current or Initial Purchase Price:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="initial-value" 
-                               value="450000" 
-                               min="1000"
-                               step="1000"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-4">
+                        <label class="form-label">Starting Property Value</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="initial-value" class="form-control border-start-0 ps-0" placeholder="e.g. 450000" required>
                         </div>
-                        <small class="text-muted">The starting value of the property.</small>
-                    </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="appreciation-rate">Annual Appreciation Rate:</label>
-                        <div class="input-group">
-                            <input type="number" id="appreciation-rate" 
-                               value="4" 
-                               min="0" 
-                               max="20"
-                               step="0.1"
-                               required 
-                               class="form-control form-control-custom">
-                             <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">Assumed constant annual growth rate (e.g., 4% = 4).</small>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">Annual Appreciation (%)</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" step="0.1" id="appreciation-rate" class="form-control border-end-0" placeholder="e.g. 4.5" required>
+                            <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Timeframe (Years)</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="years" class="form-control border-end-0" placeholder="e.g. 15" required>
+                            <span class="input-group-text bg-white border-start-0 text-muted">Yrs</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 py-3 fw-bold shadow-sm" style="background-color: var(--growth-orange); color: white; border: none;">
+                        Project Growth <i class="bi bi-lightning-fill ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Reset Projection</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-houses display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Ready for Projection</h4>
+                    <p>Enter your initial purchase price and assumed growth rate to generate a future equity chart.</p>
                 </div>
-            </div>
-            
-            <!-- Time Input -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-brown p-2 rounded mb-4">2. Projection Timeline</h4>
-                    
-                    <div class="input-box mb-4">
-                        <label for="years">Projection Period (Years):</label>
-                        <div class="input-group">
-                            <input type="number" id="years" 
-                               value="10" 
-                               min="1" 
-                               max="50"
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">Years</span>
-                        </div>
-                        <small class="text-muted">How many years into the future you want to project.</small>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="projection-display-box mb-4 shadow-sm text-center">
+                        <span class="form-label text-muted mb-2 d-block">Estimated Future Value</span>
+                        <div class="value-large mb-2" id="final-value-display">$0</div>
+                        <div id="gain-text" class="fw-bold text-success">+$0 Total Appreciation</div>
                     </div>
 
-                    <div class="text-center mt-5">
-                        <p class="text-muted fw-bold mb-0">The calculation uses the formula: Value = P * (1 + r)^t</p>
+                    
+
+                    <div class="chart-container">
+                        <canvas id="appreciationChart"></canvas>
+                    </div>
+
+                    <div class="p-4 mt-4 rounded-4 bg-light border">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle-fill me-2 text-orange"></i>Compound Growth Rule</h6>
+                        <p class="small text-muted mb-0">
+                            Real estate appreciation compounds over time. This means each year's growth is calculated based on the <em>new</em> value from the previous year, leading to an exponential curve.
+                        </p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg bg-orange border-0" style="background-color: #ea580c;">
-                Project Future Value
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Required</h5>
+                        <p id="error-msg" class="mb-0"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents for clean display).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('appreciation-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+    let growthChart = null;
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
 
-    let appreciationChart = null; // Variable to hold the Chart.js instance
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Gathers all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            initialValue: parseFloat(document.getElementById('initial-value').value),
-            appreciationRate: parseFloat(document.getElementById('appreciation-rate').value),
-            years: parseInt(document.getElementById('years').value),
-        };
-        
-        if (isNaN(inputs.initialValue) || inputs.initialValue <= 0) {
-            throw new Error("Initial Value must be a valid positive number.");
-        }
-        if (isNaN(inputs.appreciationRate) || inputs.appreciationRate < 0) {
-            throw new Error("Appreciation Rate must be zero or a positive number.");
-        }
-        if (isNaN(inputs.years) || inputs.years < 1) {
-            throw new Error("Projection Period must be at least 1 year.");
-        }
-        return inputs;
-    }
-    
-    /**
-     * Generates data points for the Chart.js graph.
-     */
-    function generateChartData(initialValue, annualRate, years) {
-        const rate = annualRate / 100;
-        const labels = [0];
-        const data = [initialValue];
-        
-        for (let t = 1; t <= years; t++) {
-            const futureValue = initialValue * Math.pow(1 + rate, t);
-            labels.push(t);
-            data.push(futureValue);
-        }
-        return { labels, data };
-    }
-
-    /**
-     * Creates or updates the Chart.js graph.
-     */
-    function renderChart(data, rate) {
-        const ctx = document.getElementById('appreciationChart').getContext('2d');
-        const chartTitle = `Appreciation over ${data.labels.length - 1} Years (${rate}%)`;
-
-        if (appreciationChart) {
-            appreciationChart.data.labels = data.labels;
-            appreciationChart.data.datasets[0].data = data.data;
-            appreciationChart.options.plugins.title.text = chartTitle;
-            appreciationChart.update();
-        } else {
-            appreciationChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'Projected Value',
-                        data: data.data,
-                        borderColor: '#ea580c',
-                        backgroundColor: 'rgba(234, 88, 12, 0.2)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#ea580c'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            title: {
-                                display: true,
-                                text: 'Value ($)',
-                                color: '#7c2d12'
-                            },
-                            ticks: {
-                                callback: function(value, index, values) {
-                                    return currencyFormatter.format(value);
-                                }
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Year',
-                                color: '#7c2d12'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: chartTitle,
-                            font: { size: 16 }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed.y !== null) {
-                                        label += currencyFormatter.format(context.parsed.y);
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleAppreciationCalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        const initialValue = parseFloat(document.getElementById('initial-value').value);
+        const rate = parseFloat(document.getElementById('appreciation-rate').value);
+        const years = parseInt(document.getElementById('years').value);
 
-            // 1. Calculation (Compounding)
-            const rateDecimal = i.appreciationRate / 100;
-            const finalValue = i.initialValue * Math.pow(1 + rateDecimal, i.years);
-            const totalGain = finalValue - i.initialValue;
-            
-            // 2. Chart Data Generation
-            const { labels, data } = generateChartData(i.initialValue, i.appreciationRate, i.years);
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // 3. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-brown mb-4">Projected Future Value Summary</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Final Value -->
-                    <div class="col-md-6 mb-3 border-end border-orange">
-                        <p class="result-label">PROJECTED VALUE AFTER ${i.years} YEARS</p>
-                        <p class="value-projection mb-0">
-                            ${currencyFormatter.format(finalValue)}
-                        </p>
-                    </div>
-
-                    <!-- Total Gain -->
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">TOTAL APPRECIATION GAIN</p>
-                        <p class="value-projection mb-0 text-brown" style="font-size: 2.5rem;">
-                            ${currencyFormatter.format(totalGain)}
-                        </p>
-                        <p class="text-muted small mt-2">Annual Rate: ${i.appreciationRate.toFixed(1)}%</p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <!-- Chart Canvas -->
-                <div class="chart-container">
-                    <canvas id="appreciationChart"></canvas>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-            // 4. Render the chart after the summary HTML is in the DOM
-            renderChart({ labels, data }, i.appreciationRate);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (isNaN(initialValue) || initialValue <= 0 || isNaN(rate) || isNaN(years) || years < 1) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please provide valid starting value, rate, and years.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('appreciation-form').addEventListener('submit', handleAppreciationCalc);
+        // Calculation
+        const r = rate / 100;
+        const labels = [];
+        const data = [];
+        for (let t = 0; t <= years; t++) {
+            labels.push(`Year ${t}`);
+            data.push(initialValue * Math.pow(1 + r, t));
+        }
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('appreciation-form').dispatchEvent(new Event('submit'));
-    };
+        const finalValue = data[data.length - 1];
+        const totalGain = finalValue - initialValue;
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('final-value-display').textContent = currency.format(finalValue);
+        document.getElementById('gain-text').textContent = `+${currency.format(totalGain)} Total appreciation over ${years} years`;
+
+        // Charting
+        const ctx = document.getElementById('appreciationChart').getContext('2d');
+        if (growthChart) growthChart.destroy();
+        
+        growthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Property Value',
+                    data: data,
+                    borderColor: '#ea580c',
+                    backgroundColor: 'rgba(234, 88, 12, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#ea580c'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        ticks: { callback: (val) => currency.format(val) },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

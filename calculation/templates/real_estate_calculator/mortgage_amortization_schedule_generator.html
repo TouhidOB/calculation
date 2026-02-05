@@ -1,382 +1,321 @@
 {% extends "base.html" %}
 
-{% block title %}Mortgage Amortization Schedule Generator{% endblock %}
+{% block title %}Advanced Mortgage Amortization Dashboard{% endblock %}
 
-{% block meta_description %}Generate a full amortization schedule for your mortgage loan, detailing principal, interest, and remaining balance for every monthly payment.{% endblock %}
-
-{% block meta_keywords %}amortization schedule, mortgage payment breakdown, loan table, principal and interest, finance, bootstrap{% endblock %}
+{% block meta_description %}A professional-grade mortgage amortization generator with date tracking, principal-to-interest ratios, and a detailed payment schedule.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling to match the original Blue Theme */
-    .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1200px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+        --dark-blue: #1e40af;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1d4ed8;
-    }
-    .form-control-custom:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
     }
 
-    .summary-card {
-        padding: 20px;
+    .result-display-box {
+        background-color: #eff6ff;
+        border: 2px solid #bfdbfe;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--dark-blue);
+        line-height: 1;
+    }
+
+    .stat-card-mini {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    /* Advanced Progress Bar */
+    .loan-bar-container {
+        height: 10px;
+        background: #e2e8f0;
         border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f7f9fd; /* Lighter Blue */
-        border-left: 5px solid #2563eb; /* Deep Blue accent */
+        overflow: hidden;
     }
+    .loan-bar-principal { background: #2563eb; height: 100%; transition: width 0.5s ease; }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for summary display */
-    .summary-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-    }
-    
-    .summary-value {
-        font-size: 1.8rem;
-        font-weight: 900;
-        color: #2563eb;
-    }
-
-    /* Amortization Table Styles */
-    .schedule-table-container {
-        max-height: 60vh; /* Limit height for scrollability */
+    /* Table Customization */
+    .schedule-wrapper {
+        max-height: 400px;
         overflow-y: auto;
-        border: 1px solid #bfdbfe;
-        border-radius: 8px;
-        margin-top: 20px;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
     }
 
-    .schedule-table-container table {
-        margin-bottom: 0;
-    }
-
-    .schedule-table-container thead th {
-        background-color: #1d4ed8;
-        color: white;
+    .table thead th {
+        background-color: #f8fafc;
         position: sticky;
         top: 0;
-        z-index: 10;
+        z-index: 5;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #64748b;
     }
-    
-    .schedule-table-container tbody tr:nth-child(even) {
-        background-color: #eff6ff; /* Alternating rows for readability */
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+        .col-lg-7 { width: 100% !important; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">📊 Mortgage Amortization Schedule</h1>
-    <p class="text-secondary mb-5 text-center">
-        Generate a month-by-month breakdown of your loan payments, showing how much goes toward principal and interest.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Amortization Pro Dashboard</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Visualize your path to homeownership with a detailed month-by-month breakdown of principal and interest.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <div class="input-section">
-            <form id="amortization-form" class="row g-3">
+    <div class="calc-card mx-auto" style="max-width: 1150px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-gear-fill me-2"></i>Loan Details</h5>
                 
-                <!-- Loan Amount (Principal) -->
-                <div class="col-md-4 input-box">
-                    <label for="principal-input">Loan Principal (P):</label>
-                    <div class="input-group">
-                        <span class="input-group-text fw-bold text-lg text-secondary">$</span>
-                        <input type="number" id="principal-input" 
-                               value="250000" 
-                               min="1"
-                               step="any"
-                               required
-                               placeholder="e.g., 250000"
-                               class="form-control form-control-custom">
+                <form id="amortization-form">
+                    <div class="mb-4">
+                        <label class="form-label text-primary">Loan Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="p-input" class="form-control" placeholder="e.g. 300000" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-4">
+                            <label class="form-label">Rate (%)</label>
+                            <input type="number" id="r-input" class="form-control" placeholder="6.5" step="0.01" required>
+                        </div>
+                        <div class="col-6 mb-4">
+                            <label class="form-label">Term (Yrs)</label>
+                            <input type="number" id="t-input" class="form-control" placeholder="30" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Start Date</label>
+                        <input type="month" id="date-input" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Generate Schedule <i class="bi bi-chevron-right ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear All</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-table display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Data Visualization</h4>
+                    <p>Enter loan parameters to generate your financial roadmap.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="result-display-box h-100 shadow-sm">
+                                <span class="form-label text-primary">Monthly P&I</span>
+                                <div class="result-value my-1" id="monthly-payment-display">$0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="stat-card-mini">
+                                        <div class="form-label" style="font-size: 0.7rem;">Total Interest</div>
+                                        <div class="fw-bold text-danger" id="total-interest-display">$0</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-card-mini">
+                                        <div class="form-label" style="font-size: 0.7rem;">Payoff Date</div>
+                                        <div class="fw-bold text-dark" id="payoff-date-display">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="stat-card-mini py-2">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="form-label mb-0" style="font-size: 0.7rem;">Principal vs Interest</span>
+                                            <span id="ratio-text" class="fw-bold" style="font-size: 0.7rem;">0% / 0%</span>
+                                        </div>
+                                        <div class="loan-bar-container">
+                                            <div id="ratio-bar" class="loan-bar-principal" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-list-columns-reverse me-2"></i>Full Amortization Table</h6>
+                        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary btn-no-print">
+                            <i class="bi bi-printer me-1"></i> Print
+                        </button>
+                    </div>
+
+                    <div class="schedule-wrapper">
+                        <table class="table table-hover table-sm align-middle mb-0" id="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Principal</th>
+                                    <th>Interest</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody class="small">
+                                </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <!-- Annual Interest Rate -->
-                <div class="col-md-4 input-box">
-                    <label for="rate-input">Annual Interest Rate (R):</label>
-                    <div class="input-group">
-                        <input type="number" id="rate-input" 
-                               value="6.5" 
-                               min="0.01"
-                               step="any"
-                               required
-                               placeholder="e.g., 6.5"
-                               class="form-control form-control-custom">
-                        <span class="input-group-text fw-bold text-lg text-secondary">%</span>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-light border-danger text-danger rounded-4 p-4">
+                        <i class="bi bi-exclamation-circle fs-1 mb-2"></i>
+                        <h5 class="fw-bold">Calculation Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-                
-                <!-- Loan Term (Years) -->
-                <div class="col-md-4 input-box">
-                    <label for="term-input">Loan Term in Years (N):</label>
-                    <input type="number" id="term-input" 
-                           value="30" 
-                           min="1"
-                           max="60"
-                           required
-                           placeholder="e.g., 30"
-                           class="form-control form-control-custom">
-                </div>
-                
-                <div class="col-12 mt-4">
-                    <button type="submit"
-                        class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                    Generate Schedule
-                </button>
-                </div>
-            </form>
-        </div>
 
-        <div id="result-container" class="result-section">
-            <!-- Amortization Summary will be placed here -->
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
-            
-            <!-- Amortization Schedule Table will be placed here -->
-            <div id="schedule-output" class="d-none">
-                <h4 class="h5 text-dark fw-bold mb-3 text-center">Detailed Payment Schedule</h4>
-                <div class="schedule-table-container">
-                    <table class="table table-sm table-striped table-hover align-middle" id="amortization-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Payment</th>
-                                <th scope="col">Interest</th>
-                                <th scope="col">Principal</th>
-                                <th scope="col">Remaining Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Schedule rows go here -->
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Calculates the monthly mortgage payment (P&I) using the amortization formula.
-     */
-    function calculateMonthlyPI(P, R_annual, N_years) {
-        const i = (R_annual / 100) / 12; 
-        const n = N_years * 12;
+    const form = document.getElementById('amortization-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
 
-        if (i === 0) return P / n;
-
-        const i_plus_1_pow_n = Math.pow(1 + i, n);
-        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
-    }
-
-    /**
-     * Formats a number as USD currency.
-     */
     const formatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
     });
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        const scheduleDiv = document.getElementById('schedule-output');
-        
-        // Reset classes
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        scheduleDiv.classList.add('d-none');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-            scheduleDiv.classList.remove('d-none');
-        }
-    }
-
-    /**
-     * Generates and displays the amortization schedule table.
-     */
-    function generateAmortizationSchedule(P, R_annual, N_years) {
-        const monthlyPI = calculateMonthlyPI(P, R_annual, N_years);
-        const totalMonths = N_years * 12;
-        const monthlyRateDecimal = (R_annual / 100) / 12;
-
-        let balance = P;
-        let totalInterestPaid = 0;
-        let totalPrincipalPaid = 0;
-        let tableHtml = '';
-
-        for (let month = 1; month <= totalMonths; month++) {
-            if (balance <= 0) break;
-
-            // 1. Calculate Interest for this month
-            let interestPayment = balance * monthlyRateDecimal;
-            
-            // 2. Calculate Principal for this month
-            let principalPayment = monthlyPI - interestPayment;
-            
-            // Handle last payment being slightly off due to rounding
-            if (month === totalMonths) {
-                principalPayment = balance; // Last payment covers the remaining balance
-                monthlyPI = interestPayment + principalPayment; // Adjust total payment for the last month
-            }
-            
-            // 3. Update remaining balance
-            balance -= principalPayment;
-            
-            // Ensure balance doesn't go negative due to floating point math
-            if (balance < 0) {
-                principalPayment += balance; // Correct principal
-                balance = 0;
-            }
-
-            // 4. Update totals
-            totalInterestPaid += interestPayment;
-            totalPrincipalPaid += principalPayment;
-
-            // 5. Generate table row
-            tableHtml += `
-                <tr>
-                    <td>${month}</td>
-                    <td>${formatter.format(monthlyPI)}</td>
-                    <td>${formatter.format(interestPayment)}</td>
-                    <td>${formatter.format(principalPayment)}</td>
-                    <td>${formatter.format(balance)}</td>
-                </tr>
-            `;
-            
-            // If the balance hits zero early, stop the loop
-            if (balance === 0) break;
-        }
-        
-        // 6. Final Summary Calculations
-        const finalTotalPaid = P + totalInterestPaid;
-        
-        // 7. Update Summary Card
-        const summaryHtml = `
-            <div class="row text-center">
-                <div class="col-md-4 mb-3">
-                    <p class="summary-label">Monthly P&I Payment:</p>
-                    <p class="summary-value">${formatter.format(calculateMonthlyPI(P, R_annual, N_years))}</p>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <p class="summary-label">Total Interest Paid:</p>
-                    <p class="summary-value text-danger">${formatter.format(totalInterestPaid)}</p>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <p class="summary-label">Total Amount Repaid:</p>
-                    <p class="summary-value">${formatter.format(finalTotalPaid)}</p>
-                </div>
-            </div>
-        `;
-        
-        // 8. Display Results
-        document.getElementById('amortization-table').getElementsByTagName('tbody')[0].innerHTML = tableHtml;
-        displayResult(false, summaryHtml);
-    }
-
-    /**
-     * Handles form submission and triggers the schedule generation.
-     */
-    function handleAmortization(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const P = parseFloat(document.getElementById('principal-input').value);
-        const R = parseFloat(document.getElementById('rate-input').value);
-        const N = parseFloat(document.getElementById('term-input').value);
+        const P = parseFloat(document.getElementById('p-input').value);
+        const annualR = parseFloat(document.getElementById('r-input').value);
+        const years = parseFloat(document.getElementById('t-input').value);
+        const startVal = document.getElementById('date-input').value;
 
-        // Input Validation
-        if (isNaN(P) || isNaN(R) || isNaN(N) || P <= 0 || R < 0 || N <= 0) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid positive numbers for Principal, Annual Rate (R &ge; 0), and Term.</p>`;
-            displayResult(true, htmlContent);
+        // Reset
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(P) || isNaN(annualR) || isNaN(years) || !startVal) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please complete all fields with valid numbers.";
             return;
         }
+
+        const monthlyR = (annualR / 100) / 12;
+        const totalMonths = years * 12;
         
-        // Check for ridiculously long terms that would crash the browser with too many rows
-        if (N * 12 > 720) { // Max 60 years
-            const htmlContent = `<p class="fw-bold text-center">Term Too Long</p><p class="text-center">Please enter a loan term of 60 years or less to generate the schedule.</p>`;
-            displayResult(true, htmlContent);
-            return;
+        // Formula: M = P [ i(1 + i)^n ] / [ (1 + i)^n – 1]
+        const monthlyPayment = P * (monthlyR * Math.pow(1 + monthlyR, totalMonths)) / (Math.pow(1 + monthlyR, totalMonths) - 1);
+
+        let balance = P;
+        let totalInterest = 0;
+        let rowsHtml = '';
+        let currentDate = new Date(startVal + "-02"); // Day 02 to avoid timezone jump
+
+        for (let i = 1; i <= totalMonths; i++) {
+            let interestM = balance * monthlyR;
+            let principalM = monthlyPayment - interestM;
+            
+            if (i === totalMonths) principalM = balance; // Rounding correction
+
+            balance -= principalM;
+            totalInterest += interestM;
+
+            const dateStr = currentDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            
+            rowsHtml += `<tr>
+                <td class="fw-bold">${dateStr}</td>
+                <td>${formatter.format(principalM)}</td>
+                <td class="text-danger">${formatter.format(interestM)}</td>
+                <td class="text-dark fw-bold">${formatter.format(Math.max(0, balance))}</td>
+            </tr>`;
+
+            currentDate.setMonth(currentDate.getMonth() + 1);
         }
 
-        try {
-            generateAmortizationSchedule(P, R, N);
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the schedule generation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
+        // UI Injection
+        resultsUi.classList.remove('d-none');
+        document.getElementById('monthly-payment-display').textContent = formatter.format(monthlyPayment);
+        document.getElementById('total-interest-display').textContent = formatter.format(totalInterest);
+        
+        // Decrement date by 1 month for the payoff date display
+        let payoffDate = new Date(currentDate);
+        payoffDate.setMonth(payoffDate.getMonth() - 1);
+        document.getElementById('payoff-date-display').textContent = payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
-    // Attach handler to the form
-    document.getElementById('amortization-form').addEventListener('submit', handleAmortization);
+        // Ratio Bar
+        const principalPct = (P / (P + totalInterest)) * 100;
+        document.getElementById('ratio-bar').style.width = principalPct + "%";
+        document.getElementById('ratio-text').innerText = `${principalPct.toFixed(0)}% P / ${(100-principalPct).toFixed(0)}% I`;
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('amortization-form').dispatchEvent(new Event('submit'));
-    };
+        document.querySelector('#schedule-table tbody').innerHTML = rowsHtml;
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

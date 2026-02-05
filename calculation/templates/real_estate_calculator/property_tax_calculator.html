@@ -2,327 +2,221 @@
 
 {% block title %}Property Tax Calculator{% endblock %}
 
-{% block meta_description %}Estimate your annual property tax based on the property's assessed value and local millage rate.{% endblock %}
-
-{% block meta_keywords %}property tax calculator, millage rate, assessed value, annual tax estimation, real estate finance{% endblock %}
+{% block meta_description %}Estimate your annual property tax obligation based on assessed value and local millage rates.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a Professional Green/Grey Theme (Taxes/Official) */
-    .solver-wrapper {
-        background: #f8fafc; /* Very light blue/grey */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 800px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #d1fae5; /* Light Mint Green */
-        border: 2px solid #047857; /* Dark Green accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #064e3b; /* Very Dark Green */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --tax-green: #065f46;
+        --tax-mint: #f0fdf4;
+        --tax-border: #86efac;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #6ee7b7; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--tax-mint);
+        border-right: 1px solid var(--tax-border);
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #047857;
-    }
-    .form-control-custom:focus {
-        border-color: #047857;
-        box-shadow: 0 0 0 0.25rem rgba(4, 120, 87, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--tax-green);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f0fdf4; /* Pale Green/White */
-        border-left: 5px solid #047857; /* Dark Green accent */
+    .metric-hero {
+        padding: 2.5rem;
+        border-radius: 1rem;
+        background: #ffffff;
+        text-align: center;
+        border: 2px solid var(--tax-green);
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Tax display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #064e3b; /* Dark Green */
-    }
-    
-    .tax-value {
+    .value-hero {
         font-size: 3.5rem;
-        font-weight: 900;
-        color: #047857; /* Bright Green */
+        font-weight: 800;
+        color: var(--tax-green);
+        line-height: 1;
     }
-    
-    .text-dark-green { color: #064e3b !important; }
-    .text-success { color: #10b981 !important; }
-    .text-warning { color: #facc15 !important; }
 
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .step-badge {
+        width: 24px;
+        height: 24px;
+        background: var(--tax-green);
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        margin-right: 8px;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">📜 Annual Property Tax Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Estimate your annual property tax obligation based on the **Assessed Value** and the local **Millage Rate**.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-bank text-success me-2"></i>Property Tax Forecaster</h1>
+        <p class="text-muted mx-auto" style="max-width: 600px;">
+            Calculate your estimated tax burden by applying local millage rates to your property's taxable assessed value.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="tax-form" class="row g-4 justify-content-center">
-            
-            <!-- Input Section -->
-            <div class="col-lg-10">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-dark-green p-2 rounded mb-4">Input Property Tax Data</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="tax-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Assessment Details</h6>
                     
-                    <div class="input-box mb-4">
-                        <label for="assessed-value">Property Assessed Value:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="assessed-value" 
-                               value="350000" 
-                               min="1000"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-4">
+                        <label class="form-label">Assessed Value</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="assessed-value" class="form-control border-start-0 ps-0" placeholder="e.g. 250000" required>
                         </div>
-                        <small class="text-muted">The value determined by the local assessor for tax purposes (often less than market value).</small>
-                    </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="millage-rate">Millage Rate (Mills per $1,000):</label>
-                        <div class="input-group">
-                            <input type="number" id="millage-rate" 
-                               value="15" 
-                               min="0" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                             <span class="input-group-text">mills</span>
-                        </div>
-                        <small class="text-muted">Local tax rate, typically expressed as dollars per $1,000 of assessed value.</small>
-                    </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="exemption">Tax Exemptions/Deductions ($):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="exemption" 
-                               value="0" 
-                               min="0" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">Homeowner or homestead exemptions applied to the assessed value.</small>
+                        <small class="x-small text-muted">The value assigned by your local tax assessor.</small>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">Millage Rate (Mills)</label>
+                        <div class="input-group input-group-lg">
+                            <input type="number" step="0.01" id="millage-rate" class="form-control border-end-0" placeholder="e.g. 12.5" required>
+                            <span class="input-group-text bg-white border-start-0 text-muted">mills</span>
+                        </div>
+                        <small class="x-small text-muted">Amount per $1,000 of assessed value.</small>
+                    </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">Exemptions / Deductions</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="exemption" class="form-control border-start-0 ps-0" placeholder="e.g. 5000">
+                        </div>
+                        <small class="x-small text-muted">Homestead or senior exemptions.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm mb-3">
+                        Calculate Annual Tax <i class="bi bi-calculator ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 text-decoration-none text-muted small">Clear All Fields</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white d-flex flex-column justify-content-center">
+                
+                <div id="placeholder-ui" class="placeholder-state">
+                    <i class="bi bi-clipboard-check display-1 mb-3 opacity-25 text-success"></i>
+                    <h4 class="fw-bold text-dark">Ready for Calculation</h4>
+                    <p>Provide the assessed value and millage rate from your local county to generate an estimate.</p>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg bg-success border-0">
-                Calculate Annual Tax
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                <div id="results-ui" class="d-none">
+                    <span class="form-label d-block text-center mb-3">Estimated Annual Property Tax</span>
+                    <div class="metric-hero shadow-sm">
+                        <div class="value-hero" id="annual-tax-display">$0.00</div>
+                        <div id="monthly-tax-display" class="fw-bold mt-2 text-muted">($0.00 per month)</div>
+                    </div>
+
+                    
+
+                    <div class="mt-5">
+                        <h6 class="fw-bold text-dark mb-3 text-uppercase small border-bottom pb-2">Technical Breakdown</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2 d-flex justify-content-between">
+                                <span><span class="step-badge">1</span> Taxable Value</span>
+                                <span id="taxable-val" class="fw-bold">--</span>
+                            </li>
+                            <li class="mb-2 d-flex justify-content-between">
+                                <span><span class="step-badge">2</span> Effective Tax Rate</span>
+                                <span id="effective-rate" class="fw-bold">--</span>
+                            </li>
+                            <li class="mb-0 d-flex justify-content-between">
+                                <span><span class="step-badge">3</span> Annual Obligation</span>
+                                <span id="total-tax" class="fw-bold text-success">--</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="p-3 rounded-3 bg-light border mt-4">
+                        <p class="x-small text-muted mb-0">
+                            <i class="bi bi-info-circle me-1"></i> <strong>Note:</strong> Property taxes vary by municipality and may include additional local assessments or school district levies not captured in the base millage rate.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (with cents for accuracy).
-     */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
+    const form = document.getElementById('tax-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
 
-    /**
-     * Gathers all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            assessedValue: parseFloat(document.getElementById('assessed-value').value),
-            millageRate: parseFloat(document.getElementById('millage-rate').value),
-            exemption: parseFloat(document.getElementById('exemption').value),
-        };
-        
-        for (const key in inputs) {
-            if (isNaN(inputs[key])) {
-                throw new Error(`Invalid Input: Please ensure all fields are valid numbers.`);
-            }
-        }
-        return inputs;
-    }
+    const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleTaxCalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        const assessed = parseFloat(document.getElementById('assessed-value').value);
+        const millage = parseFloat(document.getElementById('millage-rate').value);
+        const exemption = parseFloat(document.getElementById('exemption').value || 0);
 
-            // 1. Validation
-            if (i.assessedValue <= 0) {
-                throw new Error("Assessed Value must be greater than zero.");
-            }
-            if (i.millageRate < 0 || i.exemption < 0) {
-                 throw new Error("Millage Rate and Exemptions cannot be negative.");
-            }
+        if (isNaN(assessed) || assessed <= 0) return;
 
-            // 2. Calculation Steps
-            
-            // Step 1: Calculate Taxable Value (Assessed Value - Exemption)
-            const taxableValue = Math.max(0, i.assessedValue - i.exemption);
-            
-            // Step 2: Calculate Annual Tax
-            // Formula: (Taxable Value / 1000) * Millage Rate
-            const annualTax = (taxableValue / 1000) * i.millageRate;
+        // Logic
+        const taxableValue = Math.max(0, assessed - exemption);
+        const annualTax = (taxableValue / 1000) * millage;
+        const monthlyTax = annualTax / 12;
+        const effectiveRate = (millage / 10).toFixed(3); // Millage to percentage
 
-            // 3. Determine Monthly Tax
-            const monthlyTax = annualTax / 12;
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.remove('d-none');
 
-            // 4. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-green mb-4">Estimated Annual Property Tax</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Annual Tax -->
-                    <div class="col-md-6 mb-3 border-end border-success">
-                        <p class="result-label">ESTIMATED ANNUAL TAX</p>
-                        <p class="tax-value mb-0 text-success">
-                            ${currencyFormatterCents.format(annualTax)}
-                        </p>
-                    </div>
+        // Main Display
+        document.getElementById('annual-tax-display').textContent = currency.format(annualTax);
+        document.getElementById('monthly-tax-display').textContent = `(${currency.format(monthlyTax)} per month)`;
 
-                    <!-- Monthly Tax -->
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">ESTIMATED MONTHLY TAX</p>
-                        <p class="tax-value mb-0 text-dark-green" style="font-size: 2.5rem;">
-                            ${currencyFormatterCents.format(monthlyTax)}
-                        </p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark-green mb-3">Calculation Breakdown</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-9">
-                        <table class="table table-sm table-borderless">
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold">1. Property Assessed Value</td>
-                                    <td class="text-end">${currencyFormatterCents.format(i.assessedValue)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">2. Minus Exemptions</td>
-                                    <td class="text-end text-danger">(${currencyFormatterCents.format(i.exemption)})</td>
-                                </tr>
-                                <tr class="table-warning">
-                                    <td class="fw-bolder fs-6">Taxable Value</td>
-                                    <td class="text-end fw-bolder fs-6">${currencyFormatterCents.format(taxableValue)}</td>
-                                </tr>
-                                <tr>
-                                    <td>3. Multiplied by Millage Rate</td>
-                                    <td class="text-end">${i.millageRate.toFixed(2)} mills</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4 p-3 bg-light rounded">
-                    <p class="text-muted fw-bold mb-0">The tax rate is equivalent to ${(i.millageRate / 1000).toFixed(4)}% of the taxable value.</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
+        // Breakdown Display
+        document.getElementById('taxable-val').textContent = currency.format(taxableValue);
+        document.getElementById('effective-rate').textContent = effectiveRate + "%";
+        document.getElementById('total-tax').textContent = currency.format(annualTax);
+    });
 
-    // Attach handler to the form
-    document.getElementById('tax-form').addEventListener('submit', handleTaxCalc);
-
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('tax-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+    });
 </script>
 {% endblock %}

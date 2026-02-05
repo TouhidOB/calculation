@@ -2,459 +2,310 @@
 
 {% block title %}Annual Property Operating Data (APOD) Calculator{% endblock %}
 
-{% block meta_description %}Calculate Gross Operating Income (GOI), Net Operating Income (NOI), and Annual Cash Flow for an investment property using the APOD format.{% endblock %}
-
-{% block meta_keywords %}APOD calculator, net operating income, NOI, cash flow, real estate investment, property analysis, gross operating income{% endblock %}
+{% block meta_description %}Calculate Gross Operating Income (GOI), Net Operating Income (NOI), and Annual Cash Flow for an investment property using the standard APOD format.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKyc/iM85rEkg9nO8g19z0c4n1qJkI15d9yI5M9I4KjD4+gN2V01GjJ8F4/1043K2b+I7Sg/q2N5oQ2A==" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Investment Blue" Theme */
     :root {
-        --main-blue: #1e3a8a; /* Dark Blue */
-        --light-blue: #eff6ff; /* Pale Blue */
-        --dark-text: #172554;   /* Very Dark Blue text */
-        --accent-gold: #fcd34d; /* Yellow/Gold Accent */
-    }
-    
-    .solver-wrapper {
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1200px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: var(--light-blue);
-        border: 2px solid var(--main-blue);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--dark-text);
-        display: block;
-        margin-bottom: 5px;
+        --apod-blue: #1e3a8a;
+        --apod-light: #f0f7ff;
+        --apod-border: #93c5fd;
+        --apod-accent: #f59e0b;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--apod-border);
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--apod-light);
+        border-right: 1px solid var(--apod-border);
+    }
+
+    .form-label {
         font-weight: 700;
-        color: var(--dark-text);
-    }
-    .form-control-custom:focus {
-        border-color: var(--main-blue);
-        box-shadow: 0 0 0 0.25rem rgba(30, 58, 138, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--apod-blue);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f7fbff; /* Very Light Blue */
-        border-left: 5px solid var(--main-blue);
+    .metric-hero {
+        background-color: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        transition: transform 0.2s;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
+    .metric-hero:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
-    
-    /* Styles for Metrics display */
-    .metric-label {
-        font-size: 1rem;
+
+    .value-hero {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--apod-blue);
+        line-height: 1.2;
+    }
+
+    .table-apod {
+        font-size: 0.9rem;
+    }
+
+    .table-apod tr td:last-child {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
         font-weight: 600;
-        color: var(--dark-text);
-    }
-    
-    .metric-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: var(--main-blue);
-        line-height: 1;
+        text-align: right;
     }
 
-    .table-apod td, .table-apod th {
-        vertical-align: middle;
-        padding: 10px;
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
     }
 
-    .total-row td {
-        background-color: var(--light-blue) !important;
-        font-weight: 700;
-        border-top: 2px solid var(--main-blue);
-    }
-    .noi-row td, .cf-row td {
-        background-color: #fcd34d50 !important;
-        font-weight: 900;
-        font-size: 1.1rem;
+    .header-pill {
+        background-color: var(--apod-blue);
+        color: white;
+        padding: 2px 12px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        display: inline-block;
+        margin-bottom: 1rem;
     }
 
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">📈 Annual Property Operating Data (APOD)</h1>
-    <p class="text-secondary mb-5 text-center">
-        Analyze the financial performance of your investment property to determine NOI and Cash Flow.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-building-up text-primary me-2"></i>APOD Investment Modeler</h1>
+        <p class="text-muted mx-auto" style="max-width: 700px;">
+            The Annual Property Operating Data (APOD) sheet is the industry standard for commercial property analysis. 
+            Identify your <strong>Net Operating Income (NOI)</strong> and final <strong>Cash Flow</strong>.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="apod-form" class="row g-4">
-            
-            <!-- Part 1: Income and Property Data -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-text p-2 rounded mb-3">1. Annual Income & Vacancy</h4>
+    <div class="calc-card mx-auto" style="max-width: 1200px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="apod-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small"><i class="bi bi-cash-stack me-2"></i>Income Profile</h6>
                     
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="units">Number of Units:</label>
-                            <input type="number" id="units" value="4" min="1" step="1" required class="form-control form-control-custom">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Total Units</label>
+                            <input type="number" id="units" class="form-control" placeholder="e.g. 4" required>
                         </div>
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="monthly-rent">Monthly Rent Per Unit:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="monthly-rent" value="1500" min="100" step="100" required class="form-control form-control-custom">
-                            </div>
+                        <div class="col-6">
+                            <label class="form-label">Avg. Monthly Rent</label>
+                            <input type="number" id="monthly-rent" class="form-control" placeholder="e.g. 1500" required>
                         </div>
                     </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="vacancy-rate">Vacancy & Credit Loss Rate (%):</label>
+
+                    <div class="mb-4">
+                        <label class="form-label">Vacancy & Credit Loss (%)</label>
                         <div class="input-group">
-                            <input type="number" id="vacancy-rate" value="5" min="0" max="100" step="0.5" required class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
+                            <input type="number" step="0.1" id="vacancy-rate" class="form-control" placeholder="5">
+                            <span class="input-group-text bg-white">%</span>
                         </div>
-                        <small class="text-muted">Industry standard for loss of rent due to vacancy/unpaid rent.</small>
                     </div>
 
-                    <h4 class="h5 fw-bold text-center text-dark-text p-2 rounded mb-3 mt-5">3. Debt Service</h4>
-                    <div class="input-box mb-4">
-                        <label for="annual-debt">Total Annual Debt Service (Mortgage Payments):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="annual-debt" value="30000" min="0" step="100" required class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">Principal and Interest paid annually.</small>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Part 2: Annual Expenses -->
-            <div class="col-lg-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-text p-2 rounded mb-3">2. Annual Operating Expenses</h4>
+                    <h6 class="fw-bold text-dark mb-3 text-uppercase small pt-3 border-top"><i class="bi bi-gear-wide-connected me-2"></i>OpEx & Debt</h6>
                     
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="taxes">Property Taxes:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="taxes" value="5000" min="0" step="100" required class="form-control form-control-custom">
+                    <div class="mb-2">
+                        <label class="form-label">Total Annual OpEx</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="total-opex" class="form-control" placeholder="Taxes, Ins, Repairs..." required>
+                        </div>
+                        <small class="x-small text-muted">Sum of all annual operating expenses.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Annual Debt Service</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="annual-debt" class="form-control" placeholder="Mortgage P&I" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" style="background-color: var(--apod-blue); border: none;">
+                        Generate APOD Report <i class="bi bi-file-earmark-bar-graph ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Reset Analysis</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-clipboard2-pulse display-1 mb-3 opacity-25" style="color: var(--apod-blue);"></i>
+                    <h4 class="fw-bold text-dark">Awaiting Property Financials</h4>
+                    <p>Enter the unit count, rental income, and expense load to visualize the asset's operating performance.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="row g-3 mb-5">
+                        <div class="col-md-4">
+                            <div class="metric-hero">
+                                <span class="form-label text-muted">Net Operating Income</span>
+                                <div class="value-hero" id="noi-display">$0</div>
                             </div>
                         </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="insurance">Property Insurance:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="insurance" value="2500" min="0" step="100" required class="form-control form-control-custom">
+                        <div class="col-md-4">
+                            <div class="metric-hero border-warning">
+                                <span class="form-label text-muted">Annual Cash Flow</span>
+                                <div class="value-hero text-warning" id="cf-display">$0</div>
                             </div>
                         </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="utilities">Utilities (Owner Paid):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="utilities" value="1200" min="0" step="100" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="repairs">Repairs & Maintenance:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="repairs" value="3000" min="0" step="100" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="management-fee">Management Fee (% of GOI):</label>
-                            <div class="input-group">
-                                <input type="number" id="management-fee" value="8" min="0" max="50" step="1" required class="form-control form-control-custom">
-                                <span class="input-group-text">%</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="other-expenses">Other Expenses (HOA, etc.):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="other-expenses" value="500" min="0" step="100" required class="form-control form-control-custom">
+                        <div class="col-md-4">
+                            <div class="metric-hero">
+                                <span class="form-label text-muted">Expense Ratio</span>
+                                <div class="value-hero" id="ratio-display">0%</div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: var(--main-blue); border: none;">
-                Generate APOD Report
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                    
+
+                    <div class="mt-5">
+                        <div class="header-pill">Standard APOD Schedule</div>
+                        <table class="table table-hover table-apod border">
+                            <tbody>
+                                <tr>
+                                    <td>Gross Scheduled Income (GSI)</td>
+                                    <td id="gsi-table">$0</td>
+                                </tr>
+                                <tr>
+                                    <td>Less: Vacancy & Credit Loss</td>
+                                    <td id="vcl-table" class="text-danger">($0)</td>
+                                </tr>
+                                <tr class="table-light fw-bold">
+                                    <td>Effective Gross Income (EGI)</td>
+                                    <td id="egi-table">$0</td>
+                                </tr>
+                                <tr>
+                                    <td>Less: Total Operating Expenses</td>
+                                    <td id="opex-table" class="text-danger">($0)</td>
+                                </tr>
+                                <tr class="table-primary fw-bold" style="background-color: #dbeafe;">
+                                    <td>NET OPERATING INCOME (NOI)</td>
+                                    <td id="noi-table">$0</td>
+                                </tr>
+                                <tr>
+                                    <td>Less: Annual Debt Service</td>
+                                    <td id="debt-table" class="text-danger">($0)</td>
+                                </tr>
+                                <tr class="table-warning fw-bold">
+                                    <td>CASH FLOW BEFORE TAXES</td>
+                                    <td id="cf-table">$0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="p-3 rounded-4 bg-light border shadow-sm mt-4">
+                        <h6 class="fw-bold text-dark mb-1 small"><i class="bi bi-info-square-fill me-2 text-primary"></i>Note on Operating Expenses</h6>
+                        <p class="x-small text-muted mb-0">
+                            Operating expenses include property taxes, insurance, utilities, and maintenance. They <strong>do not</strong> include mortgage payments (debt service) or capital expenditures (CapEx).
+                        </p>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-octagon fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0 small"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents for clean display).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('apod-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0
     });
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Gathers and validates all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            units: parseInt(document.getElementById('units').value),
-            monthlyRent: parseFloat(document.getElementById('monthly-rent').value),
-            vacancyRate: parseFloat(document.getElementById('vacancy-rate').value) / 100, // Convert to decimal
-            annualDebt: parseFloat(document.getElementById('annual-debt').value),
-            taxes: parseFloat(document.getElementById('taxes').value),
-            insurance: parseFloat(document.getElementById('insurance').value),
-            utilities: parseFloat(document.getElementById('utilities').value),
-            repairs: parseFloat(document.getElementById('repairs').value),
-            managementFeeRate: parseFloat(document.getElementById('management-fee').value) / 100, // Convert to decimal
-            otherExpenses: parseFloat(document.getElementById('other-expenses').value),
-        };
-        
-        // Basic validation
-        for (const key in inputs) {
-            if (isNaN(inputs[key]) || (key !== 'vacancyRate' && inputs[key] < 0)) {
-                throw new Error(`Invalid input for ${key}. Please check all fields.`);
-            }
-        }
-
-        return inputs;
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleApodCalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
-            let breakdown = {};
+        const units = parseInt(document.getElementById('units').value);
+        const rent = parseFloat(document.getElementById('monthly-rent').value);
+        const vacancyPct = parseFloat(document.getElementById('vacancy-rate').value || 0) / 100;
+        const opex = parseFloat(document.getElementById('total-opex').value);
+        const debt = parseFloat(document.getElementById('annual-debt').value);
 
-            // --- 1. GROSS SCHEDULED INCOME (GSI) ---
-            const gsi = i.units * i.monthlyRent * 12;
-            breakdown.gsi = gsi;
-            
-            // --- 2. VACANCY & CREDIT LOSS (VCL) ---
-            const vcl = gsi * i.vacancyRate;
-            breakdown.vcl = vcl;
-            
-            // --- 3. GROSS OPERATING INCOME (GOI) ---
-            const goi = gsi - vcl;
-            breakdown.goi = goi;
-            
-            // --- 4. OPERATING EXPENSES ---
-            // Calculate Management Fee based on GOI
-            const managementFee = goi * i.managementFeeRate;
-            
-            const totalOperatingExpenses = i.taxes + i.insurance + i.utilities + i.repairs + managementFee + i.otherExpenses;
-            breakdown.expenses = {
-                taxes: i.taxes,
-                insurance: i.insurance,
-                utilities: i.utilities,
-                repairs: i.repairs,
-                managementFee: managementFee,
-                other: i.otherExpenses,
-                total: totalOperatingExpenses
-            };
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // --- 5. NET OPERATING INCOME (NOI) ---
-            const noi = goi - totalOperatingExpenses;
-            breakdown.noi = noi;
-
-            // --- 6. ANNUAL CASH FLOW (CF) ---
-            const annualCashFlow = noi - i.annualDebt;
-            breakdown.cashFlow = annualCashFlow;
-
-
-            // --- Build Summary HTML ---
-            
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-text mb-4">Annual Property Operating Data (APOD) Report</h4>
-                
-                <div class="row text-center mb-4">
-                    
-                    <div class="col-md-4 mb-3">
-                        <p class="metric-label mb-0">NET OPERATING INCOME (NOI)</p>
-                        <p class="metric-value mb-0 text-success">
-                            ${currencyFormatter.format(breakdown.noi)}
-                        </p>
-                    </div>
-
-                    <div class="col-md-4 mb-3 border-start border-end">
-                        <p class="metric-label mb-0">ANNUAL CASH FLOW</p>
-                        <p class="metric-value mb-0 ${breakdown.cashFlow >= 0 ? 'text-success' : 'text-danger'}">
-                            ${currencyFormatter.format(breakdown.cashFlow)}
-                        </p>
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <p class="metric-label mb-0">GROSS OPERATING INCOME (GOI)</p>
-                        <p class="metric-value mb-0" style="color: var(--accent-gold);">
-                            ${currencyFormatter.format(breakdown.goi)}
-                        </p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark-text mb-3">Full APOD Breakdown</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-10">
-                        <table class="table table-sm table-borderless table-apod">
-                            <tbody>
-                                <!-- Income Section -->
-                                <tr class="fw-bold">
-                                    <td>GROSS SCHEDULED INCOME (GSI)</td>
-                                    <td class="text-end" style="color: #059669;">${currencyFormatter.format(breakdown.gsi)}</td>
-                                </tr>
-                                <tr>
-                                    <td>- Vacancy & Credit Loss (${(i.vacancyRate * 100).toFixed(1)}%)</td>
-                                    <td class="text-end text-danger">${currencyFormatter.format(breakdown.vcl)}</td>
-                                </tr>
-                                <tr class="total-row">
-                                    <td>GROSS OPERATING INCOME (GOI)</td>
-                                    <td class="text-end text-dark-text">${currencyFormatter.format(breakdown.goi)}</td>
-                                </tr>
-                                <!-- Expense Section -->
-                                <tr>
-                                    <td colspan="2" class="pt-4 fw-bold">OPERATING EXPENSES:</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Property Taxes</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.taxes)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Property Insurance</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.insurance)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Utilities (Owner Paid)</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.utilities)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Repairs & Maintenance</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.repairs)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Management Fee (${(i.managementFeeRate * 100).toFixed(1)}% of GOI)</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.managementFee)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-4">- Other Expenses</td>
-                                    <td class="text-end">${currencyFormatter.format(breakdown.expenses.other)}</td>
-                                </tr>
-                                <tr class="total-row">
-                                    <td>TOTAL OPERATING EXPENSES</td>
-                                    <td class="text-end text-dark-text">${currencyFormatter.format(breakdown.expenses.total)}</td>
-                                </tr>
-                                <!-- NOI and Cash Flow -->
-                                <tr class="noi-row">
-                                    <td>NET OPERATING INCOME (NOI)</td>
-                                    <td class="text-end text-dark-text">${currencyFormatter.format(breakdown.noi)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="pt-4 fw-bold">- Annual Debt Service (Mortgage P&I)</td>
-                                    <td class="text-end pt-4 text-danger">${currencyFormatter.format(i.annualDebt)}</td>
-                                </tr>
-                                <tr class="cf-row">
-                                    <td>ANNUAL CASH FLOW</td>
-                                    <td class="text-end ${breakdown.cashFlow >= 0 ? 'text-success' : 'text-danger'}">${currencyFormatter.format(breakdown.cashFlow)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (isNaN(units) || units <= 0 || isNaN(rent) || rent <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please provide valid unit counts and rental rates.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('apod-form').addEventListener('submit', handleApodCalc);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('apod-form').dispatchEvent(new Event('submit'));
-    };
+        // APOD Logic
+        const gsi = units * rent * 12;
+        const vcl = gsi * vacancyPct;
+        const egi = gsi - vcl;
+        const noi = egi - opex;
+        const cf = noi - debt;
+        const ratio = (opex / egi) * 100;
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        
+        // Hero Metrics
+        document.getElementById('noi-display').textContent = currency.format(noi);
+        document.getElementById('cf-display').textContent = currency.format(cf);
+        document.getElementById('ratio-display').textContent = ratio.toFixed(1) + "%";
+
+        // Table Breakdown
+        document.getElementById('gsi-table').textContent = currency.format(gsi);
+        document.getElementById('vcl-table').textContent = "(" + currency.format(vcl) + ")";
+        document.getElementById('egi-table').textContent = currency.format(egi);
+        document.getElementById('opex-table').textContent = "(" + currency.format(opex) + ")";
+        document.getElementById('noi-table').textContent = currency.format(noi);
+        document.getElementById('debt-table').textContent = "(" + currency.format(debt) + ")";
+        document.getElementById('cf-table').textContent = currency.format(cf);
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

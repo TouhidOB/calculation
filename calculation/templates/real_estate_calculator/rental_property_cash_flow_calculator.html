@@ -4,449 +4,317 @@
 
 {% block meta_description %}Calculate the cash flow, Net Operating Income (NOI), and Cash-on-Cash (CoC) Return for a rental property to analyze its investment potential.{% endblock %}
 
-{% block meta_keywords %}cash flow calculator, rental property, net operating income, noi, cash on cash return, coc, real estate investment, investment calculator{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Financial" Green Theme */
-    .solver-wrapper {
-        background: #f8fff8; /* Very light green/white */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1200px; /* Wider for this complex form */
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dcfce7; /* Light Mint Green */
-        border: 2px solid #10b981; /* Green accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #065f46; /* Dark Green */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 16, 185, 129;
+        --emerald-primary: #10b981;
+        --emerald-dark: #065f46;
+        --slate-bg: #f8fafc;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #6ee7b7; 
-        border-radius: 8px;
+    body {
+        background-color: var(--slate-bg);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f0fdf4;
+        border-right: 1px solid #dcfce7;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #059669;
-    }
-    .form-control-custom:focus {
-        border-color: #10b981;
-        box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #065f46;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #ecfdf5; /* Very Light Green */
-        border-left: 5px solid #059669; /* Darker Green accent */
+    .result-display-box {
+        background-color: #f0fdf4;
+        border: 2px solid #bbf7d0;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Cash Flow display */
-    .result-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #064e3b; /* Very Dark Green */
-    }
-    
-    .result-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: #10b981; /* Bright Green */
-    }
-
-    .cash-flow-box {
-        padding: 15px;
-        border-radius: 8px;
-        border-width: 2px;
-    }
-    .positive-cash-flow {
-        background-color: #dcfce7;
-        border-color: #10b981;
-    }
-    .negative-cash-flow {
-        background-color: #fee2e2;
-        border-color: #ef4444;
-    }
-    
     .cash-flow-value {
-        font-size: 2.8rem;
-        font-weight: 900;
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
     }
-    .text-success { color: #10b981 !important; }
-    .text-danger { color: #ef4444 !important; }
 
+    .stat-card-mini {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .expense-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.9rem;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">📈 Rental Property Cash Flow Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Analyze an investment property's potential by calculating its Monthly Cash Flow and Cash-on-Cash (CoC) Return.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-graph-up-arrow text-emerald-primary me-2"></i>Rental Property Analyzer</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Evaluate deals like a pro. Calculate Net Operating Income (NOI), Monthly Cash Flow, and your Cash-on-Cash return.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="cash-flow-form" class="row g-4">
-            
-            <!-- Purchase & Loan -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Purchase & Loan</h4>
+    <div class="calc-card mx-auto" style="max-width: 1250px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="cashflow-form">
+                    <h6 class="fw-bold text-dark mb-3">1. Purchase & Financing</h6>
+                    <div class="row g-2 mb-3">
+                        <div class="col-7">
+                            <label class="form-label">Purchase Price</label>
+                            <input type="number" id="price" class="form-control shadow-sm" placeholder="e.g. 300000" required>
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label">Down Pmt %</label>
+                            <input type="number" id="dp-pct" class="form-control shadow-sm" placeholder="25">
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">Interest Rate %</label>
+                            <input type="number" id="rate" class="form-control shadow-sm" placeholder="7.0" step="0.1">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Closing/Rehab $</label>
+                            <input type="number" id="upfront-costs" class="form-control shadow-sm" placeholder="15000">
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-3">2. Income & Vacancy</h6>
+                    <div class="row g-2 mb-4">
+                        <div class="col-7">
+                            <label class="form-label">Gross Monthly Rent</label>
+                            <input type="number" id="rent" class="form-control shadow-sm" placeholder="2500" required>
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label">Vacancy %</label>
+                            <input type="number" id="vacancy" class="form-control shadow-sm" placeholder="5">
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-3">3. Monthly Expenses ($)</h6>
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label small">Taxes/Ins.</label>
+                            <input type="number" id="tax-ins" class="form-control shadow-sm" placeholder="400">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Maintenance/CapEx</label>
+                            <input type="number" id="maintenance" class="form-control shadow-sm" placeholder="200">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Management %</label>
+                            <input type="number" id="mgmt" class="form-control shadow-sm" placeholder="8">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">HOA/Other</label>
+                            <input type="number" id="other-exp" class="form-control shadow-sm" placeholder="50">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm">
+                        Analyze Investment <i class="bi bi-lightning-fill ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Data</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-calculator display-1 mb-3 opacity-25 text-success"></i>
+                    <h4 class="fw-bold text-dark">Investment Summary</h4>
+                    <p>Enter property data to calculate your ROI, NOI, and net monthly cash flow.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-7">
+                            <div class="result-display-box h-100 shadow-sm">
+                                <span class="form-label text-emerald-dark mb-2 d-block">Monthly Cash Flow</span>
+                                <div class="cash-flow-value mb-2" id="cf-display">$0</div>
+                                <p class="text-muted small mb-0">After all expenses & mortgage</p>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="result-display-box h-100 shadow-sm border-primary" style="background-color: #eff6ff; border-color: #bfdbfe;">
+                                <span class="form-label text-primary mb-2 d-block">CoC Return</span>
+                                <div class="cash-flow-value text-primary mb-2" id="coc-display">0%</div>
+                                <p class="text-muted small mb-0">Cash-on-Cash</p>
+                            </div>
+                        </div>
+                    </div>
+
                     
-                    <div class="row g-3">
-                        <div class="col-md-6 input-box">
-                            <label for="purchase-price">Purchase Price:</label>
-                            <input type="number" id="purchase-price" value="300000" min="1" step="any" required class="form-control form-control-custom">
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="stat-card-mini text-center">
+                                <span class="form-label d-block mb-1 text-muted">Monthly NOI</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="noi-display">$0</div>
+                            </div>
                         </div>
-                        <div class="col-md-6 input-box">
-                            <label for="closing-costs">Closing Costs ($):</label>
-                            <input type="number" id="closing-costs" value="9000" min="0" step="any" required class="form-control form-control-custom">
+                        <div class="col-md-4">
+                            <div class="stat-card-mini text-center">
+                                <span class="form-label d-block mb-1 text-muted">Mortgage P&I</span>
+                                <div class="h5 fw-bold mb-0 text-danger" id="pi-display">$0</div>
+                            </div>
                         </div>
-                        <div class="col-md-6 input-box">
-                            <label for="down-payment-percent">Down Payment (%):</label>
-                            <input type="number" id="down-payment-percent" value="25" min="0" max="100" step="any" required class="form-control form-control-custom">
+                        <div class="col-md-4">
+                            <div class="stat-card-mini text-center">
+                                <span class="form-label d-block mb-1 text-muted">Total Invested</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="invested-display">$0</div>
+                            </div>
                         </div>
-                        <div class="col-md-6 input-box">
-                            <label for="interest-rate">Interest Rate (%):</label>
-                            <input type="number" id="interest-rate" value="7.0" min="0.01" step="any" required class="form-control form-control-custom">
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light">
+                        <h6 class="fw-bold text-dark mb-3">Profit & Loss Breakdown</h6>
+                        <div class="expense-row">
+                            <span>Effective Gross Income (EGI)</span>
+                            <span class="fw-bold" id="egi-display">$0</span>
                         </div>
-                         <div class="col-md-6 input-box">
-                            <label for="loan-term">Loan Term (Years):</label>
-                            <input type="number" id="loan-term" value="30" min="1" step="any" required class="form-control form-control-custom">
+                        <div class="expense-row">
+                            <span>Operating Expenses (OpEx)</span>
+                            <span class="fw-bold text-danger" id="opex-display">-$0</span>
                         </div>
-                        <div class="col-md-6 input-box">
-                            <label for="rehab-costs">Initial Rehab Costs ($):</label>
-                            <input type="number" id="rehab-costs" value="5000" min="0" step="any" required class="form-control form-control-custom">
+                        <div class="expense-row border-0">
+                            <span>Cap Rate (Based on Purchase)</span>
+                            <span class="fw-bold text-primary" id="cap-display">0%</span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Income & Expenses -->
-            <div class="col-lg-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. Monthly Income & Expenses</h4>
-                    
-                     <div class="row g-3">
-                        <div class="col-md-6 input-box">
-                            <label for="monthly-rent">Gross Monthly Rent:</label>
-                            <input type="number" id="monthly-rent" value="2500" min="0" step="any" required class="form-control form-control-custom">
-                        </div>
-                        <div class="col-md-6 input-box">
-                            <label for="vacancy-rate">Vacancy Rate (% of Rent):</label>
-                            <input type="number" id="vacancy-rate" value="5" min="0" max="100" step="any" required class="form-control form-control-custom">
-                        </div>
-                        
-                        <div class="col-md-6 input-box">
-                            <label for="property-taxes">Property Taxes ($/mo):</label>
-                            <input type="number" id="property-taxes" value="300" min="0" step="any" required class="form-control form-control-custom">
-                        </div>
-                        <div class="col-md-6 input-box">
-                            <label for="property-insurance">Insurance ($/mo):</label>
-                            <input type="number" id="property-insurance" value="80" min="0" step="any" required class="form-control form-control-custom">
-                        </div>
-
-                        <div class="col-md-6 input-box">
-                            <label for="maintenance">Maintenance ($/mo):</label>
-                            <input type="number" id="maintenance" value="150" min="0" step="any" required class="form-control form-control-custom">
-                        </div>
-                        <div class="col-md-6 input-box">
-                            <label for="prop-mgmt">Prop. Mgmt (% of Rent):</label>
-                            <input type="number" id="prop-mgmt" value="8" min="0" max="100" step="any" required class="form-control form-control-custom">
-                        </div>
-                        
-                        <div class="col-md-6 input-box">
-                            <label for="hoa-fees">HOA Fees ($/mo):</label>
-                            <input type="number" id="hoa-fees" value="0" min="0" step="any" required class="form-control form-control-custom">
-                        </div>
-                        
-                         <div class="col-md-6 input-box">
-                            <label for="other-expenses">Other Expenses ($/mo):</label>
-                            <input type="number" id="other-expenses" value="50" min="0" step="any" required class="form-control form-control-custom">
-                        </div>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Invalid Entry</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate Cash Flow & Return
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Calculates the monthly mortgage payment (P&I).
-     */
-    function calculateMonthlyPI(P, R_annual, N_years) {
-        const i = (R_annual / 100) / 12; 
-        const n = N_years * 12;
+    const form = document.getElementById('cashflow-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
 
-        if (i === 0) return P / n;
-
-        const i_plus_1_pow_n = Math.pow(1 + i, n);
-        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
-    }
-    
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
-    
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatterNoCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-    
-    /**
-     * Gathers all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            // Purchase & Loan
-            price: parseFloat(document.getElementById('purchase-price').value),
-            closingCosts: parseFloat(document.getElementById('closing-costs').value),
-            dpPercent: parseFloat(document.getElementById('down-payment-percent').value),
-            rate: parseFloat(document.getElementById('interest-rate').value),
-            term: parseFloat(document.getElementById('loan-term').value),
-            rehab: parseFloat(document.getElementById('rehab-costs').value),
-            
-            // Income & Expenses
-            rent: parseFloat(document.getElementById('monthly-rent').value),
-            vacancy: parseFloat(document.getElementById('vacancy-rate').value),
-            taxes: parseFloat(document.getElementById('property-taxes').value),
-            insurance: parseFloat(document.getElementById('property-insurance').value),
-            maintenance: parseFloat(document.getElementById('maintenance').value),
-            mgmt: parseFloat(document.getElementById('prop-mgmt').value),
-            hoa: parseFloat(document.getElementById('hoa-fees').value),
-            other: parseFloat(document.getElementById('other-expenses').value),
-        };
-        
-        // Validate all inputs
-        for (const key in inputs) {
-            if (isNaN(inputs[key])) {
-                throw new Error(`Invalid Input: Please ensure all fields are valid numbers. ${key} is invalid.`);
-            }
-        }
-        return inputs;
-    }
 
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleCashFlow(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        // 1. Get Values
+        const price = parseFloat(document.getElementById('price').value);
+        const dpPct = parseFloat(document.getElementById('dp-pct').value) || 0;
+        const rate = parseFloat(document.getElementById('rate').value) || 0;
+        const upfront = parseFloat(document.getElementById('upfront-costs').value) || 0;
+        const rent = parseFloat(document.getElementById('rent').value);
+        const vacancyPct = parseFloat(document.getElementById('vacancy').value) || 0;
+        const taxIns = parseFloat(document.getElementById('tax-ins').value) || 0;
+        const maintenance = parseFloat(document.getElementById('maintenance').value) || 0;
+        const mgmtPct = parseFloat(document.getElementById('mgmt').value) || 0;
+        const otherExp = parseFloat(document.getElementById('other-exp').value) || 0;
 
-            // --- 1. Calculate Initial Investment ---
-            const downPaymentAmount = i.price * (i.dpPercent / 100);
-            const totalCashInvested = downPaymentAmount + i.closingCosts + i.rehab;
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // --- 2. Calculate Effective Gross Income (EGI) ---
-            const vacancyLoss = i.rent * (i.vacancy / 100);
-            const egi = i.rent - vacancyLoss;
-
-            // --- 3. Calculate Total Operating Expenses (OpEx) ---
-            const mgmtFee = egi * (i.mgmt / 100); // Mgmt fee based on collected rent (EGI)
-            const totalOpEx = i.taxes + i.insurance + i.maintenance + mgmtFee + i.hoa + i.other;
-
-            // --- 4. Calculate Net Operating Income (NOI) ---
-            const monthlyNOI = egi - totalOpEx;
-
-            // --- 5. Calculate Debt Service (P&I) ---
-            const loanAmount = i.price - downPaymentAmount;
-            if (loanAmount < 0) throw new Error("Down payment cannot be more than 100% of the purchase price.");
-            
-            const monthlyPI = (loanAmount > 0) ? calculateMonthlyPI(loanAmount, i.rate, i.term) : 0;
-            
-            // --- 6. Calculate Final Cash Flow ---
-            const monthlyCashFlow = monthlyNOI - monthlyPI;
-            const annualCashFlow = monthlyCashFlow * 12;
-
-            // --- 7. Calculate Key Metrics ---
-            let cocReturn = 0;
-            if (totalCashInvested > 0) {
-                cocReturn = (annualCashFlow / totalCashInvested) * 100;
-            }
-            
-            // Determine styling
-            const cashFlowColor = monthlyCashFlow >= 0 ? 'text-success' : 'text-danger';
-            const cashFlowBg = monthlyCashFlow >= 0 ? 'positive-cash-flow' : 'negative-cash-flow';
-
-            // --- 8. Build Summary HTML ---
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-green-600 mb-4">Investment Analysis Summary</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Monthly Cash Flow -->
-                    <div class="col-md-6 mb-3 border-end border-success">
-                        <p class="result-label">ESTIMATED MONTHLY CASH FLOW</p>
-                        <div class="cash-flow-box ${cashFlowBg} d-inline-block">
-                             <p class="cash-flow-value mb-0 ${cashFlowColor}">
-                                ${currencyFormatter.format(monthlyCashFlow)}
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Cash-on-Cash Return -->
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">CASH-ON-CASH (CoC) RETURN</p>
-                        <p class="result-value ${cashFlowColor}">
-                            ${cocReturn.toFixed(2)}%
-                        </p>
-                         <p class="text-muted small mt-2">(${currencyFormatter.format(annualCashFlow)} / ${currencyFormatter.format(totalCashInvested)})</p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-primary mb-3">Calculation Breakdown (Monthly)</h5>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <table class="table table-sm table-striped">
-                            <tbody>
-                                <tr>
-                                    <td>Gross Monthly Rent</td>
-                                    <td class="text-end fw-bold">${currencyFormatter.format(i.rent)}</td>
-                                </tr>
-                                <tr>
-                                    <td>Vacancy Loss (${i.vacancy}%)</td>
-                                    <td class="text-end fw-bold text-danger">(${currencyFormatter.format(vacancyLoss)})</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Effective Gross Income (EGI)</td>
-                                    <td class="text-end fw-bold">${currencyFormatter.format(egi)}</td>
-                                </tr>
-                                <tr>
-                                    <td>Total Operating Expenses (OpEx)</td>
-                                    <td class="text-end fw-bold text-danger">(${currencyFormatter.format(totalOpEx)})</td>
-                                </tr>
-                                <tr class="table-success">
-                                    <td class="fw-bolder fs-6">Net Operating Income (NOI)</td>
-                                    <td class="text-end fw-bolder fs-6">${currencyFormatter.format(monthlyNOI)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                         <table class="table table-sm table-striped">
-                            <tbody>
-                                <tr class="table-success">
-                                    <td class="fw-bolder fs-6">Net Operating Income (NOI)</td>
-                                    <td class="text-end fw-bolder fs-6">${currencyFormatter.format(monthlyNOI)}</td>
-                                </tr>
-                                 <tr>
-                                    <td>Debt Service (P&I)</td>
-                                    <td class="text-end fw-bold text-danger">(${currencyFormatter.format(monthlyPI)})</td>
-                                </tr>
-                                <tr class="${monthlyCashFlow >= 0 ? 'table-success' : 'table-danger'}">
-                                    <td class="fw-bolder fs-6">Total Monthly Cash Flow</td>
-                                    <td class="text-end fw-bolder fs-6">${currencyFormatter.format(monthlyCashFlow)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Total Cash Invested</td>
-                                    <td class="text-end fw-bold">${currencyFormatterNoCents.format(totalCashInvested)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (price <= 0 || rent <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Price and Rent must be greater than zero.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('cash-flow-form').addEventListener('submit', handleCashFlow);
+        // 2. Calculations
+        const dpAmount = price * (dpPct / 100);
+        const loanAmount = price - dpAmount;
+        const totalInvested = dpAmount + upfront;
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('cash-flow-form').dispatchEvent(new Event('submit'));
-    };
+        // Monthly Mortgage (P&I)
+        let monthlyPI = 0;
+        if (loanAmount > 0 && rate > 0) {
+            const i = (rate / 100) / 12;
+            const n = 360; // 30 Years
+            monthlyPI = loanAmount * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
+        }
+
+        // Income & OpEx
+        const egi = rent * (1 - (vacancyPct / 100));
+        const mgmtFee = egi * (mgmtPct / 100);
+        const opex = taxIns + maintenance + mgmtFee + otherExp;
+        const noi = egi - opex;
+        const cashFlow = noi - monthlyPI;
+        
+        // Metrics
+        const coc = totalInvested > 0 ? ((cashFlow * 12) / totalInvested) * 100 : 0;
+        const capRate = (noi * 12 / price) * 100;
+
+        // 3. UI Updates
+        resultsUi.classList.remove('d-none');
+        const cfEl = document.getElementById('cf-display');
+        cfEl.textContent = currency.format(cashFlow);
+        cfEl.style.color = cashFlow >= 0 ? "#059669" : "#dc2626";
+
+        document.getElementById('coc-display').textContent = coc.toFixed(2) + "%";
+        document.getElementById('noi-display').textContent = currency.format(noi);
+        document.getElementById('pi-display').textContent = "-" + currency.format(monthlyPI);
+        document.getElementById('invested-display').textContent = currency.format(totalInvested);
+        document.getElementById('egi-display').textContent = currency.format(egi);
+        document.getElementById('opex-display').textContent = "-" + currency.format(opex);
+        document.getElementById('cap-display').textContent = capRate.toFixed(2) + "%";
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

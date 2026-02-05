@@ -4,392 +4,327 @@
 
 {% block meta_description %}Determine the breakeven point (in months) for refinancing your mortgage by comparing monthly savings against total closing costs.{% endblock %}
 
-{% block meta_keywords %}refinance calculator, breakeven point, mortgage savings, closing costs, loan comparison, financial decision{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling to match the original Blue Theme */
-    .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1200px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+        --dark-blue: #1e3a8a;
+        --amber-gold: #d97706;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1d4ed8;
-    }
-    .form-control-custom:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #fffbeb; /* Light Yellow for Alert/Decision */
-        border-left: 5px solid #f59e0b; /* Yellow accent */
+    .result-display-box {
+        background-color: #fffbeb; /* Light amber */
+        border: 2px solid #fde68a;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
+    .result-value {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: var(--amber-gold);
+        line-height: 1;
+    }
+
+    .stat-card-mini {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .comparison-table-wrapper {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background-color: #f8fafc;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #64748b;
+    }
+
+    .icon-box {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         border-radius: 8px;
-    }
-    
-    /* Styles for savings display */
-    .summary-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #92400e; /* Dark Yellow/Brown */
-    }
-    
-    .summary-value {
-        font-size: 2.2rem;
-        font-weight: 900;
-        color: #d97706; /* Amber/Orange */
-    }
-    
-    .breakeven-unit {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #f59e0b;
-        margin-left: 5px;
-    }
-    
-    .comparison-table {
-        margin-top: 20px;
+        margin-bottom: 10px;
     }
 
-    .comparison-table th {
-        background-color: #1d4ed8;
-        color: white;
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+        .col-lg-8 { width: 100% !important; }
     }
-
-    .current-loan-header {
-        background-color: #60a5fa;
-    }
-    .new-loan-header {
-        background-color: #10b981;
-    }
-
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">💰 Refinance Breakeven Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Determine how many months it will take for your monthly payment savings to cover the total costs of refinancing.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-arrow-repeat text-primary me-2"></i>Refinance Breakeven Pro</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Is refinancing worth it? Calculate how many months you need to stay in your home to recoup the closing costs through monthly savings.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="refinance-form" class="row g-4">
-            
-            <!-- Current Loan Details -->
-            <div class="col-md-6">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center current-loan-header text-white p-2 rounded-top mb-3">Current Mortgage Details</h4>
-                    
-                    <div class="input-box mb-3">
-                        <label for="current-balance">Current Principal Balance Owed:</label>
+    <div class="calc-card mx-auto" style="max-width: 1150px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="refi-form">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-house-door me-2"></i>Current Loan</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Principal Balance</label>
                         <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="current-balance" value="200000" min="1" step="any" required class="form-control form-control-custom">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="current-balance" class="form-control" placeholder="e.g. 200000" required>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">Rate (%)</label>
+                            <input type="number" id="current-rate" class="form-control" placeholder="7.5" step="0.01" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Left (Yrs)</label>
+                            <input type="number" id="current-term" class="form-control" placeholder="25" required>
                         </div>
                     </div>
 
-                    <div class="row g-3">
-                        <div class="col-md-6 input-box">
-                            <label for="current-rate">Current Annual Rate (%):</label>
-                            <div class="input-group">
-                                <input type="number" id="current-rate" value="7.5" min="0.01" step="any" required class="form-control form-control-custom">
-                                <span class="input-group-text">%</span>
+                    <h6 class="fw-bold text-dark mb-3 pt-3 border-top"><i class="bi bi-file-earmark-text me-2"></i>New Proposal</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Refi Closing Costs</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white text-success">$</span>
+                            <input type="number" id="refi-cost" class="form-control border-success" placeholder="e.g. 4500" required>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">New Rate (%)</label>
+                            <input type="number" id="new-rate" class="form-control" placeholder="6.0" step="0.01" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">New Term (Yrs)</label>
+                            <input type="number" id="new-term" class="form-control" placeholder="30" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Calculate Breakeven <i class="bi bi-calculator-fill ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Reset Details</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-clock-history display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Ready to Analyze</h4>
+                    <p>Enter your current mortgage and refinance terms to see your ROI roadmap.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-7">
+                            <div class="result-display-box h-100 shadow-sm d-flex flex-column justify-content-center">
+                                <span class="form-label text-warning mb-2">Breakeven Point</span>
+                                <div class="result-value mb-1" id="breakeven-display">0</div>
+                                <div class="h5 fw-bold text-dark mb-0" id="breakeven-months-label">Months</div>
+                                <p class="text-muted small mt-2 mb-0" id="breakeven-text-detail"></p>
                             </div>
                         </div>
-                        <div class="col-md-6 input-box">
-                            <label for="current-term-remaining">Remaining Term (Years):</label>
-                            <input type="number" id="current-term-remaining" value="25" min="1" max="30" required class="form-control form-control-custom">
+                        <div class="col-md-5">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <div class="stat-card-mini">
+                                        <div class="form-label mb-1">Monthly Savings</div>
+                                        <div class="h4 fw-bold text-success mb-0" id="monthly-savings-display">$0.00</div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="stat-card-mini">
+                                        <div class="form-label mb-1">Total Upfront Cost</div>
+                                        <div class="h4 fw-bold text-dark mb-0" id="total-cost-display">$0.00</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-layout-split me-2"></i>Side-by-Side Comparison</h6>
+                    <div class="comparison-table-wrapper mb-4">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Loan</th>
+                                    <th>Rate</th>
+                                    <th>Term</th>
+                                    <th>Monthly P&I</th>
+                                </tr>
+                            </thead>
+                            <tbody class="small">
+                                <tr>
+                                    <td class="fw-bold text-muted">Current</td>
+                                    <td id="cell-current-rate">0%</td>
+                                    <td id="cell-current-term">0 yrs</td>
+                                    <td id="cell-current-payment" class="fw-bold">$0.00</td>
+                                </tr>
+                                <tr class="bg-light">
+                                    <td class="fw-bold text-primary">Refinance</td>
+                                    <td id="cell-new-rate">0%</td>
+                                    <td id="cell-new-term">0 yrs</td>
+                                    <td id="cell-new-payment" class="fw-bold text-primary">$0.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="p-3 rounded-3 bg-light border">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-lightbulb text-warning me-3 fs-4"></i>
+                            <div>
+                                <p class="mb-0 small text-dark fw-bold">Financial Tip:</p>
+                                <p class="mb-0 small text-muted">If you plan on moving before the breakeven point, refinancing might not be the best financial move as you won't recoup your upfront costs.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- New Loan Details -->
-            <div class="col-md-6">
-                 <div class="input-section">
-                    <h4 class="h5 fw-bold text-center new-loan-header text-white p-2 rounded-top mb-3">New Refinance Proposal</h4>
-
-                    <div class="input-box mb-3">
-                        <label for="refi-cost">Total Refinancing Closing Costs:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="refi-cost" value="4500" min="0" required class="form-control form-control-custom border-success text-success">
-                        </div>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-md-6 input-box">
-                            <label for="new-rate">New Annual Rate (%):</label>
-                            <div class="input-group">
-                                <input type="number" id="new-rate" value="6.0" min="0.01" step="any" required class="form-control form-control-custom">
-                                <span class="input-group-text">%</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box">
-                            <label for="new-term">New Term (Years):</label>
-                            <input type="number" id="new-term" value="30" min="5" max="30" required class="form-control form-control-custom">
-                        </div>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4">
+                        <i class="bi bi-exclamation-octagon fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Calculation Impossible</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate Breakeven Point
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Calculates the monthly mortgage payment (P&I) using the amortization formula.
-     */
-    function calculateMonthlyPI(P, R_annual, N_years) {
-        const i = (R_annual / 100) / 12; 
+    const form = document.getElementById('refi-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
+    });
+
+    function calculatePI(P, R_annual, N_years) {
+        const i = (R_annual / 100) / 12;
         const n = N_years * 12;
-
         if (i === 0) return P / n;
-
-        const i_plus_1_pow_n = Math.pow(1 + i, n);
-        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
+        return P * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
     }
 
-    /**
-     * Formats a number as USD currency.
-     */
-    const formatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-    
-    /**
-     * Converts total months into Years and Months string.
-     */
     function formatTerm(totalMonths) {
         if (totalMonths === Infinity) return "Never";
-        
         const years = Math.floor(totalMonths / 12);
         const months = Math.ceil(totalMonths % 12);
-        
         if (years === 0) return `${months} months`;
         if (months === 0) return `${years} years`;
-        return `${years} years and ${months} months`;
+        return `${years} yrs, ${months} mos`;
     }
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Handles form submission and triggers the breakeven calculation.
-     */
-    function handleRefinance(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const inputs = {
-            currentBalance: parseFloat(document.getElementById('current-balance').value),
-            currentRate: parseFloat(document.getElementById('current-rate').value),
-            currentTerm: parseFloat(document.getElementById('current-term-remaining').value),
-            
-            refiCost: parseFloat(document.getElementById('refi-cost').value),
-            newRate: parseFloat(document.getElementById('new-rate').value),
-            newTerm: parseFloat(document.getElementById('new-term').value),
-        };
+        const curBal = parseFloat(document.getElementById('current-balance').value);
+        const curRate = parseFloat(document.getElementById('current-rate').value);
+        const curTerm = parseFloat(document.getElementById('current-term').value);
+        const cost = parseFloat(document.getElementById('refi-cost').value);
+        const newRate = parseFloat(document.getElementById('new-rate').value);
+        const newTerm = parseFloat(document.getElementById('new-term').value);
 
-        // 2. Input Validation
-        const { currentBalance, currentRate, currentTerm, refiCost, newRate, newTerm } = inputs;
-        
-        if (isNaN(currentBalance) || isNaN(currentRate) || isNaN(currentTerm) || 
-            isNaN(refiCost) || isNaN(newRate) || isNaN(newTerm) ||
-            currentBalance <= 0 || currentRate <= 0 || currentTerm <= 0 || newRate <= 0 || newTerm <= 0) 
-        {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid positive numbers for all loan amounts, rates, and terms. Refinance Cost must be non-negative.</p>`;
-            displayResult(true, htmlContent);
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(curBal) || isNaN(curRate) || isNaN(curTerm) || isNaN(cost) || isNaN(newRate) || isNaN(newTerm)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please complete all fields with valid numbers.";
             return;
         }
 
-        try {
-            // 3. Calculate Monthly Payments (P&I only)
-            const currentPayment = calculateMonthlyPI(currentBalance, currentRate, currentTerm);
-            const newPayment = calculateMonthlyPI(currentBalance, newRate, newTerm);
-            
-            // 4. Calculate Savings
-            const monthlySavings = currentPayment - newPayment;
-            
-            // 5. Calculate Breakeven Point
-            let breakevenMonths = Infinity;
-            let breakevenText = "";
-            let savingsColorClass = "text-danger";
+        const currentP = calculatePI(curBal, curRate, curTerm);
+        const newP = calculatePI(curBal, newRate, newTerm);
+        const monthlySavings = currentP - newP;
 
-            if (monthlySavings > 0) {
-                // Refinance is saving money monthly
-                breakevenMonths = refiCost / monthlySavings;
-                
-                if (breakevenMonths < currentTerm * 12) {
-                    breakevenText = formatTerm(breakevenMonths);
-                } else {
-                    // Breakeven is longer than the original term remaining
-                    breakevenText = `Never within the current loan's lifespan (${formatTerm(currentTerm * 12)})`;
-                    breakevenMonths = Infinity;
-                }
-                savingsColorClass = "text-success";
-            } else if (monthlySavings < 0) {
-                // Refinance is COSTING money monthly (usually due to extending the term significantly)
-                breakevenText = "Never (New payment is higher)";
-                savingsColorClass = "text-danger";
-            } else {
-                // Payments are equal, but you still paid the closing cost
-                breakevenText = "Never (Payments are equal)";
-                savingsColorClass = "text-warning";
-            }
-
-            // 6. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-primary mb-4">Refinance Breakeven Analysis</h4>
-                
-                <div class="row text-center">
-                    <div class="col-md-4 mb-3 border-end">
-                        <p class="summary-label">Monthly Savings (or Cost):</p>
-                        <p class="fs-4 fw-bold ${savingsColorClass}">${formatter.format(Math.abs(monthlySavings))} ${monthlySavings >= 0 ? 'Saved' : 'Cost'}</p>
-                    </div>
-                    <div class="col-md-4 mb-3 border-end">
-                        <p class="summary-label">Total Upfront Refi Cost:</p>
-                        <p class="fs-4 fw-bold text-dark">${formatter.format(refiCost)}</p>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <p class="summary-label">Breakeven Point:</p>
-                        <p class="summary-value">
-                            ${breakevenMonths === Infinity ? breakevenText : Math.ceil(breakevenMonths).toFixed(0)}
-                            ${breakevenMonths !== Infinity && monthlySavings > 0 ? `<span class="breakeven-unit">months</span>` : ''}
-                        </p>
-                        <p class="text-muted small">${breakevenMonths !== Infinity && monthlySavings > 0 ? formatTerm(breakevenMonths) : ''}</p>
-                    </div>
-                </div>
-
-                <div class="comparison-table mt-4">
-                    <table class="table table-bordered text-center">
-                        <thead>
-                            <tr>
-                                <th>Loan Details</th>
-                                <th>Annual Rate</th>
-                                <th>Remaining Term (Yrs)</th>
-                                <th>Monthly P&I Payment</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="current-loan-row">
-                                <td class="current-loan-header text-white fw-bold">CURRENT LOAN</td>
-                                <td>${currentRate.toFixed(2)}%</td>
-                                <td>${currentTerm}</td>
-                                <td>${formatter.format(currentPayment)}</td>
-                            </tr>
-                            <tr class="new-loan-row">
-                                <td class="new-loan-header text-white fw-bold">NEW LOAN</td>
-                                <td>${newRate.toFixed(2)}%</td>
-                                <td>${newTerm}</td>
-                                <td>${formatter.format(newPayment)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p class="text-center text-muted small mt-3">
-                        *The calculation only considers Principal & Interest (P&I). It does not include property taxes or insurance (PITI).
-                    </p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
+        if (monthlySavings <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "New payment is higher than or equal to current. You will never break even.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('refinance-form').addEventListener('submit', handleRefinance);
+        const breakevenMonths = cost / monthlySavings;
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('refinance-form').dispatchEvent(new Event('submit'));
-    };
+        // UI Injection
+        resultsUi.classList.remove('d-none');
+        document.getElementById('breakeven-display').textContent = Math.ceil(breakevenMonths);
+        document.getElementById('monthly-savings-display').textContent = formatter.format(monthlySavings);
+        document.getElementById('total-cost-display').textContent = formatter.format(cost);
+        document.getElementById('breakeven-text-detail').textContent = `Full ROI in ${formatTerm(breakevenMonths)}`;
+
+        // Table updates
+        document.getElementById('cell-current-rate').textContent = curRate + "%";
+        document.getElementById('cell-current-term').textContent = curTerm + " yrs";
+        document.getElementById('cell-current-payment').textContent = formatter.format(currentP);
+        document.getElementById('cell-new-rate').textContent = newRate + "%";
+        document.getElementById('cell-new-term').textContent = newTerm + " yrs";
+        document.getElementById('cell-new-payment').textContent = formatter.format(newP);
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

@@ -4,385 +4,275 @@
 
 {% block meta_description %}Estimate your total closing costs for a mortgage, including lender fees, third-party fees, and prepaid items like taxes and insurance.{% endblock %}
 
-{% block meta_keywords %}closing cost calculator, mortgage fees, lender fees, title insurance, prepaid items, cash to close, home buying{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a Purple/Violet Theme */
-    .solver-wrapper {
-        background: #fbfaff; /* Very light purple/white */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1100px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #ede9fe; /* Light Violet */
-        border: 2px solid #7c3aed; /* Violet accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #5b21b6; /* Dark Violet */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 124, 58, 237;
+        --violet-primary: #7c3aed;
+        --violet-dark: #5b21b6;
+        --slate-bg: #f8fafc;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #a78bfa; 
-        border-radius: 8px;
+    body {
+        background-color: var(--slate-bg);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #6d28d9;
-    }
-    .form-control-custom:focus {
-        border-color: #7c3aed;
-        box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f5f3ff; /* Lighter Violet */
-        border-left: 5px solid #7c3aed; /* Violet accent */
+    .result-display-box {
+        background-color: #f5f3ff;
+        border: 2px solid #ddd6fe;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Closing Cost display */
-    .result-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #5b21b6; /* Dark Violet */
-    }
-    
-    .result-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: #7c3aed; /* Bright Violet */
+    .cash-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--violet-primary);
+        line-height: 1;
     }
 
-    .cash-to-close-box {
-        background-color: #e0e7ff; /* Lighter Indigo */
-        padding: 15px;
-        border-radius: 8px;
-        border: 2px solid #7c3aed;
-    }
-    
-    .cash-to-close-value {
-        font-size: 2.8rem;
-        font-weight: 900;
-        color: #4f46e5;
+    .stat-card-mini {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
     }
 
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .cost-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+        .col-lg-7 { width: 100% !important; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">💸 Closing Cost Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Estimate your total **Closing Costs** and the final **Total Cash to Close** needed for your home purchase.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-wallet2 text-primary me-2"></i>Closing Cost Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Estimate your total out-of-pocket expenses beyond the down payment. 
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="closing-cost-form" class="row g-4">
-            
-            <!-- Loan & Home Price -->
-            <div class="col-md-5">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Loan & Home Details</h4>
-                    
-                    <div class="input-box mb-3">
-                        <label for="home-price">Home Purchase Price:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="home-price" 
-                               value="350000" 
-                               min="1000"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+    <div class="calc-card mx-auto" style="max-width: 1150px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="closing-form">
+                    <h6 class="fw-bold text-dark mb-4">1. Home & Loan</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-7">
+                            <label class="form-label">Home Price</label>
+                            <div class="input-group shadow-sm">
+                                <span class="input-group-text bg-white border-end-0">$</span>
+                                <input type="number" id="home-price" class="form-control border-start-0 ps-0" placeholder="e.g. 350000" required>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Down Pmt %</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" id="dp-percent" class="form-control border-end-0" placeholder="20" step="0.1" required>
+                                <span class="input-group-text bg-white border-start-0">%</span>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="down-payment-percent">Down Payment (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="down-payment-percent" 
-                               value="20" 
-                               min="0" 
-                               max="100"
-                               step="0.1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
+
+                    <h6 class="fw-bold text-dark mb-3">2. Service & Lender Fees</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small">Origination %</label>
+                            <input type="number" id="origination-pct" class="form-control shadow-sm" placeholder="0.75" step="0.01">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Appraisal ($)</label>
+                            <input type="number" id="appraisal-fee" class="form-control shadow-sm" placeholder="500">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Title Ins. ($)</label>
+                            <input type="number" id="title-fee" class="form-control shadow-sm" placeholder="800">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Inspection ($)</label>
+                            <input type="number" id="inspection-fee" class="form-control shadow-sm" placeholder="450">
                         </div>
                     </div>
+
+                    <h6 class="fw-bold text-dark mb-3">3. Prepaids / Escrow</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small">Property Taxes</label>
+                            <input type="number" id="prepaid-taxes" class="form-control shadow-sm" placeholder="1200">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Homeowners Ins.</label>
+                            <input type="number" id="prepaid-ins" class="form-control shadow-sm" placeholder="700">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Calculate Cash to Close <i class="bi bi-calculator ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear All</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-receipt-cutoff display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Closing Summary</h4>
+                    <p>Provide your home purchase details to see a breakdown of required cash and estimated fees.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-violet-dark mb-2 d-block">Total Cash to Close</span>
+                        <div class="cash-value mb-2" id="total-cash-display">$0</div>
+                        <p class="text-muted small mb-0">Total of Down Payment + All Closing Costs</p>
+                    </div>
+
                     
-                    <div class="input-box">
-                        <label for="loan-amount-display" class="result-label">Calculated Loan Amount:</label>
-                        <p class="fs-4 fw-bold text-primary" id="loan-amount-display">$280,000</p>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1 text-success">Down Payment</span>
+                                <div class="h4 fw-bold mb-0" id="dp-amount-display">$0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1 text-primary">Closing Costs</span>
+                                <div class="h4 fw-bold mb-0" id="total-costs-display">$0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light">
+                        <h6 class="fw-bold text-dark mb-3">Cost Breakdown</h6>
+                        <div class="cost-item">
+                            <span class="text-muted small">Lender/Origination Fees</span>
+                            <span class="fw-bold small" id="lender-fees-display">$0</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="text-muted small">Third-Party Fees (Appraisal, Title, etc.)</span>
+                            <span class="fw-bold small" id="third-party-display">$0</span>
+                        </div>
+                        <div class="cost-item border-0">
+                            <span class="text-muted small">Prepaid Taxes & Insurance</span>
+                            <span class="fw-bold small" id="prepaid-display">$0</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Detailed Costs -->
-            <div class="col-md-7">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. Estimated Costs</h4>
-
-                    <div class="row g-3">
-                        <div class="col-md-6 input-box">
-                            <label for="origination-fee-percent">Origination Fee (% of Loan):</label>
-                            <div class="input-group">
-                                <input type="number" id="origination-fee-percent" value="0.75" min="0" step="any" required class="form-control form-control-custom">
-                                <span class="input-group-text">%</span>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 input-box">
-                            <label for="appraisal-fee">Appraisal Fee ($):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="appraisal-fee" value="500" min="0" step="any" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 input-box">
-                            <label for="title-insurance">Title Insurance ($):</Tabel>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="title-insurance" value="800" min="0" step="any" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 input-box">
-                            <label for="inspection-fee">Home Inspection ($):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="inspection-fee" value="450" min="0" step="any" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 input-box">
-                            <label for="prepaid-taxes">Prepaid Property Taxes ($):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="prepaid-taxes" value="1200" min="0" step="any" required class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 input-box">
-                            <label for="prepaid-insurance">Prepaid Home Insurance ($):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="prepaid-insurance" value="700" min="0" step="any" required class="form-control form-control-custom">
-                            </div>
-                        </div>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate Total Closing Costs
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('closing-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
 
-    /**
-     * Updates the calculated loan amount display.
-     */
-    function updateLoanAmountDisplay() {
-        const homePrice = parseFloat(document.getElementById('home-price').value);
-        const dpPercent = parseFloat(document.getElementById('down-payment-percent').value);
-        
-        if (isNaN(homePrice) || isNaN(dpPercent) || dpPercent > 100 || dpPercent < 0) {
-            document.getElementById('loan-amount-display').textContent = 'N/A';
-            return;
-        }
-        
-        const downPaymentAmount = homePrice * (dpPercent / 100);
-        const loanAmount = homePrice - downPaymentAmount;
-        document.getElementById('loan-amount-display').textContent = currencyFormatter.format(loanAmount);
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleClosingCosts(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const homePrice = parseFloat(document.getElementById('home-price').value);
-        const dpPercent = parseFloat(document.getElementById('down-payment-percent').value);
-        
-        const costs = {
-            originationPercent: parseFloat(document.getElementById('origination-fee-percent').value),
-            appraisal: parseFloat(document.getElementById('appraisal-fee').value),
-            title: parseFloat(document.getElementById('title-insurance').value),
-            inspection: parseFloat(document.getElementById('inspection-fee').value),
-            prepaidTaxes: parseFloat(document.getElementById('prepaid-taxes').value),
-            prepaidInsurance: parseFloat(document.getElementById('prepaid-insurance').value),
-        };
-        
-        // 2. Input Validation
-        if (isNaN(homePrice) || homePrice <= 0 || isNaN(dpPercent) || dpPercent < 0 || dpPercent > 100) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive Home Price and a Down Payment percentage between 0 and 100.</p>`;
-            displayResult(true, htmlContent);
+        // Parse Inputs
+        const price = parseFloat(document.getElementById('home-price').value);
+        const dpPct = parseFloat(document.getElementById('dp-percent').value);
+        const origPct = parseFloat(document.getElementById('origination-pct').value) || 0;
+        const appraisal = parseFloat(document.getElementById('appraisal-fee').value) || 0;
+        const title = parseFloat(document.getElementById('title-fee').value) || 0;
+        const inspection = parseFloat(document.getElementById('inspection-fee').value) || 0;
+        const taxes = parseFloat(document.getElementById('prepaid-taxes').value) || 0;
+        const ins = parseFloat(document.getElementById('prepaid-ins').value) || 0;
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(price) || isNaN(dpPct) || price <= 0 || dpPct < 0 || dpPct > 100) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please enter a valid home price and down payment percentage (0-100).";
             return;
         }
-        
-        for (const key in costs) {
-            if (isNaN(costs[key]) || costs[key] < 0) {
-                 const htmlContent = `<p class="fw-bold text-center">Invalid Cost Input</p><p class="text-center">Please ensure all cost fields (Origination, Appraisal, etc.) are zero or positive numbers.</p>`;
-                 displayResult(true, htmlContent);
-                 return;
-            }
-        }
 
-        try {
-            // 3. Calculate Loan and Down Payment
-            const downPaymentAmount = homePrice * (dpPercent / 100);
-            const loanAmount = homePrice - downPaymentAmount;
+        // Calculations
+        const dpAmount = price * (dpPct / 100);
+        const loanAmount = price - dpAmount;
+        const lenderFees = loanAmount * (origPct / 100);
+        const thirdParty = appraisal + title + inspection;
+        const prepaids = taxes + ins;
+        const totalClosingCosts = lenderFees + thirdParty + prepaids;
+        const totalCashToClose = dpAmount + totalClosingCosts;
 
-            // 4. Calculate Closing Cost Components
-            const originationFeeAmount = loanAmount * (costs.originationPercent / 100);
-            
-            const totalLenderFees = originationFeeAmount;
-            const totalThirdPartyFees = costs.appraisal + costs.title + costs.inspection;
-            const totalPrepaidItems = costs.prepaidTaxes + costs.prepaidInsurance;
-            
-            const totalClosingCosts = totalLenderFees + totalThirdPartyFees + totalPrepaidItems;
-            
-            // 5. Calculate Total Cash to Close
-            const totalCashToClose = downPaymentAmount + totalClosingCosts;
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('total-cash-display').textContent = currency.format(totalCashToClose);
+        document.getElementById('dp-amount-display').textContent = currency.format(dpAmount);
+        document.getElementById('total-costs-display').textContent = currency.format(totalClosingCosts);
+        document.getElementById('lender-fees-display').textContent = currency.format(lenderFees);
+        document.getElementById('third-party-display').textContent = currency.format(thirdParty);
+        document.getElementById('prepaid-display').textContent = currency.format(prepaids);
+    });
 
-            // 6. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-indigo-600 mb-4">Estimated Cash to Close</h4>
-                
-                <!-- Total Cash to Close -->
-                <div class="text-center mb-4">
-                    <p class="result-label">TOTAL ESTIMATED CASH TO CLOSE</p>
-                    <div class="cash-to-close-box d-inline-block">
-                        <p class="cash-to-close-value mb-0">
-                            ${currencyFormatter.format(totalCashToClose)}
-                        </p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <div class="row text-center">
-                    <div class="col-md-6 border-end border-indigo-400">
-                        <p class="result-label mb-2">Down Payment (${dpPercent}%)</p>
-                        <p class="fs-4 fw-bold text-success">${currencyFormatter.format(downPaymentAmount)}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="result-label mb-2">Total Closing Costs</p>
-                        <p class="result-value">
-                            ${currencyFormatter.format(totalClosingCosts)}
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4 pt-4 border-top">
-                    <p class="text-muted fw-bold mb-2">Closing Cost Breakdown:</p>
-                    <p class="mb-1 text-primary">Lender Fees (Origination): ${currencyFormatter.format(totalLenderFees)}</p>
-                    <p class="mb-1 text-primary">Third-Party Fees (Appraisal, Title, etc.): ${currencyFormatter.format(totalThirdPartyFees)}</p>
-                    <p class="mb-1 text-primary">Prepaid Items (Taxes, Insurance): ${currencyFormatter.format(totalPrepaidItems)}</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
-
-    // Attach handler to the form
-    document.getElementById('closing-cost-form').addEventListener('submit', handleClosingCosts);
-    
-    // Attach event listeners to update the loan amount display immediately
-    document.getElementById('home-price').addEventListener('input', updateLoanAmountDisplay);
-    document.getElementById('down-payment-percent').addEventListener('input', updateLoanAmountDisplay);
-
-    // Initial calculation for default value on load
-    window.onload = function() {
-        updateLoanAmountDisplay();
-        document.getElementById('closing-cost-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

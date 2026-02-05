@@ -4,348 +4,268 @@
 
 {% block meta_description %}Calculate your housing-to-income ratio (Front-End DTI) to see if your PITI payment is affordable based on your gross monthly income.{% endblock %}
 
-{% block meta_keywords %}piti as percentage of income, housing affordability calculator, 28 percent rule, front-end dti, mortgage budgeting, piti ratio{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Financial Health" Green Theme */
-    .solver-wrapper {
-        background: #f8fff8; /* Very light green/white */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1000px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dcfce7; /* Light Mint Green */
-        border: 2px solid #10b981; /* Green accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #065f46; /* Dark Green */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --health-green: #059669;
+        --health-dark: #064e3b;
+        --health-bg: #f0fdf4;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #6ee7b7; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #d1fae5;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--health-bg);
+        border-right: 1px solid #d1fae5;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #059669;
-    }
-    .form-control-custom:focus {
-        border-color: #10b981;
-        box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--health-dark);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #ecfdf5; /* Very Light Green */
-        border-left: 5px solid #059669; /* Darker Green accent */
+    .ratio-display-box {
+        background-color: white;
+        border: 2px solid #6ee7b7;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
+    .value-large {
+        font-size: 4rem;
+        font-weight: 800;
+        line-height: 1;
     }
-    
-    /* Styles for Percentage display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #064e3b; /* Very Dark Green */
-    }
-    
-    .percentage-value {
-        font-size: 3.5rem;
-        font-weight: 900;
-    }
-    
-    .text-dark-green { color: #064e3b !important; }
-    .text-success { color: #10b981 !important; }
-    .text-warning { color: #f59e0b !important; }
-    .text-danger { color: #ef4444 !important; }
 
+    .stat-card-mini {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .progress {
+        height: 12px;
+        border-radius: 10px;
+        background-color: #e2e8f0;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">💸 PITI as a Percentage of Income Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Check your housing affordability against the **28% Rule** by calculating your Front-End Debt-to-Income (DTI) ratio.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-shield-check text-success me-2"></i>Affordability Health Check</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            The <strong>28% Rule</strong> suggests that your mortgage payment (PITI) should not exceed 28% of your gross monthly income.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="piti-percent-form" class="row g-4">
-            
-            <!-- Gross Monthly Income -->
-            <div class="col-lg-5">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-green p-2 rounded mb-4">1. Gross Monthly Income</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="piti-percent-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Income & Costs</h6>
                     
-                    <div class="input-box mb-4">
-                        <label for="income-input">Total Gross Monthly Income:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="income-input" 
-                               value="7000" 
-                               min="1"
-                               step="100"
-                               required
-                               class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">Your total income before taxes and deductions.</small>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- PITI Components -->
-            <div class="col-lg-7">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-green p-2 rounded mb-4">2. Total Monthly Housing Costs (PITI+HOA)</h4>
-                    
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="pi-input">Principal & Interest (P&I):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="pi-input" 
-                                   value="1500" 
-                                   min="0" 
-                                   step="any"
-                                   required 
-                                   class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="taxes-input">Property Taxes (Monthly):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="taxes-input" 
-                                   value="300" 
-                                   min="0" 
-                                   step="any"
-                                   required 
-                                   class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="insurance-input">Homeowners Insurance (Monthly):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="insurance-input" 
-                                   value="120" 
-                                   min="0" 
-                                   step="any"
-                                   required 
-                                   class="form-control form-control-custom">
-                            </div>
-                        </div>
-                        <div class="col-md-6 input-box mb-3">
-                            <label for="hoa-input">HOA / Other Fees (Monthly):</Nabel>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="hoa-input" 
-                                   value="0" 
-                                   min="0" 
-                                   step="any"
-                                   required 
-                                   class="form-control form-control-custom">
-                            </div>
+                    <div class="mb-4">
+                        <label class="form-label">Gross Monthly Income</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="income-input" class="form-control border-start-0 ps-0" placeholder="e.g. 7500" required>
                         </div>
                     </div>
 
-                </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg bg-success border-0">
-                Calculate Housing Ratio
-            </button>
-            </div>
-        </form>
+                    <div class="mb-3">
+                        <label class="form-label">Principal & Interest</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="pi-input" class="form-control border-start-0 ps-0" placeholder="e.g. 1600" required>
+                        </div>
+                    </div>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                    <div class="mb-3">
+                        <label class="form-label">Monthly Property Taxes</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="taxes-input" class="form-control border-start-0 ps-0" placeholder="e.g. 350" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Homeowners Insurance</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="insurance-input" class="form-control border-start-0 ps-0" placeholder="e.g. 125" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">HOA / Fees (Monthly)</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="hoa-input" class="form-control border-start-0 ps-0" placeholder="0" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm" style="background-color: var(--health-green); border: none;">
+                        Assess Affordability <i class="bi bi-heart-pulse-fill ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Assessment</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-calculator display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Ready for Analysis</h4>
+                    <p>Enter your income and projected housing costs to see where you stand on the affordability scale.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="ratio-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Front-End DTI Ratio</span>
+                        <div class="value-large mb-2" id="ratio-display">0.0%</div>
+                        <div class="progress mt-3">
+                            <div id="ratio-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4 mt-2">
+                        <div class="col-md-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Total Monthly PITI</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="total-piti-display">$0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Income Utilized</span>
+                                <div class="h5 fw-bold mb-0" id="status-badge">Calculating...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light text-start border">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle-fill me-2 text-success"></i>Understanding the Ratio</h6>
+                        <p class="small text-muted mb-0">
+                            Lenders use this percentage to determine your ability to pay. While <strong>28%</strong> is the gold standard for "A-paper" conventional loans, many programs (like FHA) allow for higher ratios if you have good credit.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-circle-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('piti-percent-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
 
-    /**
-     * Gathers all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            income: parseFloat(document.getElementById('income-input').value),
-            pi: parseFloat(document.getElementById('pi-input').value),
-            taxes: parseFloat(document.getElementById('taxes-input').value),
-            insurance: parseFloat(document.getElementById('insurance-input').value),
-            hoa: parseFloat(document.getElementById('hoa-input').value),
-        };
-        
-        for (const key in inputs) {
-            if (isNaN(inputs[key])) {
-                throw new Error(`Invalid Input: Please ensure all fields are valid numbers.`);
-            }
-        }
-        return inputs;
-    }
-    
-    /**
-     * Provides analysis based on the percentage.
-     */
-    function getAnalysis(percentage) {
-        let analysisText = "";
-        let colorClass = "text-success";
-        
-        if (percentage <= 28) {
-            analysisText = "<strong>Excellent (Meets 28% Rule):</strong> Your housing costs are well within the ideal range. This is highly favorable for mortgage approval.";
-            colorClass = "text-success";
-        } else if (percentage <= 36) {
-            analysisText = "<strong>Good (Manageable):</strong> Your ratio is acceptable to many lenders, especially for FHA loans, but it is above the conventional 28% ideal.";
-            colorClass = "text-warning";
-        } else if (percentage <= 43) {
-            analysisText = "<strong>High (Caution):</strong> This ratio is considered aggressive. You may be 'house-poor' and have difficulty qualifying for conventional loans without strong compensating factors.";
-            colorClass = "text-danger";
-        } else {
-            analysisText = "<strong>Extremely High (Risk):</strong> This ratio is generally not approved by lenders as it indicates a high risk of being over-leveraged in your housing payment.";
-            colorClass = "text-danger";
-        }
-        
-        return { analysisText, colorClass };
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     * PITI as % of Income = Total PITI / Gross Monthly Income
-     */
-    function handlePitiPercent(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        const income = parseFloat(document.getElementById('income-input').value);
+        const pi = parseFloat(document.getElementById('pi-input').value);
+        const taxes = parseFloat(document.getElementById('taxes-input').value);
+        const ins = parseFloat(document.getElementById('insurance-input').value);
+        const hoa = parseFloat(document.getElementById('hoa-input').value);
 
-            // 1. Validation
-            if (i.income <= 0) {
-                throw new Error("Gross Monthly Income must be greater than zero.");
-            }
-            if (i.pi < 0 || i.taxes < 0 || i.insurance < 0 || i.hoa < 0) {
-                 throw new Error("Housing costs cannot be negative.");
-            }
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // 2. Calculation
-            const totalPITI = i.pi + i.taxes + i.insurance + i.hoa;
-            const percentage = (totalPITI / i.income) * 100;
-            
-            const { analysisText, colorClass } = getAnalysis(percentage);
-            
-            // 3. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-green mb-4">Housing-to-Income Ratio (Front-End DTI)</h4>
-                
-                <div class="text-center mb-4">
-                    <p class="result-label">HOUSING COSTS AS PERCENTAGE OF INCOME</p>
-                    <p class="percentage-value mb-0 ${colorClass}">
-                        ${percentage.toFixed(1)}%
-                    </p>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark-green mb-3">Breakdown</h5>
-                <div class="row text-center">
-                    <div class="col-md-6 border-end border-success">
-                        <p class="result-label mb-2">Total Monthly Housing (PITI+HOA)</p>
-                        <p class="fs-4 fw-bold text-dark-green">${currencyFormatter.format(totalPITI)}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="result-label mb-2">Gross Monthly Income</p>
-                        <p class="fs-4 fw-bold text-dark-green">${currencyFormatter.format(i.income)}</p>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4 p-3 bg-light rounded">
-                    <p class="mb-0 ${colorClass}">${analysisText}</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (isNaN(income) || income <= 0 || isNaN(pi) || isNaN(taxes) || isNaN(ins) || isNaN(hoa)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please provide valid numbers for all fields. Income must be greater than zero.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('piti-percent-form').addEventListener('submit', handlePitiPercent);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('piti-percent-form').dispatchEvent(new Event('submit'));
-    };
+        // Calculation
+        const totalPITI = pi + taxes + ins + hoa;
+        const ratio = (totalPITI / income) * 100;
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        const ratioEl = document.getElementById('ratio-display');
+        const progressEl = document.getElementById('ratio-progress');
+        const statusEl = document.getElementById('status-badge');
+
+        ratioEl.textContent = ratio.toFixed(1) + '%';
+        document.getElementById('total-piti-display').textContent = currency.format(totalPITI);
+
+        // Visual Feedback Logic
+        progressEl.style.width = Math.min(ratio, 100) + '%';
+        
+        if (ratio <= 28) {
+            ratioEl.style.color = 'var(--health-green)';
+            progressEl.className = 'progress-bar bg-success';
+            statusEl.textContent = "Safe Range";
+            statusEl.className = "h5 fw-bold mb-0 text-success";
+        } else if (ratio <= 36) {
+            ratioEl.style.color = '#f59e0b';
+            progressEl.className = 'progress-bar bg-warning';
+            statusEl.textContent = "Moderate";
+            statusEl.className = "h5 fw-bold mb-0 text-warning";
+        } else {
+            ratioEl.style.color = '#ef4444';
+            progressEl.className = 'progress-bar bg-danger';
+            statusEl.textContent = "High Risk";
+            statusEl.className = "h5 fw-bold mb-0 text-danger";
+        }
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

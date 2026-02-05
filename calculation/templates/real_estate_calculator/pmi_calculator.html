@@ -4,279 +4,214 @@
 
 {% block meta_description %}Estimate your monthly and annual Private Mortgage Insurance (PMI) costs based on your loan amount and the required PMI rate.{% endblock %}
 
-{% block meta_keywords %}PMI calculator, private mortgage insurance, mortgage cost, monthly PMI, annual PMI rate, loan amount{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling to match the original Blue Theme */
-    .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 900px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+        --pmi-orange: #f97316;
+        --pmi-dark: #c2410c;
+        --slate-bg: #f8fafc;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: var(--slate-bg);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1d4ed8;
-    }
-    .form-control-custom:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #fff7ed; /* Very Light Orange/Peach */
-        border-left: 5px solid #f97316; /* Orange accent */
+    .result-display-box {
+        background-color: #fff7ed;
+        border: 2px solid #fdba74;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for PMI display */
-    .result-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #c2410c; /* Dark Orange */
-    }
-    
-    .result-value {
-        font-size: 2.8rem;
-        font-weight: 900;
-        color: #f97316; /* Bright Orange */
+    .pmi-value {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--pmi-orange);
+        line-height: 1;
     }
 
-    .monthly-pmi-box {
-        background-color: #ffedd5;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #fdbf6b;
+    .annual-stat {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1rem;
     }
 
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .info-callout {
+        border-left: 4px solid var(--pmi-orange);
+        background-color: #fffaf5;
+        padding: 1.25rem;
+        border-radius: 0 0.75rem 0.75rem 0;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+        .col-lg-8 { width: 100% !important; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🛡️ PMI (Private Mortgage Insurance) Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Estimate the additional **monthly cost** associated with Private Mortgage Insurance (PMI), required when your Loan-to-Value (LTV) ratio is above 80%.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-shield-check text-primary me-2"></i>PMI Premium Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Estimate your monthly Private Mortgage Insurance (PMI) costs. Most lenders require PMI if your down payment is less than 20%.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="pmi-form" class="row g-4">
-            
-            <!-- Loan Amount Input -->
-            <div class="col-md-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Loan Principal</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="pmi-form">
+                    <div class="mb-4">
+                        <label class="form-label text-primary">Loan Principal</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0">$</span>
+                            <input type="number" id="loan-amount" class="form-control border-start-0 ps-0 form-control-lg" placeholder="e.g. 320000" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label">Annual PMI Rate (%)</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="pmi-rate" class="form-control border-end-0" placeholder="e.g. 0.65" step="0.01" required>
+                            <span class="input-group-text bg-white border-start-0">%</span>
+                        </div>
+                        <small class="text-muted d-block mt-2">Standard rates range from 0.5% to 1.5%.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Calculate Cost <i class="bi bi-calculator ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Fields</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-receipt-cutoff display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Premium Estimate</h4>
+                    <p>Enter your mortgage details to see the impact of PMI on your monthly budget.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-pmi-dark mb-2 d-block">Monthly PMI Payment</span>
+                        <div class="pmi-value mb-2" id="monthly-pmi-display">$0.00</div>
+                        <p class="text-muted small mb-0">Added to your monthly PITI payment</p>
+                    </div>
+
                     
-                    <div class="input-box mb-3">
-                        <label for="loan-amount">Total Mortgage Loan Amount:</label>
-                        <div class="input-group">
-                            <span class="input-group-text fw-bold text-lg text-secondary">$</span>
-                            <input type="number" id="loan-amount" 
-                               value="320000" 
-                               min="1"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <div class="annual-stat d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="form-label d-block mb-0">Total Annual Cost</span>
+                                    <small class="text-muted" id="pmi-rate-summary">At 0.00% rate</small>
+                                </div>
+                                <div class="h4 fw-bold text-dark mb-0" id="annual-pmi-display">$0.00</div>
+                            </div>
                         </div>
-                        <small class="text-muted">The total amount you are borrowing.</small>
+                    </div>
+
+                    <div class="info-callout shadow-sm">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle-fill me-2 text-pmi-orange"></i>PMI Removal Rules</h6>
+                        <p class="small text-muted mb-0">
+                            You can request PMI removal when your loan-to-value (LTV) ratio reaches **80%**. Lenders are legally required to automatically cancel it when you reach **78%** LTV based on the original purchase price.
+                        </p>
                     </div>
                 </div>
-            </div>
 
-            <!-- PMI Rate Input -->
-            <div class="col-md-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. Annual PMI Rate</h4>
-
-                    <div class="input-box mb-3">
-                        <label for="pmi-rate">Annual PMI Rate (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="pmi-rate" 
-                               value="0.65" 
-                               min="0.01" 
-                               max="5.0"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text fw-bold text-lg text-secondary">%</span>
-                        </div>
-                        <small class="text-muted">Typical rates range from 0.5% to 1.5%.</small>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2 text-danger"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate PMI Payments
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
+    const form = document.getElementById('pmi-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
 
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handlePMI(e) {
+    const currencyFormatter = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
+    });
+
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const loanAmount = parseFloat(document.getElementById('loan-amount').value);
-        const pmiRate = parseFloat(document.getElementById('pmi-rate').value);
-        
-        // 2. Input Validation
-        if (isNaN(loanAmount) || isNaN(pmiRate) || loanAmount <= 0 || pmiRate <= 0) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter positive values for the Loan Amount and the Annual PMI Rate.</p>`;
-            displayResult(true, htmlContent);
+        const loan = parseFloat(document.getElementById('loan-amount').value);
+        const rate = parseFloat(document.getElementById('pmi-rate').value);
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(loan) || loan <= 0 || isNaN(rate) || rate <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please enter valid positive numbers for the loan amount and annual rate.";
             return;
         }
 
-        try {
-            // Convert percentage rate to decimal (e.g., 0.65% becomes 0.0065)
-            const pmiRateDecimal = pmiRate / 100;
-            
-            // 3. Calculate Amounts
-            const annualPMICost = loanAmount * pmiRateDecimal;
-            const monthlyPMIPayment = annualPMICost / 12;
-            
-            // 4. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-orange-600 mb-4">Estimated PMI Cost Breakdown</h4>
-                
-                <div class="row text-center align-items-center">
-                    
-                    <!-- Monthly PMI Payment -->
-                    <div class="col-md-6 mb-4 border-end border-orange-400">
-                        <p class="result-label">Estimated Monthly PMI Payment</p>
-                        <div class="monthly-pmi-box">
-                             <p class="result-value mb-0">
-                                ${currencyFormatter.format(monthlyPMIPayment)}
-                            </p>
-                        </div>
-                        <p class="text-muted small mt-2">Added to your monthly P&I payment.</p>
-                    </div>
+        const annualCost = loan * (rate / 100);
+        const monthlyCost = annualCost / 12;
 
-                    <!-- Annual PMI Cost -->
-                    <div class="col-md-6 mb-4">
-                        <p class="result-label">Annual PMI Cost (${pmiRate.toFixed(2)}%)</p>
-                        <p class="result-value text-muted">
-                            ${currencyFormatter.format(annualPMICost)}
-                        </p>
-                        <p class="text-muted small">Based on a loan amount of ${currencyFormatter.format(loanAmount)}.</p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
+        // UI Injection
+        resultsUi.classList.remove('d-none');
+        document.getElementById('monthly-pmi-display').textContent = currencyFormatter.format(monthlyCost);
+        document.getElementById('annual-pmi-display').textContent = currencyFormatter.format(annualCost);
+        document.getElementById('pmi-rate-summary').textContent = `At ${rate.toFixed(2)}% annual rate`;
+    });
 
-                <!-- PMI Removal Note -->
-                <div class="text-center">
-                    <p class="fw-bold text-orange-600 mb-2">Remembering PMI Removal:</p>
-                    <p class="text-muted small">
-                        For conventional loans, PMI is automatically canceled once your Loan-to-Value (LTV) ratio reaches **78%** of the original home value, or upon your written request at **80% LTV** (if current on payments).
-                    </p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
-
-    // Attach handler to the form
-    document.getElementById('pmi-form').addEventListener('submit', handlePMI);
-
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('pmi-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

@@ -2,360 +2,251 @@
 
 {% block title %}Construction Loan Interest Calculator{% endblock %}
 
-{% block meta_description %}Calculate the estimated total interest and maximum monthly interest payment during the interest-only draw period of a construction loan.{% endblock %}
-
-{% block meta_keywords %}construction loan calculator, interest-only construction, draw period cost, building finance, construction budgeting{% endblock %}
+{% block meta_description %}Calculate estimated total interest and peak monthly interest payments during the construction draw period.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Blueprint" Blue/Cyan Theme */
-    .solver-wrapper {
-        background: #f7f9fa; /* Light Blueprint background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 950px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #e6f7ff; /* Very Light Cyan */
-        border: 2px solid #0077b6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #004b7a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --blueprint-blue: #0077b6;
+        --blueprint-dark: #004b7a;
+        --blueprint-bg: #f0f9ff;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #90e0ef; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #bae6fd;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--blueprint-bg);
+        border-right: 1px solid #bae6fd;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #0077b6;
-    }
-    .form-control-custom:focus {
-        border-color: #0077b6;
-        box-shadow: 0 0 0 0.25rem rgba(0, 119, 182, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--blueprint-dark);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f0faff; /* Pale Blue/White */
-        border-left: 5px solid #0077b6; /* Blue accent */
+    .interest-display-box {
+        background-color: white;
+        border: 2px solid #90e0ef;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Interest display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #004b7a; /* Dark Blue */
-    }
-    
-    .interest-value {
+    .value-large {
         font-size: 3.5rem;
-        font-weight: 900;
-        color: #0077b6; /* Bright Blue */
-    }
-    
-    .max-interest-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: #00b4d8; /* Cyan */
+        font-weight: 800;
+        color: var(--blueprint-blue);
+        line-height: 1;
     }
 
-    .text-dark-blue { color: #004b7a !important; }
-    .text-blue { color: #0077b6 !important; }
+    .stat-card-mini {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+    }
 
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .step-badge {
+        background: var(--blueprint-blue);
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        margin-right: 8px;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🏗️ Construction Loan Interest Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Calculate the **estimated total interest** paid during the interest-only construction draw period.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-crane text-primary me-2"></i>Construction Interest Forecaster</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Estimate the carrying costs of your build. Unlike standard mortgages, interest is only paid on the portion of the loan currently "drawn" or spent.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="construction-form" class="row g-4 justify-content-center">
-            
-            <!-- Financial Inputs -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-blue p-2 rounded mb-4">1. Loan & Rate Details</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="construction-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Project Parameters</h6>
                     
-                    <div class="input-box mb-4">
-                        <label for="max-loan-amount">Maximum Construction Loan Amount:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="max-loan-amount" 
-                               value="500000" 
-                               min="1000"
-                               step="1000"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-4">
+                        <label class="form-label">Total Loan Commitment</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="max-loan-amount" class="form-control border-start-0 ps-0" placeholder="e.g. 450000" required>
                         </div>
-                        <small class="text-muted">The total maximum amount the bank will lend for construction.</small>
                     </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="interest-rate">Annual Interest Rate (During Draw Period):</label>
-                        <div class="input-group">
-                            <input type="number" id="interest-rate" 
-                               value="7.5" 
-                               min="0.01" 
-                               max="20"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                             <span class="input-group-text">%</span>
+
+                    <div class="mb-4">
+                        <label class="form-label">Annual Interest Rate</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" step="0.01" id="interest-rate" class="form-control border-end-0" placeholder="e.g. 7.25" required>
+                            <span class="input-group-text bg-white border-start-0 text-muted">%</span>
                         </div>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">Build Months</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" id="draw-months" class="form-control border-end-0" placeholder="12" required>
+                                <span class="input-group-text bg-white border-start-0 text-muted">M</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Avg. Draw %</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" id="avg-draw-percent" class="form-control border-end-0" placeholder="50" required>
+                                <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" style="background-color: var(--blueprint-blue); border: none;">
+                        Calculate Carrying Costs <i class="bi bi-calculator-fill ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Project</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-building-gear display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Build Finance Model</h4>
+                    <p>Provide your total loan amount and estimated construction timeline to generate an interest-only expense forecast.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="interest-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Est. Total Interest (Draw Period)</span>
+                        <div class="value-large mb-2" id="total-interest-display">$0.00</div>
+                        <div id="avg-monthly-text" class="text-muted fw-bold small">~$0.00 MONTHLY AVERAGE</div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4 mt-2">
+                        <div class="col-md-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Peak Interest Payment</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="peak-interest-display">$0</div>
+                                <small class="text-muted">At 100% disbursement</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Avg. Balance Held</span>
+                                <div class="h5 fw-bold mb-0 text-primary" id="avg-balance-display">$0</div>
+                                <small class="text-muted">Based on draw %</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light text-start border">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-square-fill me-2 text-info"></i>What is Average Draw?</h6>
+                        <p class="small text-muted mb-0">
+                            Because you don't use all the money on Day 1, your average balance is typically around <strong>50-60%</strong> of the total loan. This estimate helps you budget for the monthly bills sent by your lender during construction.
+                        </p>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Term & Draw Inputs -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark-blue p-2 rounded mb-4">2. Draw Schedule Estimates</h4>
-                    
-                    <div class="input-box mb-4">
-                        <label for="draw-period-months">Construction Draw Period (Months):</label>
-                        <div class="input-group">
-                            <input type="number" id="draw-period-months" 
-                               value="12" 
-                               min="1" 
-                               max="36"
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">Months</span>
-                        </div>
-                        <small class="text-muted">The length of the interest-only phase (time to build).</small>
-                    </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="avg-draw-percent">Average Percentage of Loan Drawn:</label>
-                        <div class="input-group">
-                            <input type="number" id="avg-draw-percent" 
-                               value="50" 
-                               min="10" 
-                               max="100"
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                        <small class="text-muted">Estimate of the average principal balance during the draw period (e.g., 50% if draws are linear).</small>
+
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: #00b4d8; border: none;">
-                Calculate Interest Costs
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('construction-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     });
 
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Gathers and validates all inputs from the form.
-     */
-    function getInputs() {
-        const inputs = {
-            loanAmount: parseFloat(document.getElementById('max-loan-amount').value),
-            interestRate: parseFloat(document.getElementById('interest-rate').value),
-            drawPeriodMonths: parseInt(document.getElementById('draw-period-months').value),
-            avgDrawPercent: parseFloat(document.getElementById('avg-draw-percent').value),
-        };
-        
-        if (isNaN(inputs.loanAmount) || inputs.loanAmount < 100) {
-            throw new Error("Loan Amount must be a positive value.");
-        }
-        if (isNaN(inputs.interestRate) || inputs.interestRate <= 0) {
-            throw new Error("Interest Rate must be greater than 0%.");
-        }
-        if (isNaN(inputs.drawPeriodMonths) || inputs.drawPeriodMonths < 1) {
-            throw new Error("Draw Period must be at least 1 month.");
-        }
-         if (isNaN(inputs.avgDrawPercent) || inputs.avgDrawPercent < 0 || inputs.avgDrawPercent > 100) {
-            throw new Error("Average Draw Percentage must be between 0 and 100.");
-        }
-        
-        return inputs;
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleConstructionCalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
+        const maxLoan = parseFloat(document.getElementById('max-loan-amount').value);
+        const rate = parseFloat(document.getElementById('interest-rate').value);
+        const months = parseInt(document.getElementById('draw-months').value);
+        const drawPct = parseFloat(document.getElementById('avg-draw-percent').value);
 
-            const monthlyRate = (i.interestRate / 100) / 12;
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // 1. Calculate Maximum Monthly Interest (assuming 100% of loan is drawn)
-            const maxMonthlyInterest = i.loanAmount * monthlyRate;
-
-            // 2. Calculate Estimated Average Balance and Total Interest Paid
-            const avgBalance = i.loanAmount * (i.avgDrawPercent / 100);
-            const avgMonthlyInterest = avgBalance * monthlyRate;
-            const totalInterestPaid = avgMonthlyInterest * i.drawPeriodMonths;
-
-            // 3. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-blue mb-4">Draw Period Interest Summary</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Total Estimated Interest -->
-                    <div class="col-md-6 mb-3 border-end border-blue">
-                        <p class="result-label">ESTIMATED TOTAL INTEREST COST</p>
-                        <p class="interest-value mb-0 text-blue">
-                            ${currencyFormatterCents.format(totalInterestPaid)}
-                        </p>
-                        <small class="text-muted">Interest paid over the ${i.drawPeriodMonths} month draw period.</small>
-                    </div>
-
-                    <!-- Maximum Monthly Interest -->
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">MAXIMUM MONTHLY INTEREST PAYMENT</p>
-                        <p class="max-interest-value mb-0">
-                            ${currencyFormatterCents.format(maxMonthlyInterest)}
-                        </p>
-                        <small class="text-muted">Worst-case scenario (if 100% of loan is drawn).</small>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark-blue mb-3">Key Metric Breakdown</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-9">
-                        <table class="table table-sm table-striped">
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold">Max Loan Amount</td>
-                                    <td class="text-end">${currencyFormatter.format(i.loanAmount)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Average Principal Balance (${i.avgDrawPercent.toFixed(0)}%)</td>
-                                    <td class="text-end">${currencyFormatter.format(avgBalance)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Estimated Average Monthly Interest</td>
-                                    <td class="text-end">${currencyFormatterCents.format(avgMonthlyInterest)}</td>
-                                </tr>
-                                <tr class="table-primary">
-                                    <td class="fw-bolder fs-6 text-dark-blue">Total Interest Paid</td>
-                                    <td class="text-end fw-bolder fs-6 text-blue">${currencyFormatterCents.format(totalInterestPaid)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (isNaN(maxLoan) || maxLoan <= 0 || isNaN(rate) || isNaN(months) || months < 1 || isNaN(drawPct)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please fill in all fields with valid positive numbers.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('construction-form').addEventListener('submit', handleConstructionCalc);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('construction-form').dispatchEvent(new Event('submit'));
-    };
+        // Calculation
+        const monthlyRate = (rate / 100) / 12;
+        const avgBalance = maxLoan * (drawPct / 100);
+        const avgMonthlyInterest = avgBalance * monthlyRate;
+        const totalInterest = avgMonthlyInterest * months;
+        const peakInterest = maxLoan * monthlyRate;
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('total-interest-display').textContent = currency.format(totalInterest);
+        document.getElementById('avg-monthly-text').textContent = `~${currency.format(avgMonthlyInterest)} MONTHLY AVERAGE`;
+        document.getElementById('peak-interest-display').textContent = currency.format(peakInterest);
+        document.getElementById('avg-balance-display').textContent = currency.format(avgBalance);
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

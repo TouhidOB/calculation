@@ -4,457 +4,276 @@
 
 {% block meta_description %}Estimate the cash you will walk away with after selling your home, factoring in mortgage payoff, commissions, and fixed closing costs.{% endblock %}
 
-{% block meta_keywords %}seller net proceeds, home sale calculator, real estate commission, mortgage payoff, cash at closing, selling expenses{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for an Amber/Gold Theme (representing a gain) */
-    .solver-wrapper {
-        background: #fffbf5; /* Very light orange/white */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1100px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #fef3c7; /* Light Yellow/Amber */
-        border: 2px solid #f59e0b; /* Amber accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #b45309; /* Dark Orange/Brown */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 217, 119, 6;
+        --amber-primary: #d97706;
+        --amber-dark: #92400e;
+        --slate-bg: #f8fafc;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #fcd34d; 
-        border-radius: 8px;
+    body {
+        background-color: var(--slate-bg);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #fffbeb;
+        border-right: 1px solid #fde68a;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #d97706;
-    }
-    .form-control-custom:focus {
-        border-color: #f59e0b;
-        box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #92400e;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #fff7ed; /* Very light Peach/Orange */
-        border-left: 5px solid #d97706; /* Orange accent */
+    .result-display-box {
+        background-color: #fefce8;
+        border: 2px solid #fef08a;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Net Proceeds display */
-    .result-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #b45309; /* Dark Brown/Orange */
-    }
-    
-    .result-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: #d97706; /* Bright Orange */
+    .proceeds-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #166534; /* Green for gain */
+        line-height: 1;
     }
 
-    .net-proceeds-box {
-        background-color: #fefce8; /* Lighter Yellow */
-        padding: 15px;
-        border-radius: 8px;
-        border: 2px solid #d97706;
-    }
-    
-    .net-proceeds-value {
-        font-size: 2.8rem;
-        font-weight: 900;
-        color: #b45309;
+    .stat-card-mini {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
     }
 
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .cost-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">💰 Seller's Net Proceeds Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Estimate the **Net Proceeds** (cash in hand) after selling your home, accounting for commissions, fees, and the mortgage payoff.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-house-heart-fill text-amber-primary me-2"></i>Seller's Net Proceeds</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Calculate exactly what you'll walk away with at the closing table after paying off your mortgage and selling expenses.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="seller-net-form" class="row g-4">
-            
-            <!-- Sale & Mortgage Payoff -->
-            <div class="col-lg-4 col-md-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Sale Price & Payoff</h4>
-                    
-                    <div class="input-box mb-3">
-                        <label for="sale-price">Final Sale Price:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="sale-price" 
-                               value="450000" 
-                               min="1000"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+    <div class="calc-card mx-auto" style="max-width: 1150px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="seller-form">
+                    <h6 class="fw-bold text-dark mb-4">1. Sale & Payoff</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Final Sale Price</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0">$</span>
+                            <input type="number" id="sale-price" class="form-control border-start-0 ps-0" placeholder="e.g. 450000" required>
                         </div>
                     </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="mortgage-payoff">Current Mortgage Payoff Balance:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="mortgage-payoff" 
-                               value="250000" 
-                               min="0" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
+                    <div class="mb-4">
+                        <label class="form-label">Mortgage Payoff Balance</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0">$</span>
+                            <input type="number" id="mortgage-payoff" class="form-control border-start-0 ps-0" placeholder="e.g. 250000" required>
                         </div>
-                        <small class="text-muted">Includes principal and daily interest up to closing day.</small>
+                        <small class="text-muted x-small">Include any home equity lines or second mortgages.</small>
                     </div>
+
+                    <h6 class="fw-bold text-dark mb-3">2. Commissions (%)</h6>
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">Listing Agent</label>
+                            <input type="number" id="list-comm" class="form-control shadow-sm" placeholder="3.0" step="0.01">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Buyer Agent</label>
+                            <input type="number" id="buy-comm" class="form-control shadow-sm" placeholder="2.5" step="0.01">
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-3">3. Other Closing Costs ($)</h6>
+                    <div class="row g-2 mb-4">
+                        <div class="col-12 mb-2">
+                            <label class="form-label">Title, Attorney & Escrow</label>
+                            <input type="number" id="escrow-fees" class="form-control shadow-sm" placeholder="1500">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Transfer Taxes</label>
+                            <input type="number" id="transfer-tax" class="form-control shadow-sm" placeholder="2000">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Seller Credits</label>
+                            <input type="number" id="seller-credits" class="form-control shadow-sm" placeholder="1000">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 py-3 fw-bold shadow-sm">
+                        Calculate Net Proceeds <i class="bi bi-cash-coin ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Fields</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-piggy-bank display-1 mb-3 opacity-25 text-warning"></i>
+                    <h4 class="fw-bold text-dark">Proceeds Calculation</h4>
+                    <p>Enter your expected sale price and mortgage balance to see your estimated cash-in-hand.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-amber-dark mb-2 d-block">Estimated Net Proceeds</span>
+                        <div class="proceeds-value mb-2" id="net-proceeds-display">$0</div>
+                        <p class="text-muted small mb-0" id="proceeds-subtext">This is the cash you walk away with.</p>
+                    </div>
+
                     
-                    <div class="input-box">
-                        <label for="gross-proceeds-display" class="result-label">Calculated Gross Proceeds (before costs):</label>
-                        <p class="fs-4 fw-bold text-primary" id="gross-proceeds-display">$200,000</p>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1 text-primary">Equity Gain</span>
+                                <div class="h4 fw-bold mb-0 text-dark" id="equity-gain-display">$0</div>
+                                <small class="text-muted">Price - Payoff</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1 text-danger">Total Expenses</span>
+                                <div class="h4 fw-bold mb-0 text-dark" id="total-expenses-display">$0</div>
+                                <small class="text-muted">All fees and credits</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light">
+                        <h6 class="fw-bold text-dark mb-3">Expense Breakdown</h6>
+                        <div class="cost-item">
+                            <span class="text-muted small">Total Real Estate Commissions</span>
+                            <span class="fw-bold small text-danger" id="comm-amount-display">$0</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="text-muted small">Taxes & Settlement Fees</span>
+                            <span class="fw-bold small text-danger" id="fees-amount-display">$0</span>
+                        </div>
+                        <div class="cost-item border-0">
+                            <span class="text-muted small">Buyer Credits/Repairs</span>
+                            <span class="fw-bold small text-danger" id="credits-amount-display">$0</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Commission Costs -->
-            <div class="col-lg-4 col-md-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. Agent Commissions</h4>
-
-                    <div class="input-box mb-3">
-                        <label for="listing-commission">Listing Agent Commission (% of Price):</label>
-                        <div class="input-group">
-                            <input type="number" id="listing-commission" 
-                               value="3.0" 
-                               min="0" 
-                               max="10"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                    </div>
-
-                    <div class="input-box mb-3">
-                        <label for="buyer-commission">Buyer Agent Commission (% of Price):</label>
-                        <div class="input-group">
-                            <input type="number" id="buyer-commission" 
-                               value="2.5" 
-                               min="0" 
-                               max="10"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="input-box">
-                        <label for="total-commission-display" class="result-label">Calculated Total Commission:</label>
-                        <p class="fs-4 fw-bold text-primary" id="total-commission-display">$24,750</p>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-octagon fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Validation Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Fixed Costs -->
-            <div class="col-lg-4 col-md-12">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">3. Fixed Expenses & Credits</h4>
 
-                    <div class="input-box mb-3">
-                        <label for="attorney-fee">Title, Attorney, & Settlement Fees ($):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="attorney-fee" 
-                               value="1500" 
-                               min="0" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                    </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="transfer-tax">Transfer Tax & Recording Fees ($):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="transfer-tax" 
-                               value="2000" 
-                               min="0" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">Often state/county dependent.</small>
-                    </div>
-
-                    <div class="input-box">
-                        <label for="repair-credit">Buyer Closing/Repair Credits ($):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="repair-credit" 
-                               value="1000" 
-                               min="0" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">Money given to the buyer at closing.</small>
-                    </div>
-                </div>
             </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate Estimated Net Proceeds
-            </button>
-            </div>
-        </form>
-
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const form = document.getElementById('seller-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
 
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Updates the calculated gross proceeds and commission displays.
-     */
-    function updateIntermediateDisplays() {
-        const salePrice = parseFloat(document.getElementById('sale-price').value);
-        const payoff = parseFloat(document.getElementById('mortgage-payoff').value);
-        const listComm = parseFloat(document.getElementById('listing-commission').value);
-        const buyerComm = parseFloat(document.getElementById('buyer-commission').value);
-        
-        // Update Gross Proceeds
-        if (!isNaN(salePrice) && !isNaN(payoff)) {
-            const grossProceeds = salePrice - payoff;
-            document.getElementById('gross-proceeds-display').textContent = currencyFormatter.format(grossProceeds);
-        } else {
-            document.getElementById('gross-proceeds-display').textContent = 'N/A';
-        }
-
-        // Update Total Commission
-        if (!isNaN(salePrice) && !isNaN(listComm) && !isNaN(buyerComm)) {
-            const totalCommissionPercent = listComm + buyerComm;
-            const totalCommissionAmount = salePrice * (totalCommissionPercent / 100);
-            document.getElementById('total-commission-display').textContent = currencyFormatter.format(totalCommissionAmount);
-        } else {
-            document.getElementById('total-commission-display').textContent = 'N/A';
-        }
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleSellerNet(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const salePrice = parseFloat(document.getElementById('sale-price').value);
-        const mortgagePayoff = parseFloat(document.getElementById('mortgage-payoff').value);
-        
-        const commissions = {
-            listing: parseFloat(document.getElementById('listing-commission').value),
-            buyer: parseFloat(document.getElementById('buyer-commission').value),
-        };
+        // Parse Inputs
+        const price = parseFloat(document.getElementById('sale-price').value);
+        const payoff = parseFloat(document.getElementById('mortgage-payoff').value);
+        const listPct = parseFloat(document.getElementById('list-comm').value) || 0;
+        const buyPct = parseFloat(document.getElementById('buy-comm').value) || 0;
+        const escrow = parseFloat(document.getElementById('escrow-fees').value) || 0;
+        const tax = parseFloat(document.getElementById('transfer-tax').value) || 0;
+        const credits = parseFloat(document.getElementById('seller-credits').value) || 0;
 
-        const fixedCosts = {
-            attorney: parseFloat(document.getElementById('attorney-fee').value),
-            transferTax: parseFloat(document.getElementById('transfer-tax').value),
-            repairCredit: parseFloat(document.getElementById('repair-credit').value),
-        };
-        
-        // 2. Input Validation (Basic)
-        if (isNaN(salePrice) || salePrice <= 0 || isNaN(mortgagePayoff) || mortgagePayoff < 0) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive Sale Price and a non-negative Mortgage Payoff.</p>`;
-            displayResult(true, htmlContent);
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(price) || isNaN(payoff) || price <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please enter a valid sale price and mortgage payoff amount.";
             return;
         }
+
+        // Calculations
+        const equity = price - payoff;
+        const commTotal = price * ((listPct + buyPct) / 100);
+        const feesTotal = escrow + tax;
+        const totalExpenses = commTotal + feesTotal + credits;
+        const netProceeds = equity - totalExpenses;
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        const netDisplay = document.getElementById('net-proceeds-display');
         
-        for (const key in commissions) {
-            if (isNaN(commissions[key]) || commissions[key] < 0) {
-                 const htmlContent = `<p class="fw-bold text-center">Invalid Commission Input</p><p class="text-center">Please ensure all commission percentages are zero or positive.</p>`;
-                 displayResult(true, htmlContent);
-                 return;
-            }
-        }
+        netDisplay.textContent = currency.format(netProceeds);
+        netDisplay.style.color = netProceeds >= 0 ? "#166534" : "#991b1b";
         
-        for (const key in fixedCosts) {
-            if (isNaN(fixedCosts[key]) || fixedCosts[key] < 0) {
-                 const htmlContent = `<p class="fw-bold text-center">Invalid Fixed Cost Input</p><p class="text-center">Please ensure all dollar cost fields are zero or positive numbers.</p>`;
-                 displayResult(true, htmlContent);
-                 return;
-            }
-        }
+        document.getElementById('proceeds-subtext').innerHTML = netProceeds >= 0 
+            ? "Estimated cash in hand at closing." 
+            : "<span class='text-danger fw-bold'>Warning: You may need to bring cash to close.</span>";
 
+        document.getElementById('equity-gain-display').textContent = currency.format(equity);
+        document.getElementById('total-expenses-display').textContent = currency.format(totalExpenses);
+        document.getElementById('comm-amount-display').textContent = currency.format(commTotal);
+        document.getElementById('fees-amount-display').textContent = currency.format(feesTotal);
+        document.getElementById('credits-amount-display').textContent = currency.format(credits);
+    });
 
-        try {
-            // 3. Calculation Steps
-            
-            // A. Mortgage Payoff (Subtracted directly from Sale Price)
-            const grossProceeds = salePrice - mortgagePayoff;
-
-            // B. Commission Costs
-            const totalCommissionPercent = commissions.listing + commissions.buyer;
-            const totalCommissionAmount = salePrice * (totalCommissionPercent / 100);
-            
-            // C. Total Fixed Costs
-            const totalFixedCosts = fixedCosts.attorney + fixedCosts.transferTax + fixedCosts.repairCredit;
-            
-            // D. Total Selling Expenses
-            const totalSellingExpenses = totalCommissionAmount + totalFixedCosts;
-            
-            // E. Net Proceeds
-            const netProceeds = grossProceeds - totalSellingExpenses;
-
-
-            // 4. Build Summary HTML
-            const netProceedsColor = netProceeds >= 0 ? 'text-success' : 'text-danger';
-            
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-orange-600 mb-4">Estimated Cash in Hand at Closing</h4>
-                
-                <!-- Net Proceeds -->
-                <div class="text-center mb-4">
-                    <p class="result-label">ESTIMATED NET PROCEEDS</p>
-                    <div class="net-proceeds-box d-inline-block">
-                        <p class="net-proceeds-value mb-0 ${netProceedsColor}">
-                            ${currencyFormatter.format(netProceeds)}
-                        </p>
-                    </div>
-                    ${netProceeds < 0 ? '<p class="text-danger small mt-2 fw-bold">Warning: Estimated proceeds are negative (you may need to bring cash to close).</p>' : ''}
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-primary mb-3">Proceeds & Expenses Summary</h5>
-                <div class="row text-center">
-                    <div class="col-md-4 border-end border-amber-400">
-                        <p class="result-label mb-2">Sale Price</p>
-                        <p class="fs-4 fw-bold text-secondary">${currencyFormatter.format(salePrice)}</p>
-                    </div>
-                    <div class="col-md-4 border-end border-amber-400">
-                        <p class="result-label mb-2">Total Mortgage Payoff</p>
-                        <p class="fs-4 fw-bold text-danger">${currencyFormatter.format(mortgagePayoff)}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="result-label mb-2">Total Selling Expenses</p>
-                        <p class="fs-4 fw-bold text-warning">${currencyFormatter.format(totalSellingExpenses)}</p>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4 pt-4 border-top">
-                    <p class="text-muted fw-bold mb-2">Selling Expense Breakdown:</p>
-                    <p class="mb-1 text-primary">Total Commission (${totalCommissionPercent.toFixed(2)}%): ${currencyFormatterCents.format(totalCommissionAmount)}</p>
-                    <p class="mb-1 text-primary">Total Fixed Fees & Credits: ${currencyFormatterCents.format(totalFixedCosts)}</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
-
-    // Attach handler to the form
-    document.getElementById('seller-net-form').addEventListener('submit', handleSellerNet);
-    
-    // Attach event listeners to update the loan amount display immediately
-    document.getElementById('sale-price').addEventListener('input', updateIntermediateDisplays);
-    document.getElementById('mortgage-payoff').addEventListener('input', updateIntermediateDisplays);
-    document.getElementById('listing-commission').addEventListener('input', updateIntermediateDisplays);
-    document.getElementById('buyer-commission').addEventListener('input', updateIntermediateDisplays);
-
-    // Initial calculation for default value on load
-    window.onload = function() {
-        updateIntermediateDisplays();
-        document.getElementById('seller-net-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

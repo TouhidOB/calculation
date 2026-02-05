@@ -1,493 +1,259 @@
 {% extends "base.html" %}
 
-{% block title %}Internal Rate of Return (IRR) Calculator for Real Estate{% endblock %}
+{% block title %}Internal Rate of Return (IRR) Calculator{% endblock %}
 
 {% block meta_description %}Calculate the Internal Rate of Return (IRR) for a real estate investment based on initial outlay, annual cash flows, and final sale proceeds.{% endblock %}
 
-{% block meta_keywords %}IRR calculator, internal rate of return, real estate finance, investment return, NPV, cash flows, net present value{% endblock %}
-
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKyc/iM85rEkg9nO8g19z0c4n1qJkI15d9yI5M9I4KjD4+gN2V01GjJ8F4/1043K2b+I7Sg/q2N5oQ2A==" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Financial Data Teal" Theme */
     :root {
-        --main-teal: #0f766e; /* Dark Teal */
-        --light-teal: #ccfbf1; /* Pale Mint/Teal */
-        --dark-text: #042f2e;   /* Very Dark Teal text */
-        --accent-green: #34d399; /* Bright Green Accent */
-    }
-    
-    .solver-wrapper {
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1200px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: var(--light-teal);
-        border: 2px solid var(--main-teal);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--dark-text);
-        display: block;
-        margin-bottom: 5px;
+        --irr-teal: #0f766e;
+        --irr-light: #f0fdfa;
+        --irr-border: #5eead4;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #5eead4; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--irr-border);
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--irr-light);
+        border-right: 1px solid var(--irr-border);
+    }
+
+    .form-label {
         font-weight: 700;
-        color: var(--dark-text);
-        text-align: right;
-    }
-    .form-control-custom:focus {
-        border-color: var(--main-teal);
-        box-shadow: 0 0 0 0.25rem rgba(15, 118, 110, 0.25);
+        color: var(--irr-teal);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .result-section {
-        margin-top: 30px;
+    .metric-hero {
+        background-color: white;
+        border: 2px solid var(--irr-teal);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f0fffb; /* Very Light Teal */
-        border-left: 5px solid var(--main-teal);
-    }
-
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for IRR display */
-    .metric-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--dark-text);
-    }
-    
-    .metric-value {
-        font-size: 4.0rem;
+    .value-hero {
+        font-size: 3.5rem;
         font-weight: 900;
-        color: var(--main-teal);
+        color: var(--irr-teal);
         line-height: 1;
     }
 
-    .table-cashflow th {
-        background-color: var(--main-teal);
-        color: white;
+    .placeholder-state {
+        padding: 5rem 2rem;
         text-align: center;
-    }
-    .cash-outflow {
-        color: #b91c1c; /* Red */
-    }
-    .cash-inflow {
-        color: var(--dark-text);
-    }
-    .final-inflow {
-        background-color: #d1fae5;
-        font-weight: 700;
+        color: #94a3b8;
     }
 
+    .cashflow-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+
+    .year-input-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .table-schedule {
+        font-size: 0.9rem;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">📈 Internal Rate of Return (IRR) Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Analyze the annualized return for a real estate investment across a multi-year holding period.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-percent text-teal me-2"></i>IRR Performance Modeler</h1>
+        <p class="text-muted mx-auto" style="max-width: 700px;">
+            The Internal Rate of Return (IRR) is the gold standard for measuring real estate performance, accounting for both the <strong>amount</strong> and the <strong>timing</strong> of cash flows.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="irr-form" class="row g-4">
-            
-            <div class="col-lg-12">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-dark-text p-2 rounded mb-3">1. Initial Investment & Holding Period</h4>
+    <div class="calc-card mx-auto" style="max-width: 1200px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="irr-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Investment Foundation</h6>
                     
-                    <div class="row">
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="initial-investment">Initial Cash Outlay (Year 0):</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" id="initial-investment" 
-                                   value="100000" 
-                                   min="1"
-                                   step="1000"
-                                   required
-                                   class="form-control form-control-custom">
+                    <div class="mb-3">
+                        <label class="form-label">Initial Outlay (Year 0)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="initial-investment" class="form-control" placeholder="e.g. 100000" required>
+                        </div>
+                        <small class="x-small text-muted">Down payment + Closing + Rehab</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Hold Period (Years)</label>
+                        <select id="holding-period" class="form-select">
+                            <option value="3">3 Years</option>
+                            <option value="5" selected>5 Years</option>
+                            <option value="7">7 Years</option>
+                            <option value="10">10 Years</option>
+                        </select>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-3 text-uppercase small pt-3 border-top">Exit Strategy</h6>
+                    <div class="mb-4">
+                        <label class="form-label">Net Sale Proceeds</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="sale-proceeds" class="form-control" placeholder="e.g. 150000" required>
+                        </div>
+                        <small class="x-small text-muted">Net cash after mortgage payoff</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-teal w-100 py-3 fw-bold shadow-sm" style="background-color: var(--irr-teal); color: white; border: none;">
+                        Calculate Performance <i class="bi bi-lightning-fill ms-1"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state">
+                    <i class="bi bi-clock-history display-1 mb-3 opacity-25" style="color: var(--irr-teal);"></i>
+                    <h4 class="fw-bold text-dark">Awaiting Hold Period Data</h4>
+                    <p>Input your projected annual operating cash flows below to solve for the Internal Rate of Return.</p>
+                    
+                    <div class="mt-4 text-start mx-auto" style="max-width: 500px;">
+                        <label class="form-label d-block text-center">Annual Operating Cash Flows</label>
+                        <div id="dynamic-cashflow-inputs" class="cashflow-grid mt-2">
                             </div>
-                            <small class="text-muted">Includes down payment, closing costs, and initial rehab.</small>
-                        </div>
-                        
-                        <div class="col-md-6 input-box mb-4">
-                            <label for="holding-period">Holding Period (Years):</label>
-                            <input type="number" id="holding-period" 
-                               value="5" 
-                               min="2" 
-                               max="15"
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <small class="text-muted">Maximum number of years to forecast cash flows (Max 15).</small>
-                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-lg-12">
-                 <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-dark-text p-2 rounded mb-3">2. Annual Cash Flows (Years 1 to N)</h4>
-                    <div id="cashflow-inputs" class="row">
-                        </div>
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="metric-hero mb-5">
+                        <span class="form-label text-muted d-block mb-2">Annualized Internal Rate of Return</span>
+                        <div class="value-hero" id="irr-display">0.00%</div>
+                    </div>
+
+                    
+
+                    <h6 class="fw-bold text-dark mb-3 text-uppercase small border-bottom pb-2 mt-5">Cash Flow Schedule</h6>
+                    <table class="table table-sm table-schedule">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Period</th>
+                                <th>Event</th>
+                                <th class="text-end">Cash Flow</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-body">
+                            </tbody>
+                    </table>
+
+                    <div class="p-3 rounded-4 bg-light border shadow-sm mt-4">
+                        <h6 class="fw-bold text-dark mb-1 small"><i class="bi bi-info-circle-fill me-2 text-teal"></i>What is IRR?</h6>
+                        <p class="x-small text-muted mb-0">
+                            IRR is the discount rate that makes the Net Present Value (NPV) of all cash flows equal to zero. It represents the "break-even" interest rate of the investment.
+                        </p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: var(--main-teal); border: none;">
-                Calculate Internal Rate of Return (IRR)
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    });
-    
-    /**
-     * Formats a number as a percentage.
-     */
-    const percentFormatter = new Intl.NumberFormat('en-US', {
-        style: 'percent',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
+    const form = document.getElementById('irr-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const cfContainer = document.getElementById('dynamic-cashflow-inputs');
+    const periodSelect = document.getElementById('holding-period');
 
+    const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-
-    /**
-     * Generates the dynamic cash flow input fields.
-     */
-    function generateCashFlowInputs(period) {
-        const container = document.getElementById('cashflow-inputs');
-        container.innerHTML = ''; // Clear previous inputs
-        
-        if (period < 2) return;
-
-        for (let year = 1; year <= period; year++) {
-            let labelText = `Annual Cash Flow (Year ${year}):`;
-            let inputId = `cf-year-${year}`;
-            let defaultValue = 5000 + (year * 500); // Sample increasing cash flow
-            
-            let html = `
-                <div class="col-md-4 col-sm-6 input-box mb-3">
-                    <label for="${inputId}">${labelText}</label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        <input type="number" id="${inputId}" value="${defaultValue}" step="100" required class="form-control form-control-custom">
-                    </div>
+    function updateCFInputs() {
+        const years = parseInt(periodSelect.value);
+        cfContainer.innerHTML = '';
+        for (let i = 1; i <= years; i++) {
+            cfContainer.innerHTML += `
+                <div class="year-input-card shadow-sm">
+                    <label class="form-label mb-1" style="font-size:0.6rem">Year ${i}</label>
+                    <input type="number" class="form-control form-control-sm annual-cf" data-year="${i}" placeholder="$0">
                 </div>
             `;
-            container.insertAdjacentHTML('beforeend', html);
-        }
-
-        // Add the Final Sale Proceeds input separately for the last year
-        const lastYear = period;
-        const finalInputId = `sale-proceeds`;
-        const finalLabel = `Sale Proceeds (Year ${lastYear}):`;
-        const finalDefault = 250000;
-
-        const finalHtml = `
-            <div class="col-md-4 col-sm-6 input-box mb-3">
-                <label for="${finalInputId}" class="fw-bold text-danger">Final Sale Proceeds (Year ${lastYear}):</label>
-                <div class="input-group">
-                    <span class="input-group-text">$</span>
-                    <input type="number" id="${finalInputId}" value="${finalDefault}" min="0" step="1000" required class="form-control form-control-custom">
-                </div>
-                <small class="text-muted">Net Cash received after selling the asset.</small>
-            </div>
-        `;
-        container.insertAdjacentHTML('beforeend', finalHtml);
-    }
-    
-    /**
-     * Handles change in the holding period input.
-     */
-    function handleHoldingPeriodChange() {
-        const period = parseInt(document.getElementById('holding-period').value);
-        if (!isNaN(period) && period >= 2 && period <= 15) {
-            generateCashFlowInputs(period);
-        } else {
-            document.getElementById('cashflow-inputs').innerHTML = '<p class="text-center text-muted">Please select a valid holding period (2 to 15 years).</p>';
         }
     }
 
-    /**
-     * Gathers all inputs from the form.
-     */
-    function getInputs() {
-        const initialInvestment = parseFloat(document.getElementById('initial-investment').value);
-        const period = parseInt(document.getElementById('holding-period').value);
-        const saleProceeds = parseFloat(document.getElementById('sale-proceeds').value);
-        
-        if (isNaN(initialInvestment) || initialInvestment <= 0 || isNaN(period) || period < 2 || isNaN(saleProceeds) || saleProceeds < 0) {
-            throw new Error("Initial Investment, Holding Period, and Sale Proceeds must be valid positive values.");
-        }
-        
-        const cashFlows = [ -initialInvestment ]; // Year 0 is always a negative outflow
-
-        for (let year = 1; year <= period; year++) {
-            const inputId = `cf-year-${year}`;
-            const annualCF = parseFloat(document.getElementById(inputId).value);
-
-            if (isNaN(annualCF)) {
-                throw new Error(`Annual Cash Flow for Year ${year} is missing or invalid.`);
+    function calculateIRR(cashFlows) {
+        let low = -1.0, high = 10.0;
+        for (let i = 0; i < 1000; i++) {
+            let mid = (low + high) / 2;
+            let npv = 0;
+            for (let j = 0; j < cashFlows.length; j++) {
+                npv += cashFlows[j] / Math.pow(1 + mid, j);
             }
-
-            // The last cash flow includes the sale proceeds
-            if (year === period) {
-                cashFlows.push(annualCF + saleProceeds);
-            } else {
-                cashFlows.push(annualCF);
-            }
+            if (npv > 0) low = mid;
+            else high = mid;
         }
-        
-        return { initialInvestment, period, saleProceeds, cashFlows };
+        return low;
     }
 
-    /**
-     * Implements the IRR calculation (using Net Present Value iteration).
-     * @param {Array<number>} cfs - Array of cash flows [CF0, CF1, CF2, ...]
-     * @returns {number} The calculated IRR as a decimal, or NaN if not found.
-     */
-    function calculateIRR(cfs) {
-        // Simple iteration implementation to find the IRR (where NPV = 0)
-        const MAX_ITERATIONS = 100;
-        const ACCURACY = 1e-5;
-        
-        function npv(rate) {
-            let sum = 0;
-            for (let i = 0; i < cfs.length; i++) {
-                sum += cfs[i] / Math.pow(1 + rate, i);
-            }
-            return sum;
-        }
+    periodSelect.addEventListener('change', updateCFInputs);
+    updateCFInputs(); // Initial call
 
-        let rate = 0.1; // Initial guess (10%)
-        let step = 0.05;
-        
-        for (let i = 0; i < MAX_ITERATIONS; i++) {
-            let nextNpv = npv(rate);
-            
-            if (Math.abs(nextNpv) < ACCURACY) {
-                return rate; // Found the IRR
-            }
-
-            // Adjust rate based on the sign of NPV (Newton's method concept)
-            if (nextNpv > 0) {
-                rate += step;
-            } else {
-                rate -= step;
-            }
-            // Halve the step size occasionally for convergence
-            if (i % 10 === 0) {
-                step /= 2;
-            }
-            
-            // Basic divergence check
-            if (i > 10 && (rate > 10 || rate < -1)) {
-                return NaN; // Rate is wildly divergent, likely no single solution
-            }
-        }
-        
-        return NaN; // Did not converge
-    }
-
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleIRRCalc(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
-
-        try {
-            const i = getInputs();
+        
+        const initial = -Math.abs(parseFloat(document.getElementById('initial-investment').value));
+        const sale = parseFloat(document.getElementById('sale-proceeds').value);
+        const annualInputs = document.querySelectorAll('.annual-cf');
+        
+        let flows = [initial];
+        let tableHtml = `<tr><td>Year 0</td><td>Initial Investment</td><td class="text-end text-danger">${currency.format(initial)}</td></tr>`;
+        
+        annualInputs.forEach((input, index) => {
+            let val = parseFloat(input.value || 0);
+            let isLast = index === annualInputs.length - 1;
+            let totalYearFlow = isLast ? val + sale : val;
+            flows.push(totalYearFlow);
             
-            const irr = calculateIRR(i.cashFlows);
-
-            let irrDisplay, irrColor, irrMessage;
-
-            if (isNaN(irr)) {
-                irrDisplay = "N/A";
-                irrColor = "#ef4444"; // Red
-                irrMessage = "The IRR calculation did not converge. Check cash flow signs (must start negative and end positive).";
-            } else if (irr === -1) {
-                irrDisplay = "N/A";
-                irrColor = "#f97316"; // Orange
-                irrMessage = "IRR is likely -100% or less (total loss).";
-            } else {
-                irrDisplay = percentFormatter.format(irr);
-                irrColor = irr > 0 ? let(--accent-green) : "#f97316";
-                irrMessage = `This annualized return considers all cash inflows and the timing of the investment.`;
-            }
-
-
-            // --- Build Summary HTML ---
-            
-            let cashFlowTableHTML = `
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm table-striped text-center table-cashflow">
-                        <thead>
-                            <tr>
-                                <th>Year</th>
-                                <th>Description</th>
-                                <th>Cash Flow ($)</th>
-                                <th>Total Cash Flow ($)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>0</td>
-                                <td>Initial Investment (Outflow)</td>
-                                <td class="cash-outflow">${currencyFormatter.format(-i.initialInvestment)}</td>
-                                <td class="cash-outflow">${currencyFormatter.format(-i.initialInvestment)}</td>
-                            </tr>
+            tableHtml += `
+                <tr>
+                    <td>Year ${index + 1}</td>
+                    <td>${isLast ? 'Op. Cash Flow + Exit' : 'Operating Cash Flow'}</td>
+                    <td class="text-end ${totalYearFlow >= 0 ? 'text-success' : 'text-danger'}">${currency.format(totalYearFlow)}</td>
+                </tr>
             `;
+        });
 
-            for (let y = 1; y <= i.period; y++) {
-                const annualCF = parseFloat(document.getElementById(`cf-year-${y}`).value);
-                const isFinalYear = y === i.period;
-                const totalCF = isFinalYear ? annualCF + i.saleProceeds : annualCF;
-                const rowClass = isFinalYear ? 'final-inflow' : '';
-                const cfClass = totalCF >= 0 ? 'cash-inflow' : 'cash-outflow';
-                
-                cashFlowTableHTML += `
-                    <tr class="${rowClass}">
-                        <td>${y}</td>
-                        <td>
-                            Annual Cash Flow
-                            ${isFinalYear ? ' + Net Sale Proceeds' : ''}
-                        </td>
-                        <td>
-                           ${currencyFormatter.format(annualCF)} 
-                           ${isFinalYear ? ' + ' + currencyFormatter.format(i.saleProceeds) : ''}
-                        </td>
-                        <td class="${cfClass}">${currencyFormatter.format(totalCF)}</td>
-                    </tr>
-                `;
-            }
-
-            cashFlowTableHTML += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-dark-text mb-4">IRR Analysis Results</h4>
-                
-                <div class="row text-center mb-4 justify-content-center">
-                    
-                    <div class="col-12">
-                        <p class="metric-label mb-0">INTERNAL RATE OF RETURN (IRR)</p>
-                        <p class="metric-value mb-1" style="color: ${irrColor};">
-                            ${irrDisplay}
-                        </p>
-                        <small class="text-muted fw-bold">${irrMessage}</small>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-dark-text mb-3">Investment Cash Flow Schedule</h5>
-                
-                ${cashFlowTableHTML}
-                
-                <div class="p-3 bg-light rounded small text-muted">
-                    <p class="mb-0">**IRR Definition:** The discount rate at which the Net Present Value (NPV) of all cash flows (positive and negative) from a particular project equals zero.</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
-
-    // --- Initialization ---
-
-    // Attach handler to the holding period change
-    document.getElementById('holding-period').addEventListener('change', handleHoldingPeriodChange);
-    
-    // Attach handler to the form
-    document.getElementById('irr-form').addEventListener('submit', handleIRRCalc);
-    
-    // Initial setup and calculation for default value on load
-    window.onload = function() {
-        handleHoldingPeriodChange(); // Generate default cash flow inputs
-        document.getElementById('irr-form').dispatchEvent(new Event('submit')); // Trigger initial calculation
-    };
+        const irr = calculateIRR(flows);
+        
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.remove('d-none');
+        document.getElementById('irr-display').textContent = (irr * 100).toFixed(2) + "%";
+        document.getElementById('schedule-body').innerHTML = tableHtml;
+    });
 </script>
 {% endblock %}

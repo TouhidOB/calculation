@@ -2,391 +2,280 @@
 
 {% block title %}Moving Cost Estimator{% endblock %}
 
-{% block meta_description %}Estimate the total cost of your move based on home size, distance, and optional services like packing and storage.
-{% endblock %}
-
-{% block meta_keywords %}moving cost calculator, moving estimate, relocation cost, long distance moving, packing services{% endblock %}
+{% block meta_description %}Estimate the total cost of your move based on home size, distance, and optional services like packing and storage.{% endblock %}
 
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a "Highway Yellow/Blue" Theme (Movement/Travel) */
-    .solver-wrapper {
-        background: #f8fafc; /* Very light blue/white */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1000px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Pale Blue */
-        border: 2px solid #1e40af; /* Deep Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e40af; /* Deep Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --move-blue: #1e40af;
+        --move-yellow: #facc15;
+        --move-light: #eff6ff;
     }
 
-    .form-control-custom, .form-select-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #60a5fa; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #bfdbfe;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--move-light);
+        border-right: 1px solid #dbeafe;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1f2937;
-        width: 100%;
-    }
-    .form-control-custom:focus, .form-select-custom:focus {
-        border-color: #1e40af;
-        box-shadow: 0 0 0 0.25rem rgba(30, 64, 175, 0.25);
+        color: var(--move-blue);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .result-section {
-        margin-top: 30px;
+    .result-display-box {
+        background-color: white;
+        border: 2px solid var(--move-blue);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #eff6ff; /* Lighter Blue */
-        border-left: 5px solid #1e40af; /* Deep Blue accent */
-    }
-
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for Estimate display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #1e40af; /* Deep Blue */
-    }
-    
     .estimate-value {
         font-size: 3.5rem;
         font-weight: 900;
-        color: #facc15; /* Highway Yellow */
-        text-shadow: 1px 1px 2px #1e40af;
+        color: var(--move-blue);
+        line-height: 1;
     }
-    
-    .text-blue-primary { color: #1e40af !important; }
 
+    .stat-mini {
+        background: #f1f5f9;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .service-toggle {
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: 1px solid #dbeafe;
+    }
+
+    .service-toggle:hover {
+        background-color: #dbeafe !important;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🚚 Moving Cost Estimator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Get a quick, rough estimate of your moving expenses based on size, distance, and chosen services.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-truck text-primary me-2"></i>Relocation Cost Modeler</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Moving expenses vary wildly based on volume and labor. Use this model to estimate professional moving company fees and logistics surcharges.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="moving-form" class="row g-4">
-            
-            <!-- Part 1: Size & Distance -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-blue-primary p-2 rounded mb-3">1. Load Size and Travel</h4>
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="moving-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Inventory & Distance</h6>
                     
-                    <div class="input-box mb-4">
-                        <label for="home-size">Size of Home / Load Volume:</label>
-                        <select id="home-size" required class="form-select form-select-custom">
-                            <option value="800">1 Bedroom Apartment / Studio</option>
-                            <option value="1200" selected>2 Bedroom Home / Apartment</option>
-                            <option value="1800">3 Bedroom Home</option>
-                            <option value="2500">4+ Bedroom Home</option>
+                    <div class="mb-3">
+                        <label class="form-label">Home Size / Inventory Volume</label>
+                        <select id="home-size" class="form-select shadow-sm" required>
+                            <option value="" disabled selected>Select size...</option>
+                            <option value="800">Studio / 1 Bedroom Apt</option>
+                            <option value="1300">2 Bedroom Home</option>
+                            <option value="1900">3 Bedroom Home</option>
+                            <option value="2600">4+ Bedroom Home</option>
                         </select>
-                        <small class="text-muted">Determines the Base Cost (Loading, Unloading, Truck Size).</small>
                     </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="move-distance">Moving Distance (Miles):</label>
-                        <div class="input-group">
-                            <input type="number" id="move-distance" 
-                               value="150" 
-                               min="1"
-                               step="10"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">Miles</span>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-7">
+                            <label class="form-label">Total Distance</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" id="move-distance" class="form-control border-end-0" placeholder="e.g. 150" required>
+                                <span class="input-group-text bg-white border-start-0 text-muted">Miles</span>
+                            </div>
                         </div>
-                        <small class="text-muted">Affects transportation cost (Local: &lt;100 mi, Long: &ge;100 mi).</small>
+                        <div class="col-5">
+                            <label class="form-label">Fuel Index %</label>
+                            <input type="number" id="fuel-cost" class="form-control shadow-sm" placeholder="10">
+                        </div>
                     </div>
+
+                    <h6 class="fw-bold text-dark mb-3 text-uppercase small pt-3 border-top">Premium Logistics</h6>
+
+                    <div class="form-check p-2 rounded service-toggle mb-2 bg-white shadow-sm">
+                        <input class="form-check-input ms-1" type="checkbox" id="packing-service">
+                        <label class="form-check-label ms-2 small fw-bold" for="packing-service">Full Professional Packing</label>
+                    </div>
+
+                    <div class="form-check p-2 rounded service-toggle mb-2 bg-white shadow-sm">
+                        <input class="form-check-input ms-1" type="checkbox" id="storage-service">
+                        <label class="form-check-label ms-2 small fw-bold" for="storage-service">30-Day Transition Storage</label>
+                    </div>
+
+                    <div class="mb-4 mt-3">
+                        <label class="form-label">Valuation (Protection)</label>
+                        <select id="insurance-tier" class="form-select shadow-sm">
+                            <option value="0">Standard Release Value ($0.60/lb)</option>
+                            <option value="0.05">Full Value Protection (Basic)</option>
+                            <option value="0.12">High Value Protection</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" style="background-color: var(--move-blue); border: none;">
+                        Generate Estimate <i class="bi bi-arrow-right-circle ms-1"></i>
+                    </button>
                     
-                    <div class="input-box">
-                        <label for="fuel-cost">Fuel/Operating Cost Multiplier (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="fuel-cost" 
-                               value="10" 
-                               min="0" 
-                               max="50"
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Data</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-box-seam display-1 mb-3 opacity-25" style="color: var(--move-blue);"></i>
+                    <h4 class="fw-bold text-dark">Ready to Estimate?</h4>
+                    <p>Provide your move details to calculate labor costs, transportation rates, and optional service fees.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Estimated Professional Quote</span>
+                        <div class="estimate-value mb-2" id="total-cost-display">$0.00</div>
+                        <div class="badge bg-warning text-dark px-3 py-2 rounded-pill" id="move-type-badge">Local Move</div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="stat-mini text-center">
+                                <span class="form-label d-block mb-1 text-muted">Labor</span>
+                                <div class="h5 fw-bold mb-0" id="labor-display">$0</div>
+                            </div>
                         </div>
-                        <small class="text-muted">Additional cost percentage for current fuel prices and operating expenses.</small>
+                        <div class="col-md-4">
+                            <div class="stat-mini text-center">
+                                <span class="form-label d-block mb-1 text-muted">Transport</span>
+                                <div class="h5 fw-bold mb-0" id="transport-display">$0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-mini text-center">
+                                <span class="form-label d-block mb-1 text-muted">Services</span>
+                                <div class="h5 fw-bold mb-0" id="services-display">$0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-4 bg-light border shadow-sm">
+                        <h6 class="fw-bold text-dark mb-1 small"><i class="bi bi-info-square-fill me-2 text-primary"></i>Estimate Note</h6>
+                        <p class="x-small text-muted mb-0">
+                            Professional quotes are usually based on <strong>actual weight</strong> or <strong>cubic feet</strong>. This estimate uses volume averages for your selected home size.
+                        </p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Part 2: Optional Services -->
-            <div class="col-lg-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-blue-primary p-2 rounded mb-3">2. Additional Services</h4>
-                    
-                    <div class="form-check p-3 border rounded mb-3" style="background-color: #eff6ff;">
-                        <input class="form-check-input" type="checkbox" value="1" id="packing-service">
-                        <label class="form-check-label fw-bold text-dark" for="packing-service">
-                            Full Packing Service (Est. +30% of Base Cost)
-                        </label>
-                        <small class="d-block text-muted">Movers pack all boxes at origin.</small>
-                    </div>
-
-                    <div class="form-check p-3 border rounded mb-3" style="background-color: #eff6ff;">
-                        <input class="form-check-input" type="checkbox" value="1" id="storage-service">
-                        <label class="form-check-label fw-bold text-dark" for="storage-service">
-                            Temporary Storage (Est. $300 Flat Fee)
-                        </label>
-                        <small class="d-block text-muted">First month of short-term storage.</small>
-                    </div>
-
-                    <div class="input-box mb-4">
-                        <label for="insurance-tier">Valuation Coverage / Insurance:</label>
-                        <select id="insurance-tier" required class="form-select form-select-custom">
-                            <option value="0">None</option>
-                            <option value="0.05" selected>Basic Coverage (5% of Base Cost)</option>
-                            <option value="0.12">Comprehensive Coverage (12% of Base Cost)</option>
-                        </select>
-                        <small class="text-muted">Cost based on the valuation tier chosen.</small>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-geo-alt-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Invalid Route</h5>
+                        <p id="error-msg" class="mb-0 small"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: #1e40af; border: none;">
-                Generate Moving Cost Estimate
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-    
-    /**
-     * Gathers and validates all inputs.
-     */
-    function getInputs() {
-        const inputs = {
-            baseCost: parseFloat(document.getElementById('home-size').value),
-            distance: parseFloat(document.getElementById('move-distance').value),
-            packing: document.getElementById('packing-service').checked,
-            storage: document.getElementById('storage-service').checked,
-            insuranceFactor: parseFloat(document.getElementById('insurance-tier').value),
-            fuelMultiplier: parseFloat(document.getElementById('fuel-cost').value),
-        };
-        
-        if (isNaN(inputs.baseCost) || isNaN(inputs.distance) || inputs.distance < 1) {
-            throw new Error("Please ensure Home Size and Distance are valid positive values.");
-        }
-        
-        return inputs;
-    }
+    const form = document.getElementById('moving-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
 
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleMovingCalc(e) {
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
+    });
+
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            const i = getInputs();
-            let totalCost = 0;
-            let breakdown = {};
-            
-            // --- 1. Base Cost (Loading/Unloading/Labor) ---
-            const baseCost = i.baseCost;
-            totalCost += baseCost;
-            breakdown.base = baseCost;
+        const baseLabor = parseFloat(document.getElementById('home-size').value);
+        const dist = parseFloat(document.getElementById('move-distance').value);
+        const fuelIndex = parseFloat(document.getElementById('fuel-cost').value || 10);
+        const packing = document.getElementById('packing-service').checked;
+        const storage = document.getElementById('storage-service').checked;
+        const insFactor = parseFloat(document.getElementById('insurance-tier').value);
 
-            // --- 2. Distance/Transportation Cost ---
-            let distanceCost = 0;
-            const isLocal = i.distance < 100;
-            const ratePerMile = isLocal ? 5.00 : 1.50; // Local moves have higher per-mile cost due to less efficiency
-            
-            if (isLocal) {
-                 // For local moves, apply a flat fee plus distance rate
-                 distanceCost = (i.distance * ratePerMile) + 500;
-                 breakdown.distanceType = "Local Move (Flat Fee + $5/mi)";
-            } else {
-                 // For long distance moves, the primary cost is the weight/mile
-                 distanceCost = i.distance * ratePerMile * (baseCost / 1000); // Scale distance cost by load size
-                 breakdown.distanceType = "Long Distance Move (Scaled Rate)";
-            }
-            
-            totalCost += distanceCost;
-            breakdown.distance = distanceCost;
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-            // --- 3. Optional Services Cost ---
-            
-            // Packing
-            const packingCost = i.packing ? (baseCost * 0.30) : 0;
-            totalCost += packingCost;
-            breakdown.packing = packingCost;
-            
-            // Storage
-            const storageCost = i.storage ? 300 : 0;
-            totalCost += storageCost;
-            breakdown.storage = storageCost;
-            
-            // Insurance
-            const insuranceCost = baseCost * i.insuranceFactor;
-            totalCost += insuranceCost;
-            breakdown.insurance = insuranceCost;
-
-            // --- 4. Fuel/Operating Surcharge ---
-            const surchargeCost = totalCost * (i.fuelMultiplier / 100);
-            totalCost += surchargeCost;
-            breakdown.surcharge = surchargeCost;
-
-            // --- 5. Final Calculations & HTML ---
-            
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-blue-primary mb-4">Your Estimated Moving Cost</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Final Estimate -->
-                    <div class="col-12">
-                        <p class="result-label mb-2">TOTAL ESTIMATED COST TO MOVE</p>
-                        <p class="estimate-value mb-0">
-                            ${currencyFormatterCents.format(totalCost)}
-                        </p>
-                        <small class="text-muted">This estimate includes all selected services and surcharges.</small>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-blue-primary mb-3">Cost Breakdown</h5>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-9">
-                        <table class="table table-sm table-striped">
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold">Base Labor & Truck Load/Unload</td>
-                                    <td class="text-end">${currencyFormatterCents.format(breakdown.base)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">Transportation & Fuel Surcharge (${i.fuelMultiplier.toFixed(0)}%)</td>
-                                    <td class="text-end">${currencyFormatterCents.format(breakdown.distance + breakdown.surcharge)}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold text-muted ps-4">Cost of Distance (${breakdown.distanceType})</td>
-                                    <td class="text-end text-muted">${currencyFormatterCents.format(breakdown.distance)}</td>
-                                </tr>
-                                ${i.packing ? `
-                                <tr>
-                                    <td class="fw-bold">Full Packing Service (30% Surcharge)</td>
-                                    <td class="text-end">${currencyFormatterCents.format(breakdown.packing)}</td>
-                                </tr>` : ''}
-                                ${i.storage ? `
-                                <tr>
-                                    <td class="fw-bold">Temporary Storage (1st Month)</td>
-                                    <td class="text-end">${currencyFormatterCents.format(breakdown.storage)}</td>
-                                </tr>` : ''}
-                                ${i.insuranceFactor > 0 ? `
-                                <tr>
-                                    <td class="fw-bold">Valuation Coverage / Insurance</td>
-                                    <td class="text-end">${currencyFormatterCents.format(breakdown.insurance)}</td>
-                                </tr>` : ''}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-3 p-3 bg-light rounded">
-                    <p class="mb-0 text-muted small">**Disclaimer:** This estimate is based on rough industry averages and is not a binding quote. Always get an in-home assessment for a precise cost.</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (isNaN(baseLabor) || isNaN(dist) || dist < 1) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please specify home size and a valid distance.";
+            return;
         }
-    }
 
-    // Attach handler to the form
-    document.getElementById('moving-form').addEventListener('submit', handleMovingCalc);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('moving-form').dispatchEvent(new Event('submit'));
-    };
+        // 1. Transportation Logic
+        const isLongDistance = dist >= 100;
+        let transportCost = isLongDistance ? 
+            (dist * 1.50 * (baseLabor / 1000)) : 
+            ((dist * 5.00) + 500);
+
+        // 2. Services Logic
+        const packingCost = packing ? (baseLabor * 0.35) : 0;
+        const storageCost = storage ? 350 : 0;
+        const insCost = baseLabor * insFactor;
+        
+        const subtotal = baseLabor + transportCost + packingCost + storageCost + insCost;
+        const fuelSurcharge = subtotal * (fuelIndex / 100);
+        const total = subtotal + fuelSurcharge;
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('total-cost-display').textContent = currency.format(total);
+        document.getElementById('labor-display').textContent = currency.format(baseLabor);
+        document.getElementById('transport-display').textContent = currency.format(transportCost + fuelSurcharge);
+        document.getElementById('services-display').textContent = currency.format(packingCost + storageCost + insCost);
+        
+        const badge = document.getElementById('move-type-badge');
+        badge.textContent = isLongDistance ? "Interstate / Long Distance" : "Local Intra-City Move";
+        badge.className = isLongDistance ? "badge bg-primary text-white px-3 py-2 rounded-pill" : "badge bg-warning text-dark px-3 py-2 rounded-pill";
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

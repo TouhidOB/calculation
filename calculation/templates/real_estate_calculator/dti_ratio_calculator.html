@@ -4,315 +4,269 @@
 
 {% block meta_description %}Calculate your essential Front-End (Housing) and Back-End (Total Debt) Debt-to-Income Ratios for mortgage pre-approval purposes.{% endblock %}
 
-{% block meta_keywords %}DTI calculator, debt to income ratio, mortgage pre-approval, housing debt, total monthly debt, gross income{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling to match the original Blue Theme */
-    .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1000px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 37, 99, 235;
+        --dark-blue: #1e3a8a;
+        --success-emerald: #059669;
+        --warning-amber: #d97706;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1d4ed8;
-    }
-    .form-control-custom:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #ecfdf5; /* Very Light Green for Good DTI */
-        border-left: 5px solid #10b981; /* Green accent */
+    .result-display-box {
+        background-color: #ecfdf5;
+        border: 2px solid #a7f3d0;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for DTI display */
-    .dti-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #065f46; /* Dark Green */
-    }
-    
     .dti-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: #10b981; /* Bright Green */
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--success-emerald);
+        line-height: 1.1;
     }
 
-    .dti-unit {
-        font-size: 1.5rem;
+    .analysis-box {
+        background: #f8fafc;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        border: 1px solid #e2e8f0;
+        height: 100%;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .status-pill {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50rem;
+        font-size: 0.75rem;
         font-weight: 700;
-        color: #10b981;
-        margin-left: 5px;
-    }
-    
-    .analysis-text {
-        font-size: 1rem;
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px dashed #a7f3d0;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
     }
 
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+        .col-lg-8 { width: 100% !important; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">⚖️ Debt-to-Income (DTI) Ratio Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Lenders use this ratio to determine your borrowing capacity. Calculate your **Front-End** and **Back-End** DTI.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-scale text-primary me-2"></i>DTI Ratio Analyzer</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Lenders use your Debt-to-Income ratio to assess your ability to manage monthly payments and repay debts.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="dti-form" class="row g-4">
-            
-            <!-- Income Input -->
-            <div class="col-12">
-                <h4 class="h5 fw-bold text-center text-primary p-2 rounded-top mb-3">Gross Monthly Income</h4>
-                <div class="input-box mb-3 bg-white p-3 rounded shadow-sm">
-                    <label for="income-input">Total Gross Monthly Income (Before Taxes/Deductions):</label>
-                    <div class="input-group">
-                        <span class="input-group-text fw-bold text-lg text-secondary">$</span>
-                        <input type="number" id="income-input" 
-                               value="8000" 
-                               min="1"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark p-2 rounded mb-3">Proposed Housing Debt (Front-End)</h4>
-                    <p class="text-muted small text-center">(P&I + Taxes + Insurance + HOA)</p>
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="dti-form">
+                    <h6 class="fw-bold text-dark mb-4"><i class="bi bi-cash-stack me-2"></i>Financial Profile</h6>
                     
-                    <div class="input-box mb-3">
-                        <label for="housing-debt">Total Monthly Housing Payment (PITI + HOA):</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="housing-debt" value="2000" min="0" required class="form-control form-control-custom">
+                    <div class="mb-4">
+                        <label class="form-label text-primary">Gross Monthly Income</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="income-input" class="form-control form-control-lg" placeholder="e.g. 8000" required>
+                        </div>
+                        <small class="text-muted">Total before taxes & deductions.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Proposed Housing Debt</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white">$</span>
+                            <input type="number" id="housing-debt" class="form-control" placeholder="e.g. 2000" required>
+                        </div>
+                        <small class="text-muted">PITI + HOA fees.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Other Monthly Debts</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white text-danger">$</span>
+                            <input type="number" id="other-debt" class="form-control" placeholder="e.g. 500" required>
+                        </div>
+                        <small class="text-muted">Auto, Student, CC minimums.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Calculate Ratios <i class="bi bi-chevron-right ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear All</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-file-earmark-bar-graph display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Lender Insight</h4>
+                    <p>Enter your income and debt details to see your Front-End and Back-End ratios.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6 text-center">
+                            <span class="form-label">Front-End (Housing)</span>
+                            <div class="dti-value mb-1" id="front-dti-display">0%</div>
+                            <div id="front-status" class="status-pill">Standard</div>
+                        </div>
+                        <div class="col-md-6 text-center border-start">
+                            <span class="form-label">Back-End (Total Debt)</span>
+                            <div class="dti-value mb-1" id="back-dti-display">0%</div>
+                            <div id="back-status" class="status-pill">Standard</div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="col-md-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-dark p-2 rounded mb-3">Other Minimum Monthly Debts (Back-End)</h4>
-                    <p class="text-muted small text-center">(Credit Cards, Car Payments, Student Loans, etc.)</p>
-
-                    <div class="input-box mb-3">
-                        <label for="other-debt">Total Other Minimum Monthly Debt Payments:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="other-debt" value="500" min="0" required class="form-control form-control-custom border-danger text-danger">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="analysis-box">
+                                <h6 class="fw-bold text-dark"><i class="bi bi-info-circle-fill text-primary me-2"></i>Underwriting Analysis</h6>
+                                <p class="text-muted small mb-0" id="analysis-text">
+                                    Your ratios determine which loan programs you qualify for.
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate DTI Ratios
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                    <div class="mt-5 p-4 rounded-4 bg-light border border-primary border-opacity-10">
+                        <h6 class="fw-bold text-dark mb-3">Understanding the 28/36 Rule</h6>
+                        <p class="small text-muted mb-0">
+                            Many lenders follow the "28/36" guideline: your mortgage payment shouldn't exceed **28%** of your gross income, and your total debt shouldn't exceed **36%**. However, programs like FHA often allow up to **43%** or higher with compensating factors.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4">
+                        <i class="bi bi-exclamation-triangle fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a ratio as a percentage string (XX.X%).
-     */
-    function formatPercentage(ratio) {
-        return (ratio * 100).toFixed(1) + '%';
-    }
-    
-    /**
-     * Gets the analysis text based on the DTI ratio.
-     */
-    function getAnalysis(ratio, isBackEnd) {
-        const percentage = ratio * 100;
-        let analysis = "";
-        
-        if (isBackEnd) {
-            // Back-End DTI (Total Debt)
-            if (percentage <= 36) {
-                analysis = "Excellent: Your total debt load is very manageable. This ratio is typically required for conventional and prime loan approvals.";
-            } else if (percentage <= 43) {
-                analysis = "Good: You are within the acceptable range for most FHA, VA, and some Conventional loans. This is often the maximum limit for Qualified Mortgages.";
-            } else if (percentage <= 50) {
-                analysis = "Borderline: You may qualify for specific government-backed or non-conventional loans, especially if you have mitigating factors (large down payment, strong reserves).";
-            } else {
-                analysis = "High: Your DTI is likely too high for standard mortgage approval. You should focus on paying down high-interest debts or increasing your income.";
-            }
-        } else {
-            // Front-End DTI (Housing Only)
-            if (percentage <= 28) {
-                analysis = "Excellent: This is the ideal target for your housing expense burden, making approval highly likely.";
-            } else if (percentage <= 31) {
-                analysis = "Good: You are within the acceptable limits for most major loan types (FHA, Conventional).";
-            } else {
-                analysis = "High: Your proposed housing payment is high relative to your income. You may need a lower-priced home or a lower interest rate to meet lender guidelines.";
-            }
-        }
-        return analysis;
+    const form = document.getElementById('dti-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+
+    function getDTIStatus(percentage, isBackEnd) {
+        const limit = isBackEnd ? 36 : 28;
+        const maxLimit = isBackEnd ? 43 : 31;
+
+        if (percentage <= limit) return { label: 'Excellent', color: '#059669', bg: '#ecfdf5' };
+        if (percentage <= maxLimit) return { label: 'Good', color: '#d97706', bg: '#fffbeb' };
+        return { label: 'High', color: '#dc2626', bg: '#fef2f2' };
     }
 
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
+    function getDetailedAnalysis(front, back) {
+        if (back > 43) return "Your Back-End DTI is high. Lenders typically view 43% as the maximum for 'Qualified Mortgages.' You may need to pay down debt or increase income to qualify for better rates.";
+        if (front > 31) return "Your housing ratio is higher than standard guidelines. While you might qualify for an FHA loan, you may find your monthly budget tight.";
+        if (back <= 36 && front <= 28) return "Congratulations! Your ratios are within the 'Gold Standard' range. You should qualify for most conventional loan programs with the best available rates.";
+        return "Your ratios are within acceptable limits for most government-backed and conventional loans.";
     }
 
-    /**
-     * Handles form submission and triggers the DTI calculation.
-     */
-    function handleDTI(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
         const income = parseFloat(document.getElementById('income-input').value);
-        const housingDebt = parseFloat(document.getElementById('housing-debt').value);
-        const otherDebt = parseFloat(document.getElementById('other-debt').value);
-        
-        // 2. Input Validation
-        if (isNaN(income) || isNaN(housingDebt) || isNaN(otherDebt) || income <= 0 || housingDebt < 0 || otherDebt < 0) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter a positive value for Gross Monthly Income. Debt values can be zero or positive.</p>`;
-            displayResult(true, htmlContent);
+        const housing = parseFloat(document.getElementById('housing-debt').value);
+        const other = parseFloat(document.getElementById('other-debt').value);
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(income) || income <= 0 || isNaN(housing) || isNaN(other)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please provide valid financial data. Income must be greater than zero.";
             return;
         }
 
-        try {
-            const totalDebt = housingDebt + otherDebt;
-            
-            // 3. Calculate Ratios
-            const frontEndDTI = housingDebt / income;
-            const backEndDTI = totalDebt / income;
-            
-            // 4. Analysis
-            const frontEndAnalysis = getAnalysis(frontEndDTI, false);
-            const backEndAnalysis = getAnalysis(backEndDTI, true);
+        const totalDebt = housing + other;
+        const frontRatio = (housing / income) * 100;
+        const backRatio = (totalDebt / income) * 100;
 
-            // 5. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-primary mb-4">Your Calculated DTI Ratios</h4>
-                
-                <div class="row text-center">
-                    <!-- Front-End DTI -->
-                    <div class="col-md-6 mb-4 border-end border-success">
-                        <p class="dti-label">Front-End DTI (Housing Only)</p>
-                        <p class="dti-value">
-                            ${formatPercentage(frontEndDTI)}
-                        </p>
-                        <div class="analysis-text">
-                            <span class="fw-bold">Analysis:</span> ${frontEndAnalysis}
-                            <p class="mt-2 text-muted small">Calculation: ($${housingDebt.toFixed(2)} / $${income.toFixed(2)})</p>
-                        </div>
-                    </div>
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        
+        const frontDisp = document.getElementById('front-dti-display');
+        const backDisp = document.getElementById('back-dti-display');
+        frontDisp.textContent = frontRatio.toFixed(1) + '%';
+        backDisp.textContent = backRatio.toFixed(1) + '%';
 
-                    <!-- Back-End DTI -->
-                    <div class="col-md-6 mb-4">
-                        <p class="dti-label">Back-End DTI (Total Debt)</p>
-                        <p class="dti-value">
-                            ${formatPercentage(backEndDTI)}
-                        </p>
-                         <div class="analysis-text">
-                            <span class="fw-bold">Analysis:</span> ${backEndAnalysis}
-                            <p class="mt-2 text-muted small">Calculation: ($${totalDebt.toFixed(2)} / $${income.toFixed(2)})</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
+        // Styling Status Pills
+        const fStatus = getDTIStatus(frontRatio, false);
+        const bStatus = getDTIStatus(backRatio, true);
 
-    // Attach handler to the form
-    document.getElementById('dti-form').addEventListener('submit', handleDTI);
+        const fPill = document.getElementById('front-status');
+        fPill.textContent = fStatus.label;
+        fPill.style.color = fStatus.color;
+        fPill.style.backgroundColor = fStatus.bg;
+        frontDisp.style.color = fStatus.color;
 
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('dti-form').dispatchEvent(new Event('submit'));
-    };
+        const bPill = document.getElementById('back-status');
+        bPill.textContent = bStatus.label;
+        bPill.style.color = bStatus.color;
+        bPill.style.backgroundColor = bStatus.bg;
+        backDisp.style.color = bStatus.color;
+
+        document.getElementById('analysis-text').textContent = getDetailedAnalysis(frontRatio, backRatio);
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

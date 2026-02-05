@@ -4,270 +4,232 @@
 
 {% block meta_description %}Calculate the Cash-on-Cash (CoC) Return percentage by comparing annual cash flow against the total cash invested in a rental property.{% endblock %}
 
-{% block meta_keywords %}cash on cash return, coc calculator, real estate investment, return on investment, investment calculator, cash flow{% endblock %}
-
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for a Gold/Copper Theme (ROI focus) */
-    .solver-wrapper {
-        background: #fffdf5; /* Very light gold/white */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 800px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #fef3c7; /* Light Yellow/Amber */
-        border: 2px solid #d97706; /* Gold/Orange accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #92400e; /* Dark Brown/Gold */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --amber-600: #d97706;
+        --amber-50: #fffbeb;
+        --slate-100: #f1f5f9;
+        --slate-800: #1e293b;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #fcd34d; 
-        border-radius: 8px;
+    body {
+        background-color: #fafaf9;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e7e5e4;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--amber-50);
+        border-right: 1px solid #fef3c7;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #d97706;
-    }
-    .form-control-custom:focus {
-        border-color: #d97706;
-        box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #92400e;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #fff7ed; /* Very light Peach/Gold */
-        border-left: 5px solid #d97706; /* Gold accent */
+    .result-display-box {
+        background-color: white;
+        border: 2px solid #fde68a;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
+    .coc-value-large {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--amber-600);
+        line-height: 1;
     }
-    
-    /* Styles for CoC display */
-    .result-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #92400e; /* Dark Gold */
-    }
-    
-    .coc-value {
-        font-size: 3.5rem;
-        font-weight: 900;
-        color: #d97706; /* Bright Gold */
-    }
-    .coc-percent {
-        font-size: 3.5rem;
-        font-weight: 900;
-        color: #d97706; /* Bright Gold */
-    }
-    .text-success { color: #10b981 !important; }
-    .text-danger { color: #ef4444 !important; }
 
+    .stat-card-mini {
+        background: #fdfcfb;
+        border: 1px solid #e7e5e4;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #a8a29e;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🏆 Cash-on-Cash Return Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        Calculate your **Cash-on-Cash (CoC) Return**, a key metric showing the return generated on the actual cash invested in a property.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-trophy-fill text-amber-600 me-2"></i>CoC Return Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Cash-on-Cash return measures the annual return the investor made on the property in relation to the amount of mortgage paid during the same year.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="coc-form" class="row g-4 justify-content-center">
-            
-            <div class="col-lg-10">
-                <div class="input-section">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-4">Input Data</h4>
+    <div class="calc-card mx-auto" style="max-width: 1000px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="coc-form">
+                    <h6 class="fw-bold text-dark mb-4">Investment Data</h6>
                     
-                    <div class="input-box mb-4">
-                        <label for="annual-cash-flow">Annual Pre-Tax Cash Flow:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="annual-cash-flow" 
-                               value="15000" 
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-4">
+                        <label class="form-label">Annual Pre-Tax Cash Flow</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="cash-flow" class="form-control border-start-0 ps-0" placeholder="e.g. 15000" required>
                         </div>
-                        <small class="text-muted">Net Operating Income (NOI) minus Annual Debt Service (P&I payment).</small>
-                    </div>
-                    
-                    <div class="input-box mb-4">
-                        <label for="total-cash-invested">Total Cash Invested:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="total-cash-invested" 
-                               value="100000" 
-                               min="1" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                        <small class="text-muted">Down payment + Closing Costs + Initial Rehab/Capital Expenses.</small>
+                        <small class="text-muted x-small d-block mt-1">NOI minus annual mortgage payments.</small>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">Total Cash Invested</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="invested" class="form-control border-start-0 ps-0" placeholder="e.g. 100000" required>
+                        </div>
+                        <small class="text-muted x-small d-block mt-1">Down payment + closing + rehab costs.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 py-3 fw-bold shadow-sm text-white" style="background-color: var(--amber-600); border: none;">
+                        Calculate Return <i class="bi bi-percent ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Data</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-wallet2 display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">ROI Analysis Dashboard</h4>
+                    <p>Enter your annual cash flow and total investment amount to see your yield.</p>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate CoC Return
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Cash-on-Cash Return</span>
+                        <div class="coc-value-large mb-2" id="coc-display">0.00%</div>
+                        <div id="coc-status" class="badge rounded-pill bg-light text-dark border py-2 px-3 small">Performance Rating</div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1 text-muted">Numerator (Flow)</span>
+                                <div class="h4 fw-bold mb-0 text-dark" id="flow-display">$0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1 text-muted">Denominator (Equity)</span>
+                                <div class="h4 fw-bold mb-0 text-dark" id="equity-display">$0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light">
+                        <h6 class="fw-bold text-dark mb-2">Investment Strategy Insight</h6>
+                        <p class="small text-muted mb-0" id="coc-insight">
+                            CoC return is highly sensitive to leverage. Increasing your loan-to-value (LTV) can boost CoC returns, but also increases financial risk.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-octagon fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
+    const form = document.getElementById('coc-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
 
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleCoC(e) {
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
+    });
+
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const annualCashFlow = parseFloat(document.getElementById('annual-cash-flow').value);
-        const totalCashInvested = parseFloat(document.getElementById('total-cash-invested').value);
-        
-        // 2. Input Validation
-        if (isNaN(annualCashFlow) || isNaN(totalCashInvested)) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please enter valid numbers for Annual Cash Flow and Total Cash Invested.</p>`;
-            displayResult(true, htmlContent);
-            return;
-        }
-        
-        if (totalCashInvested <= 0) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Investment</p><p class="text-center">Total Cash Invested must be a positive number to calculate a return rate.</p>`;
-            displayResult(true, htmlContent);
+        const flow = parseFloat(document.getElementById('cash-flow').value);
+        const invested = parseFloat(document.getElementById('invested').value);
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if (isNaN(flow) || isNaN(invested) || invested <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Investment amount must be greater than zero.";
             return;
         }
 
-        try {
-            // 3. Calculation
-            // CoC = (Annual Cash Flow / Total Cash Invested) * 100
-            const cocReturn = (annualCashFlow / totalCashInvested) * 100;
-            
-            const cocColor = cocReturn >= 0 ? 'text-success' : 'text-danger';
-            
-            const coc_message = cocReturn >= 10 ? "Excellent! A high Cash-on-Cash Return often indicates a strong, well-leveraged investment." :
-                                cocReturn >= 6 ? "Good. This return is generally considered a solid baseline for rental property performance." : 
-                                cocReturn > 0 ? "Modest return. You may want to review expenses or consider refinancing to boost cash flow." :
-                                "Negative Return. The property is currently costing you money on an annual basis.";
+        // Calculation
+        const coc = (flow / invested) * 100;
 
-            // 4. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-primary mb-4">Calculated Cash-on-Cash Return (CoC)</h4>
-                
-                <div class="text-center mb-4">
-                    <p class="result-label">CASH-ON-CASH RETURN</p>
-                    <p class="coc-value mb-0 ${cocColor}">
-                        ${cocReturn.toFixed(2)}%
-                    </p>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-primary mb-3">Formula Breakdown</h5>
-                <div class="row text-center">
-                    <div class="col-md-6 border-end border-warning-400">
-                        <p class="result-label mb-2">Annual Cash Flow (Numerator)</p>
-                        <p class="fs-4 fw-bold text-secondary ${cocColor}">${currencyFormatter.format(annualCashFlow)}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="result-label mb-2">Total Cash Invested (Denominator)</p>
-                        <p class="fs-4 fw-bold text-secondary">${currencyFormatter.format(totalCashInvested)}</p>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4 p-3 bg-light rounded">
-                    <p class="text-muted fw-bold mb-0">${coc_message}</p>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        const displayEl = document.getElementById('coc-display');
+        displayEl.textContent = coc.toFixed(2) + "%";
+        displayEl.style.color = coc >= 0 ? "#d97706" : "#dc2626";
+
+        document.getElementById('flow-display').textContent = currency.format(flow);
+        document.getElementById('equity-display').textContent = currency.format(invested);
+
+        // Rating logic
+        const statusEl = document.getElementById('coc-status');
+        if (coc >= 12) {
+            statusEl.innerText = "Excellent Return";
+            statusEl.className = "badge rounded-pill bg-success-subtle text-success border border-success-subtle py-2 px-3 small";
+        } else if (coc >= 8) {
+            statusEl.innerText = "Strong Performance";
+            statusEl.className = "badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle py-2 px-3 small";
+        } else if (coc > 0) {
+            statusEl.innerText = "Moderate Return";
+            statusEl.className = "badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle py-2 px-3 small";
+        } else {
+            statusEl.innerText = "Negative Cash Flow";
+            statusEl.className = "badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle py-2 px-3 small";
         }
-    }
+    });
 
-    // Attach handler to the form
-    document.getElementById('coc-form').addEventListener('submit', handleCoC);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('coc-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

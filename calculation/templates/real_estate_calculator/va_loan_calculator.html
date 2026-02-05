@@ -4,443 +4,291 @@
 
 {% block meta_description %}Calculate your total monthly payment and the specific VA Funding Fee based on your service status, down payment, and VA loan usage.{% endblock %}
 
-{% block meta_keywords %}VA loan calculator, VA funding fee, zero down payment, total monthly payment, mortgage principal, veteran benefits{% endblock %}
-
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling to match the original Blue Theme */
-    .solver-wrapper {
-        background: #f8fbff; /* Very light blue/white background */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1000px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #dbeafe; /* Light Blue */
-        border: 2px solid #3b82f6; /* Blue accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e3a8a; /* Dark Blue */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --bs-primary-rgb: 79, 70, 229;
+        --va-indigo: #4f46e5;
+        --va-dark: #312e81;
+        --slate-bg: #f8fafc;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
-        border-radius: 8px;
+    body {
+        background-color: var(--slate-bg);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #1d4ed8;
-    }
-    .form-control-custom:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #eef2ff; /* Very Light Indigo */
-        border-left: 5px solid #4f46e5; /* Indigo accent */
+    .result-display-box {
+        background-color: #eef2ff;
+        border: 2px solid #c7d2fe;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    /* Styles for VA display */
-    .result-label {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #4338ca; /* Dark Indigo */
-    }
-    
-    .result-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: #4f46e5; /* Bright Indigo */
+    .payment-value {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--va-indigo);
+        line-height: 1;
     }
 
-    .monthly-payment-box {
-        background-color: #e0e7ff; /* Lighter Indigo */
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #a5b4fc;
+    .stat-card-mini {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
     }
 
-    .funding-fee-highlight {
-        color: #dc2626; /* Red */
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
     }
 
+    .exempt-badge {
+        background-color: #dcfce7;
+        color: #166534;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 10px;
+        font-weight: 800;
+    }
+
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+        .col-lg-8 { width: 100% !important; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🎖️ VA Loan Calculator (Funding Fee)</h1>
-    <p class="text-secondary mb-5 text-center">
-        Estimate the **total monthly P&I payment** and the **VA Funding Fee** for a VA-backed mortgage.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-person-badge text-primary me-2"></i>VA Loan Calculator</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Calculate your VA mortgage payment and Funding Fee. Remember: VA loans offer 0% down and <strong>no monthly mortgage insurance.</strong>
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="va-loan-form" class="row g-4">
-            
-            <div class="col-md-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Loan & Home Details</h4>
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-4 input-sidebar p-4 p-md-5">
+                <form id="va-form">
+                    <h6 class="fw-bold text-dark mb-4">Loan Details</h6>
                     
-                    <div class="input-box mb-3">
-                        <label for="home-price">Home Purchase Price:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="home-price" 
-                               value="350000" 
-                               min="1"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-3">
+                        <label class="form-label text-primary">Home Purchase Price</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0">$</span>
+                            <input type="number" id="home-price" class="form-control border-start-0 ps-0" placeholder="e.g. 350000" required>
                         </div>
                     </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="interest-rate">Annual Interest Rate (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="interest-rate" 
-                               value="6.5" 
-                               min="0.01" 
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-7">
+                            <label class="form-label">Interest Rate</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" id="interest-rate" class="form-control border-end-0" placeholder="6.5" step="0.01" required>
+                                <span class="input-group-text bg-white border-start-0">%</span>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label">Term (Yrs)</label>
+                            <input type="number" id="loan-term" class="form-control shadow-sm" placeholder="30" required>
                         </div>
                     </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="loan-term">Loan Term (Years):</label>
-                        <input type="number" id="loan-term" 
-                               value="30" 
-                               min="10" 
-                               max="30"
-                               required 
-                               class="form-control form-control-custom">
-                    </div>
-                    
-                    <div class="input-box">
-                        <label for="down-payment-percent">Down Payment (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="down-payment-percent" 
-                               value="0" 
-                               min="0" 
-                               max="100"
-                               step="0.1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
+
+                    <div class="mb-4">
+                        <label class="form-label">Down Payment %</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="dp-percent" class="form-control border-end-0" placeholder="0" step="0.1" required>
+                            <span class="input-group-text bg-white border-start-0">%</span>
                         </div>
-                        <small class="text-muted">VA loans allow 0% down payment.</small>
                     </div>
-                </div>
-            </div>
 
-            <div class="col-md-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. Veteran & Funding Status</h4>
+                    <hr class="my-4 opacity-50">
 
-                    <div class="input-box mb-3">
-                        <label for="veteran-status">Select Your VA Loan Usage:</label>
-                        <select id="veteran-status" class="form-select form-control-custom">
-                            <option value="first_0_down">First-Time Use (0% Down)</option>
-                            <option value="first_5_down">First-Time Use (5% to 9.99% Down)</option>
-                            <option value="first_10_down">First-Time Use (10% or More Down)</option>
-                            <option value="subsequent_0_down">Subsequent Use (0% Down)</option>
-                            <option value="subsequent_5_down">Subsequent Use (5% to 9.99% Down)</option>
-                            <option value="subsequent_10_down">Subsequent Use (10% or More Down)</option>
+                    <h6 class="fw-bold text-dark mb-3">Veteran Eligibility</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Usage Status</label>
+                        <select id="usage-status" class="form-select shadow-sm">
+                            <option value="first">First-Time Use</option>
+                            <option value="subsequent">Subsequent Use</option>
                         </select>
-                        <small class="text-muted">Funding Fee rates depend on this.</small>
                     </div>
+
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" id="is-exempt">
+                        <label class="form-check-label small fw-bold text-muted" for="is-exempt">Exempt from Funding Fee</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                        Calculate VA Payment <i class="bi bi-calculator ms-1"></i>
+                    </button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear All</button>
+                </form>
+            </div>
+
+            <div class="col-lg-8 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-shield-shaded display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">VA Benefit Summary</h4>
+                    <p>Provide your loan and service details to view your estimated payment and one-time funding fee.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="result-display-box mb-4 shadow-sm">
+                        <span class="form-label text-va-dark mb-2 d-block">Monthly Principal & Interest</span>
+                        <div class="payment-value mb-2" id="monthly-payment-display">$0.00</div>
+                        <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>VA loans do not require monthly mortgage insurance (PMI).</p>
+                    </div>
+
                     
-                    <div class="input-box mb-3">
-                        <p class="text-muted small text-center fw-bold">Funding Fee Exemption Status</p>
-                        <div class="form-check text-center">
-                          <input class="form-check-input" type="checkbox" value="" id="exempt-check">
-                          <label class="form-check-label" for="exempt-check">
-                            Exempt from Funding Fee (e.g., service-connected disability).
-                          </label>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1">One-Time Funding Fee <span id="exempt-badge-container"></span></span>
+                                <div class="h4 fw-bold text-danger mb-0" id="fee-amount-display">$0</div>
+                                <small class="text-muted" id="fee-rate-display">Rate: 0.00%</small>
+                            </div>
                         </div>
-                        <small class="text-muted d-block text-center">If exempt, the fee is 0% regardless of other inputs.</small>
+                        <div class="col-md-6">
+                            <div class="stat-card-mini">
+                                <span class="form-label d-block mb-1">Total Financed Amount</span>
+                                <div class="h4 fw-bold text-primary mb-0" id="total-loan-display">$0</div>
+                                <small class="text-muted">Principal + Financed Fee</small>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="input-box mt-4">
-                        <label for="funding-fee-rate-display" class="result-label">Calculated Funding Fee Rate:</label>
-                        <div class="input-group">
-                            <input type="text" id="funding-fee-rate-display" 
-                                   value="2.15" 
-                                   disabled
-                                   class="form-control form-control-custom funding-fee-highlight text-danger">
-                            <span class="input-group-text fw-bold text-lg text-secondary">%</span>
+
+                    <div class="p-3 border rounded-3 bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <i class="bi bi-cash-stack fs-3 text-success"></i>
+                            </div>
+                            <div class="col">
+                                <span class="form-label d-block mb-0">Cash Down Payment</span>
+                                <span class="h5 fw-bold" id="dp-cash-display">$0.00</span>
+                            </div>
+                            <div class="col-auto text-end">
+                                <span class="badge bg-secondary" id="dp-percent-label">0% Down</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg">
-                Calculate VA Loan Costs
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-triangle fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Required</h5>
+                        <p id="error-msg" class="mb-0"></p>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Calculates the monthly mortgage payment (P&I) using the amortization formula.
-     */
-    function calculateMonthlyPI(P, R_annual, N_years) {
-        const i = (R_annual / 100) / 12; 
-        const n = N_years * 12;
+    const form = document.getElementById('va-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
 
-        if (i === 0) return P / n;
-
-        const i_plus_1_pow_n = Math.pow(1 + i, n);
-        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
-    }
-    
-    /**
-     * FHA Funding Fee Rates (based on 2024 standards for purchase loans)
-     * Key: [First-Time Use (0% down), First-Time Use (5% down), First-Time Use (10% down), Subsequent Use (0% down), Subsequent Use (5% down), Subsequent Use (10% down)]
-     * These are hardcoded for illustrative purposes.
-     */
-    const VA_FUNDING_FEES = {
-        "first_0_down": 2.15,      // First-Time Use, 0% to <5% down
-        "first_5_down": 1.50,      // First-Time Use, 5% to <10% down
-        "first_10_down": 1.25,     // First-Time Use, 10%+ down
-        "subsequent_0_down": 3.30, // Subsequent Use, 0% to <5% down
-        "subsequent_5_down": 1.50, // Subsequent Use, 5% to <10% down
-        "subsequent_10_down": 1.25, // Subsequent Use, 10%+ down
-    };
-    
-    /**
-     * Calculates the correct VA Funding Fee rate based on user inputs.
-     */
-    function getFundingFeeRate(status, dpPercent, isExempt) {
-        if (isExempt) return 0.00;
-        
-        // Match user's DP to the fee structure (overrides status selection if necessary)
-        let downPaymentKey;
-        if (dpPercent >= 10.0) {
-            downPaymentKey = '10_down';
-        } else if (dpPercent >= 5.0) {
-            downPaymentKey = '5_down';
-        } else {
-            downPaymentKey = '0_down';
-        }
-        
-        // Determine the usage part of the key
-        const usageKey = status.startsWith('subsequent') ? 'subsequent' : 'first';
-        
-        // Construct the key to look up the rate
-        const finalKey = `${usageKey}_${downPaymentKey}`;
-
-        // Return the rate, or a default high rate if calculation fails
-        return VA_FUNDING_FEES[finalKey] || 3.30; 
-    }
-    
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
+
+    const VA_RATES = {
+        first: { zero: 2.15, five: 1.5, ten: 1.25 },
+        subsequent: { zero: 3.3, five: 1.5, ten: 1.25 }
+    };
+
+    function getFeeRate(usage, dp, exempt) {
+        if (exempt) return 0;
+        let bracket = 'zero';
+        if (dp >= 10) bracket = 'ten';
+        else if (dp >= 5) bracket = 'five';
+        return VA_RATES[usage][bracket];
     }
 
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleVALoan(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 1. Get Inputs
-        const homePrice = parseFloat(document.getElementById('home-price').value);
-        const interestRate = parseFloat(document.getElementById('interest-rate').value);
-        const loanTerm = parseFloat(document.getElementById('loan-term').value);
-        const dpPercent = parseFloat(document.getElementById('down-payment-percent').value);
-        const veteranStatus = document.getElementById('veteran-status').value;
-        const isExempt = document.getElementById('exempt-check').checked;
-        
-        // 2. Input Validation
-        if (isNaN(homePrice) || isNaN(interestRate) || isNaN(loanTerm) || isNaN(dpPercent) ||
-            homePrice <= 0 || interestRate <= 0 || loanTerm < 10 || dpPercent < 0 || dpPercent > 100) {
-            const htmlContent = `<p class="fw-bold text-center">Invalid Input</p><p class="text-center">Please ensure all values are positive and the Down Payment is between 0% and 100%.</p>`;
-            displayResult(true, htmlContent);
+        const price = parseFloat(document.getElementById('home-price').value);
+        const rate = parseFloat(document.getElementById('interest-rate').value);
+        const term = parseFloat(document.getElementById('loan-term').value);
+        const dp = parseFloat(document.getElementById('dp-percent').value);
+        const usage = document.getElementById('usage-status').value;
+        const exempt = document.getElementById('is-exempt').checked;
+
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
+
+        if ([price, rate, term, dp].some(isNaN) || price <= 0) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please enter valid numbers for price, rate, and term.";
             return;
         }
 
-        try {
-            // 3. Calculate Down Payment & Base Loan
-            const dpRatio = dpPercent / 100;
-            const downPaymentAmount = homePrice * dpRatio;
-            const baseLoanAmount = homePrice - downPaymentAmount;
+        const feeRate = getFeeRate(usage, dp, exempt);
+        const dpAmount = price * (dp / 100);
+        const baseLoan = price - dpAmount;
+        const feeAmount = baseLoan * (feeRate / 100);
+        const totalLoan = baseLoan + feeAmount;
 
-            // 4. Determine Funding Fee Rate
-            const fundingFeeRate = getFundingFeeRate(veteranStatus, dpPercent, isExempt);
-            
-            // 5. Calculate Funding Fee Cost
-            // Funding Fee is calculated on the Base Loan Amount and is financed
-            const fundingFeeCost = baseLoanAmount * (fundingFeeRate / 100);
-            
-            // 6. Calculate Total Financed Principal
-            const totalFinancedPrincipal = baseLoanAmount + fundingFeeCost;
-            
-            // 7. Calculate P&I Payment (on Total Financed Principal)
-            const monthlyPI = calculateMonthlyPI(totalFinancedPrincipal, interestRate, loanTerm);
-            
-            // 8. Build Summary HTML
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-indigo-600 mb-4">VA Loan Payment & Cost Summary</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <div class="col-md-6 mb-3 border-end border-indigo-400">
-                        <p class="result-label">ESTIMATED TOTAL MONTHLY PAYMENT (P&I ONLY)</p>
-                        <div class="monthly-payment-box">
-                             <p class="result-value mb-0">
-                                ${currencyFormatter.format(monthlyPI)}
-                            </p>
-                        </div>
-                        <p class="text-muted small mt-2">**VA Loans have NO monthly PMI/MIP.**</p>
-                    </div>
+        // Amortization
+        const i = (rate / 100) / 12;
+        const n = term * 12;
+        const monthlyPI = totalLoan * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
 
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">VA FUNDING FEE COST</p>
-                        <p class="result-value mb-0 funding-fee-highlight">
-                            ${currencyFormatter.format(fundingFeeCost)}
-                        </p>
-                        <p class="text-muted small">
-                            ${isExempt ? 'Status: EXEMPT (Fee is $0.00)' : `Rate: ${fundingFeeRate.toFixed(2)}% (Financed)`}
-                        </p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-primary mb-3">Upfront Costs & Loan Principal</h5>
-                <div class="row text-center">
-                    <div class="col-md-4">
-                        <p class="result-label">Down Payment Required</p>
-                        <p class="fs-4 fw-bold text-success">${currencyFormatter.format(downPaymentAmount)}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="result-label">Base Loan Amount</p>
-                        <p class="fs-4 fw-bold text-primary">${currencyFormatter.format(baseLoanAmount)}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="result-label">Total Financed Principal</p>
-                        <p class="fs-4 fw-bold text-primary">${currencyFormatter.format(totalFinancedPrincipal)}</p>
-                        <p class="text-muted small">(Base Loan + Funding Fee)</p>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-            // Update the display rate input
-            document.getElementById('funding-fee-rate-display').value = fundingFeeRate.toFixed(2);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">An unexpected error occurred during the calculation. Please verify the input values.</p>`;
-            displayResult(true, htmlContent);
-        }
-    }
-    
-    // Function to update the funding fee rate display whenever inputs change
-    function updateFundingFeeDisplay() {
-        const dpPercent = parseFloat(document.getElementById('down-payment-percent').value);
-        const veteranStatus = document.getElementById('veteran-status').value;
-        const isExempt = document.getElementById('exempt-check').checked;
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        document.getElementById('monthly-payment-display').textContent = currency.format(monthlyPI);
+        document.getElementById('fee-amount-display').textContent = currency.format(feeAmount).split('.')[0];
+        document.getElementById('fee-rate-display').textContent = `Rate: ${feeRate.toFixed(2)}%`;
+        document.getElementById('total-loan-display').textContent = currency.format(totalLoan).split('.')[0];
+        document.getElementById('dp-cash-display').textContent = currency.format(dpAmount);
+        document.getElementById('dp-percent-label').textContent = `${dp}% Down`;
         
-        if (isNaN(dpPercent)) return;
-        
-        const rate = getFundingFeeRate(veteranStatus, dpPercent, isExempt);
-        document.getElementById('funding-fee-rate-display').value = rate.toFixed(2);
-        
-        // Recalculate summary if it's already visible
-        const summaryDiv = document.getElementById('summary-output');
-        if (!summaryDiv.classList.contains('d-none')) {
-            handleVALoan({ preventDefault: () => {} });
-        }
-    }
+        document.getElementById('exempt-badge-container').innerHTML = exempt ? '<span class="exempt-badge ms-2">EXEMPT</span>' : '';
+    });
 
-    // Attach handler to the form
-    document.getElementById('va-loan-form').addEventListener('submit', handleVALoan);
-    
-    // Attach event listeners to update the rate display immediately upon input changes
-    document.getElementById('down-payment-percent').addEventListener('input', updateFundingFeeDisplay);
-    document.getElementById('veteran-status').addEventListener('change', updateFundingFeeDisplay);
-    document.getElementById('exempt-check').addEventListener('change', updateFundingFeeDisplay);
-
-    // Initial calculation for default value on load
-    window.onload = function() {
-        // Initial setup of the funding fee rate display
-        updateFundingFeeDisplay();
-        // Run the full calculation
-        document.getElementById('va-loan-form').dispatchEvent(new Event('submit'));
-    };
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+    });
 </script>
 {% endblock %}

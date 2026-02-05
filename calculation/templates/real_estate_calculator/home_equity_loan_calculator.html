@@ -4,399 +4,287 @@
 
 {% block meta_description %}Calculate your available home equity and estimate the monthly payment for a fixed-rate home equity loan based on your LTV, rate, and term.{% endblock %}
 
-{% block meta_keywords %}home equity loan calculator, available equity, cltv, ltv, loan payment, fixed-rate mortgage, second mortgage{% endblock %}
-
 {% block extra_head %}
-<!-- Include Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    /* Custom Styling for an "Indigo/Purple" Theme (Value/Equity) */
-    .solver-wrapper {
-        background: #fbfaff; /* Very light purple/white */
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1000px; 
-        margin: 0 auto;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .input-section {
-        padding: 25px;
-        border-radius: 10px;
-        background-color: #ede9fe; /* Light Violet */
-        border: 2px solid #7c3aed; /* Violet accent */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 30px;
-    }
-    
-    .input-box label {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #5b21b6; /* Dark Violet */
-        display: block;
-        margin-bottom: 5px;
+    :root {
+        --equity-violet: #7c3aed;
+        --equity-dark: #4c1d95;
+        --equity-bg: #f5f3ff;
     }
 
-    .form-control-custom {
-        padding: 12px;
-        font-size: 1.1rem;
-        border: 2px solid #a78bfa; 
-        border-radius: 8px;
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .calc-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #ddd6fe;
+        overflow: hidden;
+    }
+
+    .input-sidebar {
+        background-color: var(--equity-bg);
+        border-right: 1px solid #ddd6fe;
+    }
+
+    .form-label {
         font-weight: 700;
-        color: #6d28d9;
-    }
-    .form-control-custom:focus {
-        border-color: #7c3aed;
-        box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.25);
-    }
-
-    .result-section {
-        margin-top: 30px;
+        color: var(--equity-dark);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .summary-card {
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f5f3ff; /* Lighter Violet */
-        border-left: 5px solid #7c3aed; /* Violet accent */
+    .equity-display-box {
+        background-color: white;
+        border: 2px solid #c4b5fd;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
     }
 
-    .result-error {
-        border-left: 5px solid #ef4444; /* Red */
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 20px;
-        border-radius: 8px;
+    .value-large {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--equity-violet);
+        line-height: 1;
     }
-    
-    /* Styles for Equity/Payment display */
-    .result-label {
-        font-size: 1.2rem;
+
+    .stat-card-mini {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+    }
+
+    .placeholder-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .btn-max-use {
+        font-size: 0.75rem;
         font-weight: 600;
-        color: #5b21b6; /* Dark Violet */
-    }
-    
-    .result-value-box {
-        background-color: #eef2ff; /* Lighter Indigo */
-        padding: 15px;
-        border-radius: 8px;
-        border: 2px solid #6366f1;
-    }
-    
-    .result-value {
-        font-size: 2.8rem;
-        font-weight: 900;
-        color: #4f46e5;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
     }
 
+    @media print {
+        .input-sidebar, .btn-no-print { display: none !important; }
+        .calc-card { border: none; box-shadow: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container p-4 p-md-5">
-    <h1 class="h3 fw-bolder mb-2 text-dark text-center">🏦 Home Equity Loan Calculator</h1>
-    <p class="text-secondary mb-5 text-center">
-        First, find your **Available Equity** based on your home's value. Second, estimate your **Monthly Loan Payment**.
-    </p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark"><i class="bi bi-bank2 text-primary me-2"></i>Home Equity Insight Tool</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">
+            Determine how much of your home's value you can borrow against and what your fixed monthly payment would be.
+        </p>
+    </div>
 
-    <div class="solver-wrapper">
-        
-        <form id="home-equity-form" class="row g-4">
-            
-            <!-- Part 1: Available Equity -->
-            <div class="col-lg-6">
-                <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">1. Calculate Available Equity</h4>
+    <div class="calc-card mx-auto" style="max-width: 1100px;">
+        <div class="row g-0">
+            <div class="col-lg-5 input-sidebar p-4 p-md-5">
+                <form id="home-equity-form">
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Step 1: Property Profile</h6>
                     
-                    <div class="input-box mb-3">
-                        <label for="home-value">Current Home Appraised Value:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="home-value" 
-                               value="500000" 
-                               min="1000"
-                               step="any"
-                               required
-                               class="form-control form-control-custom">
+                    <div class="mb-3">
+                        <label class="form-label">Estimated Home Value</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="home-value" class="form-control border-start-0 ps-0" placeholder="e.g. 450000" required>
                         </div>
                     </div>
-                    
-                    <div class="input-box mb-3">
-                        <label for="mortgage-balance">Current Mortgage Balance:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="mortgage-balance" 
-                               value="250000" 
-                               min="0" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
+
+                    <div class="mb-3">
+                        <label class="form-label">Current Mortgage Balance</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="mortgage-balance" class="form-control border-start-0 ps-0" placeholder="e.g. 210000" required>
                         </div>
                     </div>
-                    
-                    <div class="input-box">
-                        <label for="max-ltv">Lender's Max Combined LTV (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="max-ltv" 
-                               value="85" 
-                               min="50" 
-                               max="100"
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
+
+                    <div class="mb-4">
+                        <label class="form-label">Max LTV Limit (%)</label>
+                        <div class="input-group shadow-sm">
+                            <input type="number" id="max-ltv" class="form-control border-end-0" placeholder="85" required>
+                            <span class="input-group-text bg-white border-start-0 text-muted">%</span>
                         </div>
-                        <small class="text-muted">Most lenders allow 80% to 85% total LTV.</small>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-4 text-uppercase small pt-3 border-top">Step 2: Loan Terms</h6>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label mb-0">Desired Loan Amount</label>
+                            <button type="button" id="use-max-btn" class="btn btn-outline-primary btn-max-use d-none">Use Max</button>
+                        </div>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                            <input type="number" id="loan-amount" class="form-control border-start-0 ps-0" placeholder="e.g. 50000" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-7">
+                            <label class="form-label">Interest Rate</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" step="0.01" id="interest-rate" class="form-control border-end-0" placeholder="8.5" required>
+                                <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label">Term (Yrs)</label>
+                            <div class="input-group shadow-sm">
+                                <input type="number" id="loan-term" class="form-control border-end-0" placeholder="15" required>
+                                <span class="input-group-text bg-white border-start-0 text-muted">Y</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" style="background-color: var(--equity-violet); border: none;">
+                        Generate Analysis <i class="bi bi-graph-up-arrow ms-1"></i>
+                    </button>
+                    
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Reset Calculator</button>
+                </form>
+            </div>
+
+            <div class="col-lg-7 p-4 p-md-5 bg-white">
+                
+                <div id="placeholder-ui" class="placeholder-state w-100">
+                    <i class="bi bi-house-heart display-1 mb-3 opacity-25"></i>
+                    <h4 class="fw-bold text-dark">Equity Utilization Model</h4>
+                    <p>Enter your home's estimated value and remaining mortgage balance to see how much capital you can unlock for renovations, debt consolidation, or other goals.</p>
+                </div>
+
+                <div id="results-ui" class="w-100 d-none">
+                    <div class="equity-display-box mb-4 shadow-sm">
+                        <span class="form-label text-muted mb-2 d-block">Maximum Available Equity</span>
+                        <div class="value-large mb-2" id="max-equity-display">$0</div>
+                        <div class="text-muted fw-bold small text-uppercase">At <span id="ltv-ref-text">0</span>% LTV Capacity</div>
+                    </div>
+
+                    
+
+                    <div class="row g-3 mb-4 mt-2">
+                        <div class="col-md-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Monthly Payment</span>
+                                <div class="h5 fw-bold mb-0 text-dark" id="payment-display">$0.00</div>
+                                <small class="text-muted">Fixed P&I amount</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-start">
+                            <div class="stat-card-mini h-100">
+                                <span class="form-label d-block mb-1 text-muted">Total Interest</span>
+                                <div class="h5 fw-bold mb-0 text-danger" id="interest-display">$0</div>
+                                <small class="text-muted">Cost of borrowing</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-4 bg-light text-start border">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-lock-fill me-2 text-primary"></i>Equity Calculation Note</h6>
+                        <p class="small text-muted mb-0">
+                            The calculation assumes your total combined debt (current mortgage + new loan) does not exceed your specified LTV. This is known as **CLTV** (Combined Loan-to-Value).
+                        </p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Part 2: Loan Payment -->
-            <div class="col-lg-6">
-                 <div class="input-section h-100">
-                    <h4 class="h5 fw-bold text-center text-primary p-2 rounded mb-3">2. Calculate Monthly Payment</h4>
-                    
-                    <div class="input-box mb-3">
-                        <label for="loan-amount">Desired Loan Amount:</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" id="loan-amount" 
-                               value="100000" 
-                               min="1000" 
-                               step="any"
-                               required 
-                               class="form-control form-control-custom">
-                        </div>
-                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="use-max-equity-btn">
-                            Use Max Available Equity from Part 1
-                        </button>
-                    </div>
-
-                    <div class="input-box mb-3">
-                        <label for="interest-rate">Home Equity Loan Interest Rate (%):</label>
-                        <div class="input-group">
-                            <input type="number" id="interest-rate" 
-                               value="8.5" 
-                               min="0.01" 
-                               max="20"
-                               step="0.01"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="input-box">
-                        <label for="loan-term">Loan Term (Years):</label>
-                        <div class="input-group">
-                            <input type="number" id="loan-term" 
-                               value="15" 
-                               min="5" 
-                               max="30"
-                               step="1"
-                               required 
-                               class="form-control form-control-custom">
-                            <span class="input-group-text">Yrs</span>
-                        </div>
-                        <small class="text-muted">Home equity loans often have 10, 15, or 20-year terms.</small>
+                <div id="error-ui" class="w-100 d-none text-center">
+                    <div class="alert alert-danger rounded-4 p-4 shadow-sm">
+                        <i class="bi bi-exclamation-octagon-fill fs-1 d-block mb-2"></i>
+                        <h5 class="fw-bold">Input Error</h5>
+                        <p id="error-msg" class="mb-0"></p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-0">
-                <button type="submit"
-                    class="btn btn-primary w-100 py-3 fw-bold shadow-lg" style="background-color: #6d28d9; border: none;">
-                Calculate Equity & Payment
-            </button>
-            </div>
-        </form>
 
-        <div id="result-container" class="result-section">
-            <div id="summary-output" class="summary-card d-none mb-4"></div>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
 <script>
-    /**
-     * Calculates the monthly mortgage payment (P&I) using the amortization formula.
-     */
-    function calculateMonthlyPI(P, R_annual, N_years) {
-        const i = (R_annual / 100) / 12; 
-        const n = N_years * 12;
+    const form = document.getElementById('home-equity-form');
+    const resultsUi = document.getElementById('results-ui');
+    const placeholderUi = document.getElementById('placeholder-ui');
+    const errorUi = document.getElementById('error-ui');
+    const useMaxBtn = document.getElementById('use-max-btn');
 
-        if (i === 0) return P / n;
-
-        const i_plus_1_pow_n = Math.pow(1 + i, n);
-        return P * (i * i_plus_1_pow_n) / (i_plus_1_pow_n - 1);
-    }
-    
-    /**
-     * Formats a number as USD currency (no cents).
-     */
-    const currencyFormatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+    const currency = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 0,
     });
-    
-    /**
-     * Formats a number as USD currency (with cents).
-     */
-    const currencyFormatterCents = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+    const currencyCents = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
     });
-    
-    /**
-     * Updates the UI with the calculation result or error.
-     */
-    function displayResult(isError, contentHtml) {
-        const summaryDiv = document.getElementById('summary-output');
-        
-        summaryDiv.classList.remove('d-none', 'result-error', 'summary-card');
-        
-        if (isError) {
-            summaryDiv.classList.add('result-error');
-            summaryDiv.classList.remove('summary-card');
-            summaryDiv.innerHTML = contentHtml;
-        } else {
-            summaryDiv.classList.add('summary-card');
-            summaryDiv.classList.remove('result-error');
-            summaryDiv.innerHTML = contentHtml;
-        }
-    }
-    
-    /**
-     * Calculates available equity based on Part 1 inputs.
-     */
-    function calculateAvailableEquity() {
-        const homeValue = parseFloat(document.getElementById('home-value').value);
-        const mortgageBalance = parseFloat(document.getElementById('mortgage-balance').value);
-        const maxLTV = parseFloat(document.getElementById('max-ltv').value);
-        
-        if (isNaN(homeValue) || isNaN(mortgageBalance) || isNaN(maxLTV)) {
-             throw new Error("Invalid input in Part 1. Please check home value, mortgage balance, and LTV.");
-        }
-        
-        const maxTotalDebt = homeValue * (maxLTV / 100);
-        const availableEquity = Math.max(0, maxTotalDebt - mortgageBalance);
-        
-        return availableEquity;
-    }
 
-    /**
-     * Handles form submission and triggers the calculation.
-     */
-    function handleEquityCalc(e) {
+    let currentMaxEquity = 0;
+
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        try {
-            // --- 1. Calculate Available Equity (Part 1) ---
-            const availableEquity = calculateAvailableEquity();
-            
-            // --- 2. Get Loan Payment Inputs (Part 2) ---
-            const loanAmount = parseFloat(document.getElementById('loan-amount').value);
-            const interestRate = parseFloat(document.getElementById('interest-rate').value);
-            const loanTerm = parseInt(document.getElementById('loan-term').value);
-            
-            if (isNaN(loanAmount) || isNaN(interestRate) || isNaN(loanTerm) || loanAmount <= 0 || interestRate <= 0 || loanTerm <= 0) {
-                 throw new Error("Invalid input in Part 2. Please check loan amount, interest rate, and term.");
-            }
-            
-            // --- 3. Calculate Monthly Payment ---
-            const monthlyPayment = calculateMonthlyPI(loanAmount, interestRate, loanTerm);
-            const totalPayments = monthlyPayment * (loanTerm * 12);
-            const totalInterest = totalPayments - loanAmount;
+        const val = parseFloat(document.getElementById('home-value').value);
+        const bal = parseFloat(document.getElementById('mortgage-balance').value);
+        const ltv = parseFloat(document.getElementById('max-ltv').value);
+        const amount = parseFloat(document.getElementById('loan-amount').value);
+        const rate = parseFloat(document.getElementById('interest-rate').value);
+        const term = parseInt(document.getElementById('loan-term').value);
 
-            // --- 4. Build Summary HTML ---
-            const summaryHtml = `
-                <h4 class="h5 fw-bold text-center text-primary mb-4">Home Equity Calculation Summary</h4>
-                
-                <div class="row text-center align-items-center mb-4">
-                    
-                    <!-- Available Equity -->
-                    <div class="col-md-6 mb-3 border-end border-indigo-400">
-                        <p class="result-label">MAXIMUM AVAILABLE EQUITY</p>
-                        <div class="result-value-box d-inline-block">
-                             <p class="result-value mb-0">
-                                ${currencyFormatter.format(availableEquity)}
-                            </p>
-                        </div>
-                    </div>
+        placeholderUi.classList.add('d-none');
+        resultsUi.classList.add('d-none');
+        errorUi.classList.add('d-none');
 
-                    <!-- Monthly Payment -->
-                    <div class="col-md-6 mb-3">
-                        <p class="result-label">MONTHLY P&I PAYMENT</p>
-                        <p class="result-value mb-0 text-primary" style="font-size: 2.5rem;">
-                            ${currencyFormatterCents.format(monthlyPayment)}
-                        </p>
-                        <p class="text-muted small mt-2">For a ${currencyFormatter.format(loanAmount)} loan at ${interestRate}% over ${loanTerm} years.</p>
-                    </div>
-                </div>
-                
-                <hr class="my-4">
-                
-                <h5 class="h6 fw-bold text-center text-primary mb-3">Loan Repayment Summary</h5>
-                
-                <div class="row text-center">
-                    <div class="col-md-4">
-                        <p class="result-label mb-2">Total Principal Paid</p>
-                        <p class="fs-4 fw-bold text-success">${currencyFormatter.format(loanAmount)}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="result-label mb-2">Total Interest Paid</p>
-                        <p class="fs-4 fw-bold text-danger">${currencyFormatter.format(totalInterest)}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="result-label mb-2">Total Repayment</p>
-                        <p class="fs-4 fw-bold text-dark">${currencyFormatter.format(totalPayments)}</p>
-                    </div>
-                </div>
-            `;
-            
-            displayResult(false, summaryHtml);
-            
-        } catch (error) {
-            console.error(error);
-             const htmlContent = `<p class="fw-bold text-center">Calculation Error</p><p class="text-center">${error.message}</p>`;
-            displayResult(true, htmlContent);
+        if (isNaN(val) || isNaN(bal) || isNaN(ltv) || isNaN(amount) || isNaN(rate) || isNaN(term)) {
+            errorUi.classList.remove('d-none');
+            document.getElementById('error-msg').innerText = "Please ensure all fields are filled with valid numbers.";
+            return;
         }
-    }
-    
-    /**
-     * Handles the "Use Max" button click
-     */
-    function useMaxEquity() {
-        try {
-            const availableEquity = calculateAvailableEquity();
-            document.getElementById('loan-amount').value = availableEquity.toFixed(0);
-        } catch (error) {
-            alert(error.message);
-        }
-    }
 
-    // Attach handler to the form
-    document.getElementById('home-equity-form').addEventListener('submit', handleEquityCalc);
-    
-    // Attach handler to the "Use Max" button
-    document.getElementById('use-max-equity-btn').addEventListener('click', useMaxEquity);
-    
-    // Initial calculation for default value on load
-    window.onload = function() {
-        document.getElementById('home-equity-form').dispatchEvent(new Event('submit'));
-    };
+        // Logic
+        currentMaxEquity = Math.max(0, (val * (ltv / 100)) - bal);
+        
+        const i = (rate / 100) / 12;
+        const n = term * 12;
+        const payment = amount * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
+        const totalInterest = (payment * n) - amount;
+
+        // UI Updates
+        resultsUi.classList.remove('d-none');
+        useMaxBtn.classList.remove('d-none');
+        
+        document.getElementById('max-equity-display').textContent = currency.format(currentMaxEquity);
+        document.getElementById('ltv-ref-text').textContent = ltv;
+        document.getElementById('payment-display').textContent = currencyCents.format(payment);
+        document.getElementById('interest-display').textContent = currency.format(totalInterest);
+
+        if (amount > currentMaxEquity) {
+            document.getElementById('payment-display').classList.add('text-danger');
+        } else {
+            document.getElementById('payment-display').classList.remove('text-danger');
+        }
+    });
+
+    useMaxBtn.addEventListener('click', () => {
+        document.getElementById('loan-amount').value = Math.floor(currentMaxEquity);
+        form.dispatchEvent(new Event('submit'));
+    });
+
+    form.addEventListener('reset', () => {
+        resultsUi.classList.add('d-none');
+        placeholderUi.classList.remove('d-none');
+        errorUi.classList.add('d-none');
+        useMaxBtn.classList.add('d-none');
+    });
 </script>
 {% endblock %}
