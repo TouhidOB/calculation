@@ -126,7 +126,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🗺️ Map Scale Calculator</h1>
+    <h1 class="mb-3 text-dark">🗺️ Map Scale Calculator</h1>
     <p class="small-muted">Calculate **Map Distance**, **Ground Distance**, or the **Scale Factor** based on the relationship: $\text{Map Distance} = \text{Ground Distance} / \text{Scale}$.</p>
     
 
@@ -151,7 +151,7 @@
             <div id="mapDistanceInputGroup">
                 <label for="mapDistanceValue">Map Distance</label>
                 <div class="distance-input-container">
-                    <input type="number" class="form-control input-field" id="mapDistanceValue" placeholder="e.g., 5" value="5" min="0.01" step="any">
+                    <input type="number" class="form-control input-field" id="mapDistanceValue" placeholder="e.g., 5" min="0.01" step="any">
                     <select id="mapDistanceUnit" class="form-select input-field">
                         <option value="mm">mm</option>
                         <option value="cm" selected>cm</option>
@@ -164,7 +164,7 @@
             <div id="groundDistanceInputGroup" class="mt-3">
                 <label for="groundDistanceValue">Ground Distance</label>
                 <div class="distance-input-container">
-                    <input type="number" class="form-control input-field" id="groundDistanceValue" placeholder="e.g., 25" value="25" min="0.01" step="any">
+                    <input type="number" class="form-control input-field" id="groundDistanceValue" placeholder="e.g., 25" min="0.01" step="any">
                     <select id="groundDistanceUnit" class="form-select input-field">
                         <option value="m">m</option>
                         <option value="km" selected>km</option>
@@ -176,9 +176,9 @@
             <div id="scaleFactorInputGroup" class="mt-3 hidden-input">
                 <label>Scale Factor (1:X)</label>
                 <div class="ratio-input-container">
-                    <input type="number" class="form-control input-field" id="scaleX" value="1" min="1" step="1" disabled>
+                    <input type="number" class="form-control input-field" id="scaleX" min="1" step="1" disabled>
                     <span class="ratio-separator">:</span>
-                    <input type="number" class="form-control input-field" id="scaleY" placeholder="e.g., 50000" value="50000" min="1" step="1">
+                    <input type="number" class="form-control input-field" id="scaleY" placeholder="e.g., 50000" min="1" step="1">
                 </div>
                 <p class="small-muted mt-1">Example: $\text{1}:50000$ means $1 \text{ unit}$ on the map is $50000 \text{ units}$ on the ground.</p>
             </div>

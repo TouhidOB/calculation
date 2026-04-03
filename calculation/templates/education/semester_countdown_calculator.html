@@ -9,12 +9,10 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 20, 184, 166; /* Teal */
-    }
+    
 
     body {
-        background-color: #f8fafc;
+        background-color: var(--ag-bg);
     }
 
     .calc-container {
@@ -35,7 +33,7 @@
         border: 1px solid #e2e8f0;
         border-radius: 1rem;
         transition: transform 0.2s ease;
-        background: #ffffff;
+        background: var(--ag-bg);
     }
 
     .result-value {
@@ -48,7 +46,7 @@
     .progress {
         height: 2rem;
         border-radius: 1rem;
-        background-color: #f1f5f9;
+        background-color: var(--ag-bg);
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
     }
 
@@ -97,7 +95,7 @@
 
                 <div class="mb-4">
                     <label for="total-weeks" class="form-label">Total Scheduled Weeks</label>
-                    <input type="number" id="total-weeks" class="form-control" value="15" min="1" oninput="calculateCountdown()">
+                    <input type="number" id="total-weeks" class="form-control" min="1" oninput="calculateCountdown()">
                 </div>
 
                 <button class="btn btn-outline-teal w-100 btn-sm" onclick="resetCalculator()">

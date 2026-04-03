@@ -98,7 +98,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🧪 Catalytic Activity Converter</h1>
+    <h1 class="mb-3 text-dark">🧪 Catalytic Activity Converter</h1>
     <p class="small-muted">Convert **Catalytic Activity** between **Katal ($\text{kat}$)** (SI unit) and **Enzyme Units ($\text{U}$)** (Traditional unit).</p>
     
 
@@ -110,7 +110,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Activity Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 5000" value="5000" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 5000" min="0" step="any" autofocus>
             
             <!-- Direction Select -->
             <div class="mt-3">
@@ -231,10 +231,7 @@
         directionSelect.addEventListener('change', convertCatalyticActivity);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertCatalyticActivity(); // Run initial conversion
-    };
+    
 
 </script>
 {% endblock %}

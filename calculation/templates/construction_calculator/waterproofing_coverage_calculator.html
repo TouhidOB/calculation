@@ -58,7 +58,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🛡️ Waterproofing Coverage Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🛡️ Waterproofing Coverage Calculator</h1>
     <p class="text-center small-muted">Determine the total product needed based on area, number of coats, and manufacturer's coverage rate.</p>
     
 
@@ -71,7 +71,7 @@
             <label for="area-input" class="form-label">Total Area to be Waterproofed</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Area (A)</span>
-                <input type="number" id="area-input" class="form-control" name="areaSqFt" placeholder="e.g., 150" value="150" min="1" step="0.1" required>
+                <input type="number" id="area-input" class="form-control" name="areaSqFt" placeholder="e.g., 150" min="1" step="0.1" required>
                 <span class="input-group-text">sq ft</span>
             </div>
             
@@ -79,7 +79,7 @@
             <label for="coats-input" class="form-label">Number of Recommended Coats</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Coats (C)</span>
-                <input type="number" id="coats-input" class="form-control" name="numCoats" placeholder="e.g., 2" value="2" min="1" step="1" required>
+                <input type="number" id="coats-input" class="form-control" name="numCoats" placeholder="e.g., 2" min="1" step="1" required>
                 <span class="input-group-text">Pcs</span>
             </div>
             
@@ -89,7 +89,7 @@
             <label for="coverage-rate-input" class="form-label">Manufacturer's Coverage Rate (Per Coat)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Rate (R)</span>
-                <input type="number" id="coverage-rate-input" class="form-control" name="coverageRate" placeholder="e.g., 50 (sq ft per gallon)" value="50" min="5" step="1" required>
+                <input type="number" id="coverage-rate-input" class="form-control" name="coverageRate" placeholder="e.g., 50 (sq ft per gallon)" min="5" step="1" required>
                 <span class="input-group-text" id="coverage-unit-display">sq ft / Gallon</span>
             </div>
 
@@ -104,7 +104,7 @@
             <label for="container-size-input" class="form-label">Container Size</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Size (S)</span>
-                <input type="number" id="container-size-input" class="form-control" name="containerSize" placeholder="e.g., 5" value="5" min="1" step="1" required>
+                <input type="number" id="container-size-input" class="form-control" name="containerSize" placeholder="e.g., 5" min="1" step="1" required>
                 <span class="input-group-text" id="container-unit-display">Gallons</span>
             </div>
 

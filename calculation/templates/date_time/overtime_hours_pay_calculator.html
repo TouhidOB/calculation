@@ -71,7 +71,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-3">🕰️ Overtime Hours & Pay Calculator</h1>
+    <h1 class="mb-3 text-dark">🕰️ Overtime Hours & Pay Calculator</h1>
     <p class="small-muted">Calculate total weekly pay, factoring in regular hours and overtime hours above a specified threshold.</p>
 
     <div class="calc-wrapper">
@@ -82,16 +82,16 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <label for="weekly-threshold" class="form-label">Weekly OT Threshold (Hours)</label>
-                    <input type="number" class="form-control" id="weekly-threshold" min="1" value="40" required>
+                    <input type="number" class="form-control" id="weekly-threshold" min="1" required>
                     <small class="form-text text-muted">Hours worked over this limit are considered OT.</small>
                 </div>
                 <div class="col-md-4">
                     <label for="regular-wage" class="form-label">Regular Hourly Wage ($)</label>
-                    <input type="number" class="form-control" id="regular-wage" min="0" value="20.00" required>
+                    <input type="number" class="form-control" id="regular-wage" min="0" required>
                 </div>
                 <div class="col-md-4">
                     <label for="overtime-rate-multiplier" class="form-label">OT Rate Multiplier (e.g., 1.5 for Time-and-a-Half)</label>
-                    <input type="number" class="form-control" id="overtime-rate-multiplier" min="1" step="0.01" value="1.5" required>
+                    <input type="number" class="form-control" id="overtime-rate-multiplier" min="1" step="0.01" required>
                 </div>
             </div>
 

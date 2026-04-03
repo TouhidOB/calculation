@@ -94,10 +94,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🥄 Cooking Measurement Converter</h1>
+    <h1 class="mb-3 text-dark">🥄 Cooking Measurement Converter</h1>
     <p class="small-muted">Convert **liquid volume** for cooking and baking instantly between US Customary and Metric units. Results update in **real-time**.</p>
-    [Image of kitchen volume measuring cups and spoons]
-
     <div class="calc-wrapper mt-4">
 
         <h5 class="section-title">Step 1: Input Volume and Unit</h5>
@@ -245,8 +243,6 @@
     resultsList.appendChild(initialMessage);
 
     // Run once on load to show initial unit in the dropdown
-    inputField.value = 1; 
-    convertCookingVolume();
 
 </script>
 {% endblock %}

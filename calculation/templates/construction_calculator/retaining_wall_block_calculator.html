@@ -58,10 +58,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🧱 Retaining Wall Block Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🧱 Retaining Wall Block Calculator</h1>
     <p class="text-center small-muted">Estimates the number of blocks and the area of stabilizing fabric needed for your wall.</p>
-    [Image of a stone retaining wall under construction]
-
     <div class="calc-wrapper">
 
         <form id="retaining-wall-calculator-form">
@@ -71,7 +69,7 @@
             <label for="wall-length-input" class="form-label">Total Wall Length</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Length (L)</span>
-                <input type="number" id="wall-length-input" class="form-control" name="wallLength" placeholder="e.g., 40" value="40" min="1" step="0.1" required>
+                <input type="number" id="wall-length-input" class="form-control" name="wallLength" placeholder="e.g., 40" min="1" step="0.1" required>
                 <span class="input-group-text">ft</span>
             </div>
             
@@ -79,7 +77,7 @@
             <label for="wall-height-input" class="form-label">Wall Height (Exposed)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Height (H)</span>
-                <input type="number" id="wall-height-input" class="form-control" name="wallHeight" placeholder="e.g., 3.5" value="3.5" min="0.5" step="0.1" required>
+                <input type="number" id="wall-height-input" class="form-control" name="wallHeight" placeholder="e.g., 3.5" min="0.5" step="0.1" required>
                 <span class="input-group-text">ft</span>
             </div>
 
@@ -89,7 +87,7 @@
             <label for="block-height-input" class="form-label">Block Height (Visible Face)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Block H</span>
-                <input type="number" id="block-height-input" class="form-control" name="blockHeightInches" placeholder="e.g., 6" value="6" min="1" step="0.1" required>
+                <input type="number" id="block-height-input" class="form-control" name="blockHeightInches" placeholder="e.g., 6" min="1" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
             
@@ -97,7 +95,7 @@
             <label for="block-width-input" class="form-label">Block Width (Length of Face)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Block W</span>
-                <input type="number" id="block-width-input" class="form-control" name="blockWidthInches" placeholder="e.g., 16" value="16" min="1" step="0.1" required>
+                <input type="number" id="block-width-input" class="form-control" name="blockWidthInches" placeholder="e.g., 16" min="1" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
             
@@ -107,7 +105,7 @@
             <label for="geogrid-depth-input" class="form-label">Geogrid/Fabric Depth (Length of strip)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Grid Depth</span>
-                <input type="number" id="geogrid-depth-input" class="form-control" name="geogridDepth" placeholder="e.g., 4" value="4" min="0" step="1">
+                <input type="number" id="geogrid-depth-input" class="form-control" name="geogridDepth" placeholder="e.g., 4" min="0" step="1">
                 <span class="input-group-text">ft</span>
             </div>
 
@@ -115,7 +113,7 @@
             <label for="geogrid-layers-input" class="form-label">Number of Geogrid/Fabric Layers</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Layers</span>
-                <input type="number" id="geogrid-layers-input" class="form-control" name="geogridLayers" placeholder="e.g., 2" value="2" min="0" step="1">
+                <input type="number" id="geogrid-layers-input" class="form-control" name="geogridLayers" placeholder="e.g., 2" min="0" step="1">
                 <span class="input-group-text">Pcs</span>
             </div>
 

@@ -65,10 +65,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">☀️ Solar Panel System Size Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">☀️ Solar Panel System Size Calculator</h1>
     <p class="text-center small-muted">Determine the required solar array size (in kW) to offset your electricity consumption.</p>
-    [Image of a solar panel array on a residential roof]
-
     <div class="calc-wrapper">
 
         <form id="solar-size-calculator-form">
@@ -78,7 +76,7 @@
             <label for="kwh-input" class="form-label">Average Monthly Electricity Use</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Consumption</span>
-                <input type="number" id="kwh-input" class="form-control" name="monthlyKWh" placeholder="e.g., 850" value="850" min="10" step="10" required>
+                <input type="number" id="kwh-input" class="form-control" name="monthlyKWh" placeholder="e.g., 850" min="10" step="10" required>
                 <span class="input-group-text">kWh / Month</span>
             </div>
             
@@ -98,7 +96,7 @@
             <label for="efficiency-input" class="form-label">System De-rating Factor (Losses)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Efficiency</span>
-                <input type="number" id="efficiency-input" class="form-control" name="systemEfficiency" placeholder="e.g., 0.80" value="0.80" min="0.60" max="0.90" step="0.05" required>
+                <input type="number" id="efficiency-input" class="form-control" name="systemEfficiency" placeholder="e.g., 0.80" min="0.60" max="0.90" step="0.05" required>
                 <span class="input-group-text">Factor (0.60 to 0.90)</span>
             </div>
             

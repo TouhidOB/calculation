@@ -98,7 +98,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">⚛️ Density Converter</h1>
+    <h1 class="mb-3 text-dark">⚛️ Density Converter</h1>
     <p class="small-muted">Convert **Mass Density** between common scientific and engineering units: $\text{kg}/\text{m}^3$ (SI), $\text{g}/\text{cm}^3$ (CGS), and $\text{lb}/\text{ft}^3$ (Imperial).</p>
     
 
@@ -110,7 +110,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Density Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 1000" value="1000" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 1000" min="0" step="any" autofocus>
             
             <!-- Unit Select -->
             <div class="mt-3">
@@ -239,10 +239,7 @@
         inputUnitSelect.addEventListener('change', convertDensity);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertDensity(); // Run initial conversion on load
-    };
+    
 
 </script>
 {% endblock %}

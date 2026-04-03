@@ -9,113 +9,127 @@ interface.{% endblock %}
 
 {% block extra_head %}
 <style>
-    /* Calculator specific styles */
+    /* 🚀 Antigravity Calculator Styling */
     .calc-wrapper {
-        background: #f7f7f7;
-        /* Light background for the calculator block */
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        max-width: 400px;
-        /* Constrain width for a handheld calculator feel */
+        background: var(--ag-bg);
+        padding: 30px;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        max-width: 420px;
         margin: 0 auto;
+        border: 1px solid var(--border-color);
     }
 
     .display-screen {
-        background: #e0e0e0;
-        /* Slightly darker screen background */
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        padding: 10px;
+        background: #f8fafc;
+        /* Extremely subtle contrast */
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 20px;
         text-align: right;
-        margin-bottom: 15px;
-        font-family: 'Consolas', monospace;
-        /* Monospaced font for numbers */
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        font-family: 'JetBrains Mono', 'Consolas', monospace;
+        box-shadow: inset 0 2px 10px rgba(0, 23, 31, 0.03);
         outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .display-screen:focus {
+        border-color: var(--ag-secondary);
     }
 
     #history-display {
-        font-size: 0.8rem;
-        color: #666;
-        min-height: 18px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-size: 0.9rem;
+        color: var(--ag-secondary);
+        min-height: 20px;
+        margin-bottom: 5px;
+        font-weight: 500;
     }
 
     #current-input {
-        font-size: 2.2rem;
-        font-weight: bold;
-        min-height: 40px;
-        line-height: 1.2;
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--ag-text);
+        min-height: 50px;
+        line-height: 1;
     }
 
     .calc-keys {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
+        gap: 12px;
     }
 
     .calc-btn {
-        padding: 20px;
-        font-size: 1.2rem;
-        font-weight: 500;
-        border-radius: 5px;
-        border: none;
+        padding: 22px;
+        font-size: 1.3rem;
+        font-weight: 600;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
         cursor: pointer;
-        transition: background-color 0.15s ease, transform 0.05s ease;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .calc-btn:hover {
-        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
     }
 
     .calc-btn:active {
-        transform: translateY(1px);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        transform: translateY(0);
+        box-shadow: none;
     }
 
     .number-btn,
     .decimal-btn {
-        background-color: #ffffff;
-        /* White for numbers */
-        color: #333;
+        background-color: var(--ag-bg);
+        color: var(--ag-text);
     }
 
     .operator-btn {
-        background-color: #ff9500;
-        /* Orange for operators */
+        background-color: var(--ag-primary);
         color: white;
+        border-color: var(--ag-primary);
+    }
+
+    .operator-btn:hover {
+        background-color: var(--ag-secondary);
+        border-color: var(--ag-secondary);
     }
 
     .clear-btn,
     .special-btn {
-        background-color: #dcdcdc;
-        /* Light grey for clear/special */
-        color: #333;
+        background-color: #f1f5f9;
+        color: var(--ag-text);
     }
 
     .equal-btn {
-        background-color: #1abc9c;
-        /* Teal/Green for equals */
+        background-color: var(--ag-accent);
         color: white;
+        border-color: var(--ag-accent);
+        font-weight: 800;
+    }
+
+    .equal-btn:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
     }
 
     /* Span two columns for the zero button */
     .zero-btn {
         grid-column: span 2;
-        text-align: left;
-        padding-left: 30px;
-        /* Adjust padding for better look */
+        justify-content: flex-start;
+        padding-left: 35px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">➕ Advanced Basic Arithmetic Calculator</h1>
+    <h1 class="mb-3 text-dark">➕ Advanced Basic Arithmetic Calculator</h1>
     <!-- <p class="small-muted">Perform standard arithmetic operations with a responsive, easy-to-use digital interface.</p>
     
     <div class="mb-3">
@@ -196,7 +210,8 @@ interface.{% endblock %}
 
         <h3 class="mt-4">Order of Operations (PEMDAS/BODMAS)</h3>
         <p>When performing calculations with multiple operations, the order matters. The standard rule is known as
-            <strong>PEMDAS</strong> or <strong>BODMAS</strong>:</p>
+            <strong>PEMDAS</strong> or <strong>BODMAS</strong>:
+        </p>
         <ul>
             <li><strong>P/B</strong>: Parentheses / Brackets</li>
             <li><strong>E/O</strong>: Exponents / Orders (Powers and Roots)</li>

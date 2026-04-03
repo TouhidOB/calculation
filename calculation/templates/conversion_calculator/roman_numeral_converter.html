@@ -102,8 +102,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🏛️ Roman Numeral Converter</h1>
-    <p class="small-muted">Convert between standard Decimal numbers ($1$ to $3999$) and Roman Numerals (I, V, X, L, C, D, M). [Image of Roman numerals chart I to M]</p>
+    <h1 class="mb-3 text-dark">🏛️ Roman Numeral Converter</h1>
+    <p class="small-muted">Convert between standard Decimal numbers ($1$ to $3999$) and Roman Numerals (I, V, X, L, C, D, M). </p>
     
 
     <div class="calc-wrapper mt-4">
@@ -296,10 +296,7 @@
         convertButton.addEventListener('click', convert);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convert(); // Initial conversion run
-    };
+    
 
 </script>
 {% endblock %}

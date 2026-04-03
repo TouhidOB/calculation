@@ -52,7 +52,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🕳️ Post Hole Concrete Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🕳️ Post Hole Concrete Calculator</h1>
     <p class="text-center small-muted">Calculates the total concrete volume and material requirements (C:S:G) for multiple post holes.</p>
     
 
@@ -65,7 +65,7 @@
             <label for="hole-diameter-input" class="form-label">Hole Diameter (D_H)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Hole Diameter</span>
-                <input type="number" id="hole-diameter-input" class="form-control" name="holeDiameter" placeholder="e.g., 12" value="10" min="1" step="1" required>
+                <input type="number" id="hole-diameter-input" class="form-control" name="holeDiameter" placeholder="e.g., 12" min="1" step="1" required>
                 <span class="input-group-text">in</span>
             </div>
             
@@ -73,7 +73,7 @@
             <label for="hole-depth-input" class="form-label">Hole Depth (L_H)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Hole Depth</span>
-                <input type="number" id="hole-depth-input" class="form-control" name="holeDepth" placeholder="e.g., 36" value="36" min="1" step="1" required>
+                <input type="number" id="hole-depth-input" class="form-control" name="holeDepth" placeholder="e.g., 36" min="1" step="1" required>
                 <span class="input-group-text">in</span>
             </div>
             
@@ -90,7 +90,7 @@
             <label for="post-size-input" class="form-label" id="post-size-label">Post Side (S)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text" id="post-size-unit-text">Side (S)</span>
-                <input type="number" id="post-size-input" class="form-control" name="postSize" placeholder="e.g., 4 (for 4x4)" value="4" min="0.1" step="0.1" required>
+                <input type="number" id="post-size-input" class="form-control" name="postSize" placeholder="e.g., 4 (for 4x4)" min="0.1" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
             
@@ -100,7 +100,7 @@
             <label for="quantity-input" class="form-label">Number of Posts (Quantity)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Quantity</span>
-                <input type="number" id="quantity-input" class="form-control" name="quantity" placeholder="e.g., 10" value="1" min="1" step="1" required>
+                <input type="number" id="quantity-input" class="form-control" name="quantity" placeholder="e.g., 10" min="1" step="1" required>
                 <span class="input-group-text">Pcs</span>
             </div>
 

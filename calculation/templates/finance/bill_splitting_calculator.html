@@ -9,15 +9,15 @@
 
 {% block content %}
 <div class="container my-4">
-  <h1>Bill Splitting Calculator</h1>
+  <h1 class="text-dark">Bill Splitting Calculator</h1>
   <p class="small-muted">Split a bill fairly among people, support tips and custom shares.</p>
 
   <div class="calc-wrapper mt-3">
     <form id="bill-form">
       <div class="row">
-        <div class="col-md-4 mb-2"><label>Total Bill Amount ($)</label><input id="bill-total" type="number" class="form-control" step="0.01" value="0"></div>
-        <div class="col-md-4 mb-2"><label>Tip (%)</label><input id="bill-tip" type="number" class="form-control" step="0.01" value="0"></div>
-        <div class="col-md-4 mb-2"><label>Number of People</label><input id="bill-count" type="number" class="form-control" value="2" min="1"></div>
+        <div class="col-md-4 mb-2"><label>Total Bill Amount ($)</label><input id="bill-total" type="number" class="form-control" step="0.01"></div>
+        <div class="col-md-4 mb-2"><label>Tip (%)</label><input id="bill-tip" type="number" class="form-control" step="0.01"></div>
+        <div class="col-md-4 mb-2"><label>Number of People</label><input id="bill-count" type="number" class="form-control" min="1"></div>
       </div>
 
       <div class="mt-2">
@@ -49,8 +49,8 @@ function makePersonRow(i){
   const d = document.createElement('div'); d.className = 'person-row';
   d.innerHTML = `
     <input class="form-control person-name" placeholder="Person ${i+1} name (optional)">
-    <input class="form-control person-share" type="number" placeholder="Share weight (default 1)" value="1" min="0" step="0.01">
-    <input class="form-control person-extra" type="number" placeholder="Extra to pay (items, $)" value="0" step="0.01">
+    <input class="form-control person-share" type="number" placeholder="Share weight (default 1)" min="0" step="0.01">
+    <input class="form-control person-extra" type="number" placeholder="Extra to pay (items, $)" step="0.01">
   `;
   return d;
 }

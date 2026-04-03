@@ -113,7 +113,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🖥️ Screen Aspect Ratio Calculator</h1>
+    <h1 class="mb-3 text-dark">🖥️ Screen Aspect Ratio Calculator</h1>
     <p class="small-muted">Calculate Width, Height, or the Aspect Ratio ($\text{X}:\text{Y}$) for any screen or video resolution.</p>
     
 
@@ -137,22 +137,22 @@
             <!-- Width Input (Always visible except when calculating Width) -->
             <div id="widthInputGroup">
                 <label for="widthValue">Width ($\text{px}$)</label>
-                <input type="number" class="form-control input-field" id="widthValue" placeholder="e.g., 1920" value="1920" min="1" step="1">
+                <input type="number" class="form-control input-field" id="widthValue" placeholder="e.g., 1920" min="1" step="1">
             </div>
 
             <!-- Height Input (Always visible except when calculating Height) -->
             <div id="heightInputGroup" class="mt-3">
                 <label for="heightValue">Height ($\text{px}$)</label>
-                <input type="number" class="form-control input-field" id="heightValue" placeholder="e.g., 1080" value="1080" min="1" step="1">
+                <input type="number" class="form-control input-field" id="heightValue" placeholder="e.g., 1080" min="1" step="1">
             </div>
             
             <!-- Ratio Input (Only visible when calculating Width or Height) -->
             <div id="ratioInputGroup" class="mt-3 hidden-input">
                 <label>Aspect Ratio ($\text{X}:\text{Y}$)</label>
                 <div class="ratio-input-container">
-                    <input type="number" class="form-control input-field" id="ratioX" placeholder="e.g., 16" value="16" min="1" step="1">
+                    <input type="number" class="form-control input-field" id="ratioX" placeholder="e.g., 16" min="1" step="1">
                     <span class="ratio-separator">:</span>
-                    <input type="number" class="form-control input-field" id="ratioY" placeholder="e.g., 9" value="9" min="1" step="1">
+                    <input type="number" class="form-control input-field" id="ratioY" placeholder="e.g., 9" min="1" step="1">
                 </div>
             </div>
         </div>

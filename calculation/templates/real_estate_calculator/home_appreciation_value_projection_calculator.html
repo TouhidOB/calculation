@@ -8,14 +8,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 <style>
-    :root {
-        --growth-orange: #ea580c;
-        --growth-brown: #7c2d12;
-        --growth-bg: #fffcf9;
-    }
+    
 
     body {
-        background-color: #f8fafc;
+        background-color: var(--ag-bg);
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
@@ -237,7 +233,7 @@
                 scales: {
                     y: { 
                         ticks: { callback: (val) => currency.format(val) },
-                        grid: { color: '#f1f5f9' }
+                        grid: { color: 'var(--ag-bg)' }
                     },
                     x: { grid: { display: false } }
                 }

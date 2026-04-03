@@ -159,8 +159,8 @@ def buy_to_let_mortgage_calculator(request):
 def hoa_fee_affordability_calculator(request):
     return render(request, 'real_estate_calculator/hoa_fee_affordability_calculator.html')
 
-def moving_cost_estimator(request):
-    return render(request, 'real_estate_calculator/moving_cost_estimator.html')
+def relocation_cost_modeler(request):
+    return render(request, 'real_estate_calculator/relocation_cost_modeler.html')
 
 def home_repair_budget_calculator(request):
     return render(request, 'real_estate_calculator/home_repair_budget_calculator.html')

@@ -98,7 +98,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🔬 Surface Tension Converter</h1>
+    <h1 class="mb-3 text-dark">🔬 Surface Tension Converter</h1>
     <p class="small-muted">Convert **Surface Tension ($\gamma$)** between **Newton per Meter ($\text{N}/\text{m}$)** (SI unit) and **Dyne per Centimeter ($\text{dyne}/\text{cm}$)** (CGS unit).</p>
     
 
@@ -110,7 +110,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Surface Tension Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 0.0728" value="0.0728" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 0.0728" min="0" step="any" autofocus>
             
             <!-- Direction Select -->
             <div class="mt-3">
@@ -233,10 +233,7 @@
         directionSelect.addEventListener('change', convertSurfaceTension);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertSurfaceTension(); // Run initial conversion (e.g., 0.0728 N/m -> 72.8 dyne/cm)
-    };
+    
 
 </script>
 {% endblock %}

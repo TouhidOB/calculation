@@ -61,7 +61,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-3">💳 Credit Card Payment Due Date Calculator</h1>
+    <h1 class="mb-3 text-dark">💳 Credit Card Payment Due Date Calculator</h1>
     <p class="small-muted">Find out the exact payment due date based on your statement closing date and grace period.</p>
 
     <div class="calc-wrapper">
@@ -79,7 +79,7 @@
             <!-- Grace Period (Days) -->
             <div class="form-group mb-4">
                 <label for="grace-period" class="form-label">Grace Period (Days)</label>
-                <input type="number" class="form-control" id="grace-period" value="21" min="15" max="30" required>
+                <input type="number" class="form-control" id="grace-period" min="15" max="30" required>
                 <small class="form-text text-muted">Typically 21 to 25 days. Check your card agreement.</small>
             </div>
 

@@ -26,7 +26,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">Cash Envelope System Planner</h1>
+    <h1 class="mb-3 text-dark">Cash Envelope System Planner</h1>
     <p class="small-muted">Enter your typical spending for variable categories (or your goal budget) to determine the $\mathbf{Monthly}$ cash amount needed for each envelope.</p>
     
     <div class="calc-wrapper mt-4">
@@ -152,7 +152,7 @@ document.querySelectorAll('.envelope-form').forEach(function (form) {
                 labels: ['Groceries', 'Transport', 'Entertainment', 'Savings'],
                 datasets: [{ 
                     data: [groceries.toFixed(2), transport.toFixed(2), entertainment.toFixed(2), savings.toFixed(2)], 
-                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+                    backgroundColor: ['var(--ag-primary)', 'var(--ag-accent)', 'var(--ag-secondary)', '#f6c23e'],
                     hoverOffset: 4
                 }]
             },

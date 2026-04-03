@@ -107,7 +107,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🎬 Video File Size Calculator</h1>
+    <h1 class="mb-3 text-dark">🎬 Video File Size Calculator</h1>
     <p class="small-muted">Calculate the total **File Size (MB)** based on Video Bitrate, Audio Bitrate, and Duration.</p>
     
     <p class="small-muted">Formula: $\text{Total Size} (\text{MB}) = (\text{Video Bitrate} + \text{Audio Bitrate}) \times \text{Duration} \times \text{Conversion Factor}$.</p>
@@ -122,14 +122,14 @@
             <!-- Video Bitrate Input -->
             <div>
                 <label for="videoBitrateValue">Video Bitrate ($\text{kbps}$)</label>
-                <input type="number" class="form-control input-field" id="videoBitrateValue" placeholder="e.g., 5000 for 1080p stream" value="5000" min="1" step="any">
+                <input type="number" class="form-control input-field" id="videoBitrateValue" placeholder="e.g., 5000 for 1080p stream" min="1" step="any">
                 <p class="small-muted mt-1">Typical range: $500\text{ kbps}$ (SD) to $10000\text{ kbps}$ ($\text{4K}$).</p>
             </div>
 
             <!-- Audio Bitrate Input -->
             <div class="mt-3">
                 <label for="audioBitrateValue">Audio Bitrate ($\text{kbps}$)</label>
-                <input type="number" class="form-control input-field" id="audioBitrateValue" placeholder="e.g., 128 for MP3" value="128" min="0" step="any">
+                <input type="number" class="form-control input-field" id="audioBitrateValue" placeholder="e.g., 128 for MP3" min="0" step="any">
                 <p class="small-muted mt-1">Typical range: $64\text{ kbps}$ (low) to $320\text{ kbps}$ (high quality).</p>
             </div>
 
@@ -140,9 +140,9 @@
         <div class="input-group-custom">
              <label>Duration ($\text{h}:\text{m}:\text{s}$)</label>
             <div class="time-input-container">
-                <input type="number" class="form-control input-field" id="durationH" placeholder="Hours" value="0" min="0" step="1">
-                <input type="number" class="form-control input-field" id="durationM" placeholder="Minutes" value="10" min="0" max="59" step="1">
-                <input type="number" class="form-control input-field" id="durationS" placeholder="Seconds" value="30" min="0" max="59" step="1">
+                <input type="number" class="form-control input-field" id="durationH" placeholder="Hours" min="0" step="1">
+                <input type="number" class="form-control input-field" id="durationM" placeholder="Minutes" min="0" max="59" step="1">
+                <input type="number" class="form-control input-field" id="durationS" placeholder="Seconds" min="0" max="59" step="1">
             </div>
             <p class="small-muted mt-1">The total length of the video clip.</p>
         </div>

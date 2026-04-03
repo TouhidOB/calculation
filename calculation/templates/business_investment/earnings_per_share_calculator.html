@@ -54,7 +54,7 @@
 {% block content %}
 <div class="container my-5">
     <div class="text-center mb-5">
-        <h1 class="display-5 text-success"><i class="bi bi-wallet2 me-2"></i> Earnings Per Share (EPS) Calculator</h1>
+        <h1 class="display-5 text-dark"><i class="bi bi-wallet2 me-2"></i> Earnings Per Share (EPS) Calculator</h1>
         <p class="lead text-muted">Calculate the Basic **Earnings Per Share**, the portion of a company's profit allocated to each common stock share. This is a crucial measure of profitability.</p>
         
         <div class="alert alert-success-subtle border-success py-3 my-4">
@@ -87,7 +87,7 @@
                             <label for="preferred_dividends" class="form-label fw-bold">Preferred Dividends ($)</label>
                             <div class="input-group input-group-lg">
                                 <span class="input-group-text success-icon"><i class="bi bi-dash-circle"></i></span>
-                                <input type="number" class="form-control" id="preferred_dividends" value="0" min="0" step="0.01" required>
+                                <input type="number" class="form-control" id="preferred_dividends" min="0" step="0.01" required>
                                 <span class="input-group-text">$</span>
                             </div>
                             <p class="small text-muted mt-1">These dividends are subtracted because preferred shareholders have priority over common shareholders for earnings.</p>

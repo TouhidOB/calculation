@@ -58,7 +58,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🌧️ Gutter Downspout Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🌧️ Gutter Downspout Calculator</h1>
     <p class="text-center small-muted">Calculates the required downspout capacity and count based on your roof area and local rainfall rate.</p>
     
 
@@ -71,7 +71,7 @@
             <label for="area-input" class="form-label">Effective Roof Drainage Area (A)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Area</span>
-                <input type="number" id="area-input" class="form-control" name="roofAreaSqFt" placeholder="e.g., 1000" value="1000" min="1" step="1" required>
+                <input type="number" id="area-input" class="form-control" name="roofAreaSqFt" placeholder="e.g., 1000" min="1" step="1" required>
                 <span class="input-group-text">sq ft</span>
             </div>
             
@@ -79,7 +79,7 @@
             <label for="rainfall-input" class="form-label">Maximum 5-Minute Rainfall Intensity (I)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Rate</span>
-                <input type="number" id="rainfall-input" class="form-control" name="rainfallRate" placeholder="e.g., 4" value="4" min="0.5" step="0.1" required>
+                <input type="number" id="rainfall-input" class="form-control" name="rainfallRate" placeholder="e.g., 4" min="0.5" step="0.1" required>
                 <span class="input-group-text">in / hr</span>
             </div>
             
@@ -89,7 +89,7 @@
             <label for="downspout-capacity-input" class="form-label">Single Downspout Capacity/Area (C)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Area</span>
-                <input type="number" id="downspout-capacity-input" class="form-control" name="downspoutCapacitySqIn" placeholder="e.g., 7.0 (for 2x3 downspout)" value="7.0" min="1" step="0.1" required>
+                <input type="number" id="downspout-capacity-input" class="form-control" name="downspoutCapacitySqIn" placeholder="e.g., 7.0 (for 2x3 downspout)" min="1" step="0.1" required>
                 <span class="input-group-text">sq in</span>
             </div>
 

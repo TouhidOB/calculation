@@ -63,7 +63,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">📊 Macronutrient (Macros) Calculator</h1>
+    <h1 class="mb-3 text-dark">📊 Macronutrient (Macros) Calculator</h1>
     <p class="small-muted">Calculate the exact **grams** of Protein, Carbohydrates, and Fat you need daily based on your estimated **TDEE** and your chosen macro ratios.</p>
 
     <div class="calc-wrapper mt-4">
@@ -134,19 +134,19 @@
             
             <div class="macro-input-group">
                 <label for="protein_pct">Protein</label>
-                <input type="number" class="form-control" id="protein_pct" value="30" min="0" max="100" required>
+                <input type="number" class="form-control" id="protein_pct" min="0" max="100" required>
                 <span>%</span>
             </div>
 
             <div class="macro-input-group">
                 <label for="carb_pct">Carbohydrates</label>
-                <input type="number" class="form-control" id="carb_pct" value="40" min="0" max="100" required>
+                <input type="number" class="form-control" id="carb_pct" min="0" max="100" required>
                 <span>%</span>
             </div>
             
             <div class="macro-input-group">
                 <label for="fat_pct">Fat</label>
-                <input type="number" class="form-control" id="fat_pct" value="30" min="0" max="100" required>
+                <input type="number" class="form-control" id="fat_pct" min="0" max="100" required>
                 <span>%</span>
             </div>
 

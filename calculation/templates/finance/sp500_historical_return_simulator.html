@@ -10,7 +10,7 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-<h1 class="mb-3">S&P 500 Historical Return Simulator</h1>
+<h1 class="mb-3 text-dark">S&P 500 Historical Return Simulator</h1>
 <div class="calc-wrapper mt-4">
 <form id="sp500-form">
 <h5 class="section-title">Investment Details</h5>
@@ -50,7 +50,7 @@ window.sp500Chart = new Chart(ctx,{
 type:'line',
 data:{
 labels:Array.from({length:years+1}, (_,i)=>i),
-datasets:[{label:'Portfolio Value ($)', data:balances, borderColor:'#4e73df', fill:false}]
+datasets:[{label:'Portfolio Value ($)', data:balances, borderColor:'var(--ag-primary)', fill:false}]
 }
 });
 });

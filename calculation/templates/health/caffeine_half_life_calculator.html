@@ -51,7 +51,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">☕ Caffeine Half-Life Calculator</h1>
+    <h1 class="mb-3 text-dark">☕ Caffeine Half-Life Calculator</h1>
     <p class="small-muted">Track how much caffeine remains in your system over the day and night to optimize your sleep quality.</p>
 
     <div class="calc-wrapper mt-4">
@@ -62,7 +62,7 @@
             <!-- Caffeine Dose Input -->
             <label class="form-label d-block mt-3">Initial Caffeine Dose (mg)</label>
             <div class="input-group mb-3">
-                <input type="number" class="form-control" id="initial_dose" placeholder="e.g., 200" min="10" max="1000" step="10" value="200" required>
+                <input type="number" class="form-control" id="initial_dose" placeholder="e.g., 200" min="10" max="1000" step="10" required>
                 <span class="input-group-text">mg</span>
             </div>
             <small class="form-text text-muted d-block mb-3">A standard strong cup of coffee is about 100-200 mg.</small>
@@ -76,7 +76,7 @@
             <!-- Half-Life Input -->
             <label class="form-label d-block mt-3">Caffeine Half-Life (Hours)</label>
             <div class="input-group mb-3">
-                <input type="number" class="form-control" id="half_life" placeholder="e.g., 5" min="2" max="10" step="0.5" value="5" required>
+                <input type="number" class="form-control" id="half_life" placeholder="e.g., 5" min="2" max="10" step="0.5" required>
                 <span class="input-group-text">Hours</span>
             </div>
             <p class="half-life-note">The average half-life is 5 hours, but can range from 2 to 10 hours based on genetics and lifestyle.</p>

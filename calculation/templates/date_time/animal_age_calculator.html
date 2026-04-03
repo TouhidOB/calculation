@@ -68,7 +68,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-3">🐾 Animal Age Converter</h1>
+    <h1 class="mb-3 text-dark">🐾 Animal Age Converter</h1>
     <p class="small-muted">Find out your dog's age in human years, and vice-versa, using the non-linear formula.</p>
 
     <div class="calc-wrapper">
@@ -92,7 +92,7 @@
                 <div class="col-md-6">
                     <div class="form-group mb-3">
                         <label for="input-age" class="form-label" id="input-label">Age in Dog Years</label>
-                        <input type="number" class="form-control" id="input-age" value="1" min="0.1" step="0.1" required>
+                        <input type="number" class="form-control" id="input-age" min="0.1" step="0.1" required>
                         <small class="form-text text-muted" id="formula-note"></small>
                     </div>
                 </div>

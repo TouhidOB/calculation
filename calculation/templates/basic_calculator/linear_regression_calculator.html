@@ -12,15 +12,7 @@
 
 <style>
     /* 🎨 Define Custom Theme Colors (Blue/Sky-Blue Theme for Bootstrap) */
-    :root {
-        --sky-lightest: #f8fafc; /* Solver Wrapper Background */
-        --sky-pale: #f0f9ff; /* Input background */
-        --sky-medium: #38bdf8; /* Input border */
-        --sky-dark: #0c4a6e; /* Dark text/label */
-        --sky-accent: #0ea5e9; /* Sky Blue accent */
-        --sky-text: #075985; /* Input/Result text color */
-        --final-eq-bg: #e0f2fe; /* Final equation background */
-    }
+    
 
     /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
@@ -108,7 +100,7 @@
         font-size: 2rem;
         font-weight: 800;
         text-align: center;
-        color: #0284c7; /* Lighter blue */
+        color: var(--ag-secondary); /* Lighter blue */
     }
 </style>
 {% endblock %}
@@ -117,10 +109,6 @@
 <div class="container my-5">
     <h1 class="text-center fw-bolder mb-2 text-dark fs-2">Linear Regression Calculator</h1>
     <p class="text-secondary mb-4 text-center">Find the line of best fit ($\hat{y} = mx + b$) using the Least Squares Method for your paired data.</p>
-    
-
-[Image of Least Squares Regression Line]
-
     <div class="solver-wrapper">
         <form id="regression-form" class="d-grid gap-4">
             

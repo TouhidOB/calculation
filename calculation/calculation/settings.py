@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'conversion_calculator',
     'real_estate_calculator',
     'event_budget_calculator',
+    'antigravity_suite.apps.AntigravitySuiteConfig',
 ]
 
 MIDDLEWARE = [
@@ -73,7 +74,7 @@ ROOT_URLCONF = 'calculation.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

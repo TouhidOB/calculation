@@ -42,7 +42,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🌎 Time Zone Converter</h1>
+    <h1 class="mb-3 text-dark">🌎 Time Zone Converter</h1>
     <p class="small-muted">Find out what time an event is in another part of the world, correctly adjusting for **Daylight Saving Time (DST)**.</p>
 
     <div class="calc-wrapper mt-4">
@@ -141,7 +141,6 @@
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const dd = String(today.getDate()).padStart(2, '0');
         document.getElementById('source-date').value = `${yyyy}-${mm}-${dd}`;
-        document.getElementById('end-date').value = `${yyyy}-${mm}-${dd}`; // Set for Time Duration Calculator, though not used here
 
     });
 

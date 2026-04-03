@@ -11,14 +11,11 @@
 
 <style>
     /* 🎨 Define Custom Theme Colors */
-    :root {
-        --purple-accent: #6f42c1;
-        --deep-purple: #4a148c;
-    }
+    
 
     /* 🧼 Styling for the central calculation block (Purple/Teal Theme) */
     .calc-wrapper {
-        background: #ffffff;
+        background: var(--ag-bg);
         padding: 30px;
         border-radius: 12px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -64,7 +61,7 @@
 {% block content %}
 <div class="container my-5">
     <div class="text-center">
-        <h1 class="fw-bolder mb-2 fs-2">🛌 Sleep Cycle Calculator (Wake-up Time)</h1>
+        <h1 class="fw-bolder mb-2 fs-2 text-dark">🛌 Sleep Cycle Calculator (Wake-up Time)</h1>
         <p class="text-secondary mb-4">
             Find the ideal time to **wake up** feeling refreshed by planning your sleep around full **90-minute sleep cycles**.
         </p>

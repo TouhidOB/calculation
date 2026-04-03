@@ -7,14 +7,10 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --repair-red: #b91c1c;
-        --repair-light: #fef2f2;
-        --repair-border: #fca5a5;
-    }
+    
 
     body {
-        background-color: #f8fafc;
+        background-color: var(--ag-bg);
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
@@ -55,7 +51,7 @@
     }
 
     .stat-mini {
-        background: #f1f5f9;
+        background: var(--ag-bg);
         border-radius: 0.75rem;
         padding: 1rem;
         border: 1px solid #e2e8f0;

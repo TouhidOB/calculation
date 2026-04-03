@@ -12,14 +12,7 @@
 
 <style>
     /* 🎨 Define Custom Theme Colors (Indigo/Purple Theme for Bootstrap) */
-    :root {
-        --indigo-lightest: #f8faff; /* Solver Wrapper Background */
-        --indigo-pale: #eef2ff; /* Result background */
-        --indigo-accent: #6366f1; /* Indigo accent border */
-        --purple-accent: #8b5cf6; /* Violet accent border */
-        --deep-violet: #6d28d9; /* Deep violet result text */
-        --input-bg: #e0f2fe; /* Light sky blue input section */
-    }
+    
 
     /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
@@ -58,7 +51,7 @@
         border-radius: 6px;
         text-align: center;
         font-weight: 600;
-        color: #4338ca;
+        color: var(--ag-primary);
     }
     .input-field:focus {
         border-color: var(--indigo-accent);

@@ -68,7 +68,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🚚 Concrete Delivery Time Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🚚 Concrete Delivery Time Calculator</h1>
     <p class="text-center small-muted">Estimates total volume, number of delivery trucks, and total pour time for your project.</p>
     
 
@@ -81,7 +81,7 @@
             <label for="length-input" class="form-label">Slab Length</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Length (L)</span>
-                <input type="number" id="length-input" class="form-control" name="slabLength" placeholder="e.g., 30" value="30" min="1" step="0.1" required>
+                <input type="number" id="length-input" class="form-control" name="slabLength" placeholder="e.g., 30" min="1" step="0.1" required>
                 <span class="input-group-text">ft</span>
             </div>
             
@@ -89,7 +89,7 @@
             <label for="width-input" class="form-label">Slab Width</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Width (W)</span>
-                <input type="number" id="width-input" class="form-control" name="slabWidth" placeholder="e.g., 20" value="20" min="1" step="0.1" required>
+                <input type="number" id="width-input" class="form-control" name="slabWidth" placeholder="e.g., 20" min="1" step="0.1" required>
                 <span class="input-group-text">ft</span>
             </div>
 
@@ -97,7 +97,7 @@
             <label for="depth-input" class="form-label">Slab Depth (Thickness)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Depth (D)</span>
-                <input type="number" id="depth-input" class="form-control" name="slabDepth" placeholder="e.g., 4" value="4" min="1" step="0.5" required>
+                <input type="number" id="depth-input" class="form-control" name="slabDepth" placeholder="e.g., 4" min="1" step="0.5" required>
                 <span class="input-group-text">in</span>
             </div>
 
@@ -107,7 +107,7 @@
             <label for="pour-rate-input" class="form-label">Estimated Pour/Finish Rate</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Rate</span>
-                <input type="number" id="pour-rate-input" class="form-control" name="pourRate" placeholder="e.g., 10" value="10" min="1" step="0.5" required>
+                <input type="number" id="pour-rate-input" class="form-control" name="pourRate" placeholder="e.g., 10" min="1" step="0.5" required>
                 <span class="input-group-text">yd³ / hour</span>
             </div>
             
@@ -115,7 +115,7 @@
             <label for="truck-capacity-input" class="form-label">Typical Ready-Mix Truck Capacity</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Capacity</span>
-                <input type="number" id="truck-capacity-input" class="form-control" name="truckCapacity" placeholder="e.g., 9" value="9" min="1" step="1" required>
+                <input type="number" id="truck-capacity-input" class="form-control" name="truckCapacity" placeholder="e.g., 9" min="1" step="1" required>
                 <span class="input-group-text">yd³</span>
             </div>
             
@@ -123,7 +123,7 @@
             <label for="limit-time-input" class="form-label">Allowed Free Unloading Time per Truck</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Limit</span>
-                <input type="number" id="limit-time-input" class="form-control" name="unloadingLimit" placeholder="e.g., 60" value="60" min="10" step="5" required>
+                <input type="number" id="limit-time-input" class="form-control" name="unloadingLimit" placeholder="e.g., 60" min="10" step="5" required>
                 <span class="input-group-text">minutes</span>
             </div>
 

@@ -9,12 +9,10 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 37, 99, 235;
-    }
+    
 
     body {
-        background-color: #f8fafc;
+        background-color: var(--ag-bg);
     }
 
     .calc-card {
@@ -26,7 +24,7 @@
     }
 
     .input-sidebar {
-        background-color: #f1f5f9;
+        background-color: var(--ag-bg);
         border-right: 1px solid #e2e8f0;
     }
 
@@ -60,7 +58,7 @@
     }
 
     .stat-box {
-        background: #ffffff;
+        background: var(--ag-bg);
         border: 1px solid #e2e8f0;
         border-radius: 0.75rem;
         padding: 1rem;

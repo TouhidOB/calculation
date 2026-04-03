@@ -103,7 +103,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">☢️ Radioactivity Converter</h1>
+    <h1 class="mb-3 text-dark">☢️ Radioactivity Converter</h1>
     <p class="small-muted">Convert **Radioactivity** (rate of decay) between **Becquerel ($\text{Bq}$)** (SI unit) and **Curie ($\text{Ci}$)** (Traditional unit).</p>
     
 
@@ -261,10 +261,7 @@
         directionSelect.addEventListener('change', convertRadioactivity);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertRadioactivity(); // Run initial conversion
-    };
+    
 
 </script>
 {% endblock %}

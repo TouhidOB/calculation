@@ -1,0 +1,136 @@
+Basic Math
+1. scientific_calculator
+2. combination_calculator
+3. binomial_theorem_calculator
+
+
+Business Investment Calculator To
+1. net_profit_margin_calculator
+2. discount_calculator
+3. roth_ira_cetirement_calculator
+4. social_security_benefits_calculator
+
+
+Date Time Tools
+1. Time Zone Converter
+2. World Clock Meeting Planner
+3. Custom Countdown Timer
+4. Anniversary & Milestone Calculator
+5. Academic Term End Date Calculator
+6. Work Hours Calculator
+7. Pay Period Calculator
+8. Moon Phase Calendar Calculator
+9. Day of Year (Ordinal Date) Calculator
+10. ISO Week Number Calculator
+11. Holiday Date Calculator
+12. Vacation Day Accrual Calculator
+13. Lease End Date Calculator
+14. Warranty Expiry Date Calculator
+15. Subscription Renewal Date Calculator
+16. Pregnancy Week Calculator
+17. Retirement Date Calculator
+18. Credit Card Payment Due Date Calculator
+19. Interest Accrual Date Calculator
+20. Historical Period Duration Calculator
+21. Workday Start/End Time Calculator
+22. Overtime Pay Calculator
+23. Chronological Age Calculator
+24. Court Filing Deadline Calculator
+25. Statute of Limitations Calculator
+
+
+
+Garments Tools
+1. All from this app
+
+
+Construction Calculator Tools
+1. Pitch to Angle Converter
+2. Board Foot Lumber Calculator
+3. Asphalt Tonnage Calculator
+4. Post Hole Concrete Calculator
+5. Wall Framing Stud Calculator
+6. Tile Grout Calculator
+7. Railing Spindle Spacing Calculator
+8. Paint Thinner Dilution Calculator
+9. Waterproofing Coverage Calculator
+10. Stucco Volume Calculator
+11. French Drain Gravel Calculator
+12. Gutter Downspout Calculator
+13. Shed Base Material Calculator
+14. Circular Slab Volume Calculator
+15. Retaining Wall Block Calculator
+16. Paver Base Material Calculator
+17. Crown Molding Angle Calculator
+18. Concrete Delivery Time Calculator
+19. Dumpster Size Calculator
+20. Construction Loan Draw Calculator
+21. Project Labor Cost Estimator
+22. Material Waste Percentage Calculator
+23. Critical Path Method (CPM) Calculator
+24. Air Conditioner BTU Calculator
+25. Furnace Size BTU Calculator
+26. Electrical Wire Size (AWG) Calculator
+27. Electrical Voltage Drop Calculator
+28. Lighting Lumens Calculator
+29. Plumbing Vent Pipe Size Calculator
+30. Water Heater Size Calculator
+31. Solar Panel System Size Calculator
+
+
+Education Calculators
+* Advanced Cumulative GPA Calculator
+* High School GPA Calculator
+* Academic Essay Outline Generator
+* Course Progress Tracker
+
+Conversion Calculators
+* Cooking Measurement Converter
+* Shoe Size Converter
+* Clothing Size Converter
+* Angle Converter
+* Fuel Consumption Converter
+* Image Resolution Converter
+* Lumber Board Foot Calculator
+* Ring Size Converter
+* Number System Converter
+* Roman Numeral Converter
+* Morse Code Converter
+* Braille Converter
+* Hash Generator Tool
+* Electric Charge Converter
+* Radiation Dose Converter
+* Viscosity Converter
+* Flow Rate Converter
+* Torque Converter
+* Density Converter
+* Surface Tension Converter
+* Catalytic Activity Converter
+* Luminous Intensity Converter
+* Radioactivity Converter
+* Acceleration Converter
+* Force Converter
+* Moment of Inertia Converter
+* Metric Prefix Converter
+* Typography Converter
+* Audio Conversion Calculator
+* Video File Size Calculator
+* Screen Aspect Ratio Calculator
+* Map Scale Calculator
+* Earthquake Magnitude Converter
+* Hurricane Category/Wind Speed Converter
+* pH to Hydrogen Ion Concentration Converter
+* Blood Sugar Unit Converter
+
+
+Event Calculators
+* Event Budget Planner
+* Venue Capacity Planner
+* Cost Per Person Calculator
+* Catering Cost Planner
+* Seating Chart Planner
+* Event Run Sheet Generator
+* Wedding Budget Planner
+* Event Power Calculator
+* Decor & Florist Calculator
+

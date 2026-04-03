@@ -58,7 +58,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🧱 Brick & Block Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🧱 Brick & Block Calculator</h1>
     <p class="text-center small-muted">Calculates the number of units and the required mortar volume for a wall.</p>
 
     <div class="calc-wrapper">
@@ -96,7 +96,7 @@
                 <label for="unit-length-input" class="form-label">Unit Length (Actual)</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Length</span>
-                    <input type="number" id="unit-length-input" class="form-control" name="unitLength" value="8" min="1" step="0.01" required>
+                    <input type="number" id="unit-length-input" class="form-control" name="unitLength" min="1" step="0.01" required>
                     <span class="input-group-text">in</span>
                 </div>
                 
@@ -104,7 +104,7 @@
                 <label for="unit-height-input" class="form-label">Unit Height (Actual)</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Height</span>
-                    <input type="number" id="unit-height-input" class="form-control" name="unitHeight" value="2.25" min="1" step="0.01" required>
+                    <input type="number" id="unit-height-input" class="form-control" name="unitHeight" min="1" step="0.01" required>
                     <span class="input-group-text">in</span>
                 </div>
 
@@ -112,7 +112,7 @@
                 <label for="unit-depth-input" class="form-label">Unit Depth/Thickness (Actual)</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Depth</span>
-                    <input type="number" id="unit-depth-input" class="form-control" name="unitDepth" value="3.625" min="1" step="0.01" required>
+                    <input type="number" id="unit-depth-input" class="form-control" name="unitDepth" min="1" step="0.01" required>
                     <span class="input-group-text">in</span>
                 </div>
             </div>
@@ -124,7 +124,7 @@
                 <label for="joint-thickness-input" class="form-label">Mortar Joint Thickness</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Joint Thickness</span>
-                    <input type="number" id="joint-thickness-input" class="form-control" name="jointThickness" placeholder="e.g., 0.375 for 3/8 inch" value="0.375" min="0" step="0.01" required>
+                    <input type="number" id="joint-thickness-input" class="form-control" name="jointThickness" placeholder="e.g., 0.375 for 3/8 inch" min="0" step="0.01" required>
                     <span class="input-group-text">in</span>
                 </div>
             </div>
@@ -133,7 +133,7 @@
             <label for="waste-input" class="form-label">Waste/Cut Allowance</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Waste Factor</span>
-                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5-10" value="5" min="0" max="25" step="1" required>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5-10" min="0" max="25" step="1" required>
                 <span class="input-group-text">%</span>
             </div>
 

@@ -98,7 +98,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">💥 Force Converter</h1>
+    <h1 class="mb-3 text-dark">💥 Force Converter</h1>
     <p class="small-muted">Convert **Force ($F$)** between **Newton ($\text{N}$)** (SI unit) and **Pound-force ($\text{lbf}$)** (Imperial unit).</p>
     
 
@@ -110,7 +110,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Force Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 100" value="100" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 100" min="0" step="any" autofocus>
             
             <!-- Direction Select -->
             <div class="mt-3">
@@ -236,10 +236,7 @@
         directionSelect.addEventListener('change', convertForce);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertForce(); // Run initial conversion
-    };
+    
 
 </script>
 {% endblock %}

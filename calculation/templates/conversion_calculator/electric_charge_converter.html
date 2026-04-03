@@ -98,7 +98,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">⚡ Electric Charge Converter</h1>
+    <h1 class="mb-3 text-dark">⚡ Electric Charge Converter</h1>
     <p class="small-muted">Convert between **Coulombs (C)** (SI Unit of Charge) and **Ampere-Hours (Ah)** (Battery Capacity Unit).</p>
     
 
@@ -110,7 +110,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 3600" value="3600" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 3600" min="0" step="any" autofocus>
             
             <!-- Direction Select -->
             <div class="mt-3">
@@ -221,10 +221,7 @@
         directionSelect.addEventListener('change', convertCharge);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertCharge(); // Run initial conversion on load
-    };
+    
 
 </script>
 {% endblock %}

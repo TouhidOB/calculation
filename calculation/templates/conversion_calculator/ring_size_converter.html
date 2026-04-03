@@ -101,7 +101,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">💍 Ring Size Converter</h1>
+    <h1 class="mb-3 text-dark">💍 Ring Size Converter</h1>
     <p class="small-muted">Convert between major global ring sizing standards. Calculations are based on the ring's **Internal Diameter (mm)**, which is the most reliable metric. </p>
     
 
@@ -357,10 +357,7 @@
         convertButton.addEventListener('click', convertSize);
     }
     
-    window.onload = function() {
-        setupListeners();
-        convertSize(); // Initial conversion run
-    };
+    
 
 </script>
 {% endblock %}

@@ -18,13 +18,13 @@
     .section-title {
         font-weight: bold;
         margin-top: 20px;
-        color: #1d4ed8; /* Blue for Clinical/Medical */
+        color: var(--ag-primary); /* Blue for Clinical/Medical */
     }
 
     .output-egfr {
         font-size: 3rem;
         font-weight: bold;
-        color: #10b981; /* Green for healthy results */
+        color: var(--ag-accent); /* Green for healthy results */
     }
     
     .output-stage {
@@ -45,7 +45,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🔬 eGFR Calculator (CKD-EPI 2021)</h1>
+    <h1 class="mb-3 text-dark">🔬 eGFR Calculator (CKD-EPI 2021)</h1>
     <p class="small-muted">Calculate your **estimated Glomerular Filtration Rate** using the latest race-independent CKD-EPI 2021 formula.</p>
 
     <div class="calc-wrapper mt-4">

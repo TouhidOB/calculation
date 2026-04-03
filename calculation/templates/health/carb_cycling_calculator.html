@@ -18,7 +18,7 @@
     .section-title {
         font-weight: bold;
         margin-top: 20px;
-        color: #4f46e5; /* Indigo for nutrition/planning */
+        color: var(--ag-primary); /* Indigo for nutrition/planning */
     }
 
     .unit-selector {
@@ -27,7 +27,7 @@
 
     .macro-table th {
         background-color: #eef2ff;
-        color: #4f46e5;
+        color: var(--ag-primary);
         font-size: 1rem;
     }
 
@@ -54,7 +54,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🍚 Carb Cycling Macro Calculator</h1>
+    <h1 class="mb-3 text-dark">🍚 Carb Cycling Macro Calculator</h1>
     <p class="small-muted">Determine your daily calorie and macro split for **High-Carb** and **Low-Carb** days based on your weight and fitness goals.</p>
 
     <div class="calc-wrapper mt-4">
@@ -65,7 +65,7 @@
             <!-- Weight Input -->
             <label class="form-label d-block mt-3">Body Weight</label>
             <div class="input-group mb-3">
-                <input type="number" class="form-control" id="weight_input" placeholder="e.g., 180" min="50" max="400" step="1" value="180" required>
+                <input type="number" class="form-control" id="weight_input" placeholder="e.g., 180" min="50" max="400" step="1" required>
                 <select class="form-select unit-selector" id="weight_unit">
                     <option value="lb" selected>Lbs</option>
                     <option value="kg">Kg</option>
@@ -87,11 +87,11 @@
             <div class="row g-3">
                 <div class="col-6">
                     <label class="form-label">High-Carb Days (per week)</label>
-                    <input type="number" class="form-control" id="high_days" placeholder="e.g., 2" min="1" max="7" value="2" required>
+                    <input type="number" class="form-control" id="high_days" placeholder="e.g., 2" min="1" max="7" required>
                 </div>
                 <div class="col-6">
                     <label class="form-label">Low-Carb Days (per week)</label>
-                    <input type="number" class="form-control" id="low_days" placeholder="e.g., 5" min="0" max="6" value="5" required>
+                    <input type="number" class="form-control" id="low_days" placeholder="e.g., 5" min="0" max="6" required>
                 </div>
             </div>
             <small class="form-text text-muted d-block mt-2">Total days should not exceed 7 for a standard week.</small>

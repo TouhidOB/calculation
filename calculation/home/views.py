@@ -37,3 +37,28 @@ def home_page(request):
 
 def contact_page(request):
     return render(request, "home/contact.html")
+
+
+def about_page(request):
+    return render(request, "home/about.html")
+
+
+def terms_page(request):
+    return render(request, "home/terms.html")
+
+
+def disclaimer_page(request):
+    return render(request, "home/disclaimer.html")
+
+
+from django.http import HttpResponse
+from django.views.decorators.http import require_GET
+
+@require_GET
+def robots_txt(request):
+    lines = [
+        "User-agent: *",
+        "Disallow: /admin/",
+        f"Sitemap: {request.build_absolute_uri('/sitemap.xml')}",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")

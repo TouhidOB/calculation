@@ -12,7 +12,7 @@
 
 {% block content %}
 <div class="container my-4">
-  <h1>Wage Garnishment Calculator</h1>
+  <h1 class="text-dark">Wage Garnishment Calculator</h1>
   <p class="small-muted">Estimate amount withheld from a paycheck by garnishment. Laws differ by jurisdiction — consult local rules for authoritative guidance.</p>
 
   <div class="calc-wrapper mt-3">
@@ -21,8 +21,8 @@
         <div class="col-md-3 mb-2"><label>Gross Pay per Period ($)</label><input id="wg-gross" type="number" class="form-control" step="0.01" required></div>
         <div class="col-md-3 mb-2"><label>Pay Frequency</label>
           <select id="wg-freq" class="form-control"><option value="52">Weekly</option><option value="26">Bi-weekly</option><option value="24">Semi-monthly</option><option value="12">Monthly</option></select></div>
-        <div class="col-md-3 mb-2"><label>Tax/Required Deductions ($)</label><input id="wg-deductions" type="number" class="form-control" step="0.01" value="0"></div>
-        <div class="col-md-3 mb-2"><label>Number of Dependents</label><input id="wg-dependents" type="number" class="form-control" value="0" min="0"></div>
+        <div class="col-md-3 mb-2"><label>Tax/Required Deductions ($)</label><input id="wg-deductions" type="number" class="form-control" step="0.01"></div>
+        <div class="col-md-3 mb-2"><label>Number of Dependents</label><input id="wg-dependents" type="number" class="form-control" min="0"></div>
       </div>
 
       <div class="row mt-2">
@@ -33,7 +33,7 @@
             <option value="child">Child support (common rules)</option>
           </select>
         </div>
-        <div class="col-md-4 mb-2"><label>Percent or Amount (e.g., 25 or 100)</label><input id="wg-value" type="number" class="form-control" step="0.01" value="25"></div>
+        <div class="col-md-4 mb-2"><label>Percent or Amount (e.g., 25 or 100)</label><input id="wg-value" type="number" class="form-control" step="0.01"></div>
         <div class="col-md-4 mb-2 align-self-end">
           <button class="btn btn-primary" type="submit">Estimate Garnishment</button>
           <button id="wg-reset" type="button" class="btn btn-secondary">Reset</button>

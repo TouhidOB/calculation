@@ -9,9 +9,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 220, 38, 38; /* Red 600 */
-    }
+    
 
     body {
         background-color: #fef2f2; /* Red 50 */
@@ -46,7 +44,7 @@
         margin-bottom: 1rem;
         border-left: 6px solid;
         background: white;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ag-bg);
         transition: transform 0.2s ease;
     }
 
@@ -92,7 +90,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h1 class="fw-bold text-slate-900"><i class="bi bi-glass-cocktail text-danger me-2"></i>Event Beverage Planner</h1>
+        <h1 class="fw-bold text-slate-900 text-dark"><i class="bi bi-glass-cocktail text-danger me-2"></i>Event Beverage Planner</h1>
         <p class="text-muted mx-auto" style="max-width: 650px;">
             Stock your bar with confidence. Calculate the total number of servings and bottles needed to keep the party flowing without running dry.
         </p>
@@ -110,7 +108,7 @@
 
                 <div class="mb-4">
                     <label class="form-label">Bar Service Hours</label>
-                    <input type="number" id="bev-hours" class="form-control bg-dark text-white border-secondary" value="4">
+                    <input type="number" id="bev-hours" class="form-control bg-dark text-white border-secondary">
                 </div>
 
                 <div id="summary-section" class="d-none">

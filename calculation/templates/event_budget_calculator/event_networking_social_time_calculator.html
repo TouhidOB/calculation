@@ -9,9 +9,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 139, 92, 246; /* Violet 500 */
-    }
+    
 
     body {
         background-color: #f5f3ff; /* Violet 50 */
@@ -51,7 +49,7 @@
     }
 
     .card-intensity { border-left-color: #8b5cf6; } /* Violet - Type */
-    .card-connections { border-left-color: #10b981; } /* Emerald - Goals */
+    .card-connections { border-left-color: var(--ag-accent); } /* Emerald - Goals */
     .card-breaks { border-left-color: #f43f5e; } /* Rose - Fatigue */
 
     .result-display-box {
@@ -92,7 +90,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h1 class="fw-bold text-slate-900"><i class="bi bi-people-fill text-violet-600 me-2"></i>Networking Time Calculator</h1>
+        <h1 class="fw-bold text-slate-900 text-dark"><i class="bi bi-people-fill text-violet-600 me-2"></i>Networking Time Calculator</h1>
         <p class="text-muted mx-auto" style="max-width: 650px;">
             Don't rush the relationships. Calculate the ideal duration for your social sessions based on participant count and desired "connection depth."
         </p>

@@ -59,7 +59,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">👶 Child Dose Calculator (mg/kg)</h1>
+    <h1 class="mb-3 text-dark">👶 Child Dose Calculator (mg/kg)</h1>
     <p class="small-muted">Estimate a child's medication dose range based on weight and the required $\text{mg}/\text{kg}$ factor.</p>
 
     <div class="calc-wrapper mt-4">
@@ -83,11 +83,11 @@
             <!-- Dose Factor Input -->
             <div class="input-group mb-3">
                 <span class="input-group-text">Min Factor ($\text{mg}/\text{kg}$)</span>
-                <input type="number" class="form-control" id="factor_min" value="10" min="0.1" max="100" step="0.5" required>
+                <input type="number" class="form-control" id="factor_min" min="0.1" max="100" step="0.5" required>
             </div>
             <div class="input-group mb-3">
                 <span class="input-group-text">Max Factor ($\text{mg}/\text{kg}$)</span>
-                <input type="number" class="form-control" id="factor_max" value="15" min="0.1" max="100" step="0.5" required>
+                <input type="number" class="form-control" id="factor_max" min="0.1" max="100" step="0.5" required>
             </div>
 
             <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Dose Range</button>

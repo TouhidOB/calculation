@@ -1,0 +1,154 @@
+{% extends "base_antigravity.html" %}
+
+{% block title %}Retail Change Calculator - Calculation IT Suite{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="ag-card">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-dark">Retail Change Engine</h1>
+                <p class="lead opacity-50">Precision currency breakdown for retail transactions.</p>
+            </div>
+
+            <form id="change-form">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="ag-input-group">
+                            <label class="ag-input-label">Item Price</label>
+                            <input type="number" class="ag-input" id="item-price" placeholder="0.00" step="0.01"
+                                required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="ag-input-group">
+                            <label class="ag-input-label">Amount Paid</label>
+                            <input type="number" class="ag-input" id="amount-paid" placeholder="0.00" step="0.01"
+                                required>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="ag-button">
+                    <i class="bi bi-calculate"></i>
+                    CALCULATE CHANGE
+                </button>
+            </form>
+
+            <div id="result-container" class="ag-result d-none">
+                <p class="ag-result__label">Total Change to Return</p>
+                <h2 class="ag-result__value" id="total-change">$0.00</h2>
+
+                <div class="ag-grid" id="denomination-grid">
+                    <!-- Denominations will be injected here -->
+                </div>
+            </div>
+
+            <div id="error-alert" class="alert alert-danger mt-4 d-none" role="alert">
+                <i class="bi bi-exclamation-octagon"></i>
+                <span id="error-message"></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const DENOMINATIONS = [
+        { label: '$100 Bill', value: 100, type: 'bill' },
+        { label: '$50 Bill', value: 50, type: 'bill' },
+        { label: '$20 Bill', value: 20, type: 'bill' },
+        { label: '$10 Bill', value: 10, type: 'bill' },
+        { label: '$5 Bill', value: 5, type: 'bill' },
+        { label: '$1 Bill', value: 1, type: 'bill' },
+        { label: 'Quarter', value: 0.25, type: 'coin' },
+        { label: 'Dime', value: 0.10, type: 'coin' },
+        { label: 'Nickel', value: 0.05, type: 'coin' },
+        { label: 'Penny', value: 0.01, type: 'coin' }
+    ];
+
+    const ICON_SVG = `
+        <svg class="ag-denomination__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+        </svg>
+    `;
+
+    // Cash icon for bills
+    const BILL_ICON = `
+        <svg class="ag-denomination__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+            <circle cx="12" cy="12" r="2"></circle>
+            <path d="M6 12h.01M18 12h.01"></path>
+        </svg>
+    `;
+
+    // Coin icon for coins
+    const COIN_ICON = `
+        <svg class="ag-denomination__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="8"></circle>
+            <path d="M12 8v8M8 12h8"></path>
+        </svg>
+    `;
+
+    document.getElementById('change-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const price = parseFloat(document.getElementById('item-price').value);
+        const paid = parseFloat(document.getElementById('amount-paid').value);
+        const resultContainer = document.getElementById('result-container');
+        const errorAlert = document.getElementById('error-alert');
+        const grid = document.getElementById('denomination-grid');
+
+        if (paid < price) {
+            showError("Insufficient amount paid.");
+            return;
+        }
+
+        let change = (paid - price).toFixed(2);
+        document.getElementById('total-change').innerText = `$${parseFloat(change).toLocaleString()}`;
+
+        // Greedy Algorithm
+        let remaining = Math.round(change * 100);
+        grid.innerHTML = '';
+
+        DENOMINATIONS.forEach(denom => {
+            const denomCents = Math.round(denom.value * 100);
+            const count = Math.floor(remaining / denomCents);
+
+            if (count > 0) {
+                remaining %= denomCents;
+
+                const card = document.createElement('div');
+                card.className = 'ag-denomination ag-animate-up';
+                card.style.animationDelay = `${(grid.children.length * 0.05)}s`;
+
+                const icon = denom.type === 'bill' ? BILL_ICON : COIN_ICON;
+
+                card.innerHTML = `
+                    ${icon}
+                    <span class="ag-denomination__count">${count}x</span>
+                    <span class="ag-denomination__label">${denom.label}</span>
+                `;
+                grid.appendChild(card);
+            }
+        });
+
+        resultContainer.classList.remove('d-none');
+        errorAlert.classList.add('d-none');
+        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    function showError(msg) {
+        document.getElementById('error-message').innerText = msg;
+        document.getElementById('error-alert').classList.remove('d-none');
+        document.getElementById('result-container').classList.add('d-none');
+    }
+</script>
+
+<style>
+    .d-none {
+        display: none !important;
+    }
+</style>
+{% endblock %}

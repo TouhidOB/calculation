@@ -61,7 +61,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🔨 Rafter Length Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🔨 Rafter Length Calculator</h1>
     <p class="text-center small-muted">Determine the actual diagonal length required for common rafters.</p>
     
 
@@ -82,7 +82,7 @@
             <label for="overhang-input" class="form-label">Rafter Overhang (Distance past the wall plate)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Overhang Run</span>
-                <input type="number" id="overhang-input" class="form-control" name="overhangRun" placeholder="Overhang (e.g., 1.5)" value="1.5" min="0" step="0.01" required>
+                <input type="number" id="overhang-input" class="form-control" name="overhangRun" placeholder="Overhang (e.g., 1.5)" min="0" step="0.01" required>
                 <span class="input-group-text">ft</span>
             </div>
             
@@ -92,7 +92,7 @@
             <label for="pitch-rise-input" class="form-label">Roof Pitch Rise (e.g., enter 6 for a 6/12 pitch)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Rise</span>
-                <input type="number" id="pitch-rise-input" class="form-control" name="pitchRise" placeholder="Pitch Rise (e.g., 6)" value="6" min="0" max="24" step="1" required>
+                <input type="number" id="pitch-rise-input" class="form-control" name="pitchRise" placeholder="Pitch Rise (e.g., 6)" min="0" max="24" step="1" required>
                 <span class="input-group-text">in 12</span>
             </div>
             <span class="unit-input-label">The standard Run is 12 inches.</span>
@@ -103,7 +103,7 @@
             <label for="waste-input" class="form-label">Waste/Cut Allowance</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Waste Factor</span>
-                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5" value="5" min="0" max="15" step="1" required>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5" min="0" max="15" step="1" required>
                 <span class="input-group-text">%</span>
             </div>
 

@@ -69,10 +69,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">💧 Plumbing Vent Pipe Size Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">💧 Plumbing Vent Pipe Size Calculator</h1>
     <p class="text-center small-muted">Determine the minimum vent pipe diameter based on load and length for optimal drainage.</p>
-    [Image of typical plumbing vent system]
-
     <div class="calc-wrapper">
 
         <form id="vent-size-calculator-form">
@@ -82,14 +80,14 @@
             <label for="dfu-input" class="form-label">Total Drainage Fixture Units (DFU) Served</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Total DFU</span>
-                <input type="number" id="dfu-input" class="form-control" name="dfu" placeholder="e.g., 6" value="6" min="1" step="0.5" required>
+                <input type="number" id="dfu-input" class="form-control" name="dfu" placeholder="e.g., 6" min="1" step="0.5" required>
             </div>
             
             <!-- Length Input (Feet) -->
             <label for="length-input" class="form-label">Total Length of Vent Pipe</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Length (L)</span>
-                <input type="number" id="length-input" class="form-control" name="length" placeholder="e.g., 40" value="40" min="1" step="1" required>
+                <input type="number" id="length-input" class="form-control" name="length" placeholder="e.g., 40" min="1" step="1" required>
                 <span class="input-group-text">Feet</span>
             </div>
 

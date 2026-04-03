@@ -9,9 +9,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 16, 185, 129; /* Emerald 500 */
-    }
+    
 
     body {
         background-color: #f0fdf4; /* Emerald 50 */
@@ -33,7 +31,7 @@
 
     .form-label {
         font-weight: 700;
-        color: #6ee7b7;
+        color: var(--ag-accent);
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -50,7 +48,7 @@
         transition: transform 0.2s ease;
     }
 
-    .card-bag { border-left-color: #10b981; }    /* Emerald - Container */
+    .card-bag { border-left-color: var(--ag-accent); }    /* Emerald - Container */
     .card-items { border-left-color: #f59e0b; }  /* Amber - Contents */
     .card-labor { border-left-color: #3b82f6; }  /* Blue - Logistics */
 
@@ -59,7 +57,7 @@
         border-radius: 1rem;
         padding: 1.5rem;
         text-align: center;
-        border: 1px solid #10b981;
+        border: 1px solid var(--ag-accent);
     }
 
     .result-value {
@@ -92,7 +90,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h1 class="fw-bold text-slate-900"><i class="bi bi-gift-fill text-emerald-600 me-2"></i>Gift Bag Cost Calculator</h1>
+        <h1 class="fw-bold text-slate-900 text-dark"><i class="bi bi-gift-fill text-emerald-600 me-2"></i>Gift Bag Cost Calculator</h1>
         <p class="text-muted mx-auto" style="max-width: 650px;">
             Delight your guests without breaking the bank. Build your welcome kits by selecting packaging quality and content tiers to see your total investment.
         </p>

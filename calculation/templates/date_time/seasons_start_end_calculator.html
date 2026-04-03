@@ -26,7 +26,7 @@
 
     /* Result Section Styles */
     .result-section {
-        background-color: #ffffff;
+        background-color: var(--ag-bg);
         padding: 30px;
         border-radius: 10px;
         text-align: center;
@@ -35,7 +35,7 @@
     }
 
     .result-section h3 {
-        color: #1e3a8a; /* Dark Blue */
+        color: var(--ag-primary); /* Dark Blue */
         margin-bottom: 20px;
         font-size: 1.8rem;
         font-weight: 700;
@@ -67,7 +67,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-3 text-center">🌎 Seasons Start/End Calculator</h1>
+    <h1 class="mb-3 text-center text-dark">🌎 Seasons Start/End Calculator</h1>
     <p class="small-muted text-center">Calculates the approximate dates for the four astronomical events (Equinoxes/Solstices) for any given year.</p>
 
     <div class="calc-wrapper">

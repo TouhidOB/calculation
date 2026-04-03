@@ -61,7 +61,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🔨 Fence Material Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🔨 Fence Material Calculator</h1>
     <p class="text-center small-muted">Determine the number of posts, total linear feet of rails, and total pickets needed for a new fence.</p>
     
 
@@ -92,7 +92,7 @@
             <label for="post-spacing-input" class="form-label">Post Spacing (Center-to-Center)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Post Spacing</span>
-                <input type="number" id="post-spacing-input" class="form-control" name="postSpacing" placeholder="Spacing (e.g., 8)" value="8" min="4" step="1" required>
+                <input type="number" id="post-spacing-input" class="form-control" name="postSpacing" placeholder="Spacing (e.g., 8)" min="4" step="1" required>
                 <span class="input-group-text">ft</span>
             </div>
             
@@ -100,7 +100,7 @@
             <label for="rails-per-section-input" class="form-label">Horizontal Rails Per Section</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Rails</span>
-                <input type="number" id="rails-per-section-input" class="form-control" name="railsPerSection" placeholder="Typically 2 or 3" value="3" min="1" step="1" required>
+                <input type="number" id="rails-per-section-input" class="form-control" name="railsPerSection" placeholder="Typically 2 or 3" min="1" step="1" required>
                 <span class="input-group-text">per section</span>
             </div>
             
@@ -110,7 +110,7 @@
             <label for="picket-width-input" class="form-label">Actual Picket Width</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Picket Width</span>
-                <input type="number" id="picket-width-input" class="form-control" name="picketWidth" placeholder="e.g., 5.5 for a 6-inch board" value="5.5" min="1" step="0.1" required>
+                <input type="number" id="picket-width-input" class="form-control" name="picketWidth" placeholder="e.g., 5.5 for a 6-inch board" min="1" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
 
@@ -118,7 +118,7 @@
             <label for="picket-gap-input" class="form-label">Gap Between Pickets</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Gap Size</span>
-                <input type="number" id="picket-gap-input" class="form-control" name="picketGap" placeholder="e.g., 0.125 or 0 (privacy fence)" value="0.125" min="0" step="0.01" required>
+                <input type="number" id="picket-gap-input" class="form-control" name="picketGap" placeholder="e.g., 0.125 or 0 (privacy fence)" min="0" step="0.01" required>
                 <span class="input-group-text">in</span>
             </div>
 
@@ -128,7 +128,7 @@
             <label for="waste-input" class="form-label">Waste/Cut Allowance</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Waste Factor</span>
-                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 10" value="10" min="0" max="25" step="1" required>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 10" min="0" max="25" step="1" required>
                 <span class="input-group-text">%</span>
             </div>
 

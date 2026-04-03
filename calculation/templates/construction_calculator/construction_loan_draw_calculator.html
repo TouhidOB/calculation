@@ -65,7 +65,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🏦 Construction Loan Draw Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🏦 Construction Loan Draw Calculator</h1>
     <p class="text-center small-muted">Determine the maximum amount you can draw in your current request based on project completion and retainage.</p>
     
 
@@ -79,14 +79,14 @@
             <div class="input-group mb-3">
                 <span class="input-group-text">Total Loan</span>
                 <span class="input-group-text">$</span>
-                <input type="number" id="loan-amount-input" class="form-control" name="loanAmount" placeholder="e.g., 500000" value="500000" min="1000" step="1000" required>
+                <input type="number" id="loan-amount-input" class="form-control" name="loanAmount" placeholder="e.g., 500000" min="1000" step="1000" required>
             </div>
             
             <!-- Current Completion Percentage Input (%) -->
             <label for="completion-percent-input" class="form-label">Current Project Completion</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Completion %</span>
-                <input type="number" id="completion-percent-input" class="form-control" name="completionPercent" placeholder="e.g., 40" value="40" min="0" max="100" step="1" required>
+                <input type="number" id="completion-percent-input" class="form-control" name="completionPercent" placeholder="e.g., 40" min="0" max="100" step="1" required>
                 <span class="input-group-text">%</span>
             </div>
 
@@ -96,7 +96,7 @@
             <label for="holdback-percent-input" class="form-label">Lender Holdback/Retainage Rate</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Holdback Rate</span>
-                <input type="number" id="holdback-percent-input" class="form-control" name="holdbackPercent" placeholder="e.g., 10" value="10" min="0" max="25" step="1" required>
+                <input type="number" id="holdback-percent-input" class="form-control" name="holdbackPercent" placeholder="e.g., 10" min="0" max="25" step="1" required>
                 <span class="input-group-text">%</span>
             </div>
             
@@ -105,7 +105,7 @@
             <div class="input-group mb-3">
                 <span class="input-group-text">Previous Draws</span>
                 <span class="input-group-text">$</span>
-                <input type="number" id="previous-draws-input" class="form-control" name="previousDraws" placeholder="e.g., 180000" value="180000" min="0" step="1000" required>
+                <input type="number" id="previous-draws-input" class="form-control" name="previousDraws" placeholder="e.g., 180000" min="0" step="1000" required>
             </div>
             
             <div class="info-box">

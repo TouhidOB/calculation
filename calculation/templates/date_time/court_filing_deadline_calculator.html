@@ -62,7 +62,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-3">⚖️ Court Filing Deadline Calculator</h1>
+    <h1 class="mb-3 text-dark">⚖️ Court Filing Deadline Calculator</h1>
     <p class="small-muted">Calculate filing deadlines based on Civil Procedure Rules, counting only business days and skipping weekends/holidays.</p>
 
     <div class="calc-wrapper">
@@ -80,7 +80,7 @@
                 <!-- Days Rule -->
                 <div class="col-md-6">
                     <label for="rule-days" class="form-label">Rule Days (Business Days After)</label>
-                    <input type="number" class="form-control" id="rule-days" value="14" min="1" required>
+                    <input type="number" class="form-control" id="rule-days" min="1" required>
                     <small class="form-text text-muted">e.g., 7, 14, 21, or 30 days.</small>
                 </div>
             </div>

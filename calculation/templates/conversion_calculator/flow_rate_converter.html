@@ -98,8 +98,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🌊 Flow Rate Converter</h1>
-    <p class="small-muted">Convert **Volumetric Flow Rate** between common units: Gallons per Minute (GPM), Liters per Second (L/s), and Cubic Meters per Hour ($\text{m}^3/\text{h}$). [Image of volumetric flow rate calculation]</p>
+    <h1 class="mb-3 text-dark">🌊 Flow Rate Converter</h1>
+    <p class="small-muted">Convert **Volumetric Flow Rate** between common units: Gallons per Minute (GPM), Liters per Second (L/s), and Cubic Meters per Hour ($\text{m}^3/\text{h}$). </p>
     
 
     <div class="calc-wrapper mt-4">
@@ -110,7 +110,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 50" value="50" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 50" min="0" step="any" autofocus>
             
             <!-- Unit Select -->
             <div class="mt-3">
@@ -251,10 +251,7 @@
         inputUnitSelect.addEventListener('change', convertFlowRate);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertFlowRate(); // Run initial conversion on load
-    };
+    
 
 </script>
 {% endblock %}

@@ -112,8 +112,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🎨 Color Code Converter</h1>
-    <p class="small-muted">Convert between **HEX** (Web/Digital), **RGB** (Screen/Additive), and **CMYK** (Print/Subtractive) color models. [Image of RGB and CMYK Color Wheels]</p>
+    <h1 class="mb-3 text-dark">🎨 Color Code Converter</h1>
+    <p class="small-muted">Convert between **HEX** (Web/Digital), **RGB** (Screen/Additive), and **CMYK** (Print/Subtractive) color models. </p>
     
 
     <div class="calc-wrapper mt-4">
@@ -269,10 +269,7 @@
         hexInput.addEventListener('change', convertColor);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertColor(); // Run initial conversion on load
-    };
+    
 
 </script>
 {% endblock %}

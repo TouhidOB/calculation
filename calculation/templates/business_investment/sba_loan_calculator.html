@@ -35,7 +35,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="card shadow-lg bg-light">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header">
                     <h4 class="mb-0"><i class="bi bi-bank me-2"></i> Loan & Fee Parameters</h4>
                 </div>
                 <div class="card-body">
@@ -78,7 +78,7 @@
                             <label for="guarantee_percent" class="form-label fw-bold">SBA Guaranteed Percentage (%)</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-info-subtle text-info"><i class="bi bi-patch-check-fill"></i></span>
-                                <input type="number" class="form-control" id="guarantee_percent" placeholder="e.g., 75" value="75" min="50" max="100" step="1" required>
+                                <input type="number" class="form-control" id="guarantee_percent" placeholder="e.g., 75" min="50" max="100" step="1" required>
                                 <span class="input-group-text">%</span>
                             </div>
                             <p class="small text-muted mt-1">Typical range is 75% to 85%.</p>
@@ -88,7 +88,7 @@
                             <label for="fee_rate_percent" class="form-label fw-bold">Upfront Guarantee Fee Rate (%)</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-warning-subtle text-warning"><i class="bi bi-coin"></i></span>
-                                <input type="number" class="form-control" id="fee_rate_percent" placeholder="e.g., 3.0" value="3.0" min="0" max="5" step="0.01" required>
+                                <input type="number" class="form-control" id="fee_rate_percent" placeholder="e.g., 3.0" min="0" max="5" step="0.01" required>
                                 <span class="input-group-text">%</span>
                             </div>
                             <p class="small text-muted mt-1">This rate is applied to the **guaranteed portion** of the loan. Rates are subject to change based on SBA policy and loan size.</p>

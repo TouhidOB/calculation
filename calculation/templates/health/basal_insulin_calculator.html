@@ -58,7 +58,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">💉 Basal Insulin Dose Calculator</h1>
+    <h1 class="mb-3 text-dark">💉 Basal Insulin Dose Calculator</h1>
     <p class="small-muted">Estimate your starting daily basal (long-acting) insulin dose based on your body weight. **Note: Consult a medical professional before adjusting insulin doses.**</p>
 
     <div class="calc-wrapper mt-4">
@@ -80,11 +80,11 @@
             
             <div class="input-group mb-3">
                 <span class="input-group-text">Min Factor (units/kg)</span>
-                <input type="number" class="form-control" id="tdd_factor_min" value="0.4" min="0.1" max="1.0" step="0.05" required>
+                <input type="number" class="form-control" id="tdd_factor_min" min="0.1" max="1.0" step="0.05" required>
             </div>
             <div class="input-group mb-3">
                 <span class="input-group-text">Max Factor (units/kg)</span>
-                <input type="number" class="form-control" id="tdd_factor_max" value="0.5" min="0.1" max="1.0" step="0.05" required>
+                <input type="number" class="form-control" id="tdd_factor_max" min="0.1" max="1.0" step="0.05" required>
             </div>
 
             <button class="btn btn-primary mt-4 w-100" type="submit">Calculate Basal Dose Range</button>

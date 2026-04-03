@@ -58,10 +58,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🌲 Board Foot Lumber Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🌲 Board Foot Lumber Calculator</h1>
     <p class="text-center small-muted">Calculates total board footage and estimated cost for dimensional lumber.</p>
-    [Image of dimensional lumber illustrating thickness, width, and length]
-
     <div class="calc-wrapper">
 
         <form id="board-foot-form">
@@ -71,7 +69,7 @@
             <label for="thickness-input" class="form-label">Thickness</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Thickness (T)</span>
-                <input type="number" id="thickness-input" class="form-control" name="thickness" placeholder="e.g., 2 (for 2x4)" value="2" min="0.1" step="0.1" required>
+                <input type="number" id="thickness-input" class="form-control" name="thickness" placeholder="e.g., 2 (for 2x4)" min="0.1" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
             
@@ -79,7 +77,7 @@
             <label for="width-input" class="form-label">Width</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Width (W)</span>
-                <input type="number" id="width-input" class="form-control" name="width" placeholder="e.g., 4 (for 2x4)" value="4" min="0.1" step="0.1" required>
+                <input type="number" id="width-input" class="form-control" name="width" placeholder="e.g., 4 (for 2x4)" min="0.1" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
             
@@ -87,7 +85,7 @@
             <label for="length-input" class="form-label">Length</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Length (L)</span>
-                <input type="number" id="length-input" class="form-control" name="length" placeholder="e.g., 8" value="8" min="0.1" step="0.1" required>
+                <input type="number" id="length-input" class="form-control" name="length" placeholder="e.g., 8" min="0.1" step="0.1" required>
                 <span class="input-group-text">ft</span>
             </div>
             
@@ -97,7 +95,7 @@
             <label for="quantity-input" class="form-label">Number of Pieces</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Quantity</span>
-                <input type="number" id="quantity-input" class="form-control" name="quantity" placeholder="e.g., 50" value="10" min="1" step="1" required>
+                <input type="number" id="quantity-input" class="form-control" name="quantity" placeholder="e.g., 50" min="1" step="1" required>
                 <span class="input-group-text">Pcs</span>
             </div>
 
@@ -106,7 +104,7 @@
                 <label for="price-bf-input" class="form-label">Price per Board Foot</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Cost/BF</span>
-                    <input type="number" id="price-bf-input" class="form-control" name="pricePerBoardFoot" placeholder="e.g., 1.50" value="1.50" min="0" step="0.01" required>
+                    <input type="number" id="price-bf-input" class="form-control" name="pricePerBoardFoot" placeholder="e.g., 1.50" min="0" step="0.01" required>
                     <span class="input-group-text">$</span>
                 </div>
             </div>

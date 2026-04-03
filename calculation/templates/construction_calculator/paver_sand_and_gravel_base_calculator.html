@@ -58,10 +58,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🧱 Paver Base Material Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🧱 Paver Base Material Calculator</h1>
     <p class="text-center small-muted">Estimates the cubic yard volume of gravel sub-base and bedding sand for your paving project.</p>
-    [Image of a cross-section diagram of paver installation showing the subgrade, gravel base, bedding sand, and paver]
-
     <div class="calc-wrapper">
 
         <form id="paver-base-calculator-form">
@@ -71,7 +69,7 @@
             <label for="length-input" class="form-label">Area Length</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Length (L)</span>
-                <input type="number" id="length-input" class="form-control" name="areaLength" placeholder="e.g., 20" value="20" min="1" step="0.1" required>
+                <input type="number" id="length-input" class="form-control" name="areaLength" placeholder="e.g., 20" min="1" step="0.1" required>
                 <span class="input-group-text">ft</span>
             </div>
             
@@ -79,7 +77,7 @@
             <label for="width-input" class="form-label">Area Width</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Width (W)</span>
-                <input type="number" id="width-input" class="form-control" name="areaWidth" placeholder="e.g., 15" value="15" min="1" step="0.1" required>
+                <input type="number" id="width-input" class="form-control" name="areaWidth" placeholder="e.g., 15" min="1" step="0.1" required>
                 <span class="input-group-text">ft</span>
             </div>
 
@@ -89,7 +87,7 @@
             <label for="gravel-depth-input" class="form-label">Gravel/Crushed Stone Base Depth</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Gravel D</span>
-                <input type="number" id="gravel-depth-input" class="form-control" name="gravelDepth" placeholder="e.g., 6" value="6" min="1" step="0.5" required>
+                <input type="number" id="gravel-depth-input" class="form-control" name="gravelDepth" placeholder="e.g., 6" min="1" step="0.5" required>
                 <span class="input-group-text">in</span>
             </div>
 
@@ -97,7 +95,7 @@
             <label for="sand-depth-input" class="form-label">Bedding Sand Depth</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Sand D</span>
-                <input type="number" id="sand-depth-input" class="form-control" name="sandDepth" placeholder="e.g., 1" value="1" min="0.5" step="0.1" required>
+                <input type="number" id="sand-depth-input" class="form-control" name="sandDepth" placeholder="e.g., 1" min="0.5" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
             

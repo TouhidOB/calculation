@@ -61,7 +61,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🌱 Topsoil & Mulch Volume Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🌱 Topsoil & Mulch Volume Calculator</h1>
     <p class="text-center small-muted">Determine the volume and weight of topsoil or other loose materials needed for a specific area.</p>
     
 
@@ -90,7 +90,7 @@
             <label for="depth-input" class="form-label">Required Depth</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Depth</span>
-                <input type="number" id="depth-input" class="form-control" name="depthInches" placeholder="Depth (e.g., 6)" value="6" min="0.1" step="0.1" required>
+                <input type="number" id="depth-input" class="form-control" name="depthInches" placeholder="Depth (e.g., 6)" min="0.1" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
             
@@ -100,7 +100,7 @@
             <label for="density-input" class="form-label">Material Density</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Density</span>
-                <input type="number" id="density-input" class="form-control" name="density" placeholder="e.g., 80" value="80" min="1" step="1" required>
+                <input type="number" id="density-input" class="form-control" name="density" placeholder="e.g., 80" min="1" step="1" required>
                 <span class="input-group-text">lb/cu ft</span>
             </div>
             <div class="density-info">
@@ -113,7 +113,7 @@
             <label for="waste-input" class="form-label">Waste/Compaction Allowance</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Waste Factor</span>
-                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5-10" value="10" min="0" max="25" step="1" required>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5-10" min="0" max="25" step="1" required>
                 <span class="input-group-text">%</span>
             </div>
 

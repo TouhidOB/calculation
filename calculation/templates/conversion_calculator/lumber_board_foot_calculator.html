@@ -121,7 +121,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🌲 Lumber Board Foot Calculator</h1>
+    <h1 class="mb-3 text-dark">🌲 Lumber Board Foot Calculator</h1>
     <p class="small-muted">Calculate the Board Feet (BF) volume for lumber. The formula uses **nominal dimensions** (Thickness $\times$ Width in inches, Length in feet). </p>
 
     <div class="calc-wrapper mt-4">
@@ -133,22 +133,22 @@
                 <!-- Thickness (in) -->
                 <div>
                     <label for="thicknessInput">Thickness (in)</label>
-                    <input type="number" id="thicknessInput" placeholder="T" value="2" min="0.1" step="any" autofocus>
+                    <input type="number" id="thicknessInput" placeholder="T" min="0.1" step="any" autofocus>
                 </div>
                 <!-- Width (in) -->
                 <div>
                     <label for="widthInput">Width (in)</label>
-                    <input type="number" id="widthInput" placeholder="W" value="4" min="0.1" step="any">
+                    <input type="number" id="widthInput" placeholder="W" min="0.1" step="any">
                 </div>
                 <!-- Length (ft) -->
                 <div>
                     <label for="lengthInput">Length (ft)</label>
-                    <input type="number" id="lengthInput" placeholder="L" value="8" min="0.1" step="any">
+                    <input type="number" id="lengthInput" placeholder="L" min="0.1" step="any">
                 </div>
                 <!-- Quantity -->
                 <div>
                     <label for="quantityInput">Quantity</label>
-                    <input type="number" id="quantityInput" placeholder="Qty" value="1" min="1" step="1">
+                    <input type="number" id="quantityInput" placeholder="Qty" min="1" step="1">
                 </div>
             </div>
         </div>
@@ -159,7 +159,7 @@
             <div class="input-row" style="grid-template-columns: 2fr 1fr;">
                  <div>
                     <label for="pricePerBFInput">Price Per Board Foot ($)</label>
-                    <input type="number" id="pricePerBFInput" placeholder="0.00" value="3.50" min="0" step="0.01">
+                    <input type="number" id="pricePerBFInput" placeholder="0.00" min="0" step="0.01">
                 </div>
                 <div class="align-self-end">
                     <span class="text-muted small">/ BF</span>
@@ -280,10 +280,7 @@
         convertButton.addEventListener('click', calculateBoardFeet);
     }
 
-    window.onload = function() {
-        setupListeners();
-        calculateBoardFeet(); // Initial calculation on load
-    };
+    
 
 </script>
 {% endblock %}

@@ -9,12 +9,10 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 6, 182, 212; /* Cyan */
-    }
+    
 
     body {
-        background-color: #f8fafc;
+        background-color: var(--ag-bg);
     }
 
     .grading-card {
@@ -25,7 +23,7 @@
     }
 
     .criteria-header {
-        background-color: #f1f5f9;
+        background-color: var(--ag-bg);
         border-radius: 0.5rem;
         font-weight: 700;
         font-size: 0.85rem;
@@ -36,7 +34,7 @@
 
     .criteria-row {
         transition: background-color 0.2s;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--ag-bg);
         padding-top: 0.75rem;
         padding-bottom: 0.75rem;
     }
@@ -258,15 +256,6 @@
     }
 
     // Professional Initialization: Don't fill it with mock grades
-    window.onload = function() {
-        // Add 4 common academic criteria but leave them un-scored (Select Level...)
-        addCriteria('Content and Research', 40);
-        addCriteria('Organization and Logic', 30);
-        addCriteria('Grammar and Style', 15);
-        addCriteria('Citations and Format', 15);
-        
-        // Final recalculation to ensure 0s are set
-        calculateScore();
-    };
+    
 </script>
 {% endblock %}

@@ -2,102 +2,119 @@
 
 {% block title %}Function Graphing Calculator{% endblock %}
 
-{% block meta_description %}Visualize mathematical functions instantly. Enter your equation (e.g., x^2, sin(x)) and define the graph window to see the plot.{% endblock %}
+{% block meta_description %}Visualize mathematical functions instantly. Enter your equation (e.g., x^2, sin(x)) and
+define the graph window to see the plot.{% endblock %}
 
-{% block meta_keywords %}graphing calculator, function plotter, math visualization, calculus, canvas graph, x^2, sin(x){% endblock %}
+{% block meta_keywords %}graphing calculator, function plotter, math visualization, calculus, canvas graph, x^2,
+sin(x){% endblock %}
 
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
 <style>
-    /* Custom styles for graph container and responsive canvas (Bootstrap-friendly) */
+    /* 🚀 Antigravity Graphing Calculator Styling */
     .calc-wrapper {
-        background: #ffffff;
-        padding: 24px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        background: var(--ag-bg);
+        padding: 30px;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
         font-family: 'Inter', sans-serif;
-        max-width: 800px;
+        max-width: 850px;
         margin: 0 auto;
+        border: 1px solid var(--border-color);
     }
 
-    /* Make the canvas responsive within its container */
     #graph-canvas {
         width: 100%;
-        max-height: 400px; /* Cap height for better viewing */
-        border: 1px solid var(--bs-gray-300);
-        background-color: #f8fafc; /* Light background */
-        border-radius: 8px;
+        max-height: 450px;
+        border: 2px solid var(--border-color);
+        background-color: #f8fafc;
+        /* Very light subtle background */
+        border-radius: var(--radius-md);
         display: block;
-        margin-top: 20px;
-        margin-bottom: 20px;
+        margin-top: 25px;
+        margin-bottom: 25px;
+        box-shadow: inset 0 2px 10px rgba(0, 23, 31, 0.03);
     }
-    
-    /* Input styling for aesthetic group - using Bootstrap grid classes below */
 
     .form-label {
-        font-weight: 500;
-        color: var(--bs-gray-700);
-        margin-bottom: 4px;
-        display: block;
+        font-weight: 600;
+        color: var(--ag-text);
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .form-control {
+        border-radius: var(--radius-md);
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--ag-secondary);
+        box-shadow: 0 0 0 3px rgba(0, 126, 167, 0.1);
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="text-center fw-bolder mb-2 text-dark fs-2">📈 Function Graphing Calculator</h1>
-    <p class="text-secondary mb-4 text-center">Enter a function of **x** (e.g., `x^2`, `sin(x) + 2x`, `log(abs(x))`). Use `^` for exponents.</p>
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-dark"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Graphing
+            Calculator</h1>
+        <p class="lead text-secondary">Advanced function visualization with precision plotting.</p>
+    </div>
 
     <div class="calc-wrapper">
-        <form id="graph-form" class="d-grid gap-4">
-
-            <div class="w-100">
+        <form id="graph-form" class="shadow-none">
+            <div class="mb-4">
                 <label for="function-input" class="form-label">Function f(x) =</label>
-                <input type="text" id="function-input" required
-                       class="form-control form-control-lg border-primary shadow-sm"
-                       placeholder="e.g., x^2 - 3*x + 1">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-activity"></i></span>
+                    <input type="text" id="function-input" required
+                        class="form-control form-control-lg border-start-0 ps-0" placeholder="e.g., x^2 - 3*x + 1">
+                </div>
             </div>
 
-            <div class="row g-3">
+            <div class="row g-3 mb-4">
                 <div class="col-6 col-md-3">
                     <label for="x-min" class="form-label">X Min</label>
-                    <input type="number" id="x-min" step="0.1" required
-                           class="form-control" placeholder="-10">
+                    <input type="number" id="x-min" step="0.1" required class="form-control">
                 </div>
                 <div class="col-6 col-md-3">
                     <label for="x-max" class="form-label">X Max</label>
-                    <input type="number" id="x-max" step="0.1" required
-                           class="form-control" placeholder="10">
+                    <input type="number" id="x-max" step="0.1" required class="form-control">
                 </div>
                 <div class="col-6 col-md-3">
                     <label for="y-min" class="form-label">Y Min</label>
-                    <input type="number" id="y-min" step="0.1" required
-                           class="form-control" placeholder="-10">
+                    <input type="number" id="y-min" step="0.1" required class="form-control">
                 </div>
                 <div class="col-6 col-md-3">
                     <label for="y-max" class="form-label">Y Max</label>
-                    <input type="number" id="y-max" step="0.1" required
-                           class="form-control" placeholder="10">
+                    <input type="number" id="y-max" step="0.1" required class="form-control">
                 </div>
             </div>
 
-            <button type="submit"
-                    class="btn btn-primary btn-lg w-100 fw-bold shadow-lg">
-                Graph Function
+            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm py-3">
+                <i class="bi bi-pencil-square me-2"></i>Render Graph
             </button>
         </form>
 
         <canvas id="graph-canvas" width="800" height="400"></canvas>
-        
-        <div id="message-area" class="mt-2 text-center text-danger fw-semibold"></div>
 
+        <div id="message-area" class="mt-2 text-center text-danger fw-semibold"></div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -105,207 +122,138 @@
         const ctx = canvas.getContext('2d');
         const form = document.getElementById('graph-form');
         const messageArea = document.getElementById('message-area');
-        
+
+        // --- Antigravity Theme Colors for Canvas ---
+        const THEME = {
+            grid: '#e2e8f0',     /* Border color equivalent */
+            axes: '#64748b',     /* Slate 500 */
+            text: '#00171F',     /* Rich Black */
+            line: '#00A8E8'      /* Vivid Sky Blue (Accent) */
+        };
+
         // Initial drawing of empty axes
         drawAxes(ctx, canvas, { xMin: -10, xMax: 10, yMin: -10, yMax: 10 });
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             messageArea.textContent = '';
-            
-            // 1. Get Inputs and Limits
+
             const funcStr = document.getElementById('function-input').value.toLowerCase().trim();
-            const xMin = parseFloat(document.getElementById('x-min').value || -10);
-            const xMax = parseFloat(document.getElementById('x-max').value || 10);
-            const yMin = parseFloat(document.getElementById('y-min').value || -10);
-            const yMax = parseFloat(document.getElementById('y-max').value || 10);
+            const xMin = parseFloat(document.getElementById('x-min').value);
+            const xMax = parseFloat(document.getElementById('x-max').value);
+            const yMin = parseFloat(document.getElementById('y-min').value);
+            const yMax = parseFloat(document.getElementById('y-max').value);
 
-            // Set placeholder values if fields are empty after parsing
-            document.getElementById('x-min').placeholder = xMin;
-            document.getElementById('x-max').placeholder = xMax;
-            document.getElementById('y-min').placeholder = yMin;
-            document.getElementById('y-max').placeholder = yMax;
-            
             if (xMin >= xMax || yMin >= yMax) {
-                messageArea.textContent = 'Error: Max value must be strictly greater than Min value for both X and Y axes.';
-                return;
-            }
-
-            if (!funcStr) {
-                 messageArea.textContent = 'Error: Please enter a function to graph.';
+                messageArea.textContent = 'Invalid range: Max must be greater than Min.';
                 return;
             }
 
             try {
-                // 2. Prepare Expression for Evaluation
                 let safeFuncStr = funcStr
-                    .replace(/\^/g, '**') // Exponentiation operator (x^2 -> x**2)
-                    .replace(/log\(([^)]+)\)/g, 'Math.log10($1)') // Base 10 Log
-                    .replace(/ln\(([^)]+)\)/g, 'Math.log($1)')    // Natural Log
-                    .replace(/abs\(([^)]+)\)/g, 'Math.abs($1)')  // Absolute value
-                    .replace(/e/g, 'Math.E') // Euler's number
-                    .replace(/pi/g, 'Math.PI') // Pi constant
-                    // Ensure all trigonometric functions are prefixed with Math.
+                    .replace(/\^/g, '**')
+                    .replace(/log\(([^)]+)\)/g, 'Math.log10($1)')
+                    .replace(/ln\(([^)]+)\)/g, 'Math.log($1)')
+                    .replace(/abs\(([^)]+)\)/g, 'Math.abs($1)')
+                    .replace(/e/g, 'Math.E')
+                    .replace(/pi/g, 'Math.PI')
                     .replace(/sin\(([^)]+)\)/g, 'Math.sin($1)')
                     .replace(/cos\(([^)]+)\)/g, 'Math.cos($1)')
                     .replace(/tan\(([^)]+)\)/g, 'Math.tan($1)');
-                    
-                // Final function generator (using Function constructor for dynamic code execution)
+
                 const func = new Function('x', 'return ' + safeFuncStr);
-                
-                // 3. Draw the graph
                 drawGraph(ctx, canvas, func, { xMin, xMax, yMin, yMax });
-                
+
             } catch (error) {
-                messageArea.textContent = 'Syntax Error: Could not parse or evaluate the function. Check your expression.';
-                console.error("Graphing Error:", error);
+                messageArea.textContent = 'Syntax Error: Check your expression.';
             }
         });
-
 
         function mapToCanvas(x, y, width, height, limits) {
             const xRange = limits.xMax - limits.xMin;
             const yRange = limits.yMax - limits.yMin;
-
             const px = ((x - limits.xMin) / xRange) * width;
-            // Y-axis is inverted in canvas: (height - Y_offset)
             const py = height - (((y - limits.yMin) / yRange) * height);
-            
             return { px, py };
         }
 
-        /**
-         * Draws the axes and grid lines.
-         */
         function drawAxes(ctx, canvas, limits) {
             const { width, height } = canvas;
             const { xMin, xMax, yMin, yMax } = limits;
-            
-            ctx.clearRect(0, 0, width, height); // Clear the canvas
+            ctx.clearRect(0, 0, width, height);
 
-            // Calculate origin position in canvas coordinates
             const origin = mapToCanvas(0, 0, width, height, limits);
-            
-            // Calculate step size for ticks/grid based on a fixed number (e.g., 10 steps)
             const xInterval = (xMax - xMin) / 10;
             const yInterval = (yMax - yMin) / 10;
-            const xStep = parseFloat(xInterval.toFixed(0)) || 1; // Round to nearest whole number, min 1
-            const yStep = parseFloat(yInterval.toFixed(0)) || 1;
-            
-            // --- Draw Grid ---
-            ctx.strokeStyle = '#e9ecef'; // Very light gray (Bootstrap-like)
-            ctx.lineWidth = 1;
-            
-            // Vertical grid lines and ticks
-            for (let x = xStep; x <= xMax; x += xStep) {
-                const { px: px_pos } = mapToCanvas(x, 0, width, height, limits);
-                const { px: px_neg } = mapToCanvas(-x, 0, width, height, limits);
-                
-                // Vertical lines (positive side)
-                ctx.beginPath();
-                ctx.moveTo(px_pos, 0);
-                ctx.lineTo(px_pos, height);
-                ctx.stroke();
-                
-                // Vertical lines (negative side)
-                ctx.beginPath();
-                ctx.moveTo(px_neg, 0);
-                ctx.lineTo(px_neg, height);
-                ctx.stroke();
-            }
+            const xStep = Math.abs(xInterval) || 1;
+            const yStep = Math.abs(yInterval) || 1;
 
-            // Horizontal grid lines and ticks
-            for (let y = yStep; y <= yMax; y += yStep) {
-                const { py: py_pos } = mapToCanvas(0, y, width, height, limits);
-                const { py: py_neg } = mapToCanvas(0, -y, width, height, limits);
-                
-                // Horizontal lines (positive side)
+            // --- Draw Grid ---
+            ctx.strokeStyle = THEME.grid;
+            ctx.lineWidth = 1;
+
+            for (let x = xMin; x <= xMax; x += xStep) {
+                const { px } = mapToCanvas(x, 0, width, height, limits);
                 ctx.beginPath();
-                ctx.moveTo(0, py_pos);
-                ctx.lineTo(width, py_pos);
-                ctx.stroke();
-                
-                // Horizontal lines (negative side)
+                ctx.moveTo(px, 0); ctx.lineTo(px, height); ctx.stroke();
+            }
+            for (let y = yMin; y <= yMax; y += yStep) {
+                const { py } = mapToCanvas(0, y, width, height, limits);
                 ctx.beginPath();
-                ctx.moveTo(0, py_neg);
-                ctx.lineTo(width, py_neg);
-                ctx.stroke();
+                ctx.moveTo(0, py); ctx.lineTo(width, py); ctx.stroke();
             }
 
             // --- Draw Axes ---
-            ctx.strokeStyle = '#6c757d'; // Medium gray
+            ctx.strokeStyle = THEME.axes;
             ctx.lineWidth = 2;
-            
-            // X-Axis
-            ctx.beginPath();
-            ctx.moveTo(0, origin.py);
-            ctx.lineTo(width, origin.py);
-            ctx.stroke();
 
+            // X-Axis
+            if (origin.py >= 0 && origin.py <= height) {
+                ctx.beginPath(); ctx.moveTo(0, origin.py); ctx.lineTo(width, origin.py); ctx.stroke();
+            }
             // Y-Axis
-            ctx.beginPath();
-            ctx.moveTo(origin.px, 0);
-            ctx.lineTo(origin.px, height);
-            ctx.stroke();
-            
-            // Draw Ticks and Labels 
-            ctx.fillStyle = '#343a40';
-            ctx.font = '10px Inter';
-            
-            // X-axis labels
-            for (let x = xStep; x <= xMax; x += xStep) {
-                const { px: px_pos } = mapToCanvas(x, 0, width, height, limits);
-                const { px: px_neg } = mapToCanvas(-x, 0, width, height, limits);
-                
-                ctx.fillText(x.toString(), px_pos - 10, origin.py + 15);
-                ctx.fillText((-x).toString(), px_neg - 10, origin.py + 15);
+            if (origin.px >= 0 && origin.px <= width) {
+                ctx.beginPath(); ctx.moveTo(origin.px, 0); ctx.lineTo(origin.px, height); ctx.stroke();
             }
 
-             // Y-axis labels
-            for (let y = yStep; y <= yMax; y += yStep) {
-                const { py: py_pos } = mapToCanvas(0, y, width, height, limits);
-                const { py: py_neg } = mapToCanvas(0, -y, width, height, limits);
-                
-                ctx.fillText(y.toString(), origin.px + 5, py_pos + 4);
-                ctx.fillText((-y).toString(), origin.px + 5, py_neg + 4);
+            // --- Draw Labels ---
+            ctx.fillStyle = THEME.text;
+            ctx.font = 'bold 11px Inter';
+
+            // X labels
+            for (let x = xMin; x <= xMax; x += xStep) {
+                if (Math.abs(x) < 0.0001) continue;
+                const { px } = mapToCanvas(x, 0, width, height, limits);
+                ctx.fillText(x.toFixed(1).replace(/\.0$/, ''), px - 10, Math.min(Math.max(origin.py + 15, 15), height - 5));
+            }
+            // Y labels
+            for (let y = yMin; y <= yMax; y += yStep) {
+                if (Math.abs(y) < 0.0001) continue;
+                const { py } = mapToCanvas(0, y, width, height, limits);
+                ctx.fillText(y.toFixed(1).replace(/\.0$/, ''), Math.min(Math.max(origin.px + 5, 5), width - 30), py + 4);
             }
         }
 
-
-        /**
-         * Plots the function on the canvas.
-         */
         function drawGraph(ctx, canvas, func, limits) {
-            drawAxes(ctx, canvas, limits); // Redraw axes and grid first
-
+            drawAxes(ctx, canvas, limits);
             const { width, height } = canvas;
             const { xMin, xMax } = limits;
-            const step = (xMax - xMin) / width; // One step per pixel horizontally
-            
-            ctx.beginPath();
-            ctx.strokeStyle = '#dc3545'; // Bootstrap Red (danger) for the function line
-            ctx.lineWidth = 3; // Thicker line
+            const step = (xMax - xMin) / width;
 
-            // Iterate over the X domain
+            ctx.beginPath();
+            ctx.strokeStyle = THEME.line;
+            ctx.lineWidth = 4;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
             let firstPoint = true;
             for (let px = 0; px <= width; px++) {
-                // Convert pixel X back to math X
                 const x = xMin + px * step;
-                
                 let y;
-                try {
-                    // Evaluate the function at x
-                    y = func(x);
-                } catch (e) {
-                    // Skip if function evaluation fails (e.g., domain error like log(-1))
-                    continue;
-                }
+                try { y = func(x); } catch (e) { continue; }
 
-                // Convert math (x, y) to canvas (px, py)
                 const { py } = mapToCanvas(x, y, width, height, limits);
-                
-                // Check for singularities or out-of-bounds
-                const isFinite = Number.isFinite(py) && py > -10000 && py < height + 10000;
+                const isFinite = Number.isFinite(py) && Math.abs(py) < 10000;
 
                 if (firstPoint && isFinite) {
                     ctx.moveTo(px, py);
@@ -313,14 +261,13 @@
                 } else if (isFinite) {
                     ctx.lineTo(px, py);
                 } else {
-                    // If y is infinite or too far out, end the current line segment
-                    ctx.stroke();
-                    ctx.beginPath();
-                    firstPoint = true;
+                    ctx.stroke(); ctx.beginPath(); firstPoint = true;
                 }
             }
-            ctx.stroke(); // Draw the final segment
+            ctx.stroke();
         }
     });
+</script>
+});
 </script>
 {% endblock %}

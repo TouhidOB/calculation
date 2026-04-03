@@ -12,30 +12,7 @@ conversion{% endblock %}
 
 <style>
     /* 🎨 Define Custom Theme Colors using CSS Variables */
-    :root {
-        --teal-light: #f0fdfa;
-        /* Solver Wrapper Background */
-        --green-pale: #d1fae5;
-        /* Input Section Background */
-        --green-accent: #10b981;
-        /* Emerald Accent */
-        --green-dark: #065f46;
-        /* Input Text Color */
-        --green-active: #059669;
-        /* Darker selected green */
-        --green-border: #064e3b;
-        /* Active border */
-
-        /* Result Card Accent Colors */
-        --color-bin: #f59e0b;
-        /* Amber */
-        --color-dec: #10b981;
-        /* Emerald */
-        --color-hex: #3b82f6;
-        /* Blue */
-        --color-oct: #ef4444;
-        /* Red */
-    }
+    
 
     /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
@@ -108,7 +85,7 @@ conversion{% endblock %}
         padding: 15px;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        background-color: #ffffff;
+        background-color: var(--ag-bg);
         border-left: 5px solid;
     }
 
@@ -441,15 +418,6 @@ conversion{% endblock %}
     }
 
     // Initialize the calculator on load
-    window.onload = function () {
-        // Set the initial active button style for Binary (Base 2)
-        // This ensures the correct button is highlighted when the page loads
-        selectBase(document.querySelector('.base-selector button[data-radix="2"]'));
-
-        // FIX: Removed the automatic call to convertBase() by itself here.
-        // The convertBase() is now only called when:
-        // 1. A key is pressed in the input field (oninput="convertBase()").
-        // 2. A base selector button is clicked (selectBase calls convertBase()).
-    };
+    
 </script>
 {% endblock %}

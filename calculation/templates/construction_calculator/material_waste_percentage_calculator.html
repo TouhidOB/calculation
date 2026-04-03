@@ -65,7 +65,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">♻️ Material Waste Percentage Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">♻️ Material Waste Percentage Calculator</h1>
     <p class="text-center small-muted">Determine the actual waste rate by comparing the materials purchased against the amount actually installed.</p>
     
 
@@ -95,7 +95,7 @@
             <label for="purchased-input" class="form-label">Total Material Purchased</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Purchased</span>
-                <input type="number" id="purchased-input" class="form-control" name="purchasedAmount" placeholder="e.g., 120" value="120" min="1" step="0.1" required>
+                <input type="number" id="purchased-input" class="form-control" name="purchasedAmount" placeholder="e.g., 120" min="1" step="0.1" required>
                 <span class="input-group-text" id="purchased-unit">sq ft</span>
             </div>
             
@@ -103,7 +103,7 @@
             <label for="used-input" class="form-label">Total Material Used/Installed</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Used/Installed</span>
-                <input type="number" id="used-input" class="form-control" name="usedAmount" placeholder="e.g., 108" value="108" min="1" step="0.1" required>
+                <input type="number" id="used-input" class="form-control" name="usedAmount" placeholder="e.g., 108" min="1" step="0.1" required>
                 <span class="input-group-text" id="used-unit">sq ft</span>
             </div>
             

@@ -1,20 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}Moving Cost Estimator{% endblock %}
+{% block title %}Relocation Cost Modeler{% endblock %}
 
-{% block meta_description %}Estimate the total cost of your move based on home size, distance, and optional services like packing and storage.{% endblock %}
+{% block meta_description %}Estimate the total relocation cost of your move based on home size, distance, and optional services like packing and storage.{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
     :root {
-        --move-blue: #1e40af;
-        --move-yellow: #facc15;
-        --move-light: #eff6ff;
+        --move-blue: var(--ag-primary, #003459);
+        --move-light: #f8fafc;
     }
 
     body {
-        background-color: #f8fafc;
+        background-color: var(--ag-bg);
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
@@ -39,6 +38,10 @@
         letter-spacing: 0.05em;
     }
 
+    .input-sidebar .form-label {
+        color: #cbd5e1 !important;
+    }
+
     .result-display-box {
         background-color: white;
         border: 2px solid var(--move-blue);
@@ -56,7 +59,7 @@
     }
 
     .stat-mini {
-        background: #f1f5f9;
+        background: var(--ag-bg);
         border-radius: 0.75rem;
         padding: 1rem;
         border: 1px solid #e2e8f0;
@@ -71,11 +74,12 @@
     .service-toggle {
         transition: all 0.2s ease;
         cursor: pointer;
-        border: 1px solid #dbeafe;
+        border: 1px solid #475569 !important;
+        background-color: #1e293b !important;
     }
 
     .service-toggle:hover {
-        background-color: #dbeafe !important;
+        background-color: #334155 !important;
     }
 
     @media print {
@@ -98,7 +102,7 @@
         <div class="row g-0">
             <div class="col-lg-5 input-sidebar p-4 p-md-5">
                 <form id="moving-form">
-                    <h6 class="fw-bold text-dark mb-4 text-uppercase small">Inventory & Distance</h6>
+                    <h6 class="fw-bold text-white mb-4 text-uppercase small">Inventory & Distance</h6>
                     
                     <div class="mb-3">
                         <label class="form-label">Home Size / Inventory Volume</label>
@@ -125,14 +129,14 @@
                         </div>
                     </div>
 
-                    <h6 class="fw-bold text-dark mb-3 text-uppercase small pt-3 border-top">Premium Logistics</h6>
+                    <h6 class="fw-bold text-white mb-3 text-uppercase small pt-3 border-top">Premium Logistics</h6>
 
-                    <div class="form-check p-2 rounded service-toggle mb-2 bg-white shadow-sm">
+                    <div class="form-check p-2 rounded service-toggle mb-2 shadow-sm">
                         <input class="form-check-input ms-1" type="checkbox" id="packing-service">
                         <label class="form-check-label ms-2 small fw-bold" for="packing-service">Full Professional Packing</label>
                     </div>
 
-                    <div class="form-check p-2 rounded service-toggle mb-2 bg-white shadow-sm">
+                    <div class="form-check p-2 rounded service-toggle mb-2 shadow-sm">
                         <input class="form-check-input ms-1" type="checkbox" id="storage-service">
                         <label class="form-check-label ms-2 small fw-bold" for="storage-service">30-Day Transition Storage</label>
                     </div>
@@ -150,7 +154,7 @@
                         Generate Estimate <i class="bi bi-arrow-right-circle ms-1"></i>
                     </button>
                     
-                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-muted small">Clear Data</button>
+                    <button type="reset" class="btn btn-link w-100 mt-2 text-decoration-none text-light opacity-75 small">Clear Data</button>
                 </form>
             </div>
 
@@ -247,18 +251,19 @@
 
         // 1. Transportation Logic
         const isLongDistance = dist >= 100;
-        let transportCost = isLongDistance ? 
-            (dist * 1.50 * (baseLabor / 1000)) : 
-            ((dist * 5.00) + 500);
+        const transportBase = isLongDistance ? 1500 : 500;
+        const transportRate = isLongDistance ? 1.50 : 2.00;
+        let transportCost = transportBase + (dist * transportRate * (baseLabor / 1000));
 
         // 2. Services Logic
         const packingCost = packing ? (baseLabor * 0.35) : 0;
         const storageCost = storage ? 350 : 0;
         const insCost = baseLabor * insFactor;
         
-        const subtotal = baseLabor + transportCost + packingCost + storageCost + insCost;
-        const fuelSurcharge = subtotal * (fuelIndex / 100);
-        const total = subtotal + fuelSurcharge;
+        // 3. Fuel Surcharge (applied to transportation only)
+        const fuelSurcharge = transportCost * (fuelIndex / 100);
+        
+        const total = baseLabor + transportCost + fuelSurcharge + packingCost + storageCost + insCost;
 
         // UI Updates
         resultsUi.classList.remove('d-none');

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Calculation IT - Change Calculator Suite{% endblock %}</title>
+    <meta name="description"
+        content="{% block meta_description %}High-fidelity Change Calculator suite with Calculation IT design philosophy.{% endblock %}">
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Calculation IT Theme CSS -->
+    <link rel="stylesheet" href="{% static 'css/antigravity.css' %}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    <div class="ag-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="ag-sidebar">
+            <a href="/" class="ag-sidebar__brand">
+                <i class="bi bi-cpu-fill"></i>
+                <span>ANTIGRAVITY</span>
+            </a>
+
+            <nav class="ag-sidebar__nav">
+                <a href="#" class="ag-sidebar__link ag-sidebar__link--active">
+                    <i class="bi bi-cash-stack"></i>
+                    <span>Retail Change</span>
+                </a>
+                <a href="#" class="ag-sidebar__link">
+                    <i class="bi bi-currency-exchange"></i>
+                    <span>Forex Portal</span>
+                </a>
+                <a href="#" class="ag-sidebar__link">
+                    <i class="bi bi-currency-bitcoin"></i>
+                    <span>Crypto Change</span>
+                </a>
+                <a href="#" class="ag-sidebar__link">
+                    <i class="bi bi-factory"></i>
+                    <span>Industrial</span>
+                </a>
+                <hr style="border: none; border-top: 1px solid rgba(0, 23, 31, 0.05); margin: 1rem 0;">
+                <a href="/" class="ag-sidebar__link">
+                    <i class="bi bi-house"></i>
+                    <span>Main Hub</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="ag-main">
+            <!-- Header -->
+            <header class="ag-header">
+                <div class="ag-header__breadcrumbs">
+                    <span style="opacity: 0.5; font-size: 0.875rem;">Change Suite</span>
+                    <i class="bi bi-chevron-right" style="font-size: 0.75rem; margin: 0 0.5rem; opacity: 0.3;"></i>
+                    <span style="font-weight: 600; font-size: 0.875rem;">Retail Calculator</span>
+                </div>
+
+                <div class="ag-header__search">
+                    <i class="bi bi-search ag-header__search-icon"></i>
+                    <input type="text" class="ag-header__search-input" placeholder="Search scenarios...">
+                </div>
+
+                <div class="ag-header__user">
+                    <button style="background: none; border: none; cursor: pointer; color: var(--ag-primary);">
+                        <i class="bi bi-person-circle" style="font-size: 1.5rem;"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="ag-content ag-animate-up">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

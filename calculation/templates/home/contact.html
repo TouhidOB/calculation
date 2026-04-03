@@ -1,47 +1,71 @@
-{% extends "home/index.html" %}
-{% block title %}Contact Us | MyCalculator{% endblock %}
-{% block meta_description %}Contact MyCalculator for feedback, support, or suggestions.{% endblock %}
+{% extends "base.html" %}
+{% load static %}
 
-{% block extra_css %}
-<style>
-    #mainNavbar {
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        background: #000;
-    }
-</style>
-{% endblock %}
+{% block title %}Contact Us | Calculation IT Calculation Suite{% endblock %}
+{% block meta_description %}Contact Calculation IT for feedback, support, or suggestions.{% endblock %}
 
 {% block content %}
-<section class="py-5 mt-4 bg-light">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <h1 class="text-center mb-4">Contact Us</h1>
-
-                <form class="card shadow p-4">
-                    <div class="mb-3">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" class="form-control" required>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-lg overflow-hidden">
+                <div class="card-header bg-primary text-white py-5 text-center">
+                    <h1 class="display-5 fw-bold mb-0 text-dark">Get in Touch</h1>
+                    <p class="lead opacity-75 mt-3">We'd love to hear from you.</p>
+                </div>
+                <div class="card-body p-4 p-lg-5">
+                    <div class="row g-5">
+                        <div class="col-md-5 order-md-2 mb-4 mb-md-0">
+                            <h4 class="fw-bold mb-4">Contact Information</h4>
+                            <div class="d-flex align-items-start mb-4">
+                                <i class="bi bi-envelope-fill text-primary fs-4 me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Email Support</h6>
+                                    <p class="text-muted mb-0">support@antigravity.com</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start mb-4">
+                                <i class="bi bi-geo-alt-fill text-primary fs-4 me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Global Headquarters</h6>
+                                    <p class="text-muted mb-0">123 Precision Way<br>Tech District, 10001</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-clock-fill text-primary fs-4 me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Response Time</h6>
+                                    <p class="text-muted mb-0">Usually within 24 hours.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7 order-md-1">
+                            <h4 class="fw-bold mb-4">Send a Message</h4>
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-muted small text-uppercase">Full Name</label>
+                                    <input type="text" class="form-control form-control-lg bg-light"
+                                        placeholder="Jane Doe" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-muted small text-uppercase">Email
+                                        Address</label>
+                                    <input type="email" class="form-control form-control-lg bg-light"
+                                        placeholder="jane@example.com" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-muted small text-uppercase">Message</label>
+                                    <textarea class="form-control form-control-lg bg-light" rows="5"
+                                        placeholder="How can we help you today?" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Send Message <i
+                                        class="bi bi-send ms-2"></i></button>
+                            </form>
+                        </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Message</label>
-                        <textarea class="form-control" rows="5" required></textarea>
-                    </div>
-
-                    <button class="btn btn-primary w-100">Send Message</button>
-                </form>
-
-                <p class="text-center mt-3 text-muted">
-                    Or email us directly at <strong>support@mycalculator.com</strong>
-                </p>
+                </div>
             </div>
         </div>
     </div>
-</section>
+</div>
 {% endblock %}

@@ -41,6 +41,7 @@ urlpatterns = [
     path('real_estate_calculator/', include('real_estate_calculator.urls')),
     # path('vehicle_calculator/', include('vehicle_calculator.urls')),
     path('event_calculator/', include('event_budget_calculator.urls')),
+    path('antigravity/', include('antigravity_suite.urls')),
 
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
 ]

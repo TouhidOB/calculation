@@ -9,9 +9,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 245, 158, 11; /* Amber 500 */
-    }
+    
 
     body {
         background-color: #fffbeb; /* Amber 50 */
@@ -26,8 +24,8 @@
     }
 
     .input-sidebar {
-        background-color: #1e293b;
-        color: #f8fafc;
+        background-color: var(--ag-text);
+        color: var(--ag-bg);
         border-right: 1px solid #334155;
     }
 
@@ -46,7 +44,7 @@
         margin-bottom: 1rem;
         border-left: 6px solid;
         background: white;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ag-bg);
         transition: transform 0.2s ease;
     }
 
@@ -55,7 +53,7 @@
     .card-catering { border-left-color: #ef4444; } /* Red - Kitchen */
 
     .result-display-box {
-        background: #0f172a;
+        background: var(--ag-text);
         border-radius: 1rem;
         padding: 1.5rem;
         text-align: center;
@@ -87,7 +85,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h1 class="fw-bold text-slate-900"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Event Power Calculator</h1>
+        <h1 class="fw-bold text-slate-900 text-dark"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Event Power Calculator</h1>
         <p class="text-muted mx-auto" style="max-width: 650px;">
             Prevent circuit breaks and blackouts. Calculate the total electrical load of your equipment to ensure your power supply or generator is sized correctly.
         </p>
@@ -106,7 +104,7 @@
                     </select>
                 </div>
 
-                <div id="summary-section" class="d-none">
+                <div id="summary-section">
                     <div class="result-display-box mb-4 shadow-sm">
                         <span class="form-label text-warning opacity-75">Estimated Total Watts</span>
                         <div class="result-value my-1" id="total-watts">0W</div>
@@ -130,55 +128,70 @@
             </div>
 
             <div class="col-lg-8 p-4 p-md-5 bg-white">
-                <div id="placeholder-ui" class="text-center py-5">
-                    <i class="bi bi-plug-fill display-1 mb-3 text-warning opacity-25"></i>
-                    <h4 class="fw-bold text-dark">Analyze Electrical Needs</h4>
-                    <p class="text-muted">Enter the estimated wattage for each category to calculate your total power footprint.</p>
-                </div>
+                <div id="planner-ui">
+                    <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">Equipment Load Details</h5>
 
-                <div id="planner-ui" class="d-none">
-                    <h5 class="fw-bold mb-4 text-dark">Power Draw by Department</h5>
-
-                    <div class="power-card card-av">
+                    <!-- AV Section -->
+                    <div class="power-card card-av shadow-sm">
                         <div class="row align-items-center">
-                            <div class="col-7">
+                            <div class="col-md-5">
                                 <h6 class="fw-bold mb-0">Audio & Visual (AV)</h6>
-                                <p class="small text-muted mb-0">PA systems, LED walls, Projectors.</p>
+                                <p class="small text-muted mb-0">PA, Projectors, LED Walls.</p>
                             </div>
-                            <div class="col-5">
-                                <div class="input-group">
-                                    <input type="number" id="watt-av" class="form-control pwr-input" placeholder="0">
-                                    <span class="input-group-text">Watts</span>
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="bi bi-lightning"></i></span>
+                                    <input type="number" id="watt-av" class="form-control pwr-input" placeholder="Watts" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Qty</span>
+                                    <input type="number" id="qty-av" class="form-control pwr-input" placeholder="1" min="1" value="1">
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="power-card card-lighting">
+                    <!-- Lighting Section -->
+                    <div class="power-card card-lighting shadow-sm">
                         <div class="row align-items-center">
-                            <div class="col-7">
+                            <div class="col-md-5">
                                 <h6 class="fw-bold mb-0 text-warning">Stage & Decor Lighting</h6>
-                                <p class="small text-muted mb-0">Moving heads, Uplights, Wash lights.</p>
+                                <p class="small text-muted mb-0">Fixtures, Consoles, Moving heads.</p>
                             </div>
-                            <div class="col-5">
-                                <div class="input-group">
-                                    <input type="number" id="watt-light" class="form-control pwr-input" placeholder="0">
-                                    <span class="input-group-text">Watts</span>
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="bi bi-lightbulb"></i></span>
+                                    <input type="number" id="watt-light" class="form-control pwr-input" placeholder="Watts" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Qty</span>
+                                    <input type="number" id="qty-light" class="form-control pwr-input" placeholder="1" min="1" value="1">
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="power-card card-catering">
+                    <!-- Catering Section -->
+                    <div class="power-card card-catering shadow-sm">
                         <div class="row align-items-center">
-                            <div class="col-7">
+                            <div class="col-md-5">
                                 <h6 class="fw-bold mb-0 text-danger">Catering & HVAC</h6>
-                                <p class="small text-muted mb-0">Ovens, Coffee, Portable AC units.</p>
+                                <p class="small text-muted mb-0">Ovens, Chillers, Portable ACs.</p>
                             </div>
-                            <div class="col-5">
-                                <div class="input-group">
-                                    <input type="number" id="watt-catering" class="form-control pwr-input" placeholder="0">
-                                    <span class="input-group-text">Watts</span>
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="bi bi-thermometer-half"></i></span>
+                                    <input type="number" id="watt-catering" class="form-control pwr-input" placeholder="Watts" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Qty</span>
+                                    <input type="number" id="qty-catering" class="form-control pwr-input" placeholder="1" min="1" value="1">
                                 </div>
                             </div>
                         </div>
@@ -199,38 +212,32 @@
 <script>
     function calculatePower() {
         const v = parseFloat(document.getElementById('voltage-input').value);
-        const av = parseFloat(document.getElementById('watt-av').value) || 0;
-        const light = parseFloat(document.getElementById('watt-light').value) || 0;
-        const catering = parseFloat(document.getElementById('watt-catering').value) || 0;
+        
+        // Load Inputs
+        const avWatt = parseFloat(document.getElementById('watt-av').value) || 0;
+        const avQty = parseFloat(document.getElementById('qty-av').value) || 0;
+        
+        const lightWatt = parseFloat(document.getElementById('watt-light').value) || 0;
+        const lightQty = parseFloat(document.getElementById('qty-light').value) || 0;
+        
+        const cateringWatt = parseFloat(document.getElementById('watt-catering').value) || 0;
+        const cateringQty = parseFloat(document.getElementById('qty-catering').value) || 0;
 
-        const totalWatts = av + light + catering;
-
-        const placeholder = document.getElementById('placeholder-ui');
-        const planner = document.getElementById('planner-ui');
-        const summary = document.getElementById('summary-section');
-
-        if (totalWatts === 0) {
-            placeholder.classList.remove('d-none');
-            planner.classList.add('d-none');
-            summary.classList.add('d-none');
-            return;
-        }
-
-        placeholder.classList.add('d-none');
-        planner.classList.remove('d-none');
-        summary.classList.remove('d-none');
+        // Sum Category Watts
+        const totalWatts = (avWatt * avQty) + (lightWatt * lightQty) + (cateringWatt * cateringQty);
 
         // Ohms Law: Amps = Watts / Volts
         const totalAmps = totalWatts / v;
         
-        // Generator Sizing: Typically Watts / 0.8 (Power Factor) / 1000 = kVA
-        const kva = (totalWatts / 0.8) / 1000;
+        // Generator Sizing: (Watts / 1000) / 0.8 (Power Factor) = kVA
+        const kva = (totalWatts / 1000) / 0.8;
 
+        // Update UI
         document.getElementById('total-watts').textContent = totalWatts.toLocaleString() + 'W';
         document.getElementById('total-amps').textContent = totalAmps.toFixed(1) + ' A';
         document.getElementById('gen-kva').textContent = kva.toFixed(1) + ' kVA';
 
-        // High load warning (Standard residential circuits are 15-20A)
+        // High load warning (> 40A typically requires heavy 3-phase or spider boxes)
         const warning = document.getElementById('safety-warning');
         if (totalAmps > 40) {
             warning.classList.remove('d-none');
@@ -239,10 +246,13 @@
         }
     }
 
-    window.onload = () => {
+    document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.pwr-input, #voltage-input').forEach(el => {
             el.addEventListener('input', calculatePower);
         });
-    };
+        
+        // Initial calculation to set 0 values
+        calculatePower();
+    });
 </script>
 {% endblock %}

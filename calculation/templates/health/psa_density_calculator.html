@@ -51,7 +51,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🩺 PSA Density ($\text{PSAD}$) Calculator</h1>
+    <h1 class="mb-3 text-dark">🩺 PSA Density ($\text{PSAD}$) Calculator</h1>
     <p class="small-muted">Calculate the ratio of your Total PSA to your Prostate Volume to aid in prostate cancer risk assessment.</p>
 
     <div class="calc-wrapper mt-4">
@@ -164,7 +164,7 @@
         
         // Apply the correct color for the result text
         psadValueSpan.style.color = interpretationData.style.split('-')[1] === 'danger' ? '#b91c1c' : 
-                                    interpretationData.style.split('-')[1] === 'warning' ? '#f59e0b' : '#10b981';
+                                    interpretationData.style.split('-')[1] === 'warning' ? '#f59e0b' : 'var(--ag-accent)';
 
 
         // 5. Update Visibility

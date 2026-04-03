@@ -53,7 +53,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">👟 Race Time Predictor</h1>
+    <h1 class="mb-3 text-dark">👟 Race Time Predictor</h1>
     <p class="small-muted">Estimate your finish times for $\text{5K}$, $\text{10K}$, Half-Marathon ($\text{HM}$), and Marathon ($\text{M}$) based on a recent race performance.</p>
 
     <div class="calc-wrapper mt-4">
@@ -75,13 +75,13 @@
             <label class="form-label d-block mt-3">Finish Time (Hours:Minutes:Seconds)</label>
             <div class="row g-2 mb-3">
                 <div class="col-4">
-                    <input type="number" class="form-control" id="time_h" placeholder="Hours (H)" min="0" max="10" value="0" required>
+                    <input type="number" class="form-control" id="time_h" placeholder="Hours (H)" min="0" max="10" required>
                 </div>
                 <div class="col-4">
-                    <input type="number" class="form-control" id="time_m" placeholder="Minutes (M)" min="0" max="59" value="30" required>
+                    <input type="number" class="form-control" id="time_m" placeholder="Minutes (M)" min="0" max="59" required>
                 </div>
                 <div class="col-4">
-                    <input type="number" class="form-control" id="time_s" placeholder="Seconds (S)" min="0" max="59" value="0" required>
+                    <input type="number" class="form-control" id="time_s" placeholder="Seconds (S)" min="0" max="59" required>
                 </div>
             </div>
 

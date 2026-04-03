@@ -9,9 +9,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 249, 115, 22; /* Orange 500 */
-    }
+    
 
     body {
         background-color: #fffaf5;
@@ -45,20 +43,20 @@
         margin-bottom: 1rem;
         border-left: 6px solid;
         background: white;
-        border-top: 1px solid #f1f5f9;
-        border-right: 1px solid #f1f5f9;
-        border-bottom: 1px solid #f1f5f9;
+        border-top: 1px solid var(--ag-bg);
+        border-right: 1px solid var(--ag-bg);
+        border-bottom: 1px solid var(--ag-bg);
         transition: transform 0.2s ease;
     }
 
     .menu-card:hover { transform: translateY(-2px); }
 
     .card-food { border-left-color: #f97316; }   /* Orange - Main */
-    .card-drink { border-left-color: #0ea5e9; }  /* Sky - Drinks */
-    .card-service { border-left-color: #10b981; } /* Emerald - Fees */
+    .card-drink { border-left-color: var(--ag-accent); }  /* Sky - Drinks */
+    .card-service { border-left-color: var(--ag-accent); } /* Emerald - Fees */
 
     .result-display-box {
-        background-color: #ffffff;
+        background-color: var(--ag-bg);
         border: 2px solid #f97316;
         border-radius: 1rem;
         padding: 1.5rem;
@@ -77,7 +75,7 @@
         border-radius: 10px;
         overflow: hidden;
         display: flex;
-        background: #f1f5f9;
+        background: var(--ag-bg);
     }
 
     .bar-segment {
@@ -213,7 +211,7 @@
 {% block extra_js %}
 <script>
     const menuInputs = ['menu-food', 'menu-drinks', 'menu-service'];
-    const colors = { 'menu-food': '#f97316', 'menu-drinks': '#0ea5e9', 'menu-service': '#10b981' };
+    const colors = { 'menu-food': '#f97316', 'menu-drinks': 'var(--ag-accent)', 'menu-service': 'var(--ag-accent)' };
     const labels = { 'menu-food': 'Food', 'menu-drinks': 'Drinks', 'menu-service': 'Fees' };
 
     function calculateCatering() {

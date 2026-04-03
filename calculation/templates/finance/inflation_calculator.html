@@ -13,7 +13,7 @@
 
 {% block content %}
 <div class="container my-4">
-  <h1>Inflation / Purchasing Power Calculator</h1>
+  <h1 class="text-dark">Inflation / Purchasing Power Calculator</h1>
   <p class="small-muted">Convert a past amount into today's equivalent using inflation (or vice versa).</p>
 
   <div class="calc-wrapper mt-3">
@@ -21,11 +21,11 @@
       <div class="row">
         <div class="col-md-4 mb-2">
           <label>Amount</label>
-          <input id="inf-amount" type="number" class="form-control" step="0.01" value="1000" required>
+          <input id="inf-amount" type="number" class="form-control" step="0.01" required>
         </div>
         <div class="col-md-4 mb-2">
           <label>From Year</label>
-          <input id="inf-from-year" type="number" class="form-control" value="2015" min="1900" max="2100">
+          <input id="inf-from-year" type="number" class="form-control" min="1900" max="2100">
         </div>
         <div class="col-md-4 mb-2">
           <label>To Year</label>

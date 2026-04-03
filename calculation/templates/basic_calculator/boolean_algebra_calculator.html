@@ -10,20 +10,11 @@
 
 <style>
     /* 🎨 Define Custom Theme Colors using CSS Variables */
-    :root {
-        --blue-lightest: #f8fbff; /* Solver Wrapper Background */
-        --blue-pale: #dbeafe; /* Light Blue Input Section */
-        --blue-accent: #3b82f6; /* Blue accent */
-        --blue-dark: #1e3a8a; /* Dark Blue Text */
-        --blue-deep: #2563eb; /* Deep Blue Accent / Result Line */
-        --blue-vlight: #eff6ff; /* Table Header/Canonical Background */
-        --blue-minterm-bg: #bfdbfe; /* Minterm Column Background */
-        --blue-table-border: #bfdbfe;
-    }
+    
 
     /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
-        background: var(--blue-lightest);
+        background: var(--ag-bg);
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -36,31 +27,31 @@
     .input-section {
         padding: 25px;
         border-radius: 10px;
-        background-color: var(--blue-pale); 
-        border: 2px solid var(--blue-accent); 
+        background-color: var(--ag-bg); 
+        border: 2px solid var(--ag-secondary); 
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     .input-box label {
         font-size: 1rem;
         font-weight: 600;
-        color: var(--blue-dark); 
+        color: var(--ag-primary); 
         margin-bottom: 5px;
     }
 
     .input-field {
         padding: 12px;
         font-size: 1.2rem;
-        border: 2px solid #93c5fd; 
+        border: 2px solid var(--ag-secondary); 
         border-radius: 8px;
         text-align: left;
         font-weight: 700;
-        color: #1d4ed8;
+        color: var(--ag-primary);
         font-family: monospace;
         transition: box-shadow 0.15s ease-in-out;
     }
     .input-field:focus {
-        border-color: var(--blue-accent) !important;
+        border-color: var(--ag-secondary) !important;
         box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
     }
 
@@ -73,8 +64,8 @@
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        background-color: #f7f9fd; 
-        border-left: 5px solid var(--blue-deep); 
+        background-color: var(--ag-bg); 
+        border-left: 5px solid var(--ag-primary); 
     }
 
     .result-error {
@@ -89,7 +80,7 @@
         overflow-x: auto;
         max-height: 400px;
         margin-bottom: 20px;
-        border: 1px solid var(--blue-table-border);
+        border: 1px solid var(--ag-secondary);
         border-radius: 5px;
     }
 
@@ -103,19 +94,19 @@
 
     .truth-table th, .truth-table td {
         padding: 8px;
-        border: 1px solid var(--blue-table-border);
+        border: 1px solid var(--ag-secondary);
         text-align: center;
         vertical-align: middle;
     }
 
     .truth-table thead th {
-        background-color: var(--blue-vlight); 
-        color: var(--blue-dark);
+        background-color: var(--ag-accent); 
+        color: var(--ag-primary);
         font-weight: 700;
         position: sticky;
         top: 0;
         z-index: 10;
-        border-bottom: 2px solid var(--blue-accent);
+        border-bottom: 2px solid var(--ag-secondary);
     }
     
     .truth-table tbody tr:nth-child(even) {
@@ -125,24 +116,24 @@
     /* Column specific styles */
     .col-var {
         font-weight: 600;
-        color: var(--blue-accent);
+        color: var(--ag-secondary);
     }
 
     .col-minterm {
         font-weight: 800;
-        background-color: var(--blue-minterm-bg) !important;
-        color: var(--blue-dark);
+        background-color: var(--ag-accent) !important;
+        color: var(--ag-primary);
     }
 
     .canonical-form {
         font-size: 1.5rem;
         font-weight: 900;
-        color: var(--blue-deep);
+        color: var(--ag-primary);
         margin-bottom: 15px;
         text-align: center;
         padding: 5px;
         border-radius: 5px;
-        background-color: var(--blue-vlight);
+        background-color: var(--ag-accent);
         overflow-x: auto;
     }
 
@@ -180,7 +171,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <p class="fw-bold mb-1 text-center" style="color: var(--blue-dark);">Supported Operators:</p>
+                        <p class="fw-bold mb-1 text-center" style="color: var(--ag-primary);">Supported Operators:</p>
                         <ul class="operator-list mx-auto" style="max-width: 250px;">
                             <li><code class="fw-bold">NOT</code> or <code class="fw-bold">!</code> (Negation)</li>
                             <li><code class="fw-bold">AND</code> or <code class="fw-bold">*</code> (Conjunction)</li>
@@ -197,7 +188,7 @@
                 
                 <button type="submit"
                         class="btn w-100 fw-bold py-3 mt-3 shadow-xl text-white"
-                        style="background-color: var(--blue-accent); border-color: var(--blue-accent);">
+                        style="background-color: var(--ag-secondary); border-color: var(--ag-secondary);">
                     Analyze Boolean Function
                 </button>
             </form>

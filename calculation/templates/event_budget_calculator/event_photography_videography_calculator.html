@@ -9,9 +9,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 139, 92, 246; /* Violet 500 */
-    }
+    
 
     body {
         background-color: #fafafa;
@@ -46,13 +44,13 @@
         margin-bottom: 1rem;
         border-left: 6px solid;
         background: white;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ag-bg);
         transition: all 0.2s ease;
     }
 
     .card-photo { border-left-color: #8b5cf6; }  /* Violet - Photography */
     .card-video { border-left-color: #ec4899; }  /* Pink - Videography */
-    .card-bonus { border-left-color: #10b981; }  /* Emerald - Add-ons */
+    .card-bonus { border-left-color: var(--ag-accent); }  /* Emerald - Add-ons */
 
     .result-display-box {
         background: #4c1d95;
@@ -65,7 +63,7 @@
     .result-value {
         font-size: 2.75rem;
         font-weight: 800;
-        color: #ffffff;
+        color: var(--ag-bg);
         line-height: 1;
     }
 
@@ -97,7 +95,7 @@
                 
                 <div class="mb-4">
                     <label class="form-label">Total Coverage Hours</label>
-                    <input type="number" id="media-hours" class="form-control bg-dark text-white border-secondary" value="4">
+                    <input type="number" id="media-hours" class="form-control bg-dark text-white border-secondary">
                 </div>
 
                 <div id="summary-section" class="d-none">

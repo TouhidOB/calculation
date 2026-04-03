@@ -9,15 +9,15 @@
 
 {% block content %}
 <div class="container my-4">
-  <h1>Hourly → Annual Salary Converter</h1>
+  <h1 class="text-dark">Hourly → Annual Salary Converter</h1>
   <p class="small-muted">Estimate annual salary from hourly pay (accounts for overtime option).</p>
 
   <div class="calc-wrapper mt-3">
     <form id="h2s-form">
       <div class="row">
         <div class="col-md-3 mb-2"><label>Hourly Wage ($)</label><input id="h2s-wage" type="number" class="form-control" step="0.01"></div>
-        <div class="col-md-3 mb-2"><label>Hours per Week</label><input id="h2s-hours" type="number" class="form-control" value="40" step="0.1"></div>
-        <div class="col-md-3 mb-2"><label>Weeks per Year</label><input id="h2s-weeks" type="number" class="form-control" value="52"></div>
+        <div class="col-md-3 mb-2"><label>Hours per Week</label><input id="h2s-hours" type="number" class="form-control" step="0.1"></div>
+        <div class="col-md-3 mb-2"><label>Weeks per Year</label><input id="h2s-weeks" type="number" class="form-control"></div>
         <div class="col-md-3 mb-2 align-self-end">
           <button class="btn btn-primary" type="submit">Convert</button>
           <button id="h2s-reset" type="button" class="btn btn-secondary">Reset</button>

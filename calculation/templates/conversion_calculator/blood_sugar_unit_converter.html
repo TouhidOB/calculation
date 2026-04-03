@@ -106,7 +106,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🩸 Blood Sugar Unit Converter</h1>
+    <h1 class="mb-3 text-dark">🩸 Blood Sugar Unit Converter</h1>
     <p class="small-muted">Convert **Glucose Readings** between $\text{mg/dL}$ (U.S./European standard) and $\text{mmol/L}$ (International standard).</p>
     
 
@@ -129,13 +129,13 @@
             <!-- mg/dL Input -->
             <div id="mgdlInputGroup">
                 <label for="mgdlValue">Value in $\text{mg/dL}$</label>
-                <input type="number" class="form-control input-field" id="mgdlValue" placeholder="e.g., 120" value="120" min="0" step="1">
+                <input type="number" class="form-control input-field" id="mgdlValue" placeholder="e.g., 120" min="0" step="1">
             </div>
 
             <!-- mmol/L Input -->
             <div id="mmolInputGroup" class="mt-3 hidden-input">
                 <label for="mmolValue">Value in $\text{mmol/L}$</label>
-                <input type="number" class="form-control input-field" id="mmolValue" placeholder="e.g., 6.7" value="6.7" min="0" step="0.1">
+                <input type="number" class="form-control input-field" id="mmolValue" placeholder="e.g., 6.7" min="0" step="0.1">
             </div>
             
             <div class="conversion-note">

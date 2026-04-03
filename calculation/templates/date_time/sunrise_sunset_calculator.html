@@ -66,7 +66,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-3">🌅 Sunrise & Sunset Calculator</h1>
+    <h1 class="mb-3 text-dark">🌅 Sunrise & Sunset Calculator</h1>
     <p class="small-muted">Calculate solar events for a specific location and date. **All times displayed are local to the selected timezone offset.**</p>
 
     <div class="calc-wrapper">
@@ -81,7 +81,7 @@
                 </div>
                 <div class="col-md-6">
                     <label for="timezone-offset" class="form-label">Timezone Offset (Hours from UTC)</label>
-                    <input type="number" class="form-control" id="timezone-offset" min="-12" max="14" step="0.5" value="6" required>
+                    <input type="number" class="form-control" id="timezone-offset" min="-12" max="14" step="0.5" required>
                     <small class="form-text text-muted">e.g., -5 for EST, +1 for CET, +6 for Dhaka.</small>
                 </div>
             </div>
@@ -91,12 +91,12 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label for="latitude" class="form-label">Latitude ($\phi$)</label>
-                    <input type="number" class="form-control" id="latitude" min="-90" max="90" step="0.0001" value="23.777176" required>
+                    <input type="number" class="form-control" id="latitude" min="-90" max="90" step="0.0001" required>
                     <small class="form-text text-muted">Range: -90 to +90 (North is positive).</small>
                 </div>
                 <div class="col-md-6">
                     <label for="longitude" class="form-label">Longitude ($\lambda$)</label>
-                    <input type="number" class="form-control" id="longitude" min="-180" max="180" step="0.0001" value="90.399452" required>
+                    <input type="number" class="form-control" id="longitude" min="-180" max="180" step="0.0001" required>
                     <small class="form-text text-muted">Range: -180 to +180 (East is positive).</small>
                 </div>
             </div>

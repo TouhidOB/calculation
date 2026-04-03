@@ -121,7 +121,7 @@
                             <div class="col-md-4">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">Words</span>
-                                    <input type="number" id="t-words" class="form-control text-center fw-bold" value="25" oninput="calculate()">
+                                    <input type="number" id="t-words" class="form-control text-center fw-bold" oninput="calculate()">
                                 </div>
                             </div>
                         </div>
@@ -136,7 +136,7 @@
                             <div class="col-md-4">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">Words</span>
-                                    <input type="number" id="e-words" class="form-control text-center fw-bold" value="40" oninput="calculate()">
+                                    <input type="number" id="e-words" class="form-control text-center fw-bold" oninput="calculate()">
                                 </div>
                             </div>
                         </div>
@@ -151,7 +151,7 @@
                             <div class="col-md-4">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">Words</span>
-                                    <input type="number" id="a-words" class="form-control text-center fw-bold" value="70" oninput="calculate()">
+                                    <input type="number" id="a-words" class="form-control text-center fw-bold" oninput="calculate()">
                                 </div>
                             </div>
                         </div>
@@ -166,7 +166,7 @@
                             <div class="col-md-4">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">Words</span>
-                                    <input type="number" id="l-words" class="form-control text-center fw-bold" value="15" oninput="calculate()">
+                                    <input type="number" id="l-words" class="form-control text-center fw-bold" oninput="calculate()">
                                 </div>
                             </div>
                         </div>
@@ -251,9 +251,6 @@
         }
     }
 
-    window.onload = function() {
-        // Run once to check for pre-filled data (if any)
-        calculate();
-    };
+    
 </script>
 {% endblock %}

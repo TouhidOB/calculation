@@ -98,7 +98,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">⚙️ Torque Converter</h1>
+    <h1 class="mb-3 text-dark">⚙️ Torque Converter</h1>
     <p class="small-muted">Convert **Torque** (Rotational Force) between **Newton-Meters ($\text{N}\cdot\text{m}$)** and **Foot-Pounds ($\text{ft}\cdot\text{lb}$)**.</p>
     
 
@@ -110,7 +110,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Torque Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 100" value="100" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 100" min="0" step="any" autofocus>
             
             <!-- Direction Select -->
             <div class="mt-3">
@@ -225,10 +225,7 @@
         directionSelect.addEventListener('change', convertTorque);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertTorque(); // Run initial conversion on load
-    };
+    
 
 </script>
 {% endblock %}

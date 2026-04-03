@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Terms and Conditions | Calculation IT Calculation Suite{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white py-4">
+                    <h1 class="h3 fw-bold mb-0 text-dark">Terms and Conditions</h1>
+                </div>
+                <div class="card-body p-4 p-lg-5">
+                    <p class="text-muted mb-4">Last Updated: February 23, 2026</p>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">1. Acceptance of Terms</h4>
+                        <p>By accessing and using Calculation IT Calculation Suite, you agree to be bound by these Terms
+                            and Conditions. If you do not agree with any part of these terms, you must not use our
+                            services.</p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">2. Use of Calculation Tools</h4>
+                        <p>All tools provided on this platform are for informational and educational purposes only.
+                            While we strive for absolute precision, the results generated should be verified
+                            independently for critical applications, especially in fields like finance, engineering, or
+                            health.</p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">3. Privacy and Data</h4>
+                        <p>Your privacy is paramount. Most calculations are performed locally in your browser. We do not
+                            store, sell, or monitor your specific calculation inputs or outputs unless explicitly stated
+                            (e.g., when saving a profile or submitting a contact form).</p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">4. Intellectual Property</h4>
+                        <p>The code, design, and branding of Calculation IT are the property of its creators. You may use
+                            the tools for personal or professional use, but you may not scrape, replicate, or
+                            redistribute our core engine without express permission.</p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h4 class="fw-bold">5. Limitation of Liability</h4>
+                        <p>In no event shall Calculation IT or its developers be liable for any damages (including, without
+                            limitation, damages for loss of data or profit, or due to business interruption) arising out
+                            of the use or inability to use the materials on this website.</p>
+                    </section>
+
+                    <div class="alert alert-info border-0 rounded-4 mt-5">
+                        <h5 class="fw-bold"><i class="bi bi-info-circle me-2"></i>Questions?</h5>
+                        <p class="mb-0">If you have any questions regarding these terms, please <a
+                                href="{% url 'contact' %}" class="fw-bold">contact us</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

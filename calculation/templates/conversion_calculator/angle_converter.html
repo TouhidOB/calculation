@@ -115,10 +115,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">📐 Angle Converter</h1>
+    <h1 class="mb-3 text-dark">📐 Angle Converter</h1>
     <p class="small-muted">Convert angular measurements: Radians, Degrees, Gradians, and Turns. Supports input as Decimal Degrees or Degrees-Minutes-Seconds (DMS).</p>
-    [Image of geometric angle showing degrees and radians]
-
     <div class="calc-wrapper mt-4">
 
         <h5 class="section-title">Step 1: Input Type and Value</h5>
@@ -134,7 +132,7 @@
             <div id="decimalInputContainer">
                 <label for="decimalValueInput">Enter Angle Value</label>
                 <div class="d-flex">
-                    <input type="number" class="form-control me-2" id="decimalValueInput" placeholder="e.g., 90 or 1.57" value="90" step="any" autofocus>
+                    <input type="number" class="form-control me-2" id="decimalValueInput" placeholder="e.g., 90 or 1.57" step="any" autofocus>
                     <select id="unitSelect" class="form-select w-50">
                         <!-- Options populated by JS -->
                     </select>
@@ -145,15 +143,15 @@
             <div id="dmsInputContainer" style="display:none;">
                 <div class="dms-group">
                     <label for="dmsDegrees">Degrees $\left(^{\circ}\right)$</label>
-                    <input type="number" id="dmsDegrees" placeholder="0-359" value="90">
+                    <input type="number" id="dmsDegrees" placeholder="0-359">
                 </div>
                 <div class="dms-group">
                     <label for="dmsMinutes">Minutes $\left(\prime\right)$</label>
-                    <input type="number" id="dmsMinutes" placeholder="0-59" value="0">
+                    <input type="number" id="dmsMinutes" placeholder="0-59">
                 </div>
                 <div class="dms-group">
                     <label for="dmsSeconds">Seconds $\left(\prime\prime\right)$</label>
-                    <input type="number" id="dmsSeconds" placeholder="0-59" value="0">
+                    <input type="number" id="dmsSeconds" placeholder="0-59">
                 </div>
             </div>
         </div>

@@ -69,10 +69,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🛁 Water Heater Size Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🛁 Water Heater Size Calculator</h1>
     <p class="text-center small-muted">Calculate the required First Hour Rating (FHR) or Tankless flow rate based on peak demand.</p>
-    [Image of water heater showing cold water inlet, hot water outlet, and burner]
-
     <div class="calc-wrapper">
 
         <form id="water-heater-calculator-form">
@@ -82,7 +80,7 @@
             <label for="people-input" class="form-label">Number of People in Household</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">People</span>
-                <input type="number" id="people-input" class="form-control" name="people" placeholder="e.g., 4" value="4" min="1" step="1" required>
+                <input type="number" id="people-input" class="form-control" name="people" placeholder="e.g., 4" min="1" step="1" required>
             </div>
             
             <!-- Simultaneous Use Multiplier -->

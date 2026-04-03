@@ -4,13 +4,27 @@
 
 {% block extra_head %}
 <style>
-    .card a{
-        color: #000;
+    .card {
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
     }
-    
-    .card a:hover {
-        background: #007bff;
-        color: #ffffff;
+
+    .card a {
+        color: var(--ag-text);
+        display: block;
+        height: 100%;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md) !important;
+        border-color: var(--ag-secondary);
+    }
+
+    .card:hover .card-title {
+        color: var(--ag-secondary);
     }
 </style>
 
@@ -26,12 +40,12 @@
         {% if not forloop.first %}
         <div class="col-md-3">
             <div class="card shadow h-100">
-                <a href="{{ link.url }}" class="text-decoration-none"> 
+                <a href="{{ link.url }}" class="text-decoration-none">
                     <div class="card-body">
                         <h5 class="card-title text-center">{{ link.title }}</h5>
                     </div>
                 </a>
-                
+
             </div>
         </div>
         {% endif %}

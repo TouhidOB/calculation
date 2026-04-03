@@ -108,7 +108,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🎧 Audio Conversion Calculator</h1>
+    <h1 class="mb-3 text-dark">🎧 Audio Conversion Calculator</h1>
     <p class="small-muted">Calculate **Bitrate**, **File Size**, or **Duration** using the fundamental relationship: $\text{Size} = \text{Bitrate} \times \text{Duration}$</p>
     
     
@@ -133,22 +133,22 @@
             <!-- Bitrate Input -->
             <div id="bitrateInputGroup">
                 <label for="bitrateValue">Bitrate (in kbps - kilobits per second)</label>
-                <input type="number" class="form-control input-field" id="bitrateValue" placeholder="e.g., 320 for high quality MP3" value="320" min="1" step="any">
+                <input type="number" class="form-control input-field" id="bitrateValue" placeholder="e.g., 320 for high quality MP3" min="1" step="any">
             </div>
 
             <!-- Size Input -->
             <div id="sizeInputGroup" class="mt-3">
                 <label for="sizeValue">File Size (in MB - Megabytes)</label>
-                <input type="number" class="form-control input-field" id="sizeValue" placeholder="e.g., 50" value="50" min="0.01" step="any">
+                <input type="number" class="form-control input-field" id="sizeValue" placeholder="e.g., 50" min="0.01" step="any">
             </div>
             
             <!-- Duration Input -->
             <div id="durationInputGroup" class="mt-3">
                 <label>Duration ($\text{h}:\text{m}:\text{s}$)</label>
                 <div class="time-input-container">
-                    <input type="number" class="form-control input-field" id="durationH" placeholder="Hours" value="0" min="0" step="1">
-                    <input type="number" class="form-control input-field" id="durationM" placeholder="Minutes" value="20" min="0" max="59" step="1">
-                    <input type="number" class="form-control input-field" id="durationS" placeholder="Seconds" value="0" min="0" max="59" step="1">
+                    <input type="number" class="form-control input-field" id="durationH" placeholder="Hours" min="0" step="1">
+                    <input type="number" class="form-control input-field" id="durationM" placeholder="Minutes" min="0" max="59" step="1">
+                    <input type="number" class="form-control input-field" id="durationS" placeholder="Seconds" min="0" max="59" step="1">
                 </div>
             </div>
         </div>

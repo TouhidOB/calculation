@@ -1,0 +1,117 @@
+{% extends "base_antigravity.html" %}
+
+{% block title %}Crypto Change - Calculation IT Suite{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="ag-card">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-dark">Crypto Change Engine</h1>
+                <p class="lead opacity-50">High-precision satoshi breakdown for blockchain transactions.</p>
+            </div>
+
+            <form id="crypto-form">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="ag-input-group">
+                            <label class="ag-input-label">Transaction Amount (BTC)</label>
+                            <input type="number" class="ag-input" id="tx-amount" placeholder="0.00000000"
+                                step="0.00000001" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="ag-input-group">
+                            <label class="ag-input-label">Funds Provided (BTC)</label>
+                            <input type="number" class="ag-input" id="funds-provided" placeholder="0.00000000"
+                                step="0.00000001" required>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="ag-button">
+                    <i class="bi bi-cpu"></i>
+                    CALCULATE SATOSHIS
+                </button>
+            </form>
+
+            <div id="result-container" class="ag-result d-none">
+                <p class="ag-result__label">Change to Return (Satoshi Units)</p>
+                <h2 class="ag-result__value" id="satoshi-change">0 sats</h2>
+
+                <div class="ag-grid" id="denomination-grid">
+                    <!-- Unit breakdowns -->
+                </div>
+            </div>
+
+            <div id="error-alert" class="alert alert-danger mt-4 d-none" role="alert">
+                <i class="bi bi-exclamation-octagon"></i>
+                <span id="error-message"></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const CRYPTO_UNITS = [
+        { label: 'mBTC (Milli-bit)', value: 0.001, icon: 'bi-grid-3x3-gap' },
+        { label: 'μBTC (Micro-bit)', value: 0.000001, icon: 'bi-grid-1x2' },
+        { label: 'Satoshi (Base)', value: 0.00000001, icon: 'bi-dot' }
+    ];
+
+    document.getElementById('crypto-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const tx = parseFloat(document.getElementById('tx-amount').value);
+        const funds = parseFloat(document.getElementById('funds-provided').value);
+        const grid = document.getElementById('denomination-grid');
+
+        if (funds < tx) {
+            showError("Insufficient funds provided.");
+            return;
+        }
+
+        const change = (funds - tx).toFixed(8);
+        const sats = Math.round(parseFloat(change) * 100000000);
+
+        document.getElementById('satoshi-change').innerText = `${sats.toLocaleString()} sats`;
+
+        // Breakdown into units for UI
+        grid.innerHTML = '';
+        let remaining = parseFloat(change);
+
+        CRYPTO_UNITS.forEach(unit => {
+            const count = Math.floor((remaining + 0.000000001) / unit.value); // Add small epsilon for float precision
+            if (count > 0) {
+                remaining = (remaining % unit.value).toFixed(8);
+
+                const card = document.createElement('div');
+                card.className = 'ag-denomination ag-animate-up';
+
+                card.innerHTML = `
+                    <i class="bi ${unit.icon}" style="font-size: 2rem; color: var(--ag-primary);"></i>
+                    <span class="ag-denomination__count">${count.toLocaleString()}</span>
+                    <span class="ag-denomination__label">${unit.label}</span>
+                `;
+                grid.appendChild(card);
+            }
+        });
+
+        document.getElementById('result-container').classList.remove('d-none');
+        document.getElementById('error-alert').classList.add('d-none');
+    });
+
+    function showError(msg) {
+        document.getElementById('error-message').innerText = msg;
+        document.getElementById('error-alert').classList.remove('d-none');
+        document.getElementById('result-container').classList.add('d-none');
+    }
+</script>
+<style>
+    .d-none {
+        display: none !important;
+    }
+</style>
+{% endblock %}

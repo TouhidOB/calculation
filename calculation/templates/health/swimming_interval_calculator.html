@@ -57,7 +57,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🏊 Set Interval Planner</h1>
+    <h1 class="mb-3 text-dark">🏊 Set Interval Planner</h1>
     <p class="small-muted">Calculate your **Send-Off Interval** ($\text{Swim Time} + \text{Rest}$) for training sets based on your target distance and pace.</p>
 
     <div class="calc-wrapper mt-4">
@@ -76,10 +76,10 @@
             <label class="form-label d-block mt-3">Target Pace ($\text{Time}$ per 100 units)</label>
             <div class="row g-2 mb-3">
                 <div class="col-5">
-                    <input type="number" class="form-control" id="pace_m" placeholder="Min (M)" min="0" max="59" value="1" required>
+                    <input type="number" class="form-control" id="pace_m" placeholder="Min (M)" min="0" max="59" required>
                 </div>
                 <div class="col-5">
-                    <input type="number" class="form-control" id="pace_s" placeholder="Sec (S)" min="0" max="59" value="30" required>
+                    <input type="number" class="form-control" id="pace_s" placeholder="Sec (S)" min="0" max="59" required>
                 </div>
                 <div class="col-2 input-group-text pace-unit-display">/100</div>
             </div>

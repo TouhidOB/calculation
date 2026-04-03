@@ -9,9 +9,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 2, 132, 199; /* Cyan 600 */
-    }
+    
 
     body {
         background-color: #f0f9ff;
@@ -26,7 +24,7 @@
     }
 
     .input-sidebar {
-        background-color: #f8fafc;
+        background-color: var(--ag-bg);
         border-right: 1px solid #e2e8f0;
     }
 
@@ -45,13 +43,13 @@
         margin-bottom: 1rem;
         border-left: 6px solid;
         background: white;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ag-bg);
         transition: transform 0.2s;
     }
 
-    .card-liability { border-left-color: #0284c7; } /* Cyan - Liability */
+    .card-liability { border-left-color: var(--ag-secondary); } /* Cyan - Liability */
     .card-liquor { border-left-color: #f59e0b; }    /* Amber - Liquor */
-    .card-cancel { border-left-color: #10b981; }    /* Emerald - Cancellation */
+    .card-cancel { border-left-color: var(--ag-accent); }    /* Emerald - Cancellation */
 
     .result-display-box {
         background: #0c4a6e;
@@ -64,7 +62,7 @@
     .result-value {
         font-size: 2.75rem;
         font-weight: 800;
-        color: #38bdf8;
+        color: var(--ag-accent);
         line-height: 1;
     }
 

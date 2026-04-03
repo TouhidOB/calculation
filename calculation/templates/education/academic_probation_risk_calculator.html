@@ -9,9 +9,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 25, 135, 84; /* Success Green */
-    }
+    
 
     body {
         background-color: #f8f9fa;
@@ -38,7 +36,7 @@
     }
 
     .course-row {
-        background-color: #ffffff;
+        background-color: var(--ag-bg);
         border: 1px solid #e9ecef;
         border-radius: 0.75rem;
         transition: all 0.2s ease;
@@ -280,9 +278,6 @@
     document.getElementById('current-gpa').addEventListener('input', calculateRisk);
     document.getElementById('current-credits').addEventListener('input', calculateRisk);
 
-    window.onload = () => {
-        // Start empty for professional visitor use
-        calculateRisk();
-    };
+    
 </script>
 {% endblock %}

@@ -113,8 +113,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">📡 Morse Code Converter</h1>
-    <p class="small-muted">Convert between English Text and International Morse Code. [Image of the International Morse Code chart]</p>
+    <h1 class="mb-3 text-dark">📡 Morse Code Converter</h1>
+    <p class="small-muted">Convert between English Text and International Morse Code. </p>
     
 
     <div class="calc-wrapper mt-4">
@@ -322,10 +322,7 @@
         convertButton.addEventListener('click', convert);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convert(); // Initial conversion run
-    };
+    
 
 </script>
 {% endblock %}

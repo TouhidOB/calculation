@@ -13,15 +13,7 @@
 
 <style>
     /* 🎨 Define Custom Theme Colors using CSS Variables (Blue/Sky Theme) */
-    :root {
-        --sky-lightest: #f0f9ff; /* Solver Wrapper Background */
-        --sky-pale: #e0f2fe; /* Light Sky Blue Input Background */
-        --sky-border: #93c5fd; /* Light Blue Border */
-        --sky-medium: #38bdf8; /* Medium Blue Input Accent */
-        --sky-dark: #075985; /* Dark Blue Text */
-        --sky-hot: #0ea5e9; /* Hot Sky Blue Result Accent */
-        --sky-label: #0c4a6e;
-    }
+    
 
     /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
@@ -173,7 +165,7 @@
             
             <button type="submit"
                     class="btn w-100 fw-bold py-3 mt-3 shadow-xl text-white"
-                    style="background-color: #0ea5e9; border-color: #0ea5e9;">
+                    style="background-color: var(--ag-accent); border-color: var(--ag-accent);">
                 Calculate All Operations
             </button>
         </form>

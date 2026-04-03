@@ -60,7 +60,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">💪 Strength Standard Calculator (1RM)</h1>
+    <h1 class="mb-3 text-dark">💪 Strength Standard Calculator (1RM)</h1>
     <p class="small-muted">Categorize your $1$-Rep Max ($\text{1RM}$) for the main power lifts based on your body weight and gender.</p>
 
     <div class="calc-wrapper mt-4">
@@ -272,7 +272,7 @@
     function getCategoryColorValue(tailwindClass) {
         if (tailwindClass.includes('purple')) return '#9333ea';
         if (tailwindClass.includes('red')) return '#dc2626';
-        if (tailwindClass.includes('green')) return '#10b981';
+        if (tailwindClass.includes('green')) return 'var(--ag-accent)';
         if (tailwindClass.includes('yellow')) return '#f59e0b';
         if (tailwindClass.includes('blue')) return '#3b82f6';
         return '#6b7280';

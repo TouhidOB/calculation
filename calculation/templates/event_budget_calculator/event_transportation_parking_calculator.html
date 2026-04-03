@@ -9,12 +9,10 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 59, 130, 246; /* Blue 600 */
-    }
+    
 
     body {
-        background-color: #f1f5f9; /* Slate 100 */
+        background-color: var(--ag-bg); /* Slate 100 */
     }
 
     .calc-card {
@@ -26,7 +24,7 @@
     }
 
     .input-sidebar {
-        background-color: #f8fafc;
+        background-color: var(--ag-bg);
         border-right: 1px solid #e2e8f0;
     }
 
@@ -45,16 +43,16 @@
         margin-bottom: 1rem;
         border-left: 6px solid;
         background: white;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ag-bg);
         transition: transform 0.2s ease;
     }
 
     .card-shuttle { border-left-color: #3b82f6; } /* Blue - Transit */
-    .card-parking { border-left-color: #10b981; } /* Emerald - Parking */
+    .card-parking { border-left-color: var(--ag-accent); } /* Emerald - Parking */
     .card-valet { border-left-color: #6366f1; }   /* Indigo - Service */
 
     .result-display-box {
-        background: #1e3a8a;
+        background: var(--ag-primary);
         border-radius: 1rem;
         padding: 1.5rem;
         text-align: center;
@@ -81,7 +79,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h1 class="fw-bold text-slate-900"><i class="bi bi-bus-front text-primary me-2"></i>Event Transportation Planner</h1>
+        <h1 class="fw-bold text-slate-900 text-dark"><i class="bi bi-bus-front text-primary me-2"></i>Event Transportation Planner</h1>
         <p class="text-muted mx-auto" style="max-width: 650px;">
             Coordinate guest movement seamlessly. Estimate shuttle fleet needs, parking spot requirements, and valet staffing based on your guest list.
         </p>
@@ -143,7 +141,7 @@
                                 <label class="small text-muted mb-1">Cost per Vehicle</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="cost-shuttle" class="form-control transp-input" value="800">
+                                    <input type="number" id="cost-shuttle" class="form-control transp-input">
                                 </div>
                             </div>
                         </div>
@@ -159,7 +157,7 @@
                                 <label class="small text-muted mb-1">Cost per Lot/Permit</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="cost-parking" class="form-control transp-input" value="0">
+                                    <input type="number" id="cost-parking" class="form-control transp-input">
                                 </div>
                             </div>
                         </div>
@@ -175,7 +173,7 @@
                                 <label class="small text-muted mb-1">Total Valet Quote</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="cost-valet" class="form-control transp-input" value="0">
+                                    <input type="number" id="cost-valet" class="form-control transp-input">
                                 </div>
                             </div>
                         </div>

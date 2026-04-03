@@ -1,0 +1,281 @@
+/*
+   Global Premium Theme for Calculation Project
+   Overrides all individual tool styles to ensure consistency.
+*/
+
+:root {
+    /* 🚀 Calculation IT Core Palette */
+    --ag-bg: #FFFFFF;
+    --ag-text: #00171F;
+    --ag-primary: #003459;
+    --ag-secondary: #007EA7;
+    --ag-accent: #00A8E8;
+
+    /* Theme Mappings (Strict Enforcement) */
+    --primary-color: var(--ag-primary) !important;
+    --primary-hover: var(--ag-secondary) !important;
+    --secondary-color: var(--ag-secondary) !important;
+    --accent-color: var(--ag-accent) !important;
+
+    /* Backgrounds */
+    --bg-body: var(--ag-bg) !important;
+    --bg-card: var(--ag-bg) !important;
+    --bg-input: #f8fafc !important;
+    /* Extremely light grey for contrast */
+
+    /* Generic semantic mappings to stay within palette */
+    --success-color: var(--ag-accent) !important;
+    --warning-color: #f59e0b !important;
+    --danger-color: #ef4444 !important;
+
+    /* Typography */
+    --font-heading: 'Inter', system-ui, -apple-system, sans-serif !important;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif !important;
+    --text-color: var(--ag-text) !important;
+
+    /* Shadows (Calculation IT Style) */
+    --shadow-sm: 0 2px 8px rgba(0, 23, 31, 0.05) !important;
+    --shadow-md: 0 10px 30px rgba(0, 23, 31, 0.05) !important;
+    --shadow-lg: 0 20px 50px rgba(0, 23, 31, 0.08) !important;
+
+    /* Utility */
+    --border-color: #e2e8f0 !important;
+    --radius-lg: 1rem !important;
+    --radius-md: 0.5rem !important;
+}
+
+/* =========================================
+   NUCLEAR OVERRIDES (Force Uniformity)
+   ========================================= */
+
+body {
+    background-color: var(--bg-body) !important;
+    color: #00171F !important;
+    /* Rich Black */
+    font-family: var(--font-body) !important;
+    line-height: 1.7 !important;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+    font-family: var(--font-heading) !important;
+    color: #00171F !important;
+    /* Rich Black */
+    font-weight: 700 !important;
+    letter-spacing: -0.025em !important;
+}
+
+h1 {
+    font-size: 2.25rem !important;
+}
+
+h2 {
+    font-size: 1.875rem !important;
+    margin-top: 1.5rem !important;
+}
+
+/* Cards & Containers */
+.card,
+.calc-card,
+.calc-wrapper,
+.tool-container {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 0;
+    /* Let internal sections handle padding */
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.card-body {
+    padding: 2rem !important;
+}
+
+.card-header {
+    background-color: var(--ag-primary) !important;
+    color: white !important;
+    padding: 1.25rem 2rem !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6 {
+    color: white !important;
+    margin: 0 !important;
+}
+
+/* Inputs & Form Elements */
+.form-control,
+.form-select,
+input[type="text"],
+input[type="number"],
+select {
+    background-color: var(--bg-input) !important;
+    border: 1px solid #cbd5e1 !important;
+    /* Slate 300 */
+    border-radius: var(--radius-md) !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    color: #334155 !important;
+    transition: all 0.2s ease !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: #fff !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
+    outline: none !important;
+}
+
+/* Buttons */
+.btn-primary,
+.btn-success,
+button[type="submit"],
+.calc-btn.operator-btn,
+.calc-btn.equal-btn {
+    background-color: var(--primary-color) !important;
+    /* Force all primary actions to Theme Color */
+    border-color: var(--primary-color) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+button[type="submit"]:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Neutralize Specific Calculator Buttons */
+.calc-btn {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    font-weight: 600;
+}
+
+/* Number buttons usually white/light */
+.calc-btn.number-btn {
+    background-color: white;
+    color: #334155;
+}
+
+.calc-btn.number-btn:hover {
+    background-color: #f8fafc;
+}
+
+/* Secondary Actions */
+.btn-secondary,
+.btn-light,
+.calc-btn.clear-btn,
+.calc-btn.special-btn {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* Result Areas */
+.result-display,
+#result-container,
+.alert-success {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)) !important;
+    color: white !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 1.5rem !important;
+    box-shadow: var(--shadow-md) !important;
+    border: none !important;
+    margin-top: 2rem !important;
+}
+
+.result-display h2,
+.result-display h3,
+.result-display p {
+    color: white !important;
+}
+
+/* Badges & Labels */
+.badge,
+.category-badge {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(4px) !important;
+    color: white !important;
+    border-radius: 9999px !important;
+    padding: 0.25rem 0.75rem !important;
+}
+
+/* Icons */
+i,
+.bi {
+    margin-right: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+    .card,
+    .calc-card {
+        padding: 1.25rem !important;
+    }
+}
+
+/* User Requested Overrides */
+.input-sidebar {
+    background-color: #334155 !important;
+    /* Slate 700 */
+    color: white !important;
+    border-right-color: #1e293b !important;
+    /* Slate 800 */
+}
+
+.input-sidebar .form-label,
+.input-sidebar h6,
+.input-sidebar .text-muted,
+.input-sidebar .form-text,
+.input-sidebar small {
+    color: #cbd5e1 !important;
+    /* Slate 300 for secondary text */
+}
+
+.input-sidebar .input-group-text {
+    background-color: #475569 !important;
+    /* Slate 600 */
+    color: white !important;
+    border-color: #64748b !important;
+}
+
+.input-sidebar .form-control,
+.input-sidebar .form-select {
+    background-color: #1e293b !important;
+    /* Slate 800 */
+    border-color: #475569 !important;
+    color: white !important;
+}
+
+.input-sidebar .form-control::placeholder {
+    color: #94a3b8 !important;
+    /* Slate 400 */
+}

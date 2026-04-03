@@ -62,7 +62,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-3">💵 Overtime Pay Calculator</h1>
+    <h1 class="mb-3 text-dark">💵 Overtime Pay Calculator</h1>
     <p class="small-muted">Calculate your total overtime earnings based on regular, time-and-a-half, and double time hours.</p>
 
     <div class="calc-wrapper">
@@ -73,7 +73,7 @@
             <!-- Regular Hourly Rate -->
             <div class="form-group mb-4">
                 <label for="regular-rate" class="form-label">Regular Hourly Rate ($)</label>
-                <input type="number" class="form-control" id="regular-rate" value="15.00" min="0.01" step="0.01" required>
+                <input type="number" class="form-control" id="regular-rate" min="0.01" step="0.01" required>
             </div>
 
             <h5 class="section-title">Step 2: Overtime Hours Worked</h5>
@@ -83,7 +83,7 @@
                 <div class="col-md-6">
                     <div class="form-group mb-3">
                         <label for="time-and-a-half-hours" class="form-label">Time & a Half Hours (1.5x)</label>
-                        <input type="number" class="form-control" id="time-and-a-half-hours" value="0" min="0" step="0.01" required>
+                        <input type="number" class="form-control" id="time-and-a-half-hours" min="0" step="0.01" required>
                     </div>
                 </div>
 
@@ -91,7 +91,7 @@
                 <div class="col-md-6">
                     <div class="form-group mb-3">
                         <label for="double-time-hours" class="form-label">Double Time Hours (2.0x)</label>
-                        <input type="number" class="form-control" id="double-time-hours" value="0" min="0" step="0.01" required>
+                        <input type="number" class="form-control" id="double-time-hours" min="0" step="0.01" required>
                     </div>
                 </div>
             </div>

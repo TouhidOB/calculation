@@ -102,7 +102,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">💻 Number System Converter</h1>
+    <h1 class="mb-3 text-dark">💻 Number System Converter</h1>
     <p class="small-muted">Convert between Binary (Base 2), Decimal (Base 10), and Hexadecimal (Base 16). </p>
     
 
@@ -249,10 +249,7 @@
         convertButton.addEventListener('click', convertNumber);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertNumber(); // Initial conversion run
-    };
+    
 
 </script>
 {% endblock %}

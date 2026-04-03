@@ -5,11 +5,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <style>
-    :root {
-        --paint-blue: #0d6efd;
-        --paint-teal: #009688;
-        --paint-orange: #fd7e14;
-    }
+    
     body { background-color: #f8f9fa; }
     
     .calc-card {
@@ -40,7 +36,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h1 class="display-5 fw-bold"><i class="bi bi-palette2 text-primary me-2"></i>Paint Volume Calculator</h1>
+        <h1 class="display-5 fw-bold text-dark"><i class="bi bi-palette2 text-primary me-2"></i>Paint Volume Calculator</h1>
         <p class="lead text-muted">Estimate the exact amount of paint needed for your room.</p>
     </div>
 
@@ -79,7 +75,7 @@
                             <div class="input-group mb-2">
                                 <span class="input-group-text bg-white"><i class="bi bi-door-closed text-danger"></i></span>
                                 <div class="form-floating">
-                                    <input type="number" name="subtractArea" class="form-control" id="subtract" value="0" step="1">
+                                    <input type="number" name="subtractArea" class="form-control" id="subtract" step="1">
                                     <label for="subtract">Doors/Windows Area (sq ft)</label>
                                 </div>
                             </div>
@@ -93,7 +89,7 @@
                             <div class="input-group">
                                 <span class="input-group-text bg-white"><i class="bi bi-layers text-warning"></i></span>
                                 <div class="form-floating">
-                                    <input type="number" name="coats" class="form-control" id="coats" value="2" min="1" required>
+                                    <input type="number" name="coats" class="form-control" id="coats" min="1" required>
                                     <label for="coats">Number of Coats</label>
                                 </div>
                             </div>

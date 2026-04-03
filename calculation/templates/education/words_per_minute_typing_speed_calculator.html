@@ -4,12 +4,7 @@
 
 {% block extra_head %}
 <style>
-    :root {
-        --primary: #2563eb;
-        --success: #059669;
-        --danger: #dc2626;
-        --bg-light: #f8fafc;
-    }
+    
 
     .calc-wrapper {
         max-width: 900px;
@@ -47,7 +42,7 @@
     .stat-card .value {
         font-size: 1.75rem;
         font-weight: 800;
-        color: #1e293b;
+        color: var(--ag-text);
         display: block;
     }
 
@@ -73,7 +68,7 @@
 
     .char { position: relative; }
 
-    .char.correct { color: #1e293b; } /* Typed text color */
+    .char.correct { color: var(--ag-text); } /* Typed text color */
     
     .char.incorrect { 
         color: var(--danger);
@@ -82,8 +77,8 @@
     }
 
     .char.current {
-        color: var(--primary);
-        border-bottom: 3px solid var(--primary);
+        color: var(--ag-primary);
+        border-bottom: 3px solid var(--ag-primary);
     }
 
     /* Hidden Input Hack for better mobile/desktop compatibility */
@@ -106,7 +101,7 @@
     }
 
     .btn-start {
-        background: var(--primary);
+        background: var(--ag-primary);
         color: white;
         padding: 0.75rem 2rem;
         border-radius: 0.5rem;

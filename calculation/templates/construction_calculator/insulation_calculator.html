@@ -67,7 +67,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🌡️ Insulation Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🌡️ Insulation Calculator</h1>
     <p class="text-center small-muted">Calculate the amount of Batt or Loose-Fill insulation needed for your project.</p>
 
     <div class="calc-wrapper">
@@ -97,7 +97,7 @@
             <label for="subtract-area-input" class="form-label">Total Deduction Area</label>
             <div class="input-group mb-1">
                 <span class="input-group-text">Openings/Obstacles</span>
-                <input type="number" id="subtract-area-input" class="form-control" name="subtractArea" placeholder="Total sq ft to subtract (e.g., 50)" value="0" min="0" step="1">
+                <input type="number" id="subtract-area-input" class="form-control" name="subtractArea" placeholder="Total sq ft to subtract (e.g., 50)" min="0" step="1">
                 <span class="input-group-text">sq ft</span>
             </div>
             <span class="unit-input-label">Area of openings, doors, or windows that will not be insulated.</span>
@@ -106,7 +106,7 @@
             <label for="waste-input" class="form-label mt-3">Waste/Cut Allowance</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Waste Factor</span>
-                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5" value="5" min="0" max="20" step="1" required>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5" min="0" max="20" step="1" required>
                 <span class="input-group-text">%</span>
             </div>
 
@@ -125,13 +125,13 @@
                 <label for="r-value-input" class="form-label">R-Value Per Batt</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">R-Value</span>
-                    <input type="number" id="r-value-input" class="form-control" name="rValue" placeholder="R-Value (e.g., 13, 19, 30)" value="13" min="1" step="1" required>
+                    <input type="number" id="r-value-input" class="form-control" name="rValue" placeholder="R-Value (e.g., 13, 19, 30)" min="1" step="1" required>
                 </div>
                 <!-- Coverage Area Per Bag (Batt Only) -->
                 <label for="batt-coverage-input" class="form-label">Area Covered by One Batt Package</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Coverage</span>
-                    <input type="number" id="batt-coverage-input" class="form-control" name="battCoverage" placeholder="Sq Ft per package (e.g., 40, 80)" value="60" min="1" step="1" required>
+                    <input type="number" id="batt-coverage-input" class="form-control" name="battCoverage" placeholder="Sq Ft per package (e.g., 40, 80)" min="1" step="1" required>
                     <span class="input-group-text">sq ft/package</span>
                 </div>
             </div>
@@ -142,13 +142,13 @@
                 <label for="loose-r-value-input" class="form-label">Target R-Value</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Target R-Value</span>
-                    <input type="number" id="loose-r-value-input" class="form-control" name="looseRValue" placeholder="e.g., 38 for attic" value="38" min="1" step="1">
+                    <input type="number" id="loose-r-value-input" class="form-control" name="looseRValue" placeholder="e.g., 38 for attic" min="1" step="1">
                 </div>
                 <!-- Coverage Area Per Bag (Loose-Fill) -->
                 <label for="bag-coverage-input" class="form-label">Sq Ft Covered Per Bag (at Target R-Value)</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Coverage</span>
-                    <input type="number" id="bag-coverage-input" class="form-control" name="bagCoverage" placeholder="Sq Ft per bag at R-Value (e.g., 40)" value="40" min="1" step="1">
+                    <input type="number" id="bag-coverage-input" class="form-control" name="bagCoverage" placeholder="Sq Ft per bag at R-Value (e.g., 40)" min="1" step="1">
                     <span class="input-group-text">sq ft/bag</span>
                 </div>
             </div>

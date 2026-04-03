@@ -13,20 +13,20 @@
 
 {% block content %}
 <div class="container my-4">
-  <h1>Financial Independence (FIRE) Calculator</h1>
+  <h1 class="text-dark">Financial Independence (FIRE) Calculator</h1>
   <p class="small-muted">Calculate the target nest egg using the safe withdrawal rule and estimate time to reach it.</p>
 
   <div class="calc-wrapper mt-3">
     <form id="fire-form">
       <div class="row">
         <div class="col-md-4 mb-2"><label>Current Annual Expenses ($)</label><input id="fire-expenses" class="form-control" type="number" step="0.01" required></div>
-        <div class="col-md-4 mb-2"><label>Current Savings ($)</label><input id="fire-savings" class="form-control" type="number" step="0.01" value="0"></div>
-        <div class="col-md-4 mb-2"><label>Expected Annual Return (%)</label><input id="fire-return" class="form-control" type="number" step="0.01" value="6"></div>
+        <div class="col-md-4 mb-2"><label>Current Savings ($)</label><input id="fire-savings" class="form-control" type="number" step="0.01"></div>
+        <div class="col-md-4 mb-2"><label>Expected Annual Return (%)</label><input id="fire-return" class="form-control" type="number" step="0.01"></div>
       </div>
 
       <div class="row mt-2">
-        <div class="col-md-4 mb-2"><label>Annual Contribution ($)</label><input id="fire-contrib" class="form-control" type="number" step="0.01" value="0"></div>
-        <div class="col-md-4 mb-2"><label>Withdrawal Rate (%) — safe withdrawal (default 4%)</label><input id="fire-withdraw" class="form-control" type="number" step="0.01" value="4"></div>
+        <div class="col-md-4 mb-2"><label>Annual Contribution ($)</label><input id="fire-contrib" class="form-control" type="number" step="0.01"></div>
+        <div class="col-md-4 mb-2"><label>Withdrawal Rate (%) — safe withdrawal (default 4%)</label><input id="fire-withdraw" class="form-control" type="number" step="0.01"></div>
         <div class="col-md-4 mb-2 align-self-end">
           <button class="btn btn-primary" type="submit">Compute FIRE Target</button>
           <button id="fire-reset" type="button" class="btn btn-secondary">Reset</button>

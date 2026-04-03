@@ -72,7 +72,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">📊 Advanced Cumulative GPA Calculator</h1>
+    <h1 class="mb-3 text-dark">📊 Advanced Cumulative GPA Calculator</h1>
     <p class="small-muted">Calculate your **Semester GPA** and **Cumulative GPA** by adding your courses, credit hours, and letter grades.</p>
 
     <div class="calc-wrapper mt-4">
@@ -83,11 +83,11 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Prior Cumulative GPA</label>
-                    <input type="number" class="form-control" id="prior_gpa" placeholder="e.g., 3.50" min="0" max="4.0" step="0.01" value="0.00">
+                    <input type="number" class="form-control" id="prior_gpa" placeholder="e.g., 3.50" min="0" max="4.0" step="0.01">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Prior Attempted Credit Hours</label>
-                    <input type="number" class="form-control" id="prior_credits" placeholder="e.g., 60" min="0" step="1" value="0">
+                    <input type="number" class="form-control" id="prior_credits" placeholder="e.g., 60" min="0" step="1">
                 </div>
             </div>
 
@@ -276,12 +276,10 @@
         calculateGPA();
     });
 
-    // Initial setup: Add a few starter rows
+    // Initial setup: Add one empty row
     window.addEventListener('load', () => {
         const courseList = document.getElementById('course-list');
-        courseList.appendChild(createCourseRow('English 101', 3, 'A'));
-        courseList.appendChild(createCourseRow('History 101', 3, 'B+'));
-        courseList.appendChild(createCourseRow('PE 101', 1, 'A-'));
+        courseList.appendChild(createCourseRow('', 3, 'A'));
     });
 </script>
 {% endblock %}

@@ -112,7 +112,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🖼️ Image Resolution Converter</h1>
+    <h1 class="mb-3 text-dark">🖼️ Image Resolution Converter</h1>
     <p class="small-muted">Calculate the **pixel dimensions** needed for an image to print correctly at a specific physical size and resolution. </p>
     
 
@@ -123,14 +123,14 @@
         <div class="conversion-input-group">
             <label>Print Dimensions (Width $\times$ Height)</label>
             <div class="input-row mb-3">
-                <input type="number" class="form-control" id="widthInput" placeholder="Width" value="8" min="0.1" step="any" autofocus>
+                <input type="number" class="form-control" id="widthInput" placeholder="Width" min="0.1" step="any" autofocus>
                 <select id="sizeUnitSelect" class="form-select">
                     <option value="in">Inches (in)</option>
                     <option value="cm">Centimeters (cm)</option>
                 </select>
             </div>
             <div class="input-row">
-                <input type="number" class="form-control" id="heightInput" placeholder="Height" value="10" min="0.1" step="any">
+                <input type="number" class="form-control" id="heightInput" placeholder="Height" min="0.1" step="any">
                 <span class="text-muted small align-self-center">(Size Unit applies to both)</span>
             </div>
         </div>
@@ -140,7 +140,7 @@
         <div class="conversion-input-group">
             <label>Print Resolution</label>
             <div class="input-row">
-                <input type="number" class="form-control" id="resolutionInput" placeholder="Resolution" value="300" min="1" step="any">
+                <input type="number" class="form-control" id="resolutionInput" placeholder="Resolution" min="1" step="any">
                 <select id="resolutionUnitSelect" class="form-select">
                     <option value="dpi">DPI (Dots Per Inch)</option>
                     <option value="dpcm">DPcm (Dots Per Centimeter)</option>
@@ -288,10 +288,7 @@
         convertButton.addEventListener('click', calculateResolution);
     }
 
-    window.onload = function() {
-        setupListeners();
-        calculateResolution(); // Initial calculation on load
-    };
+    
 
 </script>
 {% endblock %}

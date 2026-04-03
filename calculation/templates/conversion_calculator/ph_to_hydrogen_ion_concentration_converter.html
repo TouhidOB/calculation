@@ -97,7 +97,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🧪 pH to Hydrogen Ion Concentration Converter</h1>
+    <h1 class="mb-3 text-dark">🧪 pH to Hydrogen Ion Concentration Converter</h1>
     <p class="small-muted">Convert between **$\text{pH}$** and the **Hydrogen Ion Concentration** ($[\text{H}^+]$) in Molarity (M).</p>
     
 
@@ -120,14 +120,14 @@
             <!-- pH Input -->
             <div id="phInputGroup">
                 <label for="phValue">Input $\text{pH}$ Value</label>
-                <input type="number" class="form-control input-field" id="phValue" placeholder="e.g., 7.4" value="7.4" min="-2" step="0.01">
+                <input type="number" class="form-control input-field" id="phValue" placeholder="e.g., 7.4" min="-2" step="0.01">
                 <p class="small-muted mt-1">Typical $\text{pH}$ scale ranges from $0$ to $14$.</p>
             </div>
 
             <!-- Concentration Input -->
             <div id="concentrationInputGroup" class="mt-3 hidden-input">
                 <label for="concentrationValue">Input Hydrogen Ion Concentration ($[\text{H}^+]$)</label>
-                <input type="number" class="form-control input-field" id="concentrationValue" placeholder="e.g., 0.0000001" value="0.0000001" min="1e-20" step="any">
+                <input type="number" class="form-control input-field" id="concentrationValue" placeholder="e.g., 0.0000001" min="1e-20" step="any">
                 <p class="small-muted mt-1">Enter in decimal or scientific notation (e.g., $1\text{e-}7$).</p>
             </div>
         </div>

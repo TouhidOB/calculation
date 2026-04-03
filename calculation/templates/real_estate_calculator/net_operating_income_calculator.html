@@ -7,15 +7,10 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --noi-blue: #1e3a8a;
-        --noi-light: #f8fafc;
-        --noi-border: #cbd5e1;
-        --noi-accent: #0ea5e9;
-    }
+    
 
     body {
-        background-color: #f1f5f9;
+        background-color: var(--ag-bg);
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
@@ -28,7 +23,7 @@
     }
 
     .input-sidebar {
-        background-color: #ffffff;
+        background-color: var(--ag-bg);
         border-right: 1px solid var(--noi-border);
     }
 
@@ -74,7 +69,7 @@
         font-size: 0.85rem;
         font-weight: 800;
         color: #64748b;
-        border-bottom: 2px solid #f1f5f9;
+        border-bottom: 2px solid var(--ag-bg);
         padding-bottom: 0.5rem;
         margin-bottom: 1.5rem;
         text-transform: uppercase;

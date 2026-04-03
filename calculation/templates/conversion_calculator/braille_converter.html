@@ -115,7 +115,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">⚫ Braille Converter</h1>
+    <h1 class="mb-3 text-dark">⚫ Braille Converter</h1>
     <p class="small-muted">Convert between English Text and **Grade 1 Braille** (uncontracted). Uses standard 6-dot Unicode characters for visual representation. </p>
     
 
@@ -384,10 +384,7 @@
         convertButton.addEventListener('click', convert);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convert(); // Initial conversion run
-    };
+    
 
 </script>
 {% endblock %}

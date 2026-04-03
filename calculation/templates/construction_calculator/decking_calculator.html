@@ -58,15 +58,13 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">🌳 Decking Material Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">🌳 Decking Material Calculator</h1>
     <p class="text-center small-muted">Estimate the required decking boards (surface) and support beams (structure).</p>
 
     <div class="calc-wrapper">
 
         <form id="decking-form">
             <h5 class="section-title">1. Deck Footprint (in Feet)</h5>
-            [Image of a deck structure with length and width labeled]
-
             <!-- Length Input (Feet) -->
             <label for="deck-length-input" class="form-label">Deck Length (Direction Parallel to Deck Boards)</label>
             <div class="input-group mb-3">
@@ -90,7 +88,7 @@
             <label for="board-length-input" class="form-label">Deck Board Length (To be Purchased)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Board Length</span>
-                <input type="number" id="board-length-input" class="form-control" name="boardLength" placeholder="e.g., 16 (ft)" value="16" min="6" step="2" required>
+                <input type="number" id="board-length-input" class="form-control" name="boardLength" placeholder="e.g., 16 (ft)" min="6" step="2" required>
                 <span class="input-group-text">ft</span>
             </div>
 
@@ -98,7 +96,7 @@
             <label for="board-width-input" class="form-label">Actual Board Width (The surface area it covers)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Actual Width</span>
-                <input type="number" id="board-width-input" class="form-control" name="boardWidth" placeholder="e.g., 5.5 for a 6-inch nominal board" value="5.5" min="1" step="0.1" required>
+                <input type="number" id="board-width-input" class="form-control" name="boardWidth" placeholder="e.g., 5.5 for a 6-inch nominal board" min="1" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
 
@@ -106,7 +104,7 @@
             <label for="gap-input" class="form-label">Gap Between Boards</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Gap Size</span>
-                <input type="number" id="gap-input" class="form-control" name="gap" placeholder="e.g., 0.125 for 1/8 inch" value="0.125" min="0" step="0.01">
+                <input type="number" id="gap-input" class="form-control" name="gap" placeholder="e.g., 0.125 for 1/8 inch" min="0" step="0.01">
                 <span class="input-group-text">in</span>
             </div>
 
@@ -114,7 +112,7 @@
             <label for="waste-input" class="form-label">Waste/Cut Allowance</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Waste Factor</span>
-                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 10" value="10" min="0" max="25" step="1" required>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 10" min="0" max="25" step="1" required>
                 <span class="input-group-text">%</span>
             </div>
 
@@ -124,7 +122,7 @@
             <label for="joist-spacing-input" class="form-label">Joist Spacing (Center-to-Center)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Spacing</span>
-                <input type="number" id="joist-spacing-input" class="form-control" name="joistSpacing" placeholder="e.g., 16 or 24" value="16" min="1" step="1" required>
+                <input type="number" id="joist-spacing-input" class="form-control" name="joistSpacing" placeholder="e.g., 16 or 24" min="1" step="1" required>
                 <span class="input-group-text">in</span>
             </div>
             <span class="unit-input-label">Joists run perpendicular to the Deck Boards.</span>

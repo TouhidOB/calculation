@@ -31,7 +31,7 @@
     }
 
     .result-section h3 {
-        color: #4338ca;
+        color: var(--ag-primary);
         margin-bottom: 5px;
         font-size: 1.2rem;
     }
@@ -40,14 +40,14 @@
         display: block;
         font-size: 3rem;
         font-weight: 700;
-        color: #4338ca;
+        color: var(--ag-primary);
         line-height: 1.2;
     }
     
     .summary-text {
         margin-top: 15px;
         font-size: 0.9rem;
-        color: #4338ca;
+        color: var(--ag-primary);
     }
     
     .form-control[type="date"], .form-control[type="number"] {
@@ -61,7 +61,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-3">📅 Project Deadline Calculator</h1>
+    <h1 class="mb-3 text-dark">📅 Project Deadline Calculator</h1>
     <p class="small-muted">Calculate your project's final deadline by adding a specified number of **business days** (excluding weekends) to your start date.</p>
 
     <div class="calc-wrapper">
@@ -80,7 +80,7 @@
             <!-- Duration Input -->
             <div class="form-group mb-4">
                 <label for="duration-value" class="form-label">Required Business Days (e.g., 20 days for a one-month project)</label>
-                <input type="number" class="form-control" id="duration-value" min="1" value="10" required>
+                <input type="number" class="form-control" id="duration-value" min="1" required>
                 <small class="form-text text-muted">A business day is defined as Monday through Friday.</small>
             </div>
 

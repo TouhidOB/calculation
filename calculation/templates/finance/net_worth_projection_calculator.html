@@ -12,7 +12,7 @@
 
 {% block content %}
 <div class="container">
-<h1 class="mb-3">Net Worth Projection Calculator</h1>
+<h1 class="mb-3 text-dark">Net Worth Projection Calculator</h1>
 <div class="calc-wrapper mt-4">
 <form id="networth-form">
 <h5 class="section-title">Financial Details</h5>
@@ -59,7 +59,7 @@ window.networthChart = new Chart(ctx,{
 type:'line',
 data:{
 labels:Array.from({length:years+1},(_,i)=>i),
-datasets:[{label:'Net Worth ($)', data:netWorthArr, borderColor:'#1cc88a', fill:false}]
+datasets:[{label:'Net Worth ($)', data:netWorthArr, borderColor:'var(--ag-accent)', fill:false}]
 }
 });
 });

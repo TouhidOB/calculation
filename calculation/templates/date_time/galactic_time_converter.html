@@ -84,7 +84,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-3 text-white">🚀 Galactic Time Converter</h1>
+    <h1 class="mb-3 text-dark">🚀 Galactic Time Converter</h1>
     <p class="small-muted" style="color:#bdc3c7;">Convert a duration from Earth standard time to the hypothetical Galactic Time standard.</p>
 
     <div class="calc-wrapper">
@@ -95,19 +95,19 @@
             <div class="row g-3">
                 <div class="col-6 col-md-3">
                     <label for="earth-days" class="form-label">Earth Days</label>
-                    <input type="number" class="form-control" id="earth-days" value="0" min="0" required>
+                    <input type="number" class="form-control" id="earth-days" min="0" required>
                 </div>
                 <div class="col-6 col-md-3">
                     <label for="earth-hours" class="form-label">Earth Hours</label>
-                    <input type="number" class="form-control" id="earth-hours" value="1" min="0" max="23" required>
+                    <input type="number" class="form-control" id="earth-hours" min="0" max="23" required>
                 </div>
                 <div class="col-6 col-md-3">
                     <label for="earth-minutes" class="form-label">Earth Minutes</label>
-                    <input type="number" class="form-control" id="earth-minutes" value="0" min="0" max="59" required>
+                    <input type="number" class="form-control" id="earth-minutes" min="0" max="59" required>
                 </div>
                 <div class="col-6 col-md-3">
                     <label for="earth-seconds" class="form-label">Earth Seconds</label>
-                    <input type="number" class="form-control" id="earth-seconds" value="0" min="0" max="59" required>
+                    <input type="number" class="form-control" id="earth-seconds" min="0" max="59" required>
                 </div>
             </div>
 

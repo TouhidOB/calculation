@@ -126,7 +126,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🌀 Hurricane Category/Wind Speed Converter</h1>
+    <h1 class="mb-3 text-dark">🌀 Hurricane Category/Wind Speed Converter</h1>
     <p class="small-muted">Determine the Saffir-Simpson Hurricane Wind Scale (SSHWS) category from sustained wind speed.</p>
     
 
@@ -138,7 +138,7 @@
             
             <label for="windSpeedValue">Wind Speed (Sustained)</label>
             <div class="speed-input-container">
-                <input type="number" class="form-control input-field" id="windSpeedValue" placeholder="e.g., 90" value="90" min="0" step="0.1">
+                <input type="number" class="form-control input-field" id="windSpeedValue" placeholder="e.g., 90" min="0" step="0.1">
                 <select id="windSpeedUnit" class="form-select input-field">
                     <option value="kt" selected>knots</option>
                     <option value="mph">MPH</option>

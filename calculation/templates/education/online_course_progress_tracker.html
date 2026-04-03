@@ -9,12 +9,10 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 16, 185, 129; /* Emerald */
-    }
+    
 
     body {
-        background-color: #f8fafc;
+        background-color: var(--ag-bg);
     }
 
     .tracker-card {
@@ -32,7 +30,7 @@
     }
 
     .module-card {
-        border-left: 4px solid #10b981;
+        border-left: 4px solid var(--ag-accent);
         transition: all 0.2s ease;
     }
 
@@ -41,12 +39,12 @@
     }
 
     .lesson-item {
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--ag-bg);
         transition: background-color 0.2s;
     }
 
     .lesson-item:hover {
-        background-color: #f8fafc;
+        background-color: var(--ag-bg);
     }
 
     .lesson-item:last-child {
@@ -54,7 +52,7 @@
     }
 
     .form-control-focus:focus {
-        border-color: #10b981;
+        border-color: var(--ag-accent);
         box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
     }
 

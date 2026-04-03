@@ -98,7 +98,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">🚀 Acceleration Converter</h1>
+    <h1 class="mb-3 text-dark">🚀 Acceleration Converter</h1>
     <p class="small-muted">Convert **Acceleration** between **Meters per Second Squared ($\text{m}/\text{s}^2$)**, **Feet per Second Squared ($\text{ft}/\text{s}^2$)**, and **Standard Gravity ($g$)**.</p>
     
 
@@ -110,7 +110,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Acceleration Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 9.80665" value="9.80665" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 9.80665" min="0" step="any" autofocus>
             
             <!-- Unit Select -->
             <div class="mt-3">
@@ -242,10 +242,7 @@
         inputUnitSelect.addEventListener('change', convertAcceleration);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertAcceleration(); // Run initial conversion on load
-    };
+    
 
 </script>
 {% endblock %}

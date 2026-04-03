@@ -61,7 +61,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="mb-3">⏱️ Workday Start/End Time Calculator</h1>
+    <h1 class="mb-3 text-dark">⏱️ Workday Start/End Time Calculator</h1>
     <p class="small-muted">Calculate the expected end time of your shift, including time taken for breaks.</p>
 
     <div class="calc-wrapper">
@@ -78,7 +78,7 @@
             <!-- Total Scheduled Hours -->
             <div class="form-group mb-4">
                 <label for="scheduled-hours" class="form-label">Total Scheduled Hours (e.g., 8)</label>
-                <input type="number" class="form-control" id="scheduled-hours" value="8" min="0.5" step="0.5" required>
+                <input type="number" class="form-control" id="scheduled-hours" min="0.5" step="0.5" required>
             </div>
 
             <h5 class="section-title">Step 2: Breaks</h5>
@@ -86,7 +86,7 @@
             <!-- Break Duration (Minutes) -->
             <div class="form-group mb-4">
                 <label for="break-minutes" class="form-label">Total Unpaid Break Duration (Minutes)</label>
-                <input type="number" class="form-control" id="break-minutes" value="30" min="0" required>
+                <input type="number" class="form-control" id="break-minutes" min="0" required>
                 <small class="form-text text-muted">Total time of lunch or breaks *not* counted as work time.</small>
             </div>
 

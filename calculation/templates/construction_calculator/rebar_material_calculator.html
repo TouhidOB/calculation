@@ -58,7 +58,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">⛓️ Rebar Material Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">⛓️ Rebar Material Calculator</h1>
     <p class="text-center small-muted">Estimates the rebar needed for concrete slabs, footings, or walls.</p>
     
 
@@ -90,7 +90,7 @@
                 <label for="spacing-input" class="form-label">Center-to-Center Spacing (Both Directions)</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">Spacing</span>
-                    <input type="number" id="spacing-input" class="form-control" name="spacing" placeholder="e.g., 18" value="18" min="4" step="1" required>
+                    <input type="number" id="spacing-input" class="form-control" name="spacing" placeholder="e.g., 18" min="4" step="1" required>
                     <span class="input-group-text">in</span>
                 </div>
                 <span class="unit-input-label">This applies to both the longitudinal and transverse directions.</span>
@@ -100,7 +100,7 @@
             <label for="bar-length-input" class="form-label">Standard Bar Length (To be Purchased)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Bar Length</span>
-                <input type="number" id="bar-length-input" class="form-control" name="barLength" placeholder="e.g., 20" value="20" min="10" step="1" required>
+                <input type="number" id="bar-length-input" class="form-control" name="barLength" placeholder="e.g., 20" min="10" step="1" required>
                 <span class="input-group-text">ft</span>
             </div>
             
@@ -110,7 +110,7 @@
             <label for="waste-input" class="form-label">Waste/Cut Allowance</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Waste Factor</span>
-                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5-10" value="7" min="0" max="25" step="1" required>
+                <input type="number" id="waste-input" class="form-control" name="wastePercent" placeholder="Standard is 5-10" min="0" max="25" step="1" required>
                 <span class="input-group-text">%</span>
             </div>
 

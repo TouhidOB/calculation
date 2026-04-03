@@ -9,12 +9,10 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 101, 119, 134; /* Soft Blue-Gray */
-    }
+    
 
     body {
-        background-color: #f8fafc; /* Slate 50 */
+        background-color: var(--ag-bg); /* Slate 50 */
     }
 
     .calc-card {
@@ -27,8 +25,8 @@
 
     .input-sidebar {
         background-color: #334155; /* Slate 800 */
-        color: #f1f5f9;
-        border-right: 1px solid #1e293b;
+        color: var(--ag-bg);
+        border-right: 1px solid var(--ag-text);
     }
 
     .form-label {
@@ -46,16 +44,16 @@
         margin-bottom: 1rem;
         border-left: 6px solid;
         background: white;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ag-bg);
         transition: transform 0.2s ease;
     }
 
     .card-print { border-left-color: #64748b; }  /* Slate - Invitation */
     .card-post { border-left-color: #3b82f6; }   /* Blue - Postage */
-    .card-dayof { border-left-color: #10b981; }  /* Emerald - Menus/Escort */
+    .card-dayof { border-left-color: var(--ag-accent); }  /* Emerald - Menus/Escort */
 
     .result-display-box {
-        background: #0f172a;
+        background: var(--ag-text);
         border-radius: 1rem;
         padding: 1.5rem;
         text-align: center;
@@ -65,7 +63,7 @@
     .result-value {
         font-size: 2.75rem;
         font-weight: 800;
-        color: #f1f5f9;
+        color: var(--ag-bg);
         line-height: 1;
     }
 
@@ -82,7 +80,7 @@
         bottom: -20px;
         right: -10px;
         font-size: 7rem;
-        color: #f1f5f9;
+        color: var(--ag-bg);
         opacity: 0.4;
         z-index: 0;
     }
@@ -92,7 +90,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h1 class="fw-bold text-slate-900"><i class="bi bi-envelope-paper-fill text-slate-600 me-2"></i>Stationery Cost Calculator</h1>
+        <h1 class="fw-bold text-slate-900 text-dark"><i class="bi bi-envelope-paper-fill text-slate-600 me-2"></i>Stationery Cost Calculator</h1>
         <p class="text-muted mx-auto" style="max-width: 650px;">
             Set the tone for your event. Calculate the required order quantities for households and the total investment for your invitation suite and day-of paper.
         </p>

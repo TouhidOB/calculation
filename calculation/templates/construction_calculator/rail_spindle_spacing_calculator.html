@@ -58,7 +58,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4 text-center">📏 Railing Spindle Spacing Calculator</h1>
+    <h1 class="mb-4 text-center text-dark">📏 Railing Spindle Spacing Calculator</h1>
     <p class="text-center small-muted">Ensures code compliance by calculating the number of spindles and the resulting equal space between them.</p>
     
 
@@ -71,7 +71,7 @@
             <label for="run-length-input" class="form-label">Total Railing Length (Center-to-Center of Posts)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Length (L)</span>
-                <input type="number" id="run-length-input" class="form-control" name="runLengthFeet" placeholder="e.g., 8 (ft)" value="8" min="1" step="0.1" required>
+                <input type="number" id="run-length-input" class="form-control" name="runLengthFeet" placeholder="e.g., 8 (ft)" min="1" step="0.1" required>
                 <span class="input-group-text">ft</span>
             </div>
             
@@ -79,7 +79,7 @@
             <label for="post-width-input" class="form-label">Main Post (Newel) Width</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Post Width (Wp)</span>
-                <input type="number" id="post-width-input" class="form-control" name="postWidth" placeholder="e.g., 4" value="4" min="0.5" step="0.1" required>
+                <input type="number" id="post-width-input" class="form-control" name="postWidth" placeholder="e.g., 4" min="0.5" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
 
@@ -89,7 +89,7 @@
             <label for="spindle-width-input" class="form-label">Spindle (Baluster) Width</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Spindle Width (Ws)</span>
-                <input type="number" id="spindle-width-input" class="form-control" name="spindleWidth" placeholder="e.g., 1.5" value="1.5" min="0.1" step="0.1" required>
+                <input type="number" id="spindle-width-input" class="form-control" name="spindleWidth" placeholder="e.g., 1.5" min="0.1" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
 
@@ -97,7 +97,7 @@
             <label for="max-gap-input" class="form-label">Maximum Allowed Gap (Building Code)</label>
             <div class="input-group mb-3">
                 <span class="input-group-text">Max Gap (Gmax)</span>
-                <input type="number" id="max-gap-input" class="form-control" name="maxGap" placeholder="Typically 4" value="4.0" min="0.1" step="0.1" required>
+                <input type="number" id="max-gap-input" class="form-control" name="maxGap" placeholder="Typically 4" min="0.1" step="0.1" required>
                 <span class="input-group-text">in</span>
             </div>
             

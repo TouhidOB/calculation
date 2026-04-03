@@ -98,10 +98,10 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">⚙️ Moment of Inertia Converter</h1>
+    <h1 class="mb-3 text-dark">⚙️ Moment of Inertia Converter</h1>
     <p class="small-muted">Convert **Moment of Inertia ($I$)** between **Kilogram meter squared ($\text{kg}\cdot\text{m}^2$)**, **Gram centimeter squared ($\text{g}\cdot\text{cm}^2$)**, and **Pound-mass foot squared ($\text{lbm}\cdot\text{ft}^2$)**.</p>
     
-    <p class="small-muted">Moment of inertia is a measure of an object's resistance to changes in its rotation. [Image of moment of inertia of basic shapes]</p>
+    <p class="small-muted">Moment of inertia is a measure of an object's resistance to changes in its rotation. </p>
 
     <div class="calc-wrapper mt-4">
 
@@ -111,7 +111,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Moment of Inertia Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 5" value="5" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 5" min="0" step="any" autofocus>
             
             <!-- Unit Select -->
             <div class="mt-3">
@@ -251,10 +251,7 @@
         inputUnitSelect.addEventListener('change', convertInertia);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertInertia(); // Run initial conversion on load
-    };
+    
 
 </script>
 {% endblock %}

@@ -99,7 +99,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">💡 Luminous Intensity Converter</h1>
+    <h1 class="mb-3 text-dark">💡 Luminous Intensity Converter</h1>
     <p class="small-muted">Convert **Luminous Intensity** between **Candela ($\text{cd}$)** (SI unit) and **Candlepower ($\text{CP}$)** (Historical unit).</p>
     
 
@@ -111,7 +111,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Intensity Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 50" value="50" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 50" min="0" step="any" autofocus>
             
             <!-- Direction Select -->
             <div class="mt-3">
@@ -235,10 +235,7 @@
         directionSelect.addEventListener('change', convertLuminousIntensity);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertLuminousIntensity(); // Run initial conversion
-    };
+    
 
 </script>
 {% endblock %}

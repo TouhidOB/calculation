@@ -12,13 +12,7 @@
 
 <style>
     /* 🎨 Define Custom Theme Colors (Indigo/Blue Theme for Bootstrap) */
-    :root {
-        --indigo-main: #4338ca; /* Deep Indigo for button/accent */
-        --indigo-dark: #3730a3; /* Darker Indigo for text */
-        --lavender-pale: #f7faff; /* Solver Wrapper Background */
-        --lavender-light: #eef2ff; /* Input Section Background */
-        --indigo-accent: #a5b4fc; /* Medium Indigo border */
-    }
+    
 
     /* 🧼 Solver Wrapper: Central container styling */
     .solver-wrapper {
@@ -51,6 +45,7 @@
     }
 
     .input-field {
+        width: 100%;
         padding: 12px;
         font-size: 1.4rem;
         border: 2px solid var(--indigo-accent);
@@ -119,13 +114,13 @@
             
             <div class="input-grid-custom shadow-sm">
                 <div class="input-box">
-                    <label for="n-input">Total Items <br> (mathbf{n}):</label>
+                    <label for="n-input">Total Items ($\mathbf{n}$):</label>
                     <input type="number" id="n-input" required step="1" min="0"
                            placeholder="e.g., 10 (Total people)"
                            class="form-control input-field">
                 </div>
                 <div class="input-box">
-                    <label for="r-input">Items to Arrange (mathbf{r}):</label>
+                    <label for="r-input">Items to Arrange ($\mathbf{r}$):</label>
                     <input type="number" id="r-input" required step="1" min="0"
                            placeholder="e.g., 3 (Positions)"
                            class="form-control input-field">

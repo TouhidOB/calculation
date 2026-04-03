@@ -98,7 +98,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">💧 Viscosity Converter</h1>
+    <h1 class="mb-3 text-dark">💧 Viscosity Converter</h1>
     <p class="small-muted">Convert between **Dynamic Viscosity** (Absolute) and **Kinematic Viscosity** units. Note: Dynamic $\leftrightarrow$ Kinematic conversion requires density input (not included here).</p>
     
 
@@ -110,7 +110,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 0.5" value="0.5" min="0" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 0.5" min="0" step="any" autofocus>
             
             <!-- Unit Select -->
             <div class="mt-3">
@@ -283,10 +283,7 @@
         inputUnitSelect.addEventListener('change', convertViscosity);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertViscosity(); // Run initial conversion on load
-    };
+    
 
 </script>
 {% endblock %}

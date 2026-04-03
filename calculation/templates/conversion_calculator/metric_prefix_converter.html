@@ -103,11 +103,8 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">📊 Metric Prefix Converter</h1>
+    <h1 class="mb-3 text-dark">📊 Metric Prefix Converter</h1>
     <p class="small-muted">Convert values between common metric prefixes (powers of 1000). The base unit is denoted as 'U'.</p>
-    
-    [Image of SI unit prefixes chart]
-
     <div class="calc-wrapper mt-4">
 
         <h5 class="section-title">Step 1: Enter Value and Input Prefix</h5>
@@ -116,7 +113,7 @@
             
             <!-- Value Input -->
             <label for="inputValue">Value to Convert</label>
-            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 5.5" value="5.5" step="any" autofocus>
+            <input type="number" class="form-control input-field" id="inputValue" placeholder="e.g., 5.5" step="any" autofocus>
             
             <!-- Unit Select -->
             <div class="mt-3">
@@ -294,10 +291,7 @@
         inputUnitSelect.addEventListener('change', convertPrefix);
     }
 
-    window.onload = function() {
-        setupListeners();
-        convertPrefix(); // Run initial conversion on load
-    };
+    
 
 </script>
 {% endblock %}

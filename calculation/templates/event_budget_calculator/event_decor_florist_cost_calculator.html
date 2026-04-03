@@ -9,9 +9,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-    :root {
-        --bs-primary-rgb: 219, 39, 119; /* Pink 600 */
-    }
+    
 
     body {
         background-color: #fff1f2; /* Rose 50 */
@@ -45,7 +43,7 @@
         margin-bottom: 1rem;
         border-left: 6px solid;
         background: white;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ag-bg);
         transition: all 0.2s ease;
     }
 
@@ -54,7 +52,7 @@
     .card-lighting { border-left-color: #f59e0b; } /* Amber - Ambience */
 
     .result-display-box {
-        background: #ffffff;
+        background: var(--ag-bg);
         border: 2px solid #db2777;
         border-radius: 1rem;
         padding: 1.5rem;

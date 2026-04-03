@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="mb-3">Severance Pay Calculator</h1>
+    <h1 class="mb-3 text-dark">Severance Pay Calculator</h1>
 
     <div class="calc-wrapper mt-4">
         <form id="severance-form">
@@ -12,7 +12,7 @@
             <h5 class="section-title">💼 Employment Details</h5>
             <input type="number" class="form-control my-2" id="years" placeholder="Years Worked (e.g., 5)" required>
             <input type="number" class="form-control my-2" id="weeklyPay" placeholder="Average Weekly Pay (e.g., 750)" required>
-            <input type="number" class="form-control my-2" id="multiplier" placeholder="Weeks Paid Per Year Worked (Default = 1)" value="1">
+            <input type="number" class="form-control my-2" id="multiplier" placeholder="Weeks Paid Per Year Worked (Default = 1)">
 
             <button class="btn btn-primary mt-3" type="submit">Calculate Severance</button>
         </form>

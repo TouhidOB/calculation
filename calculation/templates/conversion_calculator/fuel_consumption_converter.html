@@ -111,7 +111,7 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-3">⛽ Fuel Consumption Converter</h1>
+    <h1 class="mb-3 text-dark">⛽ Fuel Consumption Converter</h1>
     <p class="small-muted">Convert between **Miles Per Gallon (MPG)** and **Liters per 100 Kilometers (L/100km)**. Important: US and Imperial Gallons differ!</p>
     
 
@@ -122,7 +122,7 @@
         <div class="conversion-input-group">
             <label for="inputValue">Enter Fuel Consumption Value (e.g., 30 for MPG, or 8 for L/100km)</label>
             <div class="d-flex">
-                <input type="number" class="form-control me-2" id="inputValue" placeholder="Enter value..." value="30" min="0.1" step="any" autofocus>
+                <input type="number" class="form-control me-2" id="inputValue" placeholder="Enter value..." min="0.1" step="any" autofocus>
                 <select id="unitSelect" class="form-select w-50">
                     <option value="us_mpg">US MPG</option>
                     <option value="imp_mpg">Imperial MPG</option>
