@@ -147,8 +147,42 @@
             <div id="solution-output" class="result-box d-none">
                 </div>
         </div>
-        
+
     </div>
+
+    <article class="tool-blog mt-5 mx-auto" style="max-width: 800px; line-height: 1.7; color: #1f2937;">
+        <h2 class="fw-bold mt-5 mb-3">Limit Calculator: How Do You Find the Limit of a Function?</h2>
+        <p>Limits are the foundation of calculus — they describe what value a function approaches as its input nears a point, even where the function is undefined. Evaluating one by hand means testing values from both sides and watching the trend. The Limit <strong>calculator</strong> does this numerically, estimating the limit of f(x) as x approaches a point or infinity in one <strong>calculation</strong>, with a step-by-step table of values.</p>
+
+        <div class="p-3 my-4 rounded-3" style="background:#dbeafe; border-left:5px solid #2563eb;">
+            <strong>Key Takeaways</strong>
+            <ul class="mb-0 mt-2">
+                <li>A limit is the value a function approaches as x nears a specific point.</li>
+                <li>A limit exists only if the left-side and right-side values agree.</li>
+                <li>Limits can describe behavior at points where the function is undefined, like sin(x)/x at 0.</li>
+                <li>The <strong>calculator</strong> estimates limits numerically from both sides.</li>
+            </ul>
+        </div>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Is a Limit?</h3>
+        <p>A limit describes the value a function f(x) approaches as x gets arbitrarily close to a point a, written lim(x→a) f(x). Crucially, the function need not be defined at a — the limit captures the trend nearby. For example, sin(x)/x is undefined at x=0, yet its limit there is exactly 1. This idea underpins derivatives and integrals in every calculus <strong>calculation</strong>.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">How Does the Calculator Estimate a Limit?</h3>
+        <p>It evaluates the function at values approaching the target point from both the left and the right, then checks whether they converge. Enter a function like (x²−1)/(x−1) and a point like 1, and the <strong>calculator</strong> builds a table showing f(x) closing in on the limit. For that example, the limit is 2, even though the function is undefined at x=1.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">Why Check Both Sides?</h3>
+        <p>A limit exists only when the left-hand and right-hand approaches agree on the same value. If they differ, the limit does not exist. By evaluating from both sides, the <strong>calculator</strong> reveals one-sided behavior and jump discontinuities — information a single-direction <strong>calculation</strong> would miss.</p>
+
+        <h3 class="fw-semibold mt-4 mb-3">Frequently Asked Questions</h3>
+        <h4 class="fw-semibold fs-6 mt-3">Can a limit exist where the function is undefined?</h4>
+        <p>Yes. That's the whole point. sin(x)/x is undefined at x=0 but its limit is 1. The limit captures the trend approaching the point, not the value at it.</p>
+        <h4 class="fw-semibold fs-6 mt-3">What does it mean if the two sides disagree?</h4>
+        <p>The limit does not exist at that point. A jump between the left and right values signals a discontinuity in the function.</p>
+        <h4 class="fw-semibold fs-6 mt-3">Can it find limits at infinity?</h4>
+        <p>Yes. The <strong>calculator</strong> can estimate the limit as x approaches infinity, revealing horizontal asymptotes and long-run behavior.</p>
+
+        <p class="mt-4">Stop tabulating values by hand. Use the Limit <strong>calculator</strong> above to estimate any function's limit from both sides in one <strong>calculation</strong>.</p>
+    </article>
 </div>
 {% endblock %}
 

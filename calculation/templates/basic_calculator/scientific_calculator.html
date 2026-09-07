@@ -2,497 +2,583 @@
 
 {% block title %}Scientific Calculator{% endblock %}
 
-{% block meta_description %}Perform complex scientific and trigonometric calculations, including sin, cos, tan, log,
-power, and roots.{% endblock %}
+{% block meta_description %}Perform complex scientific and trigonometric calculations using our premium, robust calculator powered by math.js.{% endblock %}
 
-{% block meta_keywords %}scientific calculator, trigonometry, math, functions, log, power, root, pi, complex
-calculation{% endblock %}
+{% block meta_keywords %}scientific calculator, advanced math, math.js, trigonometry, sine, cosine, evaluate{% endblock %}
 
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    crossorigin="anonymous">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+<!-- Math.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+
 <style>
-    /* 🚀 Antigravity Scientific Calculator Styling */
-    .calc-wrapper {
-        background: var(--ag-bg);
-        padding: 30px;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
-        max-width: 600px;
-        margin: 0 auto;
-        border: 1px solid var(--border-color);
-    }
-
-    .display-screen {
-        background: #f8fafc;
-        border: 2px solid var(--border-color);
-        border-radius: var(--radius-md);
-        padding: 20px;
-        margin-bottom: 20px;
-        font-family: 'JetBrains Mono', 'Consolas', monospace;
-        box-shadow: inset 0 2px 10px rgba(0, 23, 31, 0.03);
-        transition: border-color 0.2s ease;
-    }
-
-    .display-screen:focus-within {
-        border-color: var(--ag-secondary);
-    }
-
-    #history-display {
-        font-size: 0.95rem;
-        color: var(--ag-secondary);
-        min-height: 24px;
-        margin-bottom: 8px;
-        font-weight: 500;
-        text-align: right;
-    }
-
-    #current-input {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: var(--ag-text);
-        min-height: 50px;
-        line-height: 1;
-        text-align: right;
-    }
-
-    .calc-keys {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 10px;
-    }
-
-    .calc-btn {
-        padding: 15px 10px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border-color);
-        cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 🚀 PREMIUM SCIENTIFIC CALCULATOR STYLING */
+    .premium-page-wrapper {
+        min-height: 85vh;
         display: flex;
         align-items: center;
         justify-content: center;
+        background: linear-gradient(135deg, #0f172a, #1e1b4b, #312e81);
+        background-size: 200% 200%;
+        animation: gradient-shift 12s ease infinite;
+        padding: 60px 20px;
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Outfit', sans-serif;
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        margin: 40px 0;
     }
 
-    .calc-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+    @keyframes gradient-shift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 
-    .calc-btn:active {
-        transform: translateY(0);
-        box-shadow: none;
+    /* Decorative Glowing Orbs */
+    .glowing-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: 1;
+        opacity: 0.6;
+    }
+    .orb-1 {
+        width: 350px; height: 350px;
+        background: rgba(99,102,241,0.6);
+        top: -100px; left: -100px;
+        animation: floatA 8s ease-in-out infinite alternate;
+    }
+    .orb-2 {
+        width: 450px; height: 450px;
+        background: rgba(236,72,153,0.5);
+        bottom: -150px; right: -100px;
+        animation: floatB 12s ease-in-out infinite alternate;
+    }
+    .orb-3 {
+        width: 300px; height: 300px;
+        background: rgba(14,165,233,0.4);
+        top: 30%; left: 50%;
+        transform: translate(-50%, -50%);
+        animation: floatC 10s ease-in-out infinite alternate;
     }
 
-    .number-btn,
-    .decimal-btn {
-        background-color: var(--ag-bg);
-        color: var(--ag-text);
+    @keyframes floatA { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, 40px); } }
+    @keyframes floatB { 0% { transform: translate(0, 0); } 100% { transform: translate(-50px, -30px); } }
+    @keyframes floatC { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -40%) scale(1.1); } }
+
+    /* Glassmorphic Calculator Container */
+    .calc-glass {
+        position: relative;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 36px;
+        padding: 40px;
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255,255,255,0.2);
+        max-width: 650px;
+        width: 100%;
     }
 
-    .operator-btn {
-        background-color: var(--ag-primary);
-        color: white;
-        border-color: var(--ag-primary);
+    /* Screen / Display */
+    .display-screen {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 24px 30px;
+        margin-bottom: 30px;
+        text-align: right;
+        box-shadow: inset 0 8px 16px rgba(0, 0, 0, 0.5);
+        position: relative;
     }
 
-    .function-btn {
-        background-color: #f1f5f9;
-        color: var(--ag-primary);
-        font-size: 0.9rem;
+    #history-display {
+        font-family: 'JetBrains Mono', monospace;
+        color: #94a3b8;
+        font-size: 1.1rem;
+        min-height: 28px;
+        margin-bottom: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        letter-spacing: 0.5px;
     }
 
-    .clear-btn {
-        background-color: #ef4444;
-        color: white;
-        border-color: #ef4444;
-    }
-
-    .special-btn {
-        background-color: #64748b;
-        color: white;
-        border-color: #64748b;
-    }
-
-    .equal-btn {
-        background-color: var(--ag-accent);
-        color: white;
-        border-color: var(--ag-accent);
+    #current-input {
+        font-family: 'JetBrains Mono', monospace;
+        color: #f8fafc;
+        font-size: 3.2rem;
         font-weight: 800;
+        letter-spacing: -2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+    }
+    
+    .cursor-blink {
+        display: inline-block;
+        width: 3px;
+        height: 3rem;
+        background-color: #6366f1;
+        margin-left: 5px;
+        vertical-align: middle;
+        animation: blink 1s step-end infinite;
     }
 
-    .equal-btn-span {
-        grid-column: span 2;
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Controls Header */
+    .calc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
     }
 
-    .wide-span {
-        grid-column: span 3;
+    .mode-badges {
+        display: flex;
+        gap: 15px;
     }
 
-    #deg-btn.active,
-    #rad-btn.active {
-        background-color: var(--ag-primary);
+    .mode-toggle {
+        display: flex;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mode-btn {
+        background: transparent;
+        border: none;
+        color: #64748b;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .mode-btn.active {
+        background: #6366f1;
         color: white;
-        border-color: var(--ag-primary);
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Keypad Grid */
+    .keypad {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 12px;
+    }
+
+    .btn-calc {
+        border: none;
+        outline: none;
+        border-radius: 16px;
+        padding: 18px 10px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-calc::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        transition: left 0.4s ease;
+    }
+
+    .btn-calc:hover::before {
+        left: 100%;
+    }
+
+    .btn-calc:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn-calc:active {
+        transform: translateY(1px);
+        background: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-fn {
+        background: rgba(99, 102, 241, 0.08);
+        color: #a5b4fc;
+        font-size: 1rem;
+        border: 1px solid rgba(99, 102, 241, 0.1);
+    }
+    .btn-fn:hover { background: rgba(99, 102, 241, 0.2); }
+
+    .btn-operator {
+        background: rgba(236, 72, 153, 0.15);
+        color: #fca5a5;
+        font-size: 1.4rem; border: 1px solid rgba(236, 72, 153, 0.2);
+    }
+    .btn-operator:hover { background: rgba(236, 72, 153, 0.3); color: white; }
+
+    .btn-action {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .btn-action:hover { background: rgba(239, 68, 68, 0.3); color: white; }
+
+    .btn-equal {
+        background: linear-gradient(135deg, #6366f1, #ec4899);
+        color: white;
+        border: none;
+        font-weight: 800;
+        font-size: 1.8rem;
+        box-shadow: 0 10px 20px rgba(236, 72, 153, 0.4);
+    }
+    .btn-equal:hover {
+        background: linear-gradient(135deg, #4f46e5, #db2777);
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 15px 25px rgba(236, 72, 153, 0.6);
+    }
+
+    .span-2 { grid-column: span 2; }
+
+    .num-btn {
+        background: rgba(255, 255, 255, 0.08);
+        font-size: 1.4rem;
+    }
+
+    @media (max-width: 600px) {
+        .calc-glass { padding: 20px; border-radius: 20px; }
+        .keypad { gap: 8px; }
+        .btn-calc { padding: 12px 6px; font-size: 0.95rem; border-radius: 12px;}
+        #current-input { font-size: 2.2rem; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <h1 class="text-center fw-bold mb-1 text-dark">🔬 Scientific Calculator</h1>
-    <p class="text-center text-muted mb-4">Advanced math: trig, logs, powers, roots, factorial, percent, $\pi$ and $e$.
-        Toggle degrees/radians for trig.</p>
-
-    <div class="calc-wrapper">
-        <div class="display-screen">
-            <div id="history-display"></div>
-            <div id="current-input">0</div>
-        </div>
-
-        <div class="mb-3 d-flex justify-content-between align-items-center">
-            <small class="text-muted">Keyboard input enabled</small>
-            <div class="btn-group" role="group" aria-label="modes">
-                <button id="deg-btn" type="button" class="btn btn-outline-secondary btn-sm active">DEG</button>
-                <button id="rad-btn" type="button" class="btn btn-outline-secondary btn-sm">RAD</button>
-            </div>
-        </div>
-
-        <div class="calc-keys" id="keys">
-            <button class="calc-btn clear-btn" data-action="clear">C</button>
-            <button class="calc-btn special-btn" data-action="back">⌫</button>
-            <button class="calc-btn special-btn" data-action="sign">+/-</button>
-            <button class="calc-btn function-btn" data-action="token" data-value="(">(</button>
-            <button class="calc-btn function-btn" data-action="token" data-value=")">)</button>
-            <button class="calc-btn operator-btn" data-action="operator" data-value="/">÷</button>
-
-            <button class="calc-btn function-btn" data-action="fn" data-value="log">log₁₀</button>
-            <button class="calc-btn function-btn" data-action="fn" data-value="ln">ln</button>
-            <button class="calc-btn function-btn" data-action="const" data-value="pi">π</button>
-            <button class="calc-btn number-btn" data-action="number" data-value="7">7</button>
-            <button class="calc-btn number-btn" data-action="number" data-value="8">8</button>
-            <button class="calc-btn number-btn" data-action="number" data-value="9">9</button>
-            <button class="calc-btn operator-btn" data-action="operator" data-value="*">×</button>
-
-            <button class="calc-btn function-btn" data-action="fn" data-value="sin">sin</button>
-            <button class="calc-btn function-btn" data-action="fn" data-value="cos">cos</button>
-            <button class="calc-btn function-btn" data-action="fn" data-value="tan">tan</button>
-            <button class="calc-btn function-btn" data-action="fn" data-value="sqr">x²</button>
-            <button class="calc-btn number-btn" data-action="number" data-value="4">4</button>
-            <button class="calc-btn number-btn" data-action="number" data-value="5">5</button>
-            <button class="calc-btn number-btn" data-action="number" data-value="6">6</button>
-            <button class="calc-btn operator-btn" data-action="operator" data-value="-">-</button>
-
-            <button class="calc-btn function-btn" data-action="fn" data-value="fact">n!</button>
-            <button class="calc-btn function-btn" data-action="percent">%</button>
-            <button class="calc-btn function-btn" data-action="fn" data-value="sqrt">√</button>
-            <button class="calc-btn function-btn" data-action="fn" data-value="pow">xʸ</button>
-            <button class="calc-btn number-btn" data-action="number" data-value="1">1</button>
-            <button class="calc-btn number-btn" data-action="number" data-value="2">2</button>
-            <button class="calc-btn number-btn" data-action="number" data-value="3">3</button>
-            <button class="calc-btn operator-btn" data-action="operator" data-value="+">+</button>
-
-            <button class="calc-btn function-btn" data-action="const" data-value="e">e</button>
-            <button class="calc-btn function-btn" data-action="fn" data-value="inv">1/x</button>
-            <button class="calc-btn operator-btn" data-action="operator" data-value="%">mod</button>
-            <button class="calc-btn number-btn equal-btn-span" data-action="number" data-value="0">0</button>
-            <button class="calc-btn decimal-btn" data-action="dot" data-value=".">.</button>
-            <button class="calc-btn equal-btn" data-action="equals">=</button>
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12 text-center mb-2">
+            <h1 class="fw-bold text-dark">✨ Pro Scientific Calculator</h1>
+            <p class="text-muted">A premium, dynamic calculating engine powered by Math.js</p>
         </div>
     </div>
+
+    <div class="premium-page-wrapper">
+        <!-- Floating Animated Background Orbs -->
+        <div class="glowing-orb orb-1"></div>
+        <div class="glowing-orb orb-2"></div>
+        <div class="glowing-orb orb-3"></div>
+
+        <div class="calc-glass">
+            <div class="calc-header">
+                <div class="mode-toggle">
+                    <button id="deg-btn" class="mode-btn active">DEG</button>
+                    <button id="rad-btn" class="mode-btn">RAD</button>
+                </div>
+                <!-- Powered by Mathjs badge -->
+                <span style="color:#94a3b8; font-size:0.8rem; font-family:'JetBrains Mono', monospace; opacity: 0.8;">
+                    <i class="fas fa-bolt" style="color: #fbbf24;"></i> scalable engine
+                </span>
+            </div>
+
+            <div class="display-screen">
+                <div id="history-display"></div>
+                <div id="current-input">0<span class="cursor-blink"></span></div>
+            </div>
+
+            <div class="keypad" id="scientific-keypad">
+                <!-- Row 1 -->
+                <button class="btn-calc btn-fn" data-eval="1/" data-disp="1/">1/x</button>
+                <button class="btn-calc btn-fn" data-eval="(" data-disp="(">(</button>
+                <button class="btn-calc btn-fn" data-eval=")" data-disp=")">)</button>
+                <button class="btn-calc btn-action" data-action="clear">AC</button>
+                <button class="btn-calc btn-action" data-action="back">⌫</button>
+                <button class="btn-calc btn-operator" data-eval="/" data-disp="÷">÷</button>
+
+                <!-- Row 2 -->
+                <button class="btn-calc btn-fn" data-eval="sin(" data-disp="sin(">sin</button>
+                <button class="btn-calc btn-fn" data-eval="asin(" data-disp="sin⁻¹(">sin⁻¹</button>
+                <button class="btn-calc num-btn" data-eval="7">7</button>
+                <button class="btn-calc num-btn" data-eval="8">8</button>
+                <button class="btn-calc num-btn" data-eval="9">9</button>
+                <button class="btn-calc btn-operator" data-eval="*" data-disp="×">×</button>
+
+                <!-- Row 3 -->
+                <button class="btn-calc btn-fn" data-eval="cos(" data-disp="cos(">cos</button>
+                <button class="btn-calc btn-fn" data-eval="acos(" data-disp="cos⁻¹(">cos⁻¹</button>
+                <button class="btn-calc num-btn" data-eval="4">4</button>
+                <button class="btn-calc num-btn" data-eval="5">5</button>
+                <button class="btn-calc num-btn" data-eval="6">6</button>
+                <button class="btn-calc btn-operator" data-eval="-" data-disp="-">-</button>
+
+                <!-- Row 4 -->
+                <button class="btn-calc btn-fn" data-eval="tan(" data-disp="tan(">tan</button>
+                <button class="btn-calc btn-fn" data-eval="atan(" data-disp="tan⁻¹(">tan⁻¹</button>
+                <button class="btn-calc num-btn" data-eval="1">1</button>
+                <button class="btn-calc num-btn" data-eval="2">2</button>
+                <button class="btn-calc num-btn" data-eval="3">3</button>
+                <button class="btn-calc btn-operator" data-eval="+" data-disp="+">+</button>
+
+                <!-- Row 5 -->
+                <button class="btn-calc btn-fn" data-eval="log10(" data-disp="log(">log</button>
+                <button class="btn-calc btn-fn" data-eval="log(" data-disp="ln(">ln</button>
+                <button class="btn-calc btn-fn" data-eval="^2" data-disp="²">x²</button>
+                <button class="btn-calc btn-fn" data-eval="^" data-disp="^">xʸ</button>
+                <button class="btn-calc btn-fn" data-eval="!" data-disp="!">n!</button>
+                <button class="btn-calc btn-operator" data-eval="%" data-disp=" mod ">mod</button>
+
+                <!-- Row 6 -->
+                <button class="btn-calc btn-fn" data-eval="sqrt(" data-disp="√(">√</button>
+                <button class="btn-calc btn-fn" data-eval="pi" data-disp="π">π</button>
+                <button class="btn-calc btn-fn" data-eval="e" data-disp="e">e</button>
+                <button class="btn-calc num-btn" data-eval="0">0</button>
+                <button class="btn-calc num-btn" data-eval=".">.</button>
+                <button class="btn-calc btn-equal" data-action="evaluate">=</button>
+            </div>
+        </div>
+    </div>
+
+    <article class="tool-blog mt-5 mx-auto" style="max-width: 800px; line-height: 1.7; color: #1f2937;">
+        <h2 class="fw-bold mt-5 mb-3">Scientific Calculator: How Do You Perform Advanced Math Online?</h2>
+        <p>Basic arithmetic handles bills and tips, but science, engineering, and higher math demand trigonometry, logarithms, exponents, and constants. The Scientific <strong>calculator</strong>, powered by Math.js, performs these advanced operations with precision in one place. Whether you're solving trig functions, evaluating powers, or working with π and e, this <strong>calculator</strong> delivers reliable results for every complex <strong>calculation</strong>.</p>
+
+        <div class="p-3 my-4 rounded-3" style="background:#eef2ff; border-left:5px solid #4f46e5;">
+            <strong>Key Takeaways</strong>
+            <ul class="mb-0 mt-2">
+                <li>A scientific calculator adds trig, logs, exponents, roots, and constants.</li>
+                <li>It is powered by Math.js for robust, accurate evaluation.</li>
+                <li>It follows correct order of operations (PEMDAS) automatically.</li>
+                <li>Functions include sin, cos, tan, log, ln, square root, and powers.</li>
+            </ul>
+        </div>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Is a Scientific Calculator?</h3>
+        <p>A scientific calculator extends basic arithmetic with the functions needed for science and advanced math: trigonometry, logarithms, exponentials, roots, and mathematical constants. It respects order of operations and handles nested expressions. Where a basic calculator stops, the scientific <strong>calculator</strong> continues, making it essential for any technical <strong>calculation</strong>.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Functions Can It Perform?</h3>
+        <p>The <strong>calculator</strong> covers the full range of scientific operations. Each is built to standard mathematical definitions and evaluated by the Math.js engine for accuracy.</p>
+        <ul>
+            <li><strong>Trigonometry:</strong> sin, cos, tan and their inverses</li>
+            <li><strong>Logarithms:</strong> log (base 10) and ln (natural log)</li>
+            <li><strong>Powers and roots:</strong> x², xʸ, square root, nth root</li>
+            <li><strong>Constants:</strong> π (pi) and e (Euler's number)</li>
+        </ul>
+
+        <h3 class="fw-semibold mt-4 mb-2">Why Does Order of Operations Matter?</h3>
+        <p>In complex expressions, the sequence of evaluation determines the answer. The <strong>calculator</strong> applies PEMDAS — parentheses, exponents, multiplication and division, then addition and subtraction — automatically. So sin(30) + 2 × 3 evaluates the function and multiplication before adding, ensuring every <strong>calculation</strong> matches mathematical convention without manual grouping.</p>
+
+        <h3 class="fw-semibold mt-4 mb-3">Frequently Asked Questions</h3>
+        <h4 class="fw-semibold fs-6 mt-3">Does it work in degrees or radians?</h4>
+        <p>Scientific calculators support both modes for trigonometry. Check the active mode before computing sin, cos, or tan, since 90 degrees and 90 radians give very different results.</p>
+        <h4 class="fw-semibold fs-6 mt-3">Can it handle nested parentheses?</h4>
+        <p>Yes. The Math.js engine evaluates deeply nested expressions correctly, resolving the innermost parentheses first in every <strong>calculation</strong>.</p>
+        <h4 class="fw-semibold fs-6 mt-3">What is the difference from a basic calculator?</h4>
+        <p>A basic calculator handles only +, −, ×, ÷. A scientific calculator adds trigonometry, logarithms, exponents, roots, and constants for advanced math.</p>
+
+        <p class="mt-4">Stop switching between tools for complex math. Use the Scientific <strong>calculator</strong> above for trigonometry, logarithms, and powers in one accurate <strong>calculation</strong>.</p>
+    </article>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    crossorigin="anonymous"></script>
 <script>
-    /*
-      Scientific Calculator Script - Fixed and Enhanced
-    */
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Scalable Math.js Engine Initialization ---
+        // Ensure Math.js has loaded
+        if (typeof window.math === 'undefined') {
+            document.getElementById('current-input').innerHTML = "<span style='color:#ef4444;font-size:1.5rem;'>Failed to load math engine.</span>";
+            return;
+        }
 
-    (() => {
-        // State
-        let current = '0';
-        let history = '';
-        let tokens = [];
-        let lastAnswer = null;
-        let degMode = true;
+        const math = window.math;
+        
+        // Create an alternate math instance specifically for degree overrides
+        const mathDeg = math.create(math.all);
+        mathDeg.import({
+            sin: (x) => math.sin(x * Math.PI / 180),
+            cos: (x) => math.cos(x * Math.PI / 180),
+            tan: (x) => math.tan(x * Math.PI / 180),
+            asin: (x) => math.asin(x) * 180 / Math.PI,
+            acos: (x) => math.acos(x) * 180 / Math.PI,
+            atan: (x) => math.atan(x) * 180 / Math.PI
+        }, { override: true });
 
-        const currentEl = document.getElementById('current-input');
+        // --- State Management ---
+        let tokens = []; // Array of { eval: string, disp: string }
+        let degMode = true; // Default to degrees
+
+        // DOM Elements
+        const currentInputEl = document.getElementById('current-input');
         const historyEl = document.getElementById('history-display');
-        const keys = document.getElementById('keys');
+        const keypad = document.getElementById('scientific-keypad');
         const degBtn = document.getElementById('deg-btn');
         const radBtn = document.getElementById('rad-btn');
 
-        // --- Core Utilities ---
-
+        // --- Core Functions ---
         function updateDisplay() {
-            currentEl.textContent = current;
-            historyEl.textContent = history;
-        }
-
-        function resetAll() {
-            current = '0';
-            history = '';
-            tokens = [];
-            updateDisplay();
-        }
-
-        function isNumericToken(t) {
-            return t && t.match(/^[0-9.eE-]+$/);
-        }
-
-        // --- Input Handlers ---
-
-        function appendNumber(num) {
-            if (tokens.length === 0 || !isNumericToken(tokens[tokens.length - 1])) {
-                tokens.push(num);
-            } else {
-                tokens[tokens.length - 1] += num;
-            }
-            current = tokens[tokens.length - 1];
-            history = tokens.join(' ');
-        }
-
-        function appendDot() {
-            if (tokens.length === 0 || !isNumericToken(tokens[tokens.length - 1])) {
-                tokens.push('0.');
-            } else if (!tokens[tokens.length - 1].includes('.')) {
-                tokens[tokens.length - 1] += '.';
-            }
-            current = tokens[tokens.length - 1];
-            history = tokens.join(' ');
-        }
-
-        function appendOperator(op) {
             if (tokens.length === 0) {
-                if (op === '-') tokens.push(op); // Allow unary minus at start
-                return;
+                currentInputEl.innerHTML = `0<span class="cursor-blink"></span>`;
+            } else {
+                const displayStr = tokens.map(t => t.disp).join('');
+                currentInputEl.innerHTML = `${displayStr}<span class="cursor-blink"></span>`;
             }
-            const last = tokens[tokens.length - 1];
-            if (last === '(' || last === ')' || isNumericToken(last)) {
-                tokens.push(op);
-            } else if (last.endsWith('(')) {
-                if (op === '-') tokens.push(op); // Allow unary minus inside parentheses
-            } else if (/[+\-*/^%]$/.test(last)) {
-                tokens[tokens.length - 1] = op; // Replace operator
-            }
-            current = op;
-            history = tokens.join(' ');
         }
 
-        function appendFunction(fnName) {
-            // Push function name and opening parenthesis
-            tokens.push(fnName + '(');
-            history = tokens.join(' ');
-        }
-
-        function appendConst(c) {
-            let val;
-            if (c === 'pi') val = Math.PI.toString();
-            else if (c === 'e') val = Math.E.toString();
-            else return;
-
-            // Push the constant as a number token
-            appendNumber(val);
-            history = tokens.join(' ');
+        function appendToken(evalStr, dispStr) {
+            // clear previous error messages if user types again
+            if (currentInputEl.innerText.includes('Error')) {
+                historyEl.innerText = '';
+                tokens = [];
+            }
+            tokens.push({ eval: evalStr, disp: dispStr || evalStr });
+            updateDisplay();
         }
 
         function backspace() {
-            if (tokens.length === 0) return resetAll();
-
-            const last = tokens[tokens.length - 1];
-
-            if (last.endsWith('(')) {
-                // If function call (e.g., sin(), log()), remove the whole token
-                tokens.pop();
-            } else if (last.length > 1 && isNumericToken(last)) {
-                // If last token is a number, pop last char
-                tokens[tokens.length - 1] = last.slice(0, -1);
-                if (tokens[tokens.length - 1] === '' || tokens[tokens.length - 1] === '-') tokens.pop();
-            } else {
-                tokens.pop(); // Remove single-character token (operator, parenthesis)
-            }
-
-            current = tokens.length > 0 ? tokens[tokens.length - 1] : '0';
-            history = tokens.join(' ');
-        }
-
-        function applyUnary(fn) {
-            if (tokens.length === 0) return;
-            const last = tokens[tokens.length - 1];
-            let val = parseFloat(last);
-
-            if (isNaN(val)) {
-                return;
-            }
-
-            let res;
-            switch (fn) {
-                case 'sqr': res = Math.pow(val, 2); break;
-                case 'inv': res = 1 / val; break;
-                case 'fact': res = factorial(Math.floor(val)); break;
-                case 'percent': res = val / 100; break;
-                case 'sign': res = val * -1; break;
-                default: return;
-            }
-
-            tokens[tokens.length - 1] = String(res);
-            current = formatResult(res);
-            history = tokens.join(' ');
-        }
-
-        // --- Calculation Logic ---
-
-        function factorial(n) {
-            if (n < 0 || !Number.isInteger(n)) return NaN;
-            if (n === 0 || n === 1) return 1;
-            let r = 1;
-            for (let i = 2; i <= n; i++) r *= i;
-            return r;
-        }
-
-        function degToRad(x) { return x * (Math.PI / 180); }
-
-        function buildExpression() {
-            const mapFn = {
-                'sin(': 'Math.sin(', 'cos(': 'Math.cos(', 'tan(': 'Math.tan(',
-                'log(': 'Math.log10(', 'ln(': 'Math.log(', 'sqrt(': 'Math.sqrt('
-            };
-
-            let expr = '';
-            for (let t of tokens) {
-                let mapped = mapFn[t];
-                if (mapped) {
-                    // Apply degree/radian conversion for trig functions
-                    if (t === 'sin(' || t === 'cos(' || t === 'tan(') {
-                        expr += degMode ? mapped.replace('(', '(degToRad(') : mapped;
-                    } else {
-                        expr += mapped;
-                    }
-                } else if (t === '^') {
-                    expr += '**'; // JavaScript exponentiation operator
-                } else {
-                    expr += t;
-                }
-            }
-            return expr;
-        }
-
-        function formatResult(v) {
-            if (typeof v === 'number') {
-                if (!isFinite(v)) return String(v);
-                // Use toPrecision for better handling of very small/large numbers, then clean up
-                let s = v.toPrecision(15).replace(/\.?(0+)$/, '');
-                return s;
-            }
-            return String(v);
-        }
-
-        function evaluate() {
-            if (tokens.length === 0) return;
-
-            // Auto-close parentheses
-            let open = tokens.join('').split('(').length - 1;
-            let close = tokens.join('').split(')').length - 1;
-            while (close < open) { tokens.push(')'); close++; }
-
-            const expr = buildExpression();
-            try {
-                // Use the Function constructor for safe evaluation
-                const fn = new Function('degToRad', 'Math', `return ${expr};`);
-                let res = fn(degToRad, Math);
-
-                if (!isFinite(res)) {
-                    current = 'Overflow';
-                } else if (isNaN(res)) {
-                    current = 'Math Error';
-                } else {
-                    lastAnswer = res;
-                    current = formatResult(res);
-                }
-                history = tokens.join(' ') + ' =';
-                tokens = [String(lastAnswer)];
-            } catch (e) {
-                current = 'Syntax Error';
-                history = '';
+            if (currentInputEl.innerText.includes('Error')) {
                 tokens = [];
+            } else if (tokens.length > 0) {
+                tokens.pop();
             }
             updateDisplay();
         }
 
-        // --- Event Listener Setup ---
-
-        // 1. Button Click Handler
-        keys.addEventListener('click', (ev) => {
-            const btn = ev.target.closest('button');
-            if (!btn) return;
-            const action = btn.dataset.action;
-            const value = btn.dataset.value;
-
-            if (action === 'number') { appendNumber(value); }
-            else if (action === 'dot') { appendDot(); }
-            else if (action === 'operator') { appendOperator(value); }
-            else if (action === 'token' && (value === '(' || value === ')')) { tokens.push(value); history = tokens.join(' '); }
-            else if (action === 'const') { appendConst(value); }
-            else if (action === 'clear') { resetAll(); }
-            else if (action === 'back') { backspace(); }
-            else if (action === 'sign') { applyUnary('sign'); }
-            else if (action === 'percent') { applyUnary('percent'); }
-            else if (action === 'equals') { evaluate(); }
-            else if (action === 'fn') {
-                switch (value) {
-                    case 'sin': case 'cos': case 'tan':
-                    case 'sqrt': case 'log': case 'ln':
-                        appendFunction(value); break;
-                    case 'pow': appendOperator('^'); break;
-                    case 'sqr': applyUnary('sqr'); break;
-                    case 'inv': applyUnary('inv'); break;
-                    case 'fact': applyUnary('fact'); break;
-                    default: break;
-                }
-            }
+        function clearAll() {
+            tokens = [];
+            historyEl.innerHTML = '';
             updateDisplay();
+        }
+
+        function evaluateExpression() {
+            if (tokens.length === 0) return;
+            const expr = tokens.map(t => t.eval).join('');
+            
+            try {
+                // Select math engine based on Degree/Radian mode
+                const engine = degMode ? mathDeg : math;
+                
+                let result = engine.evaluate(expr);
+                
+                // Format the result cleanly: e.g. floating point inaccuracies 
+                result = math.format(result, { precision: 14 });
+                
+                // Set History
+                const displayExpr = tokens.map(t => t.disp).join('');
+                historyEl.innerHTML = `${displayExpr} =`;
+
+                // Set Current Tokens to result
+                tokens = [{ eval: String(result), disp: String(result) }];
+                updateDisplay();
+
+            } catch (error) {
+                console.error("Math Evaluation Error:", error);
+                currentInputEl.innerHTML = `<span style='color:#ef4444;'>Error</span><span class="cursor-blink"></span>`;
+                // Keep tokens intact so user can correct syntax
+            }
+        }
+
+        // --- Event Listeners ---
+        degBtn.addEventListener('click', () => {
+            degMode = true;
+            degBtn.classList.add('active');
+            radBtn.classList.remove('active');
         });
 
-        // 2. Degree / Radian Toggle
-        degBtn.addEventListener('click', () => { degMode = true; degBtn.classList.add('active'); radBtn.classList.remove('active'); });
-        radBtn.addEventListener('click', () => { degMode = false; radBtn.classList.add('active'); degBtn.classList.remove('active'); });
+        radBtn.addEventListener('click', () => {
+            degMode = false;
+            radBtn.classList.add('active');
+            degBtn.classList.remove('active');
+        });
 
-        // 3. Keyboard Support
-        window.addEventListener('keydown', (e) => {
+        keypad.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-calc');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            const evalStr = btn.dataset.eval;
+            const dispStr = btn.dataset.disp;
+
+            // Blur to remove focus outline visually allowing keyboard input without accidental re-triggers
+            btn.blur(); 
+
+            if (action === 'clear') {
+                clearAll();
+            } else if (action === 'back') {
+                backspace();
+            } else if (action === 'evaluate') {
+                evaluateExpression();
+            } else if (evalStr) {
+                appendToken(evalStr, dispStr);
+            }
+        });
+
+        // --- Keyboard Support ---
+        document.addEventListener('keydown', (e) => {
+            // Map common keyboard keys to visual displays and evaluations
             const key = e.key;
 
             if (/[0-9]/.test(key)) {
                 e.preventDefault();
-                appendNumber(key);
-            } else if (['+', '-', '*', '/'].includes(key)) {
+                appendToken(key, key);
+            } else if (key === '+' || key === '-') {
                 e.preventDefault();
-                appendOperator(key);
+                appendToken(key, key);
+            } else if (key === '*') {
+                e.preventDefault();
+                appendToken('*', '×');
+            } else if (key === '/') {
+                e.preventDefault();
+                appendToken('/', '÷');
             } else if (key === '.') {
                 e.preventDefault();
-                appendDot();
+                appendToken('.', '.');
+            } else if (key === '^') {
+                e.preventDefault();
+                appendToken('^', '^');
+            } else if (key === '(' || key === ')') {
+                e.preventDefault();
+                appendToken(key, key);
+            } else if (key === '%') {
+                e.preventDefault();
+                appendToken('%', ' mod ');
             } else if (key === 'Enter' || key === '=') {
                 e.preventDefault();
-                evaluate();
+                evaluateExpression();
             } else if (key === 'Backspace') {
                 e.preventDefault();
                 backspace();
-            } else if (key === 'Delete') {
+            } else if (key === 'Delete' || key === 'Escape') {
                 e.preventDefault();
-                resetAll();
-            } else if (key === '(' || key === ')') {
-                e.preventDefault();
-                tokens.push(key);
-                history = tokens.join(' ');
+                clearAll();
             }
-            updateDisplay();
         });
-
-        // Init
+        
+        // Initial setup
         updateDisplay();
-    })();
+    });
 </script>
 {% endblock %}

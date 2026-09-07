@@ -197,8 +197,42 @@
         <div id="result-container" class="result-section">
             <div id="solution-output" class="result-card d-none"></div>
         </div>
-        
+
     </div>
+
+    <article class="tool-blog mt-5 mx-auto" style="max-width: 800px; line-height: 1.7; color: #1f2937;">
+        <h2 class="fw-bold mt-5 mb-3">Boolean Algebra Calculator: How Do You Build a Truth Table?</h2>
+        <p>Digital logic lives by Boolean expressions, but evaluating one across every input combination is brutal by hand — nine variables produce 512 rows. The Boolean Algebra <strong>calculator</strong> generates the complete truth table, minterms, and maxterms in a single <strong>calculation</strong>. Type a logical expression using AND, OR, and NOT with up to nine variables, and the tool maps every combination to its output.</p>
+
+        <div class="p-3 my-4 rounded-3" style="background:#ede9fe; border-left:5px solid #7c3aed;">
+            <strong>Key Takeaways</strong>
+            <ul class="mb-0 mt-2">
+                <li>A truth table lists every input combination and the resulting output.</li>
+                <li>With n variables, a truth table has 2ⁿ rows — 9 variables means 512 rows.</li>
+                <li>Sum-of-Products (SOP) uses minterms; Product-of-Sums (POS) uses maxterms.</li>
+                <li>The <strong>calculator</strong> handles expressions up to 9 variables (A-I).</li>
+            </ul>
+        </div>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Is Boolean Algebra?</h3>
+        <p>Boolean algebra is the mathematics of logic, where variables take only true (1) or false (0) and combine through AND, OR, and NOT. AND is true when both inputs are true, OR when at least one is true, and NOT inverts a single input. It's the foundation of every digital circuit, making accurate <strong>calculation</strong> essential.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">How Does the Calculator Generate a Truth Table?</h3>
+        <p>The <strong>calculator</strong> evaluates your expression for every possible combination of input values, producing one output row per combination. Enter an expression like (A AND B) OR NOT C using variables A through I, and every row appears instantly. A two-variable expression has 2² = 4 rows; nine variables scale to 512.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Are Minterms and Maxterms?</h3>
+        <p>A minterm is a product (AND) term true for exactly one combination; a maxterm is a sum (OR) term false for exactly one combination. SOP ORs the minterms where output is 1; POS ANDs the maxterms where output is 0. These canonical forms are the starting point for circuit simplification, and the <strong>calculator</strong> extracts both automatically.</p>
+
+        <h3 class="fw-semibold mt-4 mb-3">Frequently Asked Questions</h3>
+        <h4 class="fw-semibold fs-6 mt-3">How many rows does a truth table have?</h4>
+        <p>2ⁿ rows, where n is the variable count. Two variables give 4 rows, four give 16, and nine produce 512. The <strong>calculator</strong> generates every row automatically.</p>
+        <h4 class="fw-semibold fs-6 mt-3">What operators can I use?</h4>
+        <p>AND, OR, and NOT, plus parentheses for grouping. From these you can build any logical expression, including derived operations like NAND, NOR, and XOR.</p>
+        <h4 class="fw-semibold fs-6 mt-3">What is the difference between SOP and POS?</h4>
+        <p>SOP expresses a function as ORed minterms (rows where output is 1); POS uses ANDed maxterms (rows where output is 0). Both describe the same function as complementary canonical forms.</p>
+
+        <p class="mt-4">Stop drawing truth tables row by row. Use the Boolean Algebra <strong>calculator</strong> above to evaluate any logical expression up to nine variables in one <strong>calculation</strong>.</p>
+    </article>
 </div>
 {% endblock %}
 

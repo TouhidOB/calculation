@@ -139,8 +139,42 @@
             <div id="solution-output" class="result-box-custom d-none">
                 </div>
         </div>
-        
+
     </div>
+
+    <article class="tool-blog mt-5 mx-auto" style="max-width: 800px; line-height: 1.7; color: #1f2937;">
+        <h2 class="fw-bold mt-5 mb-3">Permutation Calculator (nPr): How Do You Count Ordered Arrangements?</h2>
+        <p>How many ways can three runners finish first, second, and third in a race of ten? When order matters, you need permutations, not combinations. Computing nPr by hand means dividing large factorials. The Permutation <strong>calculator</strong> finds the number of ordered arrangements of r items from n in one <strong>calculation</strong>. Enter the total items and how many to arrange.</p>
+
+        <div class="p-3 my-4 rounded-3" style="background:#ede9fe; border-left:5px solid #7c3aed;">
+            <strong>Key Takeaways</strong>
+            <ul class="mb-0 mt-2">
+                <li>A permutation counts arrangements where order DOES matter.</li>
+                <li>The formula is nPr = n! ÷ (n − r)!.</li>
+                <li>Permutations are always equal to or greater than combinations of the same n and r.</li>
+                <li>nPr = nCr × r! — each combination has r! orderings.</li>
+            </ul>
+        </div>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Is a Permutation?</h3>
+        <p>A permutation is an arrangement of items where the order matters. Choosing a president, vice-president, and treasurer from a group is a permutation, because swapping roles creates a different outcome. The notation nPr, read "n permute r," counts how many ordered arrangements of r items you can make from n distinct items — a core combinatorics <strong>calculation</strong>.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Is the Permutation Formula?</h3>
+        <p>The formula is nPr = n! ÷ (n − r)!. The (n − r)! in the denominator removes the arrangements of the items you didn't choose. For 10 people in 3 ordered positions: 10P3 = 10! ÷ 7! = 10 × 9 × 8 = 720. The <strong>calculator</strong> runs this factorial <strong>calculation</strong> instantly, even for large n.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">How Do Permutations Differ From Combinations?</h3>
+        <p>Permutations count order; combinations don't. That's why nPr is always larger than nCr — each unordered combination corresponds to r! different ordered permutations. Picking 3 from 10 gives 720 permutations but only 120 combinations. Use a permutation when rearranging the chosen items produces a genuinely different result.</p>
+
+        <h3 class="fw-semibold mt-4 mb-3">Frequently Asked Questions</h3>
+        <h4 class="fw-semibold fs-6 mt-3">What does nPr mean?</h4>
+        <p>"n permute r" — the number of ordered arrangements of r items chosen from n. For example, 5P2 = 20, meaning 20 ordered ways to pick two from five.</p>
+        <h4 class="fw-semibold fs-6 mt-3">When should I use a permutation instead of a combination?</h4>
+        <p>Use a permutation when order matters, like rankings, race finishes, or passwords. Use a combination when order is irrelevant, like committee membership.</p>
+        <h4 class="fw-semibold fs-6 mt-3">What is nPn?</h4>
+        <p>It equals n!, the number of ways to arrange all n items in order. For example, 4P4 = 4! = 24.</p>
+
+        <p class="mt-4">Stop dividing factorials by hand. Use the Permutation <strong>calculator</strong> above to count ordered arrangements in one <strong>calculation</strong>.</p>
+    </article>
 </div>
 {% endblock %}
 

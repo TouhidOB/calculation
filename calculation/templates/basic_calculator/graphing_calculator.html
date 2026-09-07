@@ -2,120 +2,243 @@
 
 {% block title %}Function Graphing Calculator{% endblock %}
 
-{% block meta_description %}Visualize mathematical functions instantly. Enter your equation (e.g., x^2, sin(x)) and
-define the graph window to see the plot.{% endblock %}
+{% block meta_description %}Visualize mathematical functions instantly with highly accurate Math.js rendering. Enter your equation and define the graph window to see the plot.{% endblock %}
 
-{% block meta_keywords %}graphing calculator, function plotter, math visualization, calculus, canvas graph, x^2,
-sin(x){% endblock %}
+{% block meta_keywords %}graphing calculator, function plotter, math visualization, calculus, canvas graph, math.js, x^2, sin(x){% endblock %}
 
 {% block extra_head %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+<!-- Math.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
 
 <style>
-    /* 🚀 Antigravity Graphing Calculator Styling */
-    .calc-wrapper {
-        background: var(--ag-bg);
-        padding: 30px;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
-        font-family: 'Inter', sans-serif;
-        max-width: 850px;
-        margin: 0 auto;
-        border: 1px solid var(--border-color);
+    /* 🚀 PREMIUM GRAPHING CALCULATOR STYLING */
+    .premium-page-wrapper {
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0f172a, #1e1b4b, #312e81);
+        background-size: 200% 200%;
+        animation: gradient-shift 12s ease infinite;
+        padding: 50px 20px;
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Outfit', sans-serif;
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        margin: 40px 0;
+    }
+
+    @keyframes gradient-shift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Decorative Glowing Orbs */
+    .glowing-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: 1;
+        opacity: 0.6;
+    }
+    .orb-1 { width: 350px; height: 350px; background: rgba(99,102,241,0.5); top: -100px; left: -100px; animation: floatA 8s ease-in-out infinite alternate; }
+    .orb-2 { width: 450px; height: 450px; background: rgba(236,72,153,0.4); bottom: -150px; right: -100px; animation: floatB 12s ease-in-out infinite alternate; }
+
+    @keyframes floatA { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, 40px); } }
+    @keyframes floatB { 0% { transform: translate(0, 0); } 100% { transform: translate(-50px, -30px); } }
+
+    /* Glassmorphic Calculator Container */
+    .calc-glass {
+        position: relative;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 36px;
+        padding: 40px;
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255,255,255,0.2);
+        max-width: 900px;
+        width: 100%;
     }
 
     #graph-canvas {
         width: 100%;
-        max-height: 450px;
-        border: 2px solid var(--border-color);
-        background-color: #f8fafc;
-        /* Very light subtle background */
-        border-radius: var(--radius-md);
+        max-height: 480px;
+        border: 2px solid rgba(255,255,255,0.1);
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
         display: block;
-        margin-top: 25px;
-        margin-bottom: 25px;
-        box-shadow: inset 0 2px 10px rgba(0, 23, 31, 0.03);
+        box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.6);
     }
 
     .form-label {
         font-weight: 600;
-        color: var(--ag-text);
+        color: #e2e8f0;
         margin-bottom: 8px;
-        font-size: 0.9rem;
-        text-transform: uppercase;
+        font-size: 0.95rem;
         letter-spacing: 0.05em;
     }
 
-    .form-control {
-        border-radius: var(--radius-md);
-        padding: 12px;
-        border: 1px solid var(--border-color);
-        transition: all 0.2s ease;
+    .form-control, .input-group-text {
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #f8fafc !important;
+        transition: all 0.3s ease;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    
+    .form-control::placeholder {
+        color: #64748b;
+    }
+
+    .input-group-text {
+        color: #818cf8 !important;
+        font-size: 1.2rem;
     }
 
     .form-control:focus {
-        border-color: var(--ag-secondary);
-        box-shadow: 0 0 0 3px rgba(0, 126, 167, 0.1);
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3) !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+        outline: none;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(135deg, #6366f1, #ec4899);
+        color: white;
+        border: none;
+        font-weight: 800;
+        font-size: 1.2rem;
+        border-radius: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(236, 72, 153, 0.3);
+        padding: 14px;
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(135deg, #4f46e5, #db2777);
+        transform: translateY(-3px) scale(1.01);
+        box-shadow: 0 15px 25px rgba(236, 72, 153, 0.5);
+    }
+
+    .btn-gradient:active {
+        transform: translateY(1px);
+    }
+
+    #message-area {
+        min-height: 24px;
+        font-family: 'JetBrains Mono', monospace;
+        letter-spacing: 0.5px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="text-center mb-5">
-        <h1 class="display-5 fw-bold text-dark"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Graphing
-            Calculator</h1>
-        <p class="lead text-secondary">Advanced function visualization with precision plotting.</p>
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12 text-center mb-2">
+            <h1 class="fw-bold text-dark">📈 Pro Graphing Calculator</h1>
+            <p class="text-muted">A premium, dynamic visual plotting engine powered by Math.js</p>
+        </div>
     </div>
 
-    <div class="calc-wrapper">
-        <form id="graph-form" class="shadow-none">
-            <div class="mb-4">
-                <label for="function-input" class="form-label">Function f(x) =</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-activity"></i></span>
-                    <input type="text" id="function-input" required
-                        class="form-control form-control-lg border-start-0 ps-0" placeholder="e.g., x^2 - 3*x + 1">
-                </div>
+    <div class="premium-page-wrapper">
+        <div class="glowing-orb orb-1"></div>
+        <div class="glowing-orb orb-2"></div>
+
+        <div class="calc-glass">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="text-white fw-bold mb-0">Plot Functions</h4>
+                <span style="color:#94a3b8; font-size:0.85rem; font-family:'JetBrains Mono', monospace; opacity: 0.8;">
+                    <i class="fas fa-bolt" style="color: #fbbf24;"></i> scalable engine
+                </span>
             </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-6 col-md-3">
-                    <label for="x-min" class="form-label">X Min</label>
-                    <input type="number" id="x-min" step="0.1" required class="form-control">
+            <form id="graph-form">
+                <div class="mb-4">
+                    <label for="function-input" class="form-label">Function $f(x) =$</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text border-end-0">f(x)</span>
+                        <input type="text" id="function-input" required
+                            class="form-control border-start-0 ps-2" placeholder="e.g., sin(x) * x^2" value="sin(x) * x">
+                    </div>
                 </div>
-                <div class="col-6 col-md-3">
-                    <label for="x-max" class="form-label">X Max</label>
-                    <input type="number" id="x-max" step="0.1" required class="form-control">
-                </div>
-                <div class="col-6 col-md-3">
-                    <label for="y-min" class="form-label">Y Min</label>
-                    <input type="number" id="y-min" step="0.1" required class="form-control">
-                </div>
-                <div class="col-6 col-md-3">
-                    <label for="y-max" class="form-label">Y Max</label>
-                    <input type="number" id="y-max" step="0.1" required class="form-control">
-                </div>
-            </div>
 
-            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm py-3">
-                <i class="bi bi-pencil-square me-2"></i>Render Graph
-            </button>
-        </form>
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <label for="x-min" class="form-label">X Min</label>
+                        <input type="number" id="x-min" step="0.1" value="-10" required class="form-control">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label for="x-max" class="form-label">X Max</label>
+                        <input type="number" id="x-max" step="0.1" value="10" required class="form-control">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label for="y-min" class="form-label">Y Min</label>
+                        <input type="number" id="y-min" step="0.1" value="-10" required class="form-control">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label for="y-max" class="form-label">Y Max</label>
+                        <input type="number" id="y-max" step="0.1" value="10" required class="form-control">
+                    </div>
+                </div>
 
-        <canvas id="graph-canvas" width="800" height="400"></canvas>
+                <button type="submit" class="w-100 btn-gradient mt-2 mb-4">
+                    Render Graph
+                </button>
+            </form>
 
-        <div id="message-area" class="mt-2 text-center text-danger fw-semibold"></div>
+            <div id="message-area" class="text-center text-danger fw-semibold mb-3"></div>
+
+            <canvas id="graph-canvas" width="800" height="420"></canvas>
+        </div>
     </div>
+
+    <article class="tool-blog mt-5 mx-auto" style="max-width: 800px; line-height: 1.7; color: #1f2937;">
+        <h2 class="fw-bold mt-5 mb-3">Graphing Calculator: How Do You Plot a Function Online?</h2>
+        <p>Seeing a function's shape reveals what equations alone can't — where it peaks, crosses zero, or shoots to infinity. A graphing <strong>calculator</strong> turns an abstract formula into a visual curve, and our online tool does it instantly with high-precision Math.js rendering. No expensive hardware, no software install — just type an equation like sin(x)·x², set the window, and watch the plot appear.</p>
+
+        <div class="p-3 my-4 rounded-3" style="background:#e0e7ff; border-left:5px solid #4338ca;">
+            <strong>Key Takeaways</strong>
+            <ul class="mb-0 mt-2">
+                <li>A graphing calculator plots a function's output across a range of inputs.</li>
+                <li>Our tool uses Math.js for accurate rendering of complex expressions.</li>
+                <li>You can plot trigonometric, polynomial, exponential, and combined functions.</li>
+                <li>Setting the graph window controls which portion of the curve you see.</li>
+            </ul>
+        </div>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Does a Graphing Calculator Do?</h3>
+        <p>It plots the relationship between a function's input (x) and output (y), drawing a curve that shows behavior at a glance. Instead of computing single points, it evaluates the function across a whole range, turning <strong>calculation</strong> into a visual picture. This exposes maximums, minimums, intercepts, asymptotes, and periodic patterns that raw numbers hide.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">How Do You Plot a Function?</h3>
+        <p>Type the equation, set the x and y range for the viewing window, and the <strong>calculator</strong> evaluates the expression at many points to draw a smooth curve. The Math.js engine handles the underlying <strong>calculation</strong>, computing y for a dense set of x-values and connecting them. Adjusting the window zooms in on details or pulls back for the overall shape.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Functions Can You Graph?</h3>
+        <p>The <strong>calculator</strong> graphs linear (2x+3), polynomial (x³−4x), trigonometric (sin(x), cos(x)), exponential (eˣ), and combined functions like sin(x)·x². Because it's powered by Math.js, it interprets standard mathematical syntax and evaluates each function type with precision — useful from early algebra through calculus.</p>
+
+        <h3 class="fw-semibold mt-4 mb-3">Frequently Asked Questions</h3>
+        <h4 class="fw-semibold fs-6 mt-3">How do I set the viewing window?</h4>
+        <p>Define the minimum and maximum for both axes. Wider ranges show overall shape; narrower ranges reveal local detail like intercepts and turning points.</p>
+        <h4 class="fw-semibold fs-6 mt-3">Do I need a physical graphing calculator?</h4>
+        <p>No. This online tool replicates the core plotting power of a hardware device in your browser, for free, handling the same function types.</p>
+        <h4 class="fw-semibold fs-6 mt-3">Why is my graph not showing?</h4>
+        <p>Usually the function's values fall outside the current window. Widen the y-range, and check the syntax — Math.js expects forms like x^2 and sin(x).</p>
+
+        <p class="mt-4">Stop imagining what a function looks like. Use the Graphing <strong>calculator</strong> above to visualize any equation instantly and explore its behavior.</p>
+    </article>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const canvas = document.getElementById('graph-canvas');
@@ -123,49 +246,60 @@ sin(x){% endblock %}
         const form = document.getElementById('graph-form');
         const messageArea = document.getElementById('message-area');
 
-        // --- Antigravity Theme Colors for Canvas ---
+        // Check Math.js
+        if (typeof window.math === 'undefined') {
+            messageArea.innerHTML = "Error: Math engine failed to load. Check your connection.";
+            return;
+        }
+        const math = window.math;
+
+        // --- Premium Dark Theme Configuration ---
         const THEME = {
-            grid: '#e2e8f0',     /* Border color equivalent */
-            axes: '#64748b',     /* Slate 500 */
-            text: '#00171F',     /* Rich Black */
-            line: '#00A8E8'      /* Vivid Sky Blue (Accent) */
+            grid: 'rgba(255, 255, 255, 0.12)',  // Subtle frosted grid
+            axes: 'rgba(255, 255, 255, 0.45)',  // Clearer axis lines
+            text: '#94a3b8',                    // Lighter slate text
+            line: '#38bdf8',                    // Vivid Neon Sky Blue for the graph
+            glow: 'rgba(56, 189, 248, 0.5)'     // Subtle glow effect
         };
 
-        // Initial drawing of empty axes
+        // Render initial view
         drawAxes(ctx, canvas, { xMin: -10, xMax: 10, yMin: -10, yMax: 10 });
+        
+        // Render default equation: sin(x) * x
+        try {
+            const defaultCompiled = math.compile("sin(x) * x");
+            drawGraph(ctx, canvas, defaultCompiled, { xMin: -10, xMax: 10, yMin: -10, yMax: 10 });
+        } catch(e) {}
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             messageArea.textContent = '';
 
-            const funcStr = document.getElementById('function-input').value.toLowerCase().trim();
+            const funcStr = document.getElementById('function-input').value.trim();
             const xMin = parseFloat(document.getElementById('x-min').value);
             const xMax = parseFloat(document.getElementById('x-max').value);
             const yMin = parseFloat(document.getElementById('y-min').value);
             const yMax = parseFloat(document.getElementById('y-max').value);
 
             if (xMin >= xMax || yMin >= yMax) {
-                messageArea.textContent = 'Invalid range: Max must be greater than Min.';
+                messageArea.textContent = 'Invalid Graph Domain: Max values must be greater than Min values.';
                 return;
             }
 
             try {
-                let safeFuncStr = funcStr
-                    .replace(/\^/g, '**')
-                    .replace(/log\(([^)]+)\)/g, 'Math.log10($1)')
-                    .replace(/ln\(([^)]+)\)/g, 'Math.log($1)')
-                    .replace(/abs\(([^)]+)\)/g, 'Math.abs($1)')
-                    .replace(/e/g, 'Math.E')
-                    .replace(/pi/g, 'Math.PI')
-                    .replace(/sin\(([^)]+)\)/g, 'Math.sin($1)')
-                    .replace(/cos\(([^)]+)\)/g, 'Math.cos($1)')
-                    .replace(/tan\(([^)]+)\)/g, 'Math.tan($1)');
+                // Compile the function directly using math.js compiler (much safer/dynamic than new Function)
+                const node = math.parse(funcStr);
+                const compiled = node.compile();
 
-                const func = new Function('x', 'return ' + safeFuncStr);
-                drawGraph(ctx, canvas, func, { xMin, xMax, yMin, yMax });
+                // Test an evaluation visually to catch severe syntax (e.g., missing variables) right away
+                compiled.evaluate({ x: 1 });
+
+                // Dispatch to draw
+                drawGraph(ctx, canvas, compiled, { xMin, xMax, yMin, yMax });
 
             } catch (error) {
-                messageArea.textContent = 'Syntax Error: Check your expression.';
+                console.error("Syntax compile error:", error);
+                messageArea.textContent = 'Syntax Error: Please check your mathematical expression.';
             }
         });
 
@@ -203,7 +337,7 @@ sin(x){% endblock %}
                 ctx.moveTo(0, py); ctx.lineTo(width, py); ctx.stroke();
             }
 
-            // --- Draw Axes ---
+            // --- Draw Primary Axes ---
             ctx.strokeStyle = THEME.axes;
             ctx.lineWidth = 2;
 
@@ -218,41 +352,56 @@ sin(x){% endblock %}
 
             // --- Draw Labels ---
             ctx.fillStyle = THEME.text;
-            ctx.font = 'bold 11px Inter';
+            ctx.font = 'bold 12px "JetBrains Mono"';
 
             // X labels
             for (let x = xMin; x <= xMax; x += xStep) {
                 if (Math.abs(x) < 0.0001) continue;
                 const { px } = mapToCanvas(x, 0, width, height, limits);
-                ctx.fillText(x.toFixed(1).replace(/\.0$/, ''), px - 10, Math.min(Math.max(origin.py + 15, 15), height - 5));
+                ctx.fillText(x.toFixed(1).replace(/\.0$/, ''), px - 12, Math.min(Math.max(origin.py + 18, 18), height - 8));
             }
             // Y labels
             for (let y = yMin; y <= yMax; y += yStep) {
                 if (Math.abs(y) < 0.0001) continue;
                 const { py } = mapToCanvas(0, y, width, height, limits);
-                ctx.fillText(y.toFixed(1).replace(/\.0$/, ''), Math.min(Math.max(origin.px + 5, 5), width - 30), py + 4);
+                ctx.fillText(y.toFixed(1).replace(/\.0$/, ''), Math.min(Math.max(origin.px + 8, 8), width - 35), py + 4);
             }
         }
 
-        function drawGraph(ctx, canvas, func, limits) {
+        function drawGraph(ctx, canvas, compiledFunc, limits) {
             drawAxes(ctx, canvas, limits);
             const { width, height } = canvas;
             const { xMin, xMax } = limits;
-            const step = (xMax - xMin) / width;
+            
+            // Adjust step fidelity: high res curves based on pixel width mapping
+            const step = (xMax - xMin) / (width * 1.5); 
 
             ctx.beginPath();
             ctx.strokeStyle = THEME.line;
             ctx.lineWidth = 4;
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
+            
+            // Add aesthetic neon glow
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = THEME.glow;
 
             let firstPoint = true;
-            for (let px = 0; px <= width; px++) {
-                const x = xMin + px * step;
+            for (let px = 0; px <= width; px += 0.5) { // subpixel mapping for extra smooth curves
+                const x = xMin + px * ((xMax - xMin) / width);
                 let y;
-                try { y = func(x); } catch (e) { continue; }
+                try { 
+                    y = compiledFunc.evaluate({ x: x }); 
+                    
+                    // Complex numbers handling (math.js can output objects for sqrt(-1))
+                    if (typeof y === 'object') {
+                        continue; // SKIP complex mappings
+                    }
+                } catch (e) { continue; }
 
                 const { py } = mapToCanvas(x, y, width, height, limits);
+                
+                // Keep the curve vertically bounding sensibly inside +/- 10,000 to prevent canvas lag
                 const isFinite = Number.isFinite(py) && Math.abs(py) < 10000;
 
                 if (firstPoint && isFinite) {
@@ -265,9 +414,10 @@ sin(x){% endblock %}
                 }
             }
             ctx.stroke();
+            
+            // reset shadow
+            ctx.shadowBlur = 0;
         }
     });
-</script>
-});
 </script>
 {% endblock %}

@@ -188,8 +188,42 @@
             </div>
 
         </div>
-        
+
     </div>
+
+    <article class="tool-blog mt-5 mx-auto" style="max-width: 800px; line-height: 1.7; color: #1f2937;">
+        <h2 class="fw-bold mt-5 mb-3">Coordinate Converter: How Do You Convert Polar and Rectangular?</h2>
+        <p>A point in a plane can be described two ways — by horizontal and vertical distances (x, y) or by distance and angle from the origin (r, θ). Switching between them requires trigonometry, and a misplaced sine or cosine wrecks the result. The Coordinate <strong>calculator</strong> converts both directions instantly, handling every trig <strong>calculation</strong> for you.</p>
+
+        <div class="p-3 my-4 rounded-3" style="background:#fce7f3; border-left:5px solid #db2777;">
+            <strong>Key Takeaways</strong>
+            <ul class="mb-0 mt-2">
+                <li>Rectangular (x, y) gives position; polar (r, θ) gives distance and angle.</li>
+                <li>Rectangular to polar: r = √(x² + y²) and θ = arctan(y/x).</li>
+                <li>Polar to rectangular: x = r·cos(θ) and y = r·sin(θ).</li>
+                <li>The <strong>calculator</strong> converts both ways with quadrant adjustments.</li>
+            </ul>
+        </div>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Are Rectangular and Polar Coordinates?</h3>
+        <p>Rectangular coordinates locate a point using perpendicular x and y distances; polar coordinates use a radius r and angle θ. Both describe the same point in different languages. A point three right and four up is (3, 4) rectangular — the same point is (5, 53.13°) polar. The converter translates fluently between these views.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">How Do You Convert Rectangular to Polar?</h3>
+        <p>Compute the radius as r = √(x² + y²) and the angle as θ = arctan(y/x). For (3, 4): r = √(9+16) = 5 and θ = arctan(4/3) ≈ 53.13°. The <strong>calculator</strong> also resolves the quadrant correctly, since arctan alone can't distinguish points in opposite quadrants — preventing an angle that's 180° off.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">How Do You Convert Polar to Rectangular?</h3>
+        <p>Use x = r·cos(θ) and y = r·sin(θ). For (5, 53.13°): x = 5·cos(53.13°) ≈ 3 and y = 5·sin(53.13°) ≈ 4, recovering the original (3, 4). The <strong>calculator</strong> evaluates the trig functions precisely, so you never need a function table.</p>
+
+        <h3 class="fw-semibold mt-4 mb-3">Frequently Asked Questions</h3>
+        <h4 class="fw-semibold fs-6 mt-3">What is the radius r in polar coordinates?</h4>
+        <p>The straight-line distance from the origin to the point, always non-negative, computed as r = √(x² + y²) — the Pythagorean distance.</p>
+        <h4 class="fw-semibold fs-6 mt-3">Why does the quadrant matter?</h4>
+        <p>Basic arctan only returns angles between −90° and 90°, so it can't tell a first-quadrant point from a third-quadrant one. The <strong>calculator</strong> checks the signs of x and y to place θ correctly.</p>
+        <h4 class="fw-semibold fs-6 mt-3">Are degrees or radians used?</h4>
+        <p>Both are valid; degrees suit engineering and navigation, radians suit calculus and physics, where 180° = π radians.</p>
+
+        <p class="mt-4">Stop computing square roots and inverse tangents by hand. Use the Coordinate <strong>calculator</strong> above to switch between (x, y) and (r, θ) instantly.</p>
+    </article>
 </div>
 {% endblock %}
 

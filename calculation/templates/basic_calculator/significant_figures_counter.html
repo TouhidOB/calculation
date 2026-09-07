@@ -123,8 +123,48 @@
                 Start typing a number above to see the Significant Figures count and explanation.
             </div>
         </div>
-        
+
     </div>
+
+    <article class="tool-blog mt-5 mx-auto" style="max-width: 800px; line-height: 1.7; color: #1f2937;">
+        <h2 class="fw-bold mt-5 mb-3">Significant Figures Counter: How Do You Count Sig Figs?</h2>
+        <p>In science and engineering, significant figures communicate how precise a measurement is — and counting them correctly trips up many students because of tricky rules around zeros. The Significant Figures Counter analyzes any number — decimal, whole, or scientific notation — and reports the sig fig count with an explanation, all in one <strong>calculation</strong>. Enter a value like 0.0120 or 5400 and see the result.</p>
+
+        <div class="p-3 my-4 rounded-3" style="background:#dcfce7; border-left:5px solid #16a34a;">
+            <strong>Key Takeaways</strong>
+            <ul class="mb-0 mt-2">
+                <li>Significant figures show the precision of a measured value.</li>
+                <li>All nonzero digits are significant.</li>
+                <li>Leading zeros are never significant; trapped zeros always are.</li>
+                <li>Trailing zeros count only when a decimal point is present.</li>
+            </ul>
+        </div>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Are Significant Figures?</h3>
+        <p>Significant figures are the digits in a number that carry meaningful information about its precision. A measurement of 0.0120 grams has three sig figs, signaling the instrument resolved to that level. Reporting the right number of sig figs prevents overstating accuracy — a core discipline in every scientific <strong>calculation</strong> and lab report.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Are the Rules for Counting Sig Figs?</h3>
+        <p>A few rules govern which digits count, and the Counter applies them all automatically.</p>
+        <ul>
+            <li><strong>Nonzero digits:</strong> always significant (123 has 3).</li>
+            <li><strong>Leading zeros:</strong> never significant (0.0012 has 2).</li>
+            <li><strong>Trapped zeros:</strong> always significant (1002 has 4).</li>
+            <li><strong>Trailing zeros:</strong> significant only with a decimal point (1.20 has 3; 1200 is ambiguous).</li>
+        </ul>
+
+        <h3 class="fw-semibold mt-4 mb-2">Why Do Significant Figures Matter?</h3>
+        <p>Sig figs prevent false precision. If you measure a length as 5.2 cm, reporting a calculation as 5.23847 cm implies accuracy your instrument never had. Carrying the correct number of significant figures through a <strong>calculation</strong> keeps results honest, which is why labs, engineering, and chemistry enforce these rules strictly.</p>
+
+        <h3 class="fw-semibold mt-4 mb-3">Frequently Asked Questions</h3>
+        <h4 class="fw-semibold fs-6 mt-3">How many sig figs does 0.0120 have?</h4>
+        <p>Three. The leading zeros don't count, but the 1, 2, and the trailing zero after the decimal do. The Counter explains each digit's status.</p>
+        <h4 class="fw-semibold fs-6 mt-3">Are trailing zeros always significant?</h4>
+        <p>Only when a decimal point is present. 1.20 has three sig figs, but 1200 without a decimal is ambiguous — scientific notation removes the doubt.</p>
+        <h4 class="fw-semibold fs-6 mt-3">How does scientific notation help?</h4>
+        <p>Writing 1200 as 1.2 × 10³ (2 sig figs) or 1.200 × 10³ (4 sig figs) makes the precision explicit, eliminating ambiguity.</p>
+
+        <p class="mt-4">Stop second-guessing which zeros count. Use the Significant Figures Counter above to tally sig figs for any number in one <strong>calculation</strong>.</p>
+    </article>
 </div>
 {% endblock %}
 

@@ -121,8 +121,42 @@
             <div id="solution-output" class="result-box-custom d-none">
                 </div>
         </div>
-        
+
     </div>
+
+    <article class="tool-blog mt-5 mx-auto" style="max-width: 800px; line-height: 1.7; color: #1f2937;">
+        <h2 class="fw-bold mt-5 mb-3">Prime Number Checker: How Do You Know If a Number Is Prime?</h2>
+        <p>Prime numbers — divisible only by 1 and themselves — are the building blocks of all integers and the foundation of modern encryption. Testing whether a large number is prime by trial division is slow. The Prime <strong>Checker</strong> uses optimized algorithms to determine primality in one fast <strong>calculation</strong>. Enter any positive integer and instantly learn whether it's prime or composite.</p>
+
+        <div class="p-3 my-4 rounded-3" style="background:#fce7f3; border-left:5px solid #db2777;">
+            <strong>Key Takeaways</strong>
+            <ul class="mb-0 mt-2">
+                <li>A prime number has exactly two factors: 1 and itself.</li>
+                <li>The first primes are 2, 3, 5, 7, 11, 13...</li>
+                <li>2 is the only even prime; all other primes are odd.</li>
+                <li>The checker only needs to test divisors up to the square root.</li>
+            </ul>
+        </div>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Is a Prime Number?</h3>
+        <p>A prime number is a whole number greater than 1 that has no divisors other than 1 and itself. So 7 is prime because nothing between 2 and 6 divides it evenly, while 8 is composite because 2 and 4 do. Primes are the indivisible atoms of arithmetic — every integer factors uniquely into primes, a fact central to number-theory <strong>calculation</strong>.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">How Does the Checker Test Primality?</h3>
+        <p>It tries to divide the number by integers up to its square root — if none divide evenly, the number is prime. Checking only to √n is the key optimization: any factor larger than the square root pairs with one smaller, so testing beyond it is redundant. This makes the <strong>calculation</strong> fast even for large inputs.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">Why Are Prime Numbers Important?</h3>
+        <p>Primes are the backbone of cryptography. RSA encryption, which secures online banking and messaging, relies on the difficulty of factoring the product of two large primes. Primes also appear in hashing, random number generation, and pure mathematics. Identifying them quickly powers these security <strong>calculations</strong>.</p>
+
+        <h3 class="fw-semibold mt-4 mb-3">Frequently Asked Questions</h3>
+        <h4 class="fw-semibold fs-6 mt-3">Is 1 a prime number?</h4>
+        <p>No. By definition a prime has exactly two distinct factors, but 1 has only one (itself). So 1 is neither prime nor composite.</p>
+        <h4 class="fw-semibold fs-6 mt-3">Why is 2 the only even prime?</h4>
+        <p>Every other even number is divisible by 2, giving it a third factor and making it composite. 2 itself has only 1 and 2 as factors, so it's prime.</p>
+        <h4 class="fw-semibold fs-6 mt-3">Are there infinitely many primes?</h4>
+        <p>Yes. Euclid proved over 2000 years ago that primes never run out — there is no largest prime number.</p>
+
+        <p class="mt-4">Stop dividing by hand to test primality. Use the Prime <strong>Checker</strong> above to determine whether any number is prime in one fast <strong>calculation</strong>.</p>
+    </article>
 </div>
 {% endblock %}
 

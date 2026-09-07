@@ -258,6 +258,40 @@ chosen from a set of 'n' items using the nCr formula. Formula: nCr = n! / (r! * 
             </div>
         </div>
     </div>
+
+    <article class="tool-blog mt-5 mx-auto" style="max-width: 800px; line-height: 1.7; color: #1f2937;">
+        <h2 class="fw-bold mt-5 mb-3">Combination Calculator (nCr): How Do You Count Selections?</h2>
+        <p>How many three-person committees can you form from ten people? How many five-card hands exist in a 52-card deck? These hinge on combinations, and computing them by hand means wrestling with large factorials. The Combination <strong>calculator</strong> (nCr) answers instantly, handling the factorial <strong>calculation</strong> for you. Enter the total items and how many to choose, and the tool returns the exact count of selections.</p>
+
+        <div class="p-3 my-4 rounded-3" style="background:#dcfce7; border-left:5px solid #16a34a;">
+            <strong>Key Takeaways</strong>
+            <ul class="mb-0 mt-2">
+                <li>A combination counts selections where order does NOT matter.</li>
+                <li>The formula is nCr = n! / (r! · (n−r)!).</li>
+                <li>Combinations are always fewer than or equal to permutations of the same n and r.</li>
+                <li>The <strong>calculator</strong> handles large factorials that overflow manual math.</li>
+            </ul>
+        </div>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Is a Combination?</h3>
+        <p>A combination is a selection from a larger group where order doesn't matter. Picking apples, bananas, and cherries is the same combination no matter the sequence — unlike a permutation, where order counts. The notation is C(n, r) or nCr: from n distinct items, how many groups of size r can you form?</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">What Is the Combination Formula?</h3>
+        <p>The formula is nCr = n! / (r! · (n−r)!). Dividing by r! removes duplicate orderings that a permutation would count, giving only unique selections. For C(10, 3): 10! / (3! · 7!) = 3,628,800 / (6 · 5,040) = 120. So there are 120 distinct three-person committees from ten people — a <strong>calculation</strong> the tool runs instantly.</p>
+
+        <h3 class="fw-semibold mt-4 mb-2">Combinations vs. Permutations: What's the Difference?</h3>
+        <p>The key difference is order: combinations ignore it, permutations count it. That's why permutations are always equal or larger — every combination maps to multiple ordered arrangements (nPr = nCr · r!). Use a combination when rearranging the chosen items creates no genuinely different outcome.</p>
+
+        <h3 class="fw-semibold mt-4 mb-3">Frequently Asked Questions</h3>
+        <h4 class="fw-semibold fs-6 mt-3">What does nCr mean?</h4>
+        <p>"n choose r" — the number of ways to select r items from n when order doesn't matter. For example, 5C2 equals 10. The <strong>calculator</strong> computes this value directly.</p>
+        <h4 class="fw-semibold fs-6 mt-3">Can r be larger than n?</h4>
+        <p>No. You can't choose more items than exist, so r must be ≤ n. The <strong>calculator</strong> rejects inputs where r exceeds n.</p>
+        <h4 class="fw-semibold fs-6 mt-3">What is nC0 and nCn?</h4>
+        <p>Both equal 1. There's exactly one way to choose nothing and one way to choose everything — which is why the first and last numbers in every Pascal's triangle row are 1.</p>
+
+        <p class="mt-4">Stop fighting with factorials. Use the Combination <strong>calculator</strong> above to count selections and compute probabilities in seconds.</p>
+    </article>
 </div>
 {% endblock %}
 
