@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  # Django REST API Backend
+  backend:
+    build: ./backend
+    container_name: calculation_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - static_volume:/staticfiles
+    depends_on:
+      - db
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: calculation_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: calculation_db
+      POSTGRES_USER: calculation_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  # Next.js Frontend
+  frontend:
+    build: ./frontend
+    container_name: calculation_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api
+    depends_on:
+      - backend
+
+volumes:
+  static_volume:
+  db_data:
