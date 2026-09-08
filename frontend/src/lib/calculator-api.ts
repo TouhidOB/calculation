@@ -77,6 +77,12 @@ export async function runCalculator(
   )
 }
 
+export async function getCalculatorScript(id: string): Promise<{ js_key: string; script: string }> {
+  return handle(
+    await fetch(`/api/calculators/${id}/script`, { cache: "no-store" })
+  )
+}
+
 export const CATEGORY_META: Record<string, { label: string; emoji: string; color: string }> = {
   finance: { label: "Finance", emoji: "💰", color: "#6366f1" },
   business_investment: { label: "Business & Investment", emoji: "📈", color: "#8b5cf6" },
@@ -85,4 +91,8 @@ export const CATEGORY_META: Record<string, { label: string; emoji: string; color
   basic: { label: "Basic & Math", emoji: "🧮", color: "#6b7280" },
   garments: { label: "Garments (RMG)", emoji: "👕", color: "#ec4899" },
   conversion: { label: "Unit Conversion", emoji: "🔄", color: "#06b6d4" },
+  date_time: { label: "Date & Time", emoji: "📅", color: "#0ea5e9" },
+  education: { label: "Education", emoji: "🎓", color: "#a855f7" },
+  real_estate: { label: "Real Estate", emoji: "🏠", color: "#ef4444" },
+  event_budget: { label: "Event & Budget", emoji: "🎉", color: "#f97316" },
 }

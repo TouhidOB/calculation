@@ -3,14 +3,9 @@
 import * as React from "react"
 import { useContext, useEffect, useMemo, useState } from "react"
 import { ColorModeContext } from "@/theme/ThemeRegistry"
-import {
-  listCalculators,
-  runCalculator,
-  type CategoryMap,
-  type CalculatorDef,
-  CATEGORY_META,
-} from "@/lib/calculator-api"
+import { listCalculators, runCalculator, getCalculatorScript, type CategoryMap, type CalculatorDef, CATEGORY_META } from "@/lib/calculator-api"
 import { getCalcIcon } from "@/lib/calc-icons"
+import JsExecutor from "@/components/JsExecutor"
 import { getIconComponent } from "@/lib/icon-registry"
 
 // MUI components
@@ -449,6 +444,8 @@ function CalculatorRunner({
     return init
   })
   const [result, setResult] = useState<Record<string, unknown> | null>(null)
+  const [jsHtml, setJsHtml] = useState<string | null>(null)
+  const [jsTrigger, setJsTrigger] = useState(0)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
 
@@ -457,19 +454,45 @@ function CalculatorRunner({
     setBusy(true)
     setErr(null)
     setResult(null)
+    setJsHtml(null)
     try {
       const payload: Record<string, string | number> = {}
       for (const f of calc.fields) {
         const v = values[f.name]
         payload[f.name] = f.type === "number" && v !== "" ? Number(v) : v
       }
+      // First try backend run
       const res = await runCalculator(calc.id, payload)
-      setResult(res.result)
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : String(e))
-    } finally {
-      setBusy(false)
+      if (res.result && Object.keys(res.result).length > 0) {
+        // Check if it's a "client-side" note
+        const vals = Object.values(res.result)
+        const hasRealResult = vals.some(
+          (v) => v !== null && v !== undefined &&
+            String(v) !== "This calculator runs client-side" &&
+            String(v) !== "JS_CALC"
+        )
+        if (hasRealResult) {
+          setResult(res.result)
+          setBusy(false)
+          return
+        }
+      }
+      // Backend can't compute — trigger client-side JS execution
+      setJsTrigger(prev => prev + 1)
+    } catch {
+      // Backend error — try JS execution as fallback
+      setJsTrigger(prev => prev + 1)
     }
+  }
+
+  const handleJsResult = (sandboxResult: { html: string; text: string }) => {
+    setJsHtml(sandboxResult.html)
+    setBusy(false)
+  }
+
+  const handleJsError = (error: string) => {
+    setErr(`Calculation failed: ${error}`)
+    setBusy(false)
   }
 
   const catMeta = CATEGORY_META[calc.category]
@@ -572,12 +595,27 @@ function CalculatorRunner({
                 {err}
               </Alert>
             )}
+
+            {/* JS Executor for client-side calculators */}
+            {jsTrigger > 0 && (
+              <JsExecutor
+                calcId={calc.id}
+                fields={calc.fields.map(f => ({
+                  name: f.name,
+                  type: f.type,
+                  value: values[f.name]
+                }))}
+                onResult={handleJsResult}
+                onError={handleJsError}
+                trigger={jsTrigger}
+              />
+            )}
           </Paper>
         </Grid>
 
         {/* Result section */}
         <Grid size={{ xs: 12, md: 6 }}>
-          {result ? (
+          {(result || jsHtml) ? (
             <Fade in>
               <Paper
                 elevation={0}
@@ -599,33 +637,46 @@ function CalculatorRunner({
                   </Typography>
                 </Stack>
 
-                <Stack spacing={1.5}>
-                  {Object.entries(result).map(([key, val]) => (
-                    <Box
-                      key={key}
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "baseline",
-                        gap: 2,
-                        pb: 1.5,
-                        borderBottom: "1px solid",
-                        borderColor: "divider",
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ textTransform: "capitalize" }}
+                {jsHtml ? (
+                  <Box
+                    sx={{ 
+                      overflow: 'auto',
+                      maxHeight: 400,
+                      fontSize: 14,
+                      lineHeight: 1.6,
+                    }}
+                    component="div"
+                    dangerouslySetInnerHTML={{ __html: jsHtml }}
+                  />
+                ) : result ? (
+                  <Stack spacing={1.5}>
+                    {Object.entries(result).map(([key, val]) => (
+                      <Box
+                        key={key}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "baseline",
+                          gap: 2,
+                          pb: 1.5,
+                          borderBottom: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
-                        {String(key).replaceAll("_", " ")}
-                      </Typography>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 700, fontFamily: "monospace" }}>
-                        {renderValue(val)}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Stack>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ textTransform: "capitalize" }}
+                        >
+                          {String(key).replaceAll("_", " ")}
+                        </Typography>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, fontFamily: "monospace" }}>
+                          {renderValue(val)}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                ) : null}
               </Paper>
             </Fade>
           ) : (
