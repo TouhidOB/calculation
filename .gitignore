@@ -1,37 +1,52 @@
-.DS_Store
-**/.DS_Store
-.DS_Store
-**/.DS_Store
+# Dependencies
+node_modules/
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
 
-# macOS
+# Next.js build output
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+
+# Docker
+*.log
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
+Thumbs.db
+
+# SQLite
+backend/db.sqlite3
+
+# Build artifacts
+frontend/build/
+frontend/dist/
+
+# Cache
+.cache/
+frontend/node_modules/.cache/
+
+# Generated files
+backend/extracted_*.json
+backend/extracted_js_logic.json
+backend/generate_registry.py
+backend/extract_*.py
+backend/auto_generated.py
 
 # Python
+*.pyc
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual Environment
-venv/
-.env/
-.venv/
-env/.DS_Store
-**/.DS_Store
+.pytest_cache/
+.coverage
+htmlcov/
