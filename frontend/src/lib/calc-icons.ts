@@ -1,24 +1,3 @@
-/**
- * MUI Icon mapping for each calculator category and individual calculators.
- * Every calculator gets a unique icon from @mui/icons-material.
- */
-
-// Category-level icons (already used in sidebar)
-export const CATEGORY_ICONS_MAP: Record<string, string> = {
-  finance: "AttachMoney",
-  business_investment: "TrendingUp",
-  health: "Favorite",
-  construction: "Construction",
-  basic: "Functions",
-  garments: "Checkroom",
-  conversion: "SwapHoriz",
-  date_time: "Schedule",
-  education: "School",
-  real_estate: "HomeWork",
-  event_budget: "Celebration",
-}
-
-// Per-calculator icon names (MUI icon name exactly)
 export const CALC_ICONS: Record<string, string> = {
   // ─── Finance (50) ──────
   "budget-calculator": "AccountBalance",
@@ -553,6 +532,344 @@ export const CALC_ICONS: Record<string, string> = {
   "cino-long-8": "Checkroom",
   "cino-long-9": "Checkroom",
   "cino-long-10": "Checkroom",
+
+  "401k-calculator": "Savings",
+
+  "amortization-calculator": "TableChart",
+
+  "annuity-calculator": "Payments",
+
+  "anorexic-bmi-calculator": "Scale",
+
+  "apr-calculator": "Percent",
+
+  "army-body-fat-calculator": "Accessibility",
+
+  "auto-lease-calculator": "DirectionsCar",
+
+  "auto-loan-calculator": "DirectionsCar",
+
+  "average-calculator": "BarChart",
+
+  "average-return-calculator": "TrendingUp",
+
+  "bac-calculator": "LocalBar",
+
+  "bandwidth-calculator": "Speed",
+
+  "basic-calculator": "Calculate",
+
+  "big-number-calculator": "Calculate",
+
+  "binary-calculator": "Code",
+
+  "boat-loan-calculator": "DirectionsBoat",
+
+  "body-type-calculator": "Accessibility",
+
+  "bond-calculator": "Receipt",
+
+  "bra-size-calculator": "Checkroom",
+
+  "btu-calculator": "AcUnit",
+
+  "calculators-for-your-site": "Web",
+
+  "calorie-calculator": "Restaurant",
+
+  "calories-burned-calculator": "DirectionsRun",
+
+  "canadian-mortgage-calculator": "House",
+
+  "carbohydrate-calculator": "Restaurant",
+
+  "cash-back-or-low-interest-calculator": "AttachMoney",
+
+  "cd-calculator": "Lock",
+
+  "circle-calculator": "Circle",
+
+  "college-cost-calculator": "School",
+
+  "commission-calculator": "AttachMoney",
+
+  "common-factor-calculator": "Calculate",
+
+  "compound-interest-calculator": "AccountBalance",
+
+  "conception-calculator": "ChildFriendly",
+
+  "concrete-calculator": "Domain",
+
+  "confidence-interval-calculator": "Insights",
+
+  "conversion-calculator": "SwapHoriz",
+
+  "credit-card-calculator": "CreditCard",
+
+  "credit-card-payoff-calculator": "CreditCard",
+
+  "currency-calculator": "CurrencyExchange",
+
+  "date-calculator": "DateRange",
+
+  "debt-consolidation-calculator": "MergeType",
+
+  "debt-payoff-calculator": "Payments",
+
+  "debt-ratio-calculator": "Balance",
+
+  "density-calculator": "Layers",
+
+  "dew-point-calculator": "WaterDrop",
+
+  "distance-calculator": "Straighten",
+
+  "electricity-calculator": "Bolt",
+
+  "engine-horsepower-calculator": "Speed",
+
+  "estate-tax-calculator": "Gavel",
+
+  "exponent-calculator": "Functions",
+
+  "factor-calculator": "Calculate",
+
+  "fat-intake-calculator": "Restaurant",
+
+  "finance-calculator": "Calculate",
+
+  "financial-calculator": "AttachMoney",
+
+  "fitness-and-health-calculator": "FitnessCenter",
+
+  "fraction-calculator": "Splitscreen",
+
+  "fuel-cost-calculator": "LocalGasStation",
+
+  "future-value-calculator": "TrendingUp",
+
+  "gas-mileage-calculator": "LocalGasStation",
+
+  "gdp-calculator": "BarChart",
+
+  "gfr-calculator": "Biotech",
+
+  "golf-handicap-calculator": "SportsGolf",
+
+  "grade-calculator": "Assignment",
+
+  "gravel-calculator": "Terrain",
+
+  "half-life-calculator": "Timer",
+
+  "healthy-weight-calculator": "Scale",
+
+  "heat-index-calculator": "WbSunny",
+
+  "height-calculator": "Height",
+
+  "hex-calculator": "Code",
+
+  "horsepower-calculator": "Speed",
+
+  "hours-calculator": "AccessTime",
+
+  "house-affordability-calculator": "House",
+
+  "ideal-weight-calculator": "FitnessCenter",
+
+  "interest-calculator": "Calculate",
+
+  "interest-rate-calculator": "Percent",
+
+  "investment-calculator": "TrendingUp",
+
+  "ip-subnet-calculator": "Router",
+
+  "ira-calculator": "Savings",
+
+  "irr-calculator": "Insights",
+
+  "lease-calculator": "DirectionsCar",
+
+  "loan-calculator": "RequestQuote",
+
+  "log-calculator": "Functions",
+
+  "long-division-calculator": "Calculate",
+
+  "love-calculator": "Favorite",
+
+  "love-calculator-for-your-site": "Favorite",
+
+  "macro-calculator": "Restaurant",
+
+  "margin-calculator": "Balance",
+
+  "marriage-calculator": "Favorite",
+
+  "mass-calculator": "Scale",
+
+  "math-calculator": "Calculate",
+
+  "math-calculator-for-your-site": "Calculate",
+
+  "mileage-calculator": "LocalGasStation",
+
+  "molarity-calculator": "Science",
+
+  "molecular-weight-calculator": "Science",
+
+  "mortgage-amortization-calculator": "TableChart",
+
+  "mortgage-calculator": "House",
+
+  "mortgage-calculator-uk": "House",
+
+  "mortgage-payoff-calculator": "Speed",
+
+  "mulch-calculator": "Yard",
+
+  "mutual-fund-calculator": "PieChart",
+
+  "number-sequence-calculator": "Functions",
+
+  "ohms-law-calculator": "ElectricalServices",
+
+  "other-calculator": "Calculate",
+
+  "overweight-calculator": "Scale",
+
+  "ovulation-calculator": "PregnantWoman",
+
+  "p-value-calculator": "Insights",
+
+  "pace-calculator": "DirectionsRun",
+
+  "payment-calculator": "Payments",
+
+  "pension-calculator": "Elderly",
+
+  "percent-calculator": "Percent",
+
+  "percent-error-calculator": "Error",
+
+  "percent-off-calculator": "Discount",
+
+  "period-calculator": "CalendarMonth",
+
+  "permutation-and-combination-calculator": "Shuffle",
+
+  "personal-loan-calculator": "RequestQuote",
+
+  "pregnancy-calculator": "PregnantWoman",
+
+  "pregnancy-conception-calculator": "PregnantWoman",
+
+  "present-value-calculator": "AttachMoney",
+
+  "prime-factorization-calculator": "FilterAlt",
+
+  "probability-calculator": "Casino",
+
+  "protein-calculator": "EggAlt",
+
+  "pythagorean-theorem-calculator": "ChangeHistory",
+
+  "quadratic-formula-calculator": "Functions",
+
+  "real-estate-calculator": "HomeWork",
+
+  "refinance-calculator": "Balance",
+
+  "rent-calculator": "Apartment",
+
+  "rental-property-calculator": "HomeWork",
+
+  "repayment-calculator": "Payments",
+
+  "resistor-calculator": "SettingsBackupRestore",
+
+  "retirement-calculator": "Elderly",
+
+  "right-triangle-calculator": "Architecture",
+
+  "rmd-calculator": "Elderly",
+
+  "roi-calculator": "TrendingUp",
+
+  "roofing-calculator": "Roofing",
+
+  "root-calculator": "SquareFoot",
+
+  "roth-ira-calculator": "Savings",
+
+  "rounding-calculator": "Calculate",
+
+  "salary-calculator": "Work",
+
+  "sales-tax-calculator": "Receipt",
+
+  "sample-size-calculator": "Poll",
+
+  "savings-calculator": "Savings",
+
+  "scientific-calculator-for-your-site": "Science",
+
+  "scientific-notation-calculator": "Science",
+
+  "simple-interest-calculator": "Calculate",
+
+  "sleep-calculator": "Hotel",
+
+  "slope-calculator": "Timeline",
+
+  "social-security-calculator": "VerifiedUser",
+
+  "speed-calculator": "Speed",
+
+  "square-footage-calculator": "CropSquare",
+
+  "statistics-calculator": "BarChart",
+
+  "student-loan-calculator": "School",
+
+  "surface-area-calculator": "CropSquare",
+
+  "take-home-pay-calculator": "Payments",
+
+  "tax-calculator": "Receipt",
+
+  "tdee-calculator": "DirectionsRun",
+
+  "tile-calculator": "SpaceDashboard",
+
+  "time-calculator": "Timer",
+
+  "time-card-calculator": "AccessTime",
+
+  "time-zone-calculator": "Public",
+
+  "tip-calculator": "AttachMoney",
+
+  "tire-size-calculator": "TireRepair",
+
+  "triangle-calculator": "Architecture",
+
+  "va-mortgage-calculator": "MilitaryTech",
+
+  "vat-calculator": "Receipt",
+
+  "voltage-drop-calculator": "Bolt",
+
+  "weight-calculator": "Scale",
+
+  "weight-watchers-points-calculator": "Restaurant",
+
+  "wind-chill-calculator": "AcUnit",
+
+  "z-score-calculator": "Insights",
 }
 
 export function getCalcIcon(calcId: string): string {
