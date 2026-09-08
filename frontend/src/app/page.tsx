@@ -449,6 +449,24 @@ function CalculatorRunner({
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
 
+  // Structured data for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: calc.name,
+    description: calc.description,
+    applicationCategory: "CalculatorApplication",
+    operatingSystem: "Web",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+    },
+    featureList: calc.fields.map(f => f.label).join(", "),
+    url: `https://calchub.io/calculators/${calc.id}`,
+  }
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setBusy(true)
@@ -498,7 +516,12 @@ function CalculatorRunner({
   const catMeta = CATEGORY_META[calc.category]
 
   return (
-    <Container maxWidth="md" disableGutters>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <Container maxWidth="md" disableGutters>
       <Grid container spacing={3}>
         {/* Form section */}
         <Grid size={{ xs: 12, md: 6 }}>
@@ -703,7 +726,8 @@ function CalculatorRunner({
         </Grid>
       </Grid>
     </Container>
-  )
+  </>
+)
 }
 
 function renderValue(val: unknown): string {
