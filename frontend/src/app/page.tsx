@@ -604,7 +604,7 @@ export default function Home() {
             <CalculatorRunner
               calc={activeCalc}
               onBack={() => setActiveCalc(null)}
-              onOpenCalc={(c) => { setActiveCalc(c); window.scrollTo({ top: 0, behavior: "smooth" }) }}
+              onOpenCalc={(c) => { window.location.href = `/calculators/${c.id}` }}
             />
           ) : showWelcome && !search ? (
             /* ================= WELCOME PAGE ================= */
@@ -781,7 +781,7 @@ export default function Home() {
                     .map((calc, i) => (
                       <Grid key={calc.id} size={{ xs: 12, sm: 6, lg: 4 }}>
                         <Fade in timeout={200 + i * 60}>
-                          <CalcCard calc={calc} onOpen={(c) => { setActiveCalc(c); setShowWelcome(false) }} />
+                          <CalcCard calc={calc} onOpen={(c) => { window.location.href = `/calculators/${c.id}` }} />
                         </Fade>
                       </Grid>
                     ))}
@@ -827,7 +827,7 @@ export default function Home() {
                   return (
                     <Grid key={calc.id} size={{ xs: 12, sm: 6, lg: 4 }}>
                       <Fade in timeout={200 + i * 60}>
-                        <CalcCard calc={calc} onOpen={(c) => { setActiveCalc(c); setShowWelcome(false) }} />
+                        <CalcCard calc={calc} onOpen={(c) => { window.location.href = `/calculators/${c.id}` }} />
                       </Fade>
                     </Grid>
                   )
@@ -867,7 +867,11 @@ function CalcCard({ calc, onOpen }: { calc: CalculatorDef; onOpen: (c: Calculato
         borderRadius: 3,
       }}
     >
-      <CardActionArea onClick={() => onOpen(calc)} sx={{ height: "100%", p: 0 }}>
+      <CardActionArea
+        href={`/calculators/${calc.id}`}
+        onClick={() => onOpen(calc)}
+        sx={{ height: "100%", p: 0 }}
+      >
         <CardContent sx={{ p: 2.5, height: "100%", display: "flex", flexDirection: "column" }}>
           <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 1.5 }}>
             <Box

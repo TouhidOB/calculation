@@ -32,7 +32,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Category landing pages
   CATEGORIES.forEach((cat) => {
     entries.push({
-      url: `${SITE_URL}/?category=${cat.slug}`,
+      url: `${SITE_URL}/calculators?category=${cat.slug}`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: cat.priority,

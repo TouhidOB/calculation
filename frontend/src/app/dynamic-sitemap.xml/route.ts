@@ -36,7 +36,7 @@ export async function GET() {
   const urls = [
     { loc: SITE_URL, changefreq: "daily", priority: "1.0" },
     ...calcUrls.map((id) => ({
-      loc: `${SITE_URL}/?calculator=${id}`,
+      loc: `${SITE_URL}/calculators/${id}`,
       changefreq: "weekly",
       priority: "0.8",
     })),

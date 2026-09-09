@@ -31,7 +31,12 @@ def _load_js() -> dict:
         for k in _JS_CACHE:
             if "__" in k:
                 cat, tpl = k.split("__", 1)
-                _JS_BY_CALC_ID[tpl.replace("_", "-")] = k
+                calc_id = tpl.replace("_", "-")
+                _JS_BY_CALC_ID[calc_id] = k
+                # Also map without "-calculator" suffix for short IDs like "budget" vs "budget-calculator"
+                if calc_id.endswith("-calculator"):
+                    short_id = calc_id[:-11]  # remove "-calculator"
+                    _JS_BY_CALC_ID[short_id] = k
     return _JS_BY_CALC_ID
 
 
