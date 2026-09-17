@@ -1,10 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { useContext, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ColorModeContext } from "@/theme/ThemeRegistry"
 import { CATEGORY_META, listCalculators, type CalculatorDef, type CategoryMap } from "@/lib/calculator-api"
 import { getCalcIcon } from "@/lib/calc-icons"
 import { getIconComponent } from "@/lib/icon-registry"
@@ -25,7 +24,6 @@ import Container from "@mui/material/Container"
 import TextField from "@mui/material/TextField"
 import InputAdornment from "@mui/material/InputAdornment"
 import Chip from "@mui/material/Chip"
-import Stack from "@mui/material/Stack"
 import Paper from "@mui/material/Paper"
 import Popper from "@mui/material/Popper"
 import ClickAwayListener from "@mui/material/ClickAwayListener"
@@ -38,8 +36,6 @@ import { useTheme } from "@mui/material/styles"
 // Icons
 import MenuIcon from "@mui/icons-material/Menu"
 import SearchIcon from "@mui/icons-material/Search"
-import Brightness4Icon from "@mui/icons-material/Brightness4"
-import Brightness7Icon from "@mui/icons-material/Brightness7"
 import CalculateIcon from "@mui/icons-material/Calculate"
 import HomeIcon from "@mui/icons-material/Home"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
@@ -72,7 +68,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   event_budget: <CelebrationIcon />,
 }
 
-const DRAWER_WIDTH = 280
+const DRAWER_WIDTH = 290
 
 interface GlobalNavbarProps {
   currentCategory?: string
@@ -88,7 +84,6 @@ export default function GlobalNavbar({
   const theme = useTheme()
   const router = useRouter()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
-  const { toggleColorMode } = useContext(ColorModeContext)
 
   const [categories, setCategories] = useState<CategoryMap>({})
   const [total, setTotal] = useState(689)
@@ -105,7 +100,7 @@ export default function GlobalNavbar({
         }
       })
       .catch(() => {
-        // Fallback or ignore
+        // Fallback
       })
   }, [])
 
@@ -120,6 +115,7 @@ export default function GlobalNavbar({
     return list
   }, [categories])
 
+  // Filtered calculators based on search
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return []
     const q = searchQuery.toLowerCase().trim()
@@ -130,65 +126,124 @@ export default function GlobalNavbar({
           c.description.toLowerCase().includes(q) ||
           c.category.toLowerCase().includes(q)
       )
-      .slice(0, 8)
+      .slice(0, 10)
   }, [allCalculators, searchQuery])
 
-  const handleSearchSelect = (calcId: string) => {
+  const handleSelectCalc = (calcId: string) => {
     setSearchQuery("")
     setSearchAnchor(null)
+    setDrawerOpen(false)
     router.push(`/calculators/${calcId}`)
   }
 
+  const handleSelectCategory = (catKey: string) => {
+    setDrawerOpen(false)
+    router.push(`/?cat=${catKey}`)
+  }
+
+  // Side Drawer Content
   const drawerContent = (
-    <Box sx={{ width: DRAWER_WIDTH, pt: 2, height: "100%", display: "flex", flexDirection: "column" }}>
-      <Box sx={{ px: 2, pb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-        <CalculateIcon color="primary" sx={{ fontSize: 30 }} />
-        <Typography variant="h6" noWrap sx={{ fontWeight: 800, background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-          CalcHub
-        </Typography>
-        <Chip label={`${total}+`} size="small" color="primary" sx={{ ml: "auto", fontWeight: 700 }} />
+    <Box sx={{ width: DRAWER_WIDTH, bgcolor: "#ffffff", height: "100%", display: "flex", flexDirection: "column" }}>
+      {/* Drawer Header */}
+      <Box
+        sx={{
+          p: 2.5,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "1px solid #e2e8f0",
+          bgcolor: "#f8fafc",
+        }}
+      >
+        <Box
+          component={Link}
+          href="/"
+          onClick={() => setDrawerOpen(false)}
+          sx={{ display: "flex", alignItems: "center", gap: 1.2, textDecoration: "none", color: "inherit" }}
+        >
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: "10px",
+              background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
+            }}
+          >
+            <CalculateIcon sx={{ fontSize: 22 }} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, lineHeight: 1.1, color: "#0f172a" }}>
+              CalcHub
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#475569", fontSize: 11 }}>
+              {total}+ Free Calculators
+            </Typography>
+          </Box>
+        </Box>
+        <IconButton size="small" onClick={() => setDrawerOpen(false)} sx={{ color: "#475569" }}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
       </Box>
-      <Divider />
-      <List sx={{ px: 1, flexGrow: 1, overflowY: "auto" }}>
+
+      {/* Categories List */}
+      <List sx={{ px: 1.5, py: 1.5, flexGrow: 1, overflowY: "auto" }}>
         <ListItemButton
           component={Link}
           href="/"
           onClick={() => setDrawerOpen(false)}
-          selected={!currentCategory && !currentCalcId}
-          sx={{ borderRadius: 2, mb: 0.5 }}
+          sx={{
+            borderRadius: 2,
+            mb: 0.5,
+            py: 1.2,
+            "&:hover": { bgcolor: "rgba(79, 70, 229, 0.06)" },
+          }}
         >
-          <ListItemIcon sx={{ minWidth: 36, color: "primary.main" }}>
+          <ListItemIcon sx={{ minWidth: 38, color: "#4f46e5" }}>
             <HomeIcon />
           </ListItemIcon>
           <ListItemText
             primary="All Calculators"
             secondary="Browse full directory"
             slotProps={{
-              primary: { sx: { fontWeight: 600, fontSize: 14 } },
-              secondary: { sx: { fontSize: 12 } },
+              primary: { sx: { fontWeight: 700, fontSize: 14, color: "#0f172a" } },
+              secondary: { sx: { fontSize: 12, color: "#475569" } },
             }}
           />
         </ListItemButton>
 
-        <Divider sx={{ my: 1 }} />
-        <Typography variant="caption" sx={{ px: 2, py: 0.5, color: "text.secondary", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+        <Divider sx={{ my: 1, borderColor: "#e2e8f0" }} />
+        <Typography
+          variant="caption"
+          sx={{ px: 1.5, py: 0.5, display: "block", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5, fontSize: 11 }}
+        >
           Categories
         </Typography>
 
-        {Object.entries(CATEGORY_META).map(([key, meta]) => {
-          const count = categories[key]?.length || 0
-          const isSelected = currentCategory === key
+        {Object.keys(CATEGORY_META).map((catKey) => {
+          const meta = CATEGORY_META[catKey]
+          const count = categories[catKey]?.length || 0
+          const isSelected = currentCategory === catKey
+
           return (
             <ListItemButton
-              key={key}
-              component={Link}
-              href={`/?cat=${key}`}
-              onClick={() => setDrawerOpen(false)}
+              key={catKey}
+              onClick={() => handleSelectCategory(catKey)}
               selected={isSelected}
-              sx={{ borderRadius: 2, mb: 0.5 }}
+              sx={{
+                borderRadius: 2,
+                mb: 0.5,
+                py: 1,
+                bgcolor: isSelected ? "rgba(79, 70, 229, 0.08)" : "transparent",
+                "&:hover": { bgcolor: "rgba(79, 70, 229, 0.05)" },
+              }}
             >
-              <ListItemIcon sx={{ minWidth: 36, color: meta.color }}>
-                {CATEGORY_ICONS[key] || <CalculateIcon />}
+              <ListItemIcon sx={{ minWidth: 38, color: meta.color }}>
+                {CATEGORY_ICONS[catKey] || <CalculateIcon />}
               </ListItemIcon>
               <ListItemText
                 primary={meta.label}
@@ -196,7 +251,8 @@ export default function GlobalNavbar({
                   primary: {
                     sx: {
                       fontWeight: isSelected ? 700 : 500,
-                      fontSize: 14,
+                      fontSize: 13.5,
+                      color: isSelected ? "#4f46e5" : "#0f172a",
                     },
                   },
                 }}
@@ -207,23 +263,22 @@ export default function GlobalNavbar({
                 sx={{
                   height: 20,
                   fontSize: 11,
-                  fontWeight: 600,
-                  bgcolor: isSelected ? meta.color : undefined,
-                  color: isSelected ? "#fff" : "text.secondary",
+                  fontWeight: 700,
+                  bgcolor: isSelected ? "#4f46e5" : "#f1f5f9",
+                  color: isSelected ? "#fff" : "#475569",
+                  border: "1px solid",
+                  borderColor: isSelected ? "#4f46e5" : "#e2e8f0",
                 }}
               />
             </ListItemButton>
           )
         })}
       </List>
-      <Divider />
-      <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Typography variant="caption" color="text.secondary">
-          Mode
+      <Divider sx={{ borderColor: "#e2e8f0" }} />
+      <Box sx={{ p: 2, bgcolor: "#f8fafc", textAlign: "center" }}>
+        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 500, display: "block" }}>
+          CalcHub © 2026 · 100% Free &amp; Open
         </Typography>
-        <IconButton size="small" onClick={toggleColorMode}>
-          {theme.palette.mode === "dark" ? <Brightness7Icon fontSize="small" /> : <Brightness4Icon fontSize="small" />}
-        </IconButton>
       </Box>
     </Box>
   )
@@ -234,23 +289,28 @@ export default function GlobalNavbar({
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor: theme.palette.mode === "dark" ? "rgba(18, 18, 24, 0.85)" : "rgba(255, 255, 255, 0.85)",
+          bgcolor: "rgba(255, 255, 255, 0.96)",
           backdropFilter: "blur(12px)",
-          borderBottom: "1px solid",
-          borderColor: "divider",
-          color: "text.primary",
+          borderBottom: "1px solid #e2e8f0",
+          color: "#0f172a",
           zIndex: (t) => t.zIndex.drawer + 1,
         }}
       >
-        <Container maxWidth="lg" disableGutters sx={{ px: { xs: 1.5, sm: 2 } }}>
-          <Toolbar disableGutters sx={{ minHeight: { xs: 58, md: 66 }, gap: 1.5 }}>
+        <Container maxWidth="xl" disableGutters sx={{ px: { xs: 1.5, sm: 2.5, md: 4 } }}>
+          <Toolbar disableGutters sx={{ minHeight: { xs: 58, md: 66 }, gap: { xs: 1, sm: 2 } }}>
             {/* Drawer Toggle */}
             <IconButton
-              color="inherit"
               aria-label="open drawer"
               edge="start"
               onClick={() => setDrawerOpen(true)}
-              sx={{ mr: 0.5 }}
+              sx={{
+                color: "#0f172a",
+                border: "1px solid #e2e8f0",
+                borderRadius: 2,
+                p: 0.8,
+                bgcolor: "#f8fafc",
+                "&:hover": { bgcolor: "#f1f5f9" },
+              }}
             >
               <MenuIcon />
             </IconButton>
@@ -273,12 +333,12 @@ export default function GlobalNavbar({
                   width: 36,
                   height: 36,
                   borderRadius: "10px",
-                  background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)",
+                  background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#fff",
-                  boxShadow: "0 4px 12px rgba(99, 102, 241, 0.35)",
+                  boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
                 }}
               >
                 <CalculateIcon sx={{ fontSize: 22 }} />
@@ -291,25 +351,23 @@ export default function GlobalNavbar({
                     fontWeight: 900,
                     letterSpacing: "-0.5px",
                     lineHeight: 1.1,
-                    background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    color: "#0f172a",
                   }}
                 >
                   CalcHub
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: 10, display: "block" }}>
-                  689+ Free Tools
+                <Typography variant="caption" sx={{ fontSize: 11, fontWeight: 600, color: "#475569", display: "block" }}>
+                  {total}+ Free Tools
                 </Typography>
               </Box>
             </Box>
 
             {/* Global Quick Search Bar */}
-            <Box sx={{ flexGrow: 1, position: "relative", maxWidth: { xs: "100%", md: 480 } }}>
+            <Box sx={{ flexGrow: 1, position: "relative", maxWidth: { xs: "100%", md: 540 } }}>
               <TextField
                 size="small"
                 fullWidth
-                placeholder="Search 680+ calculators..."
+                placeholder="Search 680+ calculators (e.g. BMI, Mortgage, Age)..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value)
@@ -322,12 +380,18 @@ export default function GlobalNavbar({
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SearchIcon sx={{ color: "text.secondary", fontSize: 20 }} />
+                        <SearchIcon sx={{ color: "#4f46e5", fontSize: 20 }} />
                       </InputAdornment>
                     ),
                     endAdornment: searchQuery ? (
                       <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => setSearchQuery("")}>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setSearchQuery("")
+                            setSearchAnchor(null)
+                          }}
+                        >
                           <CloseIcon fontSize="small" />
                         </IconButton>
                       </InputAdornment>
@@ -336,175 +400,190 @@ export default function GlobalNavbar({
                 }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: 3,
-                    bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+                    borderRadius: "10px",
+                    bgcolor: "#f8fafc",
                     fontSize: 14,
-                    transition: "all 0.2s ease",
-                    "&:hover": {
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.09)" : "rgba(0,0,0,0.06)",
-                    },
-                    "&.Mui-focused": {
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,1)",
-                    },
+                    color: "#0f172a",
+                    "& fieldset": { borderColor: "#cbd5e1" },
+                    "&:hover fieldset": { borderColor: "#94a3b8" },
+                    "&.Mui-focused fieldset": { borderColor: "#4f46e5" },
                   },
                 }}
               />
 
-              {/* Instant Search Popup Dropdown */}
-              {searchQuery.trim().length > 0 && (
-                <Popper
-                  open={Boolean(searchAnchor && searchResults.length > 0)}
-                  anchorEl={searchAnchor}
-                  placement="bottom-start"
-                  style={{ width: searchAnchor ? searchAnchor.clientWidth : 300, zIndex: 1400 }}
-                >
-                  <ClickAwayListener onClickAway={() => setSearchAnchor(null)}>
-                    <Paper
-                      elevation={8}
-                      sx={{
-                        mt: 1,
-                        borderRadius: 3,
-                        border: "1px solid",
-                        borderColor: "divider",
-                        maxHeight: 400,
-                        overflowY: "auto",
-                        p: 1,
-                      }}
-                    >
-                      <MenuList dense>
-                        {searchResults.map((c) => {
-                          const meta = CATEGORY_META[c.category]
-                          return (
-                            <MenuItem
-                              key={c.id}
-                              onClick={() => handleSearchSelect(c.id)}
+              {/* Search Dropdown Popper */}
+              <Popper
+                open={Boolean(searchAnchor && searchResults.length > 0)}
+                anchorEl={searchAnchor}
+                placement="bottom-start"
+                style={{ width: searchAnchor ? searchAnchor.clientWidth : "auto", zIndex: 1400 }}
+              >
+                <ClickAwayListener onClickAway={() => setSearchAnchor(null)}>
+                  <Paper
+                    elevation={8}
+                    sx={{
+                      mt: 1,
+                      maxHeight: 420,
+                      overflowY: "auto",
+                      borderRadius: 2.5,
+                      border: "1px solid #cbd5e1",
+                      bgcolor: "#ffffff",
+                      boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    <MenuList sx={{ p: 1 }}>
+                      {searchResults.map((item) => {
+                        const meta = CATEGORY_META[item.category]
+                        return (
+                          <MenuItem
+                            key={item.id}
+                            onClick={() => handleSelectCalc(item.id)}
+                            sx={{
+                              p: 1.2,
+                              borderRadius: 1.5,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1.5,
+                              "&:hover": { bgcolor: "rgba(79, 70, 229, 0.06)" },
+                            }}
+                          >
+                            <Box
                               sx={{
-                                borderRadius: 2,
-                                py: 1,
-                                px: 1.5,
+                                width: 32,
+                                height: 32,
+                                borderRadius: 1.5,
+                                bgcolor: `${meta?.color || "#4f46e5"}15`,
+                                color: meta?.color || "#4f46e5",
                                 display: "flex",
-                                flexDirection: "column",
-                                alignItems: "flex-start",
-                                mb: 0.5,
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
                               }}
                             >
-                              <Box sx={{ display: "flex", alignItems: "center", width: "100%", gap: 1 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 600, flexGrow: 1 }}>
-                                  {c.name}
-                                </Typography>
-                                {meta && (
-                                  <Chip
-                                    label={meta.label}
-                                    size="small"
-                                    sx={{
-                                      height: 20,
-                                      fontSize: 10,
-                                      fontWeight: 600,
-                                      bgcolor: `${meta.color}22`,
-                                      color: meta.color,
-                                    }}
-                                  />
-                                )}
-                              </Box>
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{
-                                  display: "-webkit-box",
-                                  WebkitLineClamp: 1,
-                                  WebkitBoxOrient: "vertical",
-                                  overflow: "hidden",
-                                  width: "100%",
-                                  mt: 0.2,
-                                }}
-                              >
-                                {c.description}
+                            {(() => {
+                              const IconComp = getIconComponent(getCalcIcon(item.id))
+                              return <IconComp />
+                            })()}
+                            </Box>
+                            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a" }} noWrap>
+                                {item.name}
                               </Typography>
-                            </MenuItem>
-                          )
-                        })}
-                      </MenuList>
-                    </Paper>
-                  </ClickAwayListener>
-                </Popper>
-              )}
+                              <Typography variant="caption" sx={{ color: "#475569", display: "block" }} noWrap>
+                                {item.description}
+                              </Typography>
+                            </Box>
+                            <Chip
+                              label={meta?.label || item.category}
+                              size="small"
+                              sx={{
+                                height: 20,
+                                fontSize: 10.5,
+                                fontWeight: 600,
+                                bgcolor: `${meta?.color || "#4f46e5"}18`,
+                                color: meta?.color || "#4f46e5",
+                                flexShrink: 0,
+                              }}
+                            />
+                            <ArrowForwardIcon sx={{ fontSize: 16, color: "#94a3b8" }} />
+                          </MenuItem>
+                        )
+                      })}
+                    </MenuList>
+                  </Paper>
+                </ClickAwayListener>
+              </Popper>
             </Box>
 
-            {/* Right Quick Actions */}
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center", ml: "auto" }}>
+            {/* Right Action: Category Drawer Open */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Button
-                component={Link}
-                href="/"
-                variant="text"
-                size="small"
-                startIcon={<HomeIcon />}
+                variant="outlined"
+                onClick={() => setDrawerOpen(true)}
+                startIcon={<CalculateIcon sx={{ color: "#4f46e5" }} />}
                 sx={{
-                  display: { xs: "none", md: "inline-flex" },
-                  textTransform: "none",
-                  fontWeight: 600,
+                  display: { xs: "none", sm: "inline-flex" },
                   borderRadius: 2,
+                  borderColor: "#cbd5e1",
+                  color: "#0f172a",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  py: 0.8,
+                  px: 1.8,
+                  bgcolor: "#ffffff",
+                  "&:hover": {
+                    borderColor: "#4f46e5",
+                    bgcolor: "rgba(79, 70, 229, 0.04)",
+                  },
                 }}
               >
-                All Tools
+                Categories
               </Button>
-
-              <IconButton
-                onClick={toggleColorMode}
-                color="inherit"
-                aria-label="toggle light/dark theme"
-                sx={{
-                  border: "1px solid",
-                  borderColor: "divider",
-                  borderRadius: 2.5,
-                  p: 1,
-                }}
-              >
-                {theme.palette.mode === "dark" ? <Brightness7Icon fontSize="small" /> : <Brightness4Icon fontSize="small" />}
-              </IconButton>
-            </Stack>
+            </Box>
           </Toolbar>
 
-          {/* Horizontal Scrollable Category Bar */}
+          {/* Subheader: Category Chips Horizontal Scroll Bar */}
           {showCategoryBar && (
             <Box
               sx={{
-                display: "flex",
-                gap: 1,
+                py: 1,
+                borderTop: "1px solid #f1f5f9",
                 overflowX: "auto",
-                pb: 1.5,
-                pt: 0.5,
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
                 "&::-webkit-scrollbar": { display: "none" },
                 scrollbarWidth: "none",
               }}
             >
               <Chip
-                label="🏠 All Categories"
                 component={Link}
                 href="/"
                 clickable
-                variant={!currentCategory ? "filled" : "outlined"}
-                color={!currentCategory ? "primary" : "default"}
+                icon={<HomeIcon sx={{ fontSize: "16px !important", color: !currentCategory ? "#fff !important" : "#475569 !important" }} />}
+                label="All (689+)"
                 size="small"
-                sx={{ fontWeight: 600, borderRadius: 2, flexShrink: 0 }}
+                sx={{
+                  fontWeight: 700,
+                  fontSize: 12,
+                  height: 30,
+                  px: 0.5,
+                  bgcolor: !currentCategory ? "#4f46e5" : "#f1f5f9",
+                  color: !currentCategory ? "#ffffff" : "#0f172a",
+                  border: "1px solid",
+                  borderColor: !currentCategory ? "#4f46e5" : "#e2e8f0",
+                  "&:hover": {
+                    bgcolor: !currentCategory ? "#4338ca" : "#e2e8f0",
+                  },
+                }}
               />
-              {Object.entries(CATEGORY_META).map(([catKey, meta]) => {
-                const isActive = currentCategory === catKey
+              {Object.keys(CATEGORY_META).map((catKey) => {
+                const meta = CATEGORY_META[catKey]
+                const count = categories[catKey]?.length || 0
+                const isSelected = currentCategory === catKey
+
                 return (
                   <Chip
                     key={catKey}
-                    label={`${meta.emoji} ${meta.label}`}
                     component={Link}
                     href={`/?cat=${catKey}`}
                     clickable
+                    label={`${meta.emoji} ${meta.label}${count > 0 ? ` (${count})` : ""}`}
                     size="small"
                     sx={{
-                      fontWeight: isActive ? 700 : 500,
-                      borderRadius: 2,
-                      flexShrink: 0,
-                      bgcolor: isActive ? `${meta.color}22` : undefined,
-                      borderColor: isActive ? meta.color : undefined,
-                      color: isActive ? meta.color : "text.primary",
+                      fontWeight: isSelected ? 700 : 500,
+                      fontSize: 12,
+                      height: 30,
+                      px: 0.5,
+                      bgcolor: isSelected ? "#4f46e5" : "#f8fafc",
+                      color: isSelected ? "#ffffff" : "#0f172a",
                       border: "1px solid",
+                      borderColor: isSelected ? "#4f46e5" : "#e2e8f0",
+                      "&:hover": {
+                        borderColor: meta.color,
+                        bgcolor: isSelected ? "#4338ca" : `${meta.color}15`,
+                      },
                     }}
                   />
                 )
@@ -514,12 +593,19 @@ export default function GlobalNavbar({
         </Container>
       </AppBar>
 
-      {/* Drawer */}
+      {/* Side Drawer Component */}
       <Drawer
         anchor="left"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         ModalProps={{ keepMounted: true }}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: DRAWER_WIDTH,
+            boxSizing: "border-box",
+            bgcolor: "#ffffff",
+          },
+        }}
       >
         {drawerContent}
       </Drawer>

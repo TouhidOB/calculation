@@ -2,68 +2,140 @@
 
 import * as React from 'react'
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter'
-import { ThemeProvider, createTheme, type Theme } from '@mui/material/styles'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
-import type { PaletteMode } from '@mui/material'
 
-const getDesignTokens = (mode: PaletteMode) => ({
+const lightTheme = createTheme({
   palette: {
-    mode,
-    ...(mode === 'light'
-      ? {
-          primary: { main: '#6366f1' },
-          secondary: { main: '#06b6d4' },
-          background: { default: '#f4f5fb', paper: '#ffffff' },
-          text: { primary: '#1a1d2e', secondary: '#5c6172' },
-        }
-      : {
-          primary: { main: '#818cf8' },
-          secondary: { main: '#22d3ee' },
-          background: { default: '#0b0d17', paper: '#131629' },
-          text: { primary: '#e6e9f5', secondary: '#9aa1b5' },
-        }),
+    mode: 'light',
+    primary: {
+      main: '#4f46e5',
+      light: '#6366f1',
+      dark: '#4338ca',
+      contrastText: '#ffffff',
+    },
+    secondary: {
+      main: '#0284c7',
+      light: '#38bdf8',
+      dark: '#0369a1',
+      contrastText: '#ffffff',
+    },
+    success: {
+      main: '#10b981',
+      dark: '#059669',
+      contrastText: '#ffffff',
+    },
+    background: {
+      default: '#f8fafc',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#0f172a',
+      secondary: '#475569',
+    },
+    divider: '#e2e8f0',
+    action: {
+      hover: 'rgba(79, 70, 229, 0.04)',
+      selected: 'rgba(79, 70, 229, 0.08)',
+    },
   },
-  shape: { borderRadius: 14 },
+  shape: {
+    borderRadius: 12,
+  },
   typography: {
-    fontFamily: '"Inter","Segoe UI",system-ui,-apple-system,sans-serif',
-    h1: { fontWeight: 800, letterSpacing: '-0.02em' },
-    h2: { fontWeight: 700, letterSpacing: '-0.01em' },
-    h4: { fontWeight: 700, letterSpacing: '-0.01em' },
-    h5: { fontWeight: 700 },
-    h6: { fontWeight: 600 },
-    button: { textTransform: 'none' as const, fontWeight: 600 },
+    fontFamily: '"Inter", "Segoe UI", system-ui, -apple-system, sans-serif',
+    h1: { fontWeight: 800, letterSpacing: '-0.02em', color: '#0f172a' },
+    h2: { fontWeight: 700, letterSpacing: '-0.01em', color: '#0f172a' },
+    h3: { fontWeight: 700, letterSpacing: '-0.01em', color: '#0f172a' },
+    h4: { fontWeight: 700, letterSpacing: '-0.01em', color: '#0f172a' },
+    h5: { fontWeight: 700, color: '#0f172a' },
+    h6: { fontWeight: 600, color: '#0f172a' },
+    subtitle1: { color: '#475569', fontWeight: 500 },
+    subtitle2: { color: '#64748b', fontWeight: 500 },
+    body1: { color: '#1e293b' },
+    body2: { color: '#475569' },
+    button: { textTransform: 'none', fontWeight: 600 },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: '#f8fafc',
+          color: '#0f172a',
+        },
+      },
+    },
     MuiCard: {
       styleOverrides: {
-        root: ({ theme }: { theme: Theme }) => ({
+        root: {
+          backgroundColor: '#ffffff',
           backgroundImage: 'none',
-          border: `1px solid ${theme.palette.divider}`,
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+          border: '1px solid #e2e8f0',
+          borderRadius: 14,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
           '&:hover': {
+            borderColor: '#cbd5e1',
             transform: 'translateY(-2px)',
-            boxShadow: theme.palette.mode === 'dark'
-              ? '0 8px 32px rgba(99,102,241,0.15)'
-              : '0 8px 32px rgba(0,0,0,0.08)',
+            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.06), 0 8px 10px -6px rgba(0,0,0,0.03)',
           },
-        }),
+        },
       },
     },
     MuiButton: {
       styleOverrides: {
-        root: { borderRadius: 10, padding: '10px 24px' },
-        containedPrimary: {
-          background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-          '&:hover': { background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' },
+        root: {
+          borderRadius: 10,
+          padding: '8px 20px',
+          fontWeight: 600,
+        },
+        contained: {
+          background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
+          color: '#ffffff',
+          boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)',
+            boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
+          },
         },
       },
     },
     MuiTextField: {
-      defaultProps: { variant: 'outlined' as const, fullWidth: true },
+      defaultProps: {
+        variant: 'outlined',
+        fullWidth: true,
+      },
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: '#ffffff',
+            borderRadius: 10,
+            '& fieldset': {
+              borderColor: '#cbd5e1',
+            },
+            '&:hover fieldset': {
+              borderColor: '#94a3b8',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#4f46e5',
+              borderWidth: 2,
+            },
+          },
+        },
+      },
     },
     MuiChip: {
       styleOverrides: {
-        root: { fontWeight: 600 },
+        root: {
+          fontWeight: 600,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
       },
     },
   },
@@ -72,31 +144,17 @@ const getDesignTokens = (mode: PaletteMode) => ({
 export const ColorModeContext = React.createContext({ toggleColorMode: () => {} })
 
 export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = React.useState<PaletteMode>('dark')
-
-  React.useEffect(() => {
-    const saved = window.localStorage.getItem('calchub-theme')
-    if (saved === 'light' || saved === 'dark') setMode(saved)
-  }, [])
-
   const colorMode = React.useMemo(
     () => ({
-      toggleColorMode: () =>
-        setMode((prev) => {
-          const next = prev === 'light' ? 'dark' : 'light'
-          window.localStorage.setItem('calchub-theme', next)
-          return next
-        }),
+      toggleColorMode: () => {},
     }),
     []
   )
 
-  const theme = React.useMemo(() => createTheme(getDesignTokens(mode) as any), [mode])
-
   return (
     <ColorModeContext.Provider value={colorMode}>
       <AppRouterCacheProvider options={{ key: 'mui' }}>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={lightTheme}>
           <CssBaseline />
           {children}
         </ThemeProvider>
