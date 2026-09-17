@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next"
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
 
+export const dynamic = "force-dynamic"
 export const revalidate = 86400
 
 const CATEGORIES: { slug: string; priority: number }[] = [
