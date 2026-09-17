@@ -20,22 +20,22 @@ export default function GlobalFooter() {
         mt: "auto",
         bgcolor: "#ffffff",
         borderTop: "1px solid #e2e8f0",
-        pt: { xs: 6, md: 8 },
-        pb: { xs: 4, md: 6 },
+        pt: { xs: 5, md: 7 },
+        pb: { xs: 4, md: 5 },
       }}
     >
       <Container maxWidth="xl">
-        <Grid container spacing={{ xs: 4, md: 6 }}>
+        <Grid container spacing={{ xs: 4, md: 5 }}>
           {/* Brand & Mission Column */}
-          <Grid size={{ xs: 12, md: 4 }}>
+          <Grid size={{ xs: 12, md: 4.5 }}>
             <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2 }}>
-              <CalculatorLogoIcon size={32} />
+              <CalculatorLogoIcon size={30} />
               <Typography
                 variant="h6"
                 component="span"
                 sx={{
                   fontWeight: 900,
-                  fontSize: 22,
+                  fontSize: 21,
                   letterSpacing: "-0.5px",
                   color: "#0f172a",
                 }}
@@ -60,7 +60,7 @@ export default function GlobalFooter() {
               sx={{
                 color: "#475569",
                 lineHeight: 1.7,
-                mb: 2.5,
+                mb: 2,
                 maxWidth: 420,
               }}
             >
@@ -68,12 +68,12 @@ export default function GlobalFooter() {
             </Typography>
 
             <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
-              ⚡ 100% Free · No Registration · Client &amp; Edge Compute
+              ⚡ 100% Free · No Registration · Instant Results
             </Typography>
           </Grid>
 
           {/* Popular Categories */}
-          <Grid size={{ xs: 6, sm: 4, md: 2.5 }}>
+          <Grid size={{ xs: 6, sm: 4, md: 2.7 }}>
             <Typography
               variant="subtitle2"
               sx={{
@@ -88,34 +88,63 @@ export default function GlobalFooter() {
               Popular Categories
             </Typography>
             <Stack spacing={1.25}>
-              <Link href="/calculators?category=finance" style={{ textDecoration: "none" }}>
+              <Link href="/?category=finance" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Finance &amp; Investment
                 </Typography>
               </Link>
-              <Link href="/calculators?category=health" style={{ textDecoration: "none" }}>
+              <Link href="/?category=health" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Health &amp; Fitness
                 </Typography>
               </Link>
-              <Link href="/calculators?category=construction" style={{ textDecoration: "none" }}>
+              <Link href="/?category=construction" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Construction &amp; Building
                 </Typography>
               </Link>
-              <Link href="/calculators?category=conversion" style={{ textDecoration: "none" }}>
+              <Link href="/?category=conversion" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Unit Conversion
                 </Typography>
               </Link>
-              <Link href="/calculators?category=basic" style={{ textDecoration: "none" }}>
+              <Link href="/?category=basic" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Math &amp; Statistics
                 </Typography>
               </Link>
               <Link href="/" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#4f46e5", fontWeight: 700 }}>
+                <Typography variant="body2" sx={{ color: "#4f46e5", fontWeight: 700, mt: 0.5 }}>
                   Browse All 689 Calculators →
+                </Typography>
+              </Link>
+            </Stack>
+          </Grid>
+
+          {/* Company & Support */}
+          <Grid size={{ xs: 6, sm: 4, md: 2.3 }}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 800,
+                color: "#0f172a",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+                fontSize: 12,
+                mb: 2,
+              }}
+            >
+              Company
+            </Typography>
+            <Stack spacing={1.25}>
+              <Link href="/about" style={{ textDecoration: "none" }}>
+                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
+                  About TryCalc
+                </Typography>
+              </Link>
+              <Link href="/contact" style={{ textDecoration: "none" }}>
+                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
+                  Contact Us
                 </Typography>
               </Link>
             </Stack>
@@ -134,7 +163,7 @@ export default function GlobalFooter() {
                 mb: 2,
               }}
             >
-              Trust &amp; Legal
+              Legal &amp; Privacy
             </Typography>
             <Stack spacing={1.25}>
               <Link href="/privacy" style={{ textDecoration: "none" }}>
@@ -149,58 +178,14 @@ export default function GlobalFooter() {
               </Link>
               <Link href="/disclaimer" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  Disclaimer &amp; Accuracy
-                </Typography>
-              </Link>
-              <Link href="/about" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  Editorial Standards (E-E-A-T)
-                </Typography>
-              </Link>
-            </Stack>
-          </Grid>
-
-          {/* Company & Support */}
-          <Grid size={{ xs: 12, sm: 4, md: 3 }}>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 800,
-                color: "#0f172a",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-                fontSize: 12,
-                mb: 2,
-              }}
-            >
-              Company &amp; Resources
-            </Typography>
-            <Stack spacing={1.25}>
-              <Link href="/about" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  About TryCalc
-                </Typography>
-              </Link>
-              <Link href="/contact" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  Contact Us &amp; Support
-                </Typography>
-              </Link>
-              <Link href="/sitemap.xml" target="_blank" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  XML Sitemap
-                </Typography>
-              </Link>
-              <Link href="/llms.txt" target="_blank" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  LLMs &amp; AI Manifest
+                  Disclaimer
                 </Typography>
               </Link>
             </Stack>
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 4, borderColor: "#e2e8f0" }} />
+        <Divider sx={{ my: 3.5, borderColor: "#e2e8f0" }} />
 
         {/* Bottom Bar */}
         <Stack
@@ -215,7 +200,7 @@ export default function GlobalFooter() {
             © {new Date().getFullYear()} TryCalc.net. All rights reserved. Calculations are provided for educational and estimation purposes only.
           </Typography>
 
-          <Stack direction="row" spacing={3}>
+          <Stack direction="row" spacing={2.5}>
             <Link href="/privacy" style={{ textDecoration: "none" }}>
               <Typography variant="caption" sx={{ color: "#64748b", "&:hover": { color: "#4f46e5" } }}>
                 Privacy
