@@ -8,9 +8,9 @@ export default function OrganizationJsonLd() {
         "@type": "WebSite",
         "@id": `${siteUrl}/#website`,
         url: siteUrl,
-        name: "CalcHub",
+        name: "TryCalc",
         description:
-          "689 free online calculators for finance, health, construction, conversion, math, date & time, real estate, and more.",
+          "690 free online calculators for finance, health, construction, conversion, math, date & time, real estate, and more.",
         publisher: {
           "@id": `${siteUrl}/#organization`,
         },
@@ -26,7 +26,7 @@ export default function OrganizationJsonLd() {
       {
         "@type": "Organization",
         "@id": `${siteUrl}/#organization`,
-        name: "CalcHub",
+        name: "TryCalc",
         url: siteUrl,
         logo: {
           "@type": "ImageObject",

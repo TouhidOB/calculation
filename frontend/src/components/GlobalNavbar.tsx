@@ -190,7 +190,7 @@ export default function GlobalNavbar({
           </Box>
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 800, lineHeight: 1.1, color: "#0f172a" }}>
-              CalcHub
+              TryCalc
             </Typography>
             <Typography variant="caption" sx={{ color: "#475569", fontSize: 11 }}>
               {total}+ Free Calculators
@@ -289,7 +289,7 @@ export default function GlobalNavbar({
       <Divider sx={{ borderColor: "#e2e8f0" }} />
       <Box sx={{ p: 2, bgcolor: "#f8fafc", textAlign: "center" }}>
         <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 500, display: "block" }}>
-          CalcHub © 2026 · 100% Free &amp; Open
+          TryCalc © 2026 · 100% Free &amp; Open
         </Typography>
       </Box>
     </Box>
@@ -358,15 +358,15 @@ export default function GlobalNavbar({
               <Box sx={{ display: { xs: "none", sm: "block" } }}>
                 <Typography
                   variant="h6"
-                  noWrap
+                  component="span"
                   sx={{
                     fontWeight: 900,
-                    letterSpacing: "-0.5px",
-                    lineHeight: 1.1,
+                    fontSize: { xs: 20, md: 23 },
+                    letterSpacing: "-0.03em",
                     color: "#0f172a",
                   }}
                 >
-                  CalcHub
+                  TryCalc
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: 11, fontWeight: 600, color: "#475569", display: "block" }}>
                   {total}+ Free Tools

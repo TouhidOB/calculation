@@ -7,7 +7,7 @@ import { CATEGORY_META } from "@/lib/calculator-api"
 
 export function seoTitleFor(calc: CalculatorDef): string {
   const cat = CATEGORY_META[calc.category]?.label || calc.category
-  return `${calc.name} — Free Online ${cat.replace(" Calculators", " Calculator")} | CalcHub`
+  return `${calc.name} — Free Online ${cat.replace(" Calculators", " Calculator")} | TryCalc`
 }
 
 export function seoIntroFor(calc: CalculatorDef): string {
@@ -53,7 +53,7 @@ export function seoFaqFor(calc: CalculatorDef): { q: string; a: string }[] {
   return [
     {
       q: `Is the ${calc.name} free to use?`,
-      a: `Yes — the ${calc.name} on CalcHub is completely free with unlimited calculations, no registration, and no ads interrupting your work.`,
+      a: `Yes — the ${calc.name} on TryCalc is completely free with unlimited calculations, no registration, and no ads interrupting your work.`,
     },
     {
       q: `How accurate is the ${calc.name}?`,
@@ -61,7 +61,7 @@ export function seoFaqFor(calc: CalculatorDef): { q: string; a: string }[] {
     },
     {
       q: `Can I use the ${calc.name} on mobile?`,
-      a: `Absolutely — CalcHub calculators are fully responsive and work on phones, tablets, and desktops with the same speed and accuracy.`,
+      a: `Absolutely — TryCalc calculators are fully responsive and work on phones, tablets, and desktops with the same speed and accuracy.`,
     },
   ]
 }

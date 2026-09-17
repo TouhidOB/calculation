@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import CalculatorRunnerView from "@/components/CalculatorRunnerView"
-import { seoIntroFor, seoTitleFor, seoFaqFor } from "@/lib/seo-helpers"
+import { seoIntroFor, seoTitleFor, seoFaqFor, seoHowToFor } from "@/lib/seo-helpers"
 import type { CalculatorDef } from "@/lib/calculator-api"
+import { CATEGORY_META } from "@/lib/calculator-api"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
@@ -52,11 +53,12 @@ export async function generateMetadata({
   const { calcId } = await params
   const calc = await fetchCalc(calcId)
   if (!calc) {
-    return { title: "Calculator not found | CalcHub" }
+    return { title: "Calculator not found | TryCalc" }
   }
-  const title = seoTitleFor(calc).replace(/ \| CalcHub$/, "")
+  const title = seoTitleFor(calc).replace(/ \| TryCalc$/, "")
   const intro = seoIntroFor(calc)
   const url = `${SITE_URL}/calculators/${calcId}`
+  const catLabel = CATEGORY_META[calc.category]?.label || calc.category
   return {
     title,
     description: intro,
@@ -66,8 +68,8 @@ export async function generateMetadata({
       description: intro,
       url,
       type: "website",
-      siteName: "CalcHub",
-      images: [{ url: "/og-image.png", width: 1200, height: 630, alt: calc.name }],
+      siteName: "TryCalc",
+      images: [{ url: "/og-image.png", width: 1200, height: 630, alt: `${calc.name} - Free Online Calculator` }],
     },
     twitter: {
       card: "summary_large_image",
@@ -79,8 +81,10 @@ export async function generateMetadata({
       calc.name.toLowerCase(),
       `${calc.name.toLowerCase()} online`,
       `${calc.name.toLowerCase()} free`,
+      `${catLabel.toLowerCase()} calculator`,
       "online calculator",
-      "calchub",
+      "free calculator tool",
+      "trycalc",
     ],
   }
 }
@@ -94,15 +98,73 @@ export default async function CalculatorPage({
   const calc = await fetchCalc(calcId)
   if (!calc) notFound()
 
-  // Breadcrumb JSON-LD for this calculator page
   const faqs = seoFaqFor(calc)
+  const howToSteps = seoHowToFor(calc)
+  const catLabel = CATEGORY_META[calc.category]?.label || calc.category
+
+  // 1. BreadcrumbList JSON-LD
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "CalcHub", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: calc.name, item: `${SITE_URL}/calculators/${calcId}` },
+      { "@type": "ListItem", position: 1, name: "TryCalc", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: catLabel, item: `${SITE_URL}/calculators?category=${calc.category}` },
+      { "@type": "ListItem", position: 3, name: calc.name, item: `${SITE_URL}/calculators/${calcId}` },
     ],
+  }
+
+  // 2. WebApplication / SoftwareApplication JSON-LD
+  const softwareAppLd = {
+    "@context": "https://schema.org",
+    "@type": ["WebApplication", "SoftwareApplication"],
+    name: `${calc.name} — Free Online Calculator`,
+    alternateName: calc.name,
+    url: `${SITE_URL}/calculators/${calcId}`,
+    description: seoIntroFor(calc),
+    applicationCategory: "UtilityApplication",
+    applicationSubCategory: catLabel,
+    operatingSystem: "All",
+    browserRequirements: "Requires modern web browser with HTML5 support.",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+    },
+    featureList: `Instant calculation, ${calc.fields.length} configurable parameter fields, 1-click example filler, copy results, reset inputs, responsive mobile & desktop UI`,
+    publisher: {
+      "@type": "Organization",
+      name: "TryCalc",
+      url: SITE_URL,
+    },
+  }
+
+  // 3. FAQPage JSON-LD
+  const faqPageLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: f.a,
+      },
+    })),
+  }
+
+  // 4. HowTo JSON-LD
+  const howToLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: `How to use the ${calc.name}`,
+    description: `Step-by-step guide to calculating ${calc.name.toLowerCase()} instantly using TryCalc.`,
+    step: howToSteps.map((stepText, idx) => ({
+      "@type": "HowToStep",
+      position: idx + 1,
+      name: `Step ${idx + 1}`,
+      text: stepText,
+    })),
   }
 
   return (
@@ -110,6 +172,18 @@ export default async function CalculatorPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareAppLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToLd) }}
       />
       <CalculatorRunnerView calc={calc} />
     </>

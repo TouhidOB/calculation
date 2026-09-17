@@ -7,7 +7,7 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
 export const revalidate = 86400
 
 export const metadata: Metadata = {
-  title: "CalcHub — 680+ Free Online Calculators | Finance, Health, Construction & More",
+  title: "TryCalc — 690 Free Online Calculators | Finance, Health, Math & More",
   description:
     "Free online calculators for finance, health, fitness, construction, date & time, conversions, real estate, and everyday math. Fast, accurate, and responsive.",
 }

@@ -61,6 +61,7 @@ import FlashOnIcon from "@mui/icons-material/FlashOn"
 import RestartAltIcon from "@mui/icons-material/RestartAlt"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import PrintIcon from "@mui/icons-material/Print"
+import FunctionsIcon from "@mui/icons-material/Functions"
 
 function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, string> {
   const ex: Record<string, string> = {}
@@ -134,6 +135,16 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [copyToast, setCopyToast] = useState(false)
+  const [relatedCalcs, setRelatedCalcs] = useState<{ id: string; name: string; description: string }[]>([])
+
+  useEffect(() => {
+    listCalculators()
+      .then((data) => {
+        const list = data.categories[calc.category] || []
+        setRelatedCalcs(list.filter((c) => c.id !== calc.id))
+      })
+      .catch(() => {})
+  }, [calc.id, calc.category])
 
   const howToSteps = React.useMemo(() => seoHowToFor(calc), [calc])
   const faqs = React.useMemo(() => seoFaqFor(calc), [calc])
@@ -331,6 +342,46 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
             <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, letterSpacing: "-0.5px", color: "#0f172a" }}>
               {seoTitle.split(" — ")[0]}
             </Typography>
+
+            {/* Direct Answer / Formula Capsule for GEO/AEO & Quick Read */}
+            <Box
+              sx={{
+                p: 2,
+                mb: 1.5,
+                bgcolor: "#f0fdf4",
+                border: "1px solid #bbf7d0",
+                borderRadius: 2.5,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 1.5,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "8px",
+                  bgcolor: "#16a34a",
+                  color: "#ffffff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  mt: 0.2,
+                }}
+              >
+                <FunctionsIcon sx={{ fontSize: 16 }} />
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#166534", mb: 0.2 }}>
+                  Direct Calculation Overview &amp; Formula Guide
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#14532d", lineHeight: 1.5 }}>
+                  The <strong>{calc.name}</strong> evaluates {calc.fields.length} key input variables ({calc.fields.slice(0, 3).map(f => f.label).join(", ")}{calc.fields.length > 3 ? ", and more" : ""}) using industry-standard deterministic algorithms. Fill parameters below to generate complete instant breakdowns, amortizations, and formatted exportable results.
+                </Typography>
+              </Box>
+            </Box>
+
             <Typography variant="body1" sx={{ color: "#475569", lineHeight: 1.6, maxWidth: 900 }}>
               {seoIntro}
             </Typography>
@@ -826,6 +877,77 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
               </Grid>
             </Grid>
           </Box>
+
+          {/* Related / Category Calculators Internal Linking */}
+          {relatedCalcs.length > 0 && (
+            <Box sx={{ mt: 5, mb: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5 }}>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                    Related {catMeta?.label || calc.category} Calculators
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#64748b" }}>
+                    Explore other free online tools in the same category
+                  </Typography>
+                </Box>
+                <Button
+                  component={Link}
+                  href={`/?cat=${calc.category}`}
+                  endIcon={<ArrowForwardIcon />}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 700,
+                    color: "#4f46e5",
+                  }}
+                >
+                  View All
+                </Button>
+              </Box>
+
+              <Grid container spacing={2}>
+                {relatedCalcs.slice(0, 4).map((rel) => (
+                  <Grid key={rel.id} size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Card
+                      elevation={0}
+                      sx={{
+                        height: "100%",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: 3,
+                        transition: "all 0.15s ease",
+                        "&:hover": {
+                          borderColor: "#4f46e5",
+                          boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                    >
+                      <CardActionArea
+                        component={Link}
+                        href={`/calculators/${rel.id}`}
+                        sx={{ p: 2.5, height: "100%", display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start" }}
+                      >
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a", mb: 0.5 }}>
+                          {rel.name}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "#64748b",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {rel.description || "Free instant online calculation tool."}
+                        </Typography>
+                      </CardActionArea>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
         </Container>
       </Box>
 
