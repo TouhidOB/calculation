@@ -50,6 +50,7 @@ import AccordionDetails from "@mui/material/AccordionDetails"
 import { useTheme } from "@mui/material/styles"
 
 // Icons
+import CalculatorLogoIcon from "@/components/CalculatorLogoIcon"
 import MenuIcon from "@mui/icons-material/Menu"
 import CalculateIcon from "@mui/icons-material/Calculate"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
@@ -98,7 +99,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 
 function seoTitleFor(calc: CalculatorDef): string {
   const cat = CATEGORY_META[calc.category]?.label || calc.category
-  return `${calc.name} — Free Online ${cat.replace(" Calculators", " Calculator")} | CalcHub`
+  return `${calc.name} — Free Online ${cat.replace(" Calculators", " Calculator")} | TryCalc`
 }
 
 function seoIntroFor(calc: CalculatorDef): string {
@@ -150,7 +151,7 @@ function seoFaqFor(calc: CalculatorDef): Array<{ q: string; a: string }> {
     },
     {
       q: `Can I use this ${calc.name} on my phone or tablet?`,
-      a: `Yes! CalcHub is fully responsive and optimized for mobile phones, tablets, laptops, and desktop computers.`,
+      a: `Yes! TryCalc is fully responsive and optimized for mobile phones, tablets, laptops, and desktop computers.`,
     },
     {
       q: `Where can I find more ${cat}?`,
@@ -430,8 +431,8 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
       >
         <Box
           sx={{
-            width: 40,
-            height: 40,
+            width: 38,
+            height: 38,
             borderRadius: "10px",
             display: "flex",
             alignItems: "center",
@@ -441,11 +442,11 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
             boxShadow: "0 2px 8px rgba(79, 70, 229, 0.3)",
           }}
         >
-          <CalculateIcon sx={{ fontSize: 24 }} />
+          <CalculatorLogoIcon size={24} color="#ffffff" />
         </Box>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", lineHeight: 1.1 }}>
-            CalcHub
+            TryCalc
           </Typography>
           <Typography variant="caption" sx={{ color: "#475569", fontWeight: 600 }}>
             {total} Free Calculators
@@ -577,6 +578,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
               }}
             >
               <Box
+                aria-label="TryCalc Calculator Logo"
                 sx={{
                   width: 38,
                   height: 38,
@@ -589,7 +591,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                   boxShadow: "0 2px 6px rgba(79, 70, 229, 0.3)",
                 }}
               >
-                <CalculateIcon sx={{ fontSize: 22 }} />
+                <CalculatorLogoIcon size={22} color="#ffffff" />
               </Box>
               <Typography
                 variant="h6"
@@ -601,7 +603,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                   color: "#0f172a",
                 }}
               >
-                Calc<Box component="span" sx={{ color: "#4f46e5" }}>Hub</Box>
+                Try<Box component="span" sx={{ color: "#4f46e5" }}>Calc</Box>
               </Typography>
             </Box>
 
@@ -745,7 +747,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                       mb: 1.5,
                     }}
                   >
-                    The Free Calculator Hub for Everyday Decisions
+                    TryCalc — Free Calculators for Everyday Decisions
                   </Typography>
                   <Typography variant="body1" sx={{ color: "#475569", fontSize: 16, lineHeight: 1.6, mb: 3 }}>
                     Access {total || 689}+ high-precision tools across 11 categories: Mortgage, Loans, Health & BMI,

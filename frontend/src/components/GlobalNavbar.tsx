@@ -34,6 +34,7 @@ import useMediaQuery from "@mui/material/useMediaQuery"
 import { useTheme } from "@mui/material/styles"
 
 // Icons
+import CalculatorLogoIcon from "@/components/CalculatorLogoIcon"
 import MenuIcon from "@mui/icons-material/Menu"
 import SearchIcon from "@mui/icons-material/Search"
 import CalculateIcon from "@mui/icons-material/Calculate"
@@ -186,7 +187,7 @@ export default function GlobalNavbar({
               boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
             }}
           >
-            <CalculateIcon sx={{ fontSize: 22 }} />
+            <CalculatorLogoIcon size={22} color="#ffffff" />
           </Box>
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 800, lineHeight: 1.1, color: "#0f172a" }}>
@@ -334,10 +335,11 @@ export default function GlobalNavbar({
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: 1.2,
+                gap: { xs: 1, sm: 1.2 },
                 textDecoration: "none",
                 color: "inherit",
-                mr: { xs: 0, sm: 2 },
+                mr: { xs: 1, sm: 2 },
+                flexShrink: 0,
               }}
             >
               <Box
@@ -355,22 +357,33 @@ export default function GlobalNavbar({
                   flexShrink: 0,
                 }}
               >
-                <CalculateIcon sx={{ fontSize: { xs: 20, sm: 22 } }} />
+                <CalculatorLogoIcon size={20} color="#ffffff" />
               </Box>
-              <Box sx={{ display: { xs: "none", sm: "block" } }}>
+              <Box>
                 <Typography
                   variant="h6"
                   component="span"
                   sx={{
                     fontWeight: 900,
-                    fontSize: { xs: 20, md: 23 },
+                    fontSize: { xs: 17, sm: 21, md: 23 },
                     letterSpacing: "-0.03em",
                     color: "#0f172a",
+                    display: "block",
+                    lineHeight: 1.1,
                   }}
                 >
                   TryCalc
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: 11, fontWeight: 600, color: "#475569", display: "block" }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    color: "#475569",
+                    display: { xs: "none", sm: "block" },
+                    lineHeight: 1,
+                  }}
+                >
                   {total}+ Free Tools
                 </Typography>
               </Box>
