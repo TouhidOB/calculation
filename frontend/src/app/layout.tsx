@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   verification: {
-    google: "google-site-verification-code",
+    google: "googlec41ad06c9e4b72b6",
   },
   category: "tools",
   classification: "Free Online Calculators",
