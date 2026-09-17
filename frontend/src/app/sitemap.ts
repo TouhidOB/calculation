@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next"
+import type { CalculatorDef } from "@/lib/calculator-api"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
@@ -53,7 +54,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const seen = new Set<string>()
 
       if (data && data.categories) {
-        for (const [category, list] of Object.entries<any>(data.categories)) {
+        const categories = (data.categories as Record<string, CalculatorDef[]>) || {}
+        for (const list of Object.values(categories)) {
           if (Array.isArray(list)) {
             for (const item of list) {
               const id = String(item.id)

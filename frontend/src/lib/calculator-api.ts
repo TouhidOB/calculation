@@ -52,16 +52,35 @@ async function handle<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>
 }
 
+let cachedCalculatorsPromise: Promise<{ categories: CategoryMap; total: number }> | null = null
+const calcCache = new Map<string, Promise<CalculatorDef>>()
+
 export async function listCalculators(): Promise<{ categories: CategoryMap; total: number }> {
-  return handle(
-    await fetch("/api/calculators/", { cache: "no-store" })
-  )
+  if (cachedCalculatorsPromise) {
+    return cachedCalculatorsPromise
+  }
+  cachedCalculatorsPromise = handle<{ categories: CategoryMap; total: number }>(
+    await fetch("/api/calculators/")
+  ).catch((err) => {
+    cachedCalculatorsPromise = null
+    throw err
+  })
+  return cachedCalculatorsPromise
 }
 
 export async function getCalculator(id: string): Promise<CalculatorDef> {
-  return handle(
-    await fetch(`/api/calculators/${id}/`, { cache: "no-store" })
-  )
+  const cached = calcCache.get(id)
+  if (cached) {
+    return cached
+  }
+  const p = handle<CalculatorDef>(
+    await fetch(`/api/calculators/${id}/`)
+  ).catch((err) => {
+    calcCache.delete(id)
+    throw err
+  })
+  calcCache.set(id, p)
+  return p
 }
 
 export async function runCalculator(

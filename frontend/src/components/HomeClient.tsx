@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { listCalculators, runCalculator, type CategoryMap, type CalculatorDef, CATEGORY_META } from "@/lib/calculator-api"
 import { getCalcIcon } from "@/lib/calc-icons"
 import JsExecutor from "@/components/JsExecutor"
@@ -24,7 +25,6 @@ import Divider from "@mui/material/Divider"
 import Container from "@mui/material/Container"
 import Grid from "@mui/material/Grid"
 import Card from "@mui/material/Card"
-import CardContent from "@mui/material/CardContent"
 import CardActionArea from "@mui/material/CardActionArea"
 import TextField from "@mui/material/TextField"
 import Button from "@mui/material/Button"
@@ -36,17 +36,10 @@ import Select from "@mui/material/Select"
 import FormControl from "@mui/material/FormControl"
 import InputLabel from "@mui/material/InputLabel"
 import Alert from "@mui/material/Alert"
-import Breadcrumbs from "@mui/material/Breadcrumbs"
-import Link from "@mui/material/Link"
-import Skeleton from "@mui/material/Skeleton"
 import Badge from "@mui/material/Badge"
 import Stack from "@mui/material/Stack"
-import Tooltip from "@mui/material/Tooltip"
 import Snackbar from "@mui/material/Snackbar"
 import useMediaQuery from "@mui/material/useMediaQuery"
-import Accordion from "@mui/material/Accordion"
-import AccordionSummary from "@mui/material/AccordionSummary"
-import AccordionDetails from "@mui/material/AccordionDetails"
 import { useTheme } from "@mui/material/styles"
 
 // Icons
@@ -69,12 +62,9 @@ import ScheduleIcon from "@mui/icons-material/Schedule"
 import SchoolIcon from "@mui/icons-material/School"
 import HomeWorkIcon from "@mui/icons-material/HomeWork"
 import CelebrationIcon from "@mui/icons-material/Celebration"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import HelpIcon from "@mui/icons-material/Help"
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
 import SpeedIcon from "@mui/icons-material/Speed"
 import BackspaceIcon from "@mui/icons-material/Backspace"
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined"
 import FlashOnIcon from "@mui/icons-material/FlashOn"
 import RestartAltIcon from "@mui/icons-material/RestartAlt"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
@@ -97,13 +87,12 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 
 /* ---------- SEO helper: humanized how-to + FAQ per calculator ---------- */
 
-function seoTitleFor(calc: CalculatorDef): string {
+export function seoTitleFor(calc: CalculatorDef): string {
   const cat = CATEGORY_META[calc.category]?.label || calc.category
   return `${calc.name} — Free Online ${cat.replace(" Calculators", " Calculator")} | TryCalc`
 }
 
 function seoIntroFor(calc: CalculatorDef): string {
-  const cat = CATEGORY_META[calc.category]?.label || "general"
   const fname = calc.name.toLowerCase()
   const fieldList = calc.fields.slice(0, 4).map(f => f.label.toLowerCase()).join(", ")
 
@@ -124,7 +113,7 @@ function seoIntroFor(calc: CalculatorDef): string {
   return intros[calc.category] || `Calculate ${fname} with this free online tool. Accurate, instant results with clear explanations.`
 }
 
-function seoHowToFor(calc: CalculatorDef): string[] {
+export function seoHowToFor(calc: CalculatorDef): string[] {
   const steps: string[] = []
   if (calc.fields.length > 0) {
     const names = calc.fields.slice(0, 3).map(f => `"${f.label}"`).join(", ")
@@ -138,7 +127,7 @@ function seoHowToFor(calc: CalculatorDef): string[] {
   return steps
 }
 
-function seoFaqFor(calc: CalculatorDef): Array<{ q: string; a: string }> {
+export function seoFaqFor(calc: CalculatorDef): Array<{ q: string; a: string }> {
   const cat = CATEGORY_META[calc.category]?.label || "online"
   return [
     {
@@ -341,6 +330,7 @@ export interface HomeClientProps {
 }
 
 export default function HomeClient({ initialCategories, initialTotal }: HomeClientProps = {}) {
+  const router = useRouter()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
 
@@ -351,22 +341,26 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
         ? Object.values(initialCategories).reduce((s, a) => s + a.length, 0)
         : 0)
   )
-  const [loading, setLoading] = useState(!initialCategories)
-  const [activeCat, setActiveCat] = useState<string | null>(null)
+  const [activeCat, setActiveCat] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      return params.get("cat") || params.get("category") || null
+    }
+    return null
+  })
   const [search, setSearch] = useState("")
   const [selectedCalc, setSelectedCalc] = useState<CalculatorDef | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [allFiltered, setAllFiltered] = useState(false)
 
-  // Sync category param from URL on load
+  // Sync category param from URL on popstate
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    const handlePopState = () => {
       const params = new URLSearchParams(window.location.search)
-      const catParam = params.get("cat") || params.get("category")
-      if (catParam) {
-        setActiveCat(catParam)
-      }
+      setActiveCat(params.get("cat") || params.get("category") || null)
     }
+    window.addEventListener("popstate", handlePopState)
+    return () => window.removeEventListener("popstate", handlePopState)
   }, [])
 
   useEffect(() => {
@@ -375,11 +369,9 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
       .then((data) => {
         setCategories(data.categories)
         setTotal(data.total)
-        setLoading(false)
       })
       .catch((e) => {
         console.error("Failed to load calculators:", e)
-        setLoading(false)
       })
   }, [initialCategories])
 
@@ -866,7 +858,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                   .slice(0, 15)
                   .map((calc) => (
                     <Grid key={calc.id} size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2.4 }}>
-                      <CalcCard calc={calc} onOpen={(c) => { window.location.href = `/calculators/${c.id}` }} />
+                      <CalcCard calc={calc} onOpen={(c) => router.push(`/calculators/${c.id}`)} />
                     </Grid>
                   ))}
               </Grid>
@@ -906,7 +898,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
             <Grid container spacing={2}>
               {displayCalcs.map((calc) => (
                 <Grid key={calc.id} size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2.4 }}>
-                  <CalcCard calc={calc} onOpen={(c) => { window.location.href = `/calculators/${c.id}` }} />
+                  <CalcCard calc={calc} onOpen={(c) => router.push(`/calculators/${c.id}`)} />
                 </Grid>
               ))}
             </Grid>
@@ -937,9 +929,12 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
 
 /* ---------- Calculator Card (Modern Light Theme) ---------- */
 
+function DynamicCalcIcon({ iconName, category }: { iconName: string; category?: string }) {
+  return React.createElement(getIconComponent(iconName, category), { fontSize: "small" })
+}
+
 function CalcCard({ calc, onOpen }: { calc: CalculatorDef; onOpen: (c: CalculatorDef) => void }) {
   const catMeta = CATEGORY_META[calc.category]
-  const IconComp = getIconComponent(getCalcIcon(calc.id))
 
   return (
     <Card
@@ -976,7 +971,7 @@ function CalcCard({ calc, onOpen }: { calc: CalculatorDef; onOpen: (c: Calculato
               color: catMeta?.color || "#4f46e5",
             }}
           >
-            <IconComp />
+            <DynamicCalcIcon iconName={getCalcIcon(calc.id)} category={calc.category} />
           </Box>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700, color: "#0f172a" }}>
@@ -1060,11 +1055,10 @@ function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, 
 function CalculatorRunner({
   calc,
   onBack,
-  onOpenCalc,
 }: {
   calc: CalculatorDef
   onBack: () => void
-  onOpenCalc: (c: CalculatorDef) => void
+  onOpenCalc?: (c: CalculatorDef) => void
 }) {
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
@@ -1087,10 +1081,7 @@ function CalculatorRunner({
   const [err, setErr] = useState<string | null>(null)
   const [copyToast, setCopyToast] = useState(false)
 
-  const howToSteps = useMemo(() => seoHowToFor(calc), [calc])
-  const faqs = useMemo(() => seoFaqFor(calc), [calc])
   const seoIntro = useMemo(() => seoIntroFor(calc), [calc])
-  const seoTitle = useMemo(() => seoTitleFor(calc), [calc])
 
   const handleFillExample = () => {
     const ex = generateExampleValues(calc.fields)

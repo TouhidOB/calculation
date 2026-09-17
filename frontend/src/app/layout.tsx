@@ -16,6 +16,9 @@ export const metadata: Metadata = {
     template: "%s | TryCalc",
   },
   description: defaultDescription,
+  alternates: {
+    canonical: "./",
+  },
   keywords: [
     "trycalc",
     "online calculator",

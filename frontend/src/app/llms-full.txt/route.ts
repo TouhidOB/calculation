@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import type { CalculatorDef } from "@/lib/calculator-api"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
@@ -16,7 +17,8 @@ export async function GET() {
     if (res.ok) {
       const data = await res.json()
       if (data && data.categories) {
-        for (const [catName, list] of Object.entries<any>(data.categories)) {
+        const categories = (data.categories as Record<string, CalculatorDef[]>) || {}
+        for (const [catName, list] of Object.entries(categories)) {
           listText += `\n### Category: ${catName.toUpperCase()}\n`
           if (Array.isArray(list)) {
             for (const item of list) {
@@ -26,7 +28,7 @@ export async function GET() {
         }
       }
     }
-  } catch (err) {
+  } catch {
     listText = "\nCould not fetch complete list dynamically.\n"
   }
 

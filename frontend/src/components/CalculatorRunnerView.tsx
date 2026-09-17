@@ -7,11 +7,8 @@
 import * as React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import type { CalculatorDef } from "@/lib/calculator-api"
 import { listCalculators, runCalculator, CATEGORY_META } from "@/lib/calculator-api"
-import { getCalcIcon } from "@/lib/calc-icons"
-import { getIconComponent } from "@/lib/icon-registry"
 import JsExecutor from "@/components/JsExecutor"
 import GlobalNavbar from "@/components/GlobalNavbar"
 import ModernDatePicker from "@/components/ModernDatePicker"
@@ -29,7 +26,6 @@ import Chip from "@mui/material/Chip"
 import TextField from "@mui/material/TextField"
 import Button from "@mui/material/Button"
 import Card from "@mui/material/Card"
-import CardContent from "@mui/material/CardContent"
 import CardActionArea from "@mui/material/CardActionArea"
 import InputAdornment from "@mui/material/InputAdornment"
 import MenuItem from "@mui/material/MenuItem"
@@ -42,9 +38,7 @@ import AccordionSummary from "@mui/material/AccordionSummary"
 import AccordionDetails from "@mui/material/AccordionDetails"
 import Breadcrumbs from "@mui/material/Breadcrumbs"
 import MuiLink from "@mui/material/Link"
-import Divider from "@mui/material/Divider"
 import Snackbar from "@mui/material/Snackbar"
-import Tooltip from "@mui/material/Tooltip"
 
 // Icons
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
@@ -56,7 +50,6 @@ import HomeIcon from "@mui/icons-material/Home"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined"
 import FlashOnIcon from "@mui/icons-material/FlashOn"
 import RestartAltIcon from "@mui/icons-material/RestartAlt"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
@@ -113,8 +106,6 @@ function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, 
 }
 
 export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) {
-  const router = useRouter()
-
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
     const todayStr = new Date().toISOString().split("T")[0]

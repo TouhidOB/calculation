@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "TryCalc — 690 Free Online Calculators | Finance, Health, Math & More",
   description:
     "Free online calculators for finance, health, fitness, construction, date & time, conversions, real estate, and everyday math. Fast, accurate, and responsive.",
+  alternates: {
+    canonical: "https://trycalc.net",
+  },
 }
 
 async function getCalculators(): Promise<{ categories: CategoryMap; total: number }> {

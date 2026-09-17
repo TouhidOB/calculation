@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
 const BACKEND = "http://backend:8000/api"
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const res = await fetch(`${BACKEND}/health/`, {
     headers: { Accept: "application/json" },
     cache: "no-store",

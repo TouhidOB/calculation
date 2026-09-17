@@ -5,8 +5,6 @@ import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { CATEGORY_META, listCalculators, type CalculatorDef, type CategoryMap } from "@/lib/calculator-api"
-import { getCalcIcon } from "@/lib/calc-icons"
-import { getIconComponent } from "@/lib/icon-registry"
 
 // MUI Components
 import AppBar from "@mui/material/AppBar"
@@ -30,8 +28,6 @@ import ClickAwayListener from "@mui/material/ClickAwayListener"
 import MenuItem from "@mui/material/MenuItem"
 import MenuList from "@mui/material/MenuList"
 import Button from "@mui/material/Button"
-import useMediaQuery from "@mui/material/useMediaQuery"
-import { useTheme } from "@mui/material/styles"
 
 // Icons
 import CalculatorLogoIcon from "@/components/CalculatorLogoIcon"
@@ -73,7 +69,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 
 const DRAWER_WIDTH = 290
 
-interface GlobalNavbarProps {
+export interface GlobalNavbarProps {
   currentCategory?: string
   currentCalcId?: string
   showCategoryBar?: boolean
@@ -81,12 +77,9 @@ interface GlobalNavbarProps {
 
 export default function GlobalNavbar({
   currentCategory,
-  currentCalcId,
   showCategoryBar = true,
 }: GlobalNavbarProps) {
-  const theme = useTheme()
   const router = useRouter()
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
 
   const [categories, setCategories] = useState<CategoryMap>({})
   const [total, setTotal] = useState(689)
@@ -487,10 +480,7 @@ export default function GlobalNavbar({
                                 flexShrink: 0,
                               }}
                             >
-                            {(() => {
-                              const IconComp = getIconComponent(getCalcIcon(item.id))
-                              return <IconComp />
-                            })()}
+                              {CATEGORY_ICONS[item.category] || <CalculateIcon sx={{ fontSize: 18 }} />}
                             </Box>
                             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                               <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a" }} noWrap>

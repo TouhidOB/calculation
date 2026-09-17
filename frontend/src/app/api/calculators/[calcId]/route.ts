@@ -9,8 +9,13 @@ export async function GET(
   const { calcId } = await params
   const res = await fetch(`${BACKEND}/calculators/${calcId}/`, {
     headers: { Accept: "application/json" },
-    cache: "no-store",
+    next: { revalidate: 3600 },
   })
   const data = await res.json()
-  return NextResponse.json(data, { status: res.status })
+  return NextResponse.json(data, {
+    status: res.status,
+    headers: {
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+    },
+  })
 }

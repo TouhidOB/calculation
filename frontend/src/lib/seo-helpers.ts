@@ -11,7 +11,6 @@ export function seoTitleFor(calc: CalculatorDef): string {
 }
 
 export function seoIntroFor(calc: CalculatorDef): string {
-  const cat = CATEGORY_META[calc.category]?.label || "general"
   const fname = calc.name.toLowerCase()
   const fieldList = calc.fields.slice(0, 4).map(f => f.label.toLowerCase()).join(", ")
 

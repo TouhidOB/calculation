@@ -36,7 +36,8 @@ export async function generateStaticParams() {
     if (!res.ok) return []
     const data = await res.json()
     const ids: string[] = []
-    for (const list of Object.values<any>(data.categories || {})) {
+    const categories = (data.categories as Record<string, CalculatorDef[]>) || {}
+    for (const list of Object.values(categories)) {
       if (Array.isArray(list)) for (const c of list) ids.push(String(c.id))
     }
     return ids.map((id) => ({ calcId: id }))
