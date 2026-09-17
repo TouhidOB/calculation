@@ -615,40 +615,6 @@ export default function CalculatorRunnerView({
             </Stack>
           )}
 
-          {/* Dedicated print-only report header (strictly hidden on screen, visible only when printing) */}
-          <Box
-            className="print-only"
-            style={{ display: "none" }}
-            sx={{
-              "@media print": { display: "block !important" },
-              mb: 3,
-            }}
-          >
-            <Typography variant="h5" sx={{ fontWeight: 900, color: "#000000", mb: 0.5 }}>
-              TryCalc.net — {calc.name}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#475569", mb: 2 }}>
-              Category: {catMeta?.label || calc.category} · Generated: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · URL: https://trycalc.net/calculators/{calc.id}
-            </Typography>
-            <Box sx={{ p: 2, border: "1px solid #cbd5e1", borderRadius: 2, mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1, color: "#0f172a" }}>
-                Input Parameters:
-              </Typography>
-              <Grid container spacing={1}>
-                {calc.fields.map((f) => (
-                  <Grid key={f.name} size={{ xs: 6 }}>
-                    <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
-                      {f.label}:
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a" }}>
-                      {values[f.name] || f.default || "—"} {f.unit || ""}
-                    </Typography>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          </Box>
-
           {/* Sleek Tool-First Header */}
           {!embedded && (
             <Box className="no-print" sx={{ mb: 2 }}>
@@ -1471,6 +1437,40 @@ export default function CalculatorRunnerView({
               </Typography>
             </Box>
           )}
+
+          {/* Dedicated print-only report header (strictly placed at bottom, hidden on screen, visible only when printing) */}
+          <Box
+            className="print-only"
+            style={{ display: "none" }}
+            sx={{
+              "@media print": { display: "block !important" },
+              mt: 4,
+            }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: 900, color: "#000000", mb: 0.5 }}>
+              TryCalc.net — {calc.name}
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#475569", mb: 2 }}>
+              Category: {catMeta?.label || calc.category} · Generated: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · URL: https://trycalc.net/calculators/{calc.id}
+            </Typography>
+            <Box sx={{ p: 2, border: "1px solid #cbd5e1", borderRadius: 2, mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1, color: "#0f172a" }}>
+                Input Parameters Summary:
+              </Typography>
+              <Grid container spacing={1}>
+                {calc.fields.map((f) => (
+                  <Grid key={f.name} size={{ xs: 6 }}>
+                    <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
+                      {f.label}:
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a" }}>
+                      {values[f.name] || f.default || "—"} {f.unit || ""}
+                    </Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          </Box>
         </Container>
       </Box>
 
