@@ -1,86 +1,117 @@
 """
-Date & Time calculators implemented in Python for fast, deterministic server-side execution.
+Date & Time calculators implemented in Python using standard library for zero-dependency reliability.
 """
 from datetime import datetime, date, timedelta
-from dateutil.relativedelta import relativedelta
-from .engine import CalcField, register_calculator
+import calendar
+from typing import Optional
+
+from .engine import register_calculator, CalcField
 
 
-def _parse_date(val):
+def _parse_date(val) -> Optional[date]:
     if not val:
         return None
-    val_str = str(val).strip().split("T")[0]
-    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d-%m-%Y", "%Y/%m/%d"):
+    val = str(val).strip()
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d"):
         try:
-            return datetime.strptime(val_str, fmt).date()
+            return datetime.strptime(val, fmt).date()
         except ValueError:
             pass
-    return None
+    try:
+        return date.fromisoformat(val[:10])
+    except Exception:
+        return None
 
 
-def calc_half_birthday(data):
-    dob_val = data.get("birthday-date") or data.get("dob-date") or data.get("birth-date") or data.get("date")
-    bdate = _parse_date(dob_val)
-    if not bdate:
-        return {"error": "Please provide a valid birthdate (YYYY-MM-DD)"}
+def _add_months(d: date, months: int) -> date:
+    year = d.year + (d.month + months - 1) // 12
+    month = (d.month + months - 1) % 12 + 1
+    # clamp day to max days in month
+    max_day = calendar.monthrange(year, month)[1]
+    day = min(d.day, max_day)
+    return date(year, month, day)
+
+
+def _diff_ymd(d1: date, d2: date):
+    """Difference between two dates in (years, months, days). Assumes d2 >= d1."""
+    if d1 > d2:
+        d1, d2 = d2, d1
+    years = d2.year - d1.year
+    months = d2.month - d1.month
+    days = d2.day - d1.day
+
+    if days < 0:
+        prev_month = d2.month - 1 or 12
+        prev_year = d2.year if d2.month > 1 else d2.year - 1
+        days += calendar.monthrange(prev_year, prev_month)[1]
+        months -= 1
+
+    if months < 0:
+        months += 12
+        years -= 1
+
+    return years, months, days
+
+
+def half_birthday_calc(data: dict) -> dict:
+    raw_bday = data.get("birthday-date") or data.get("dob-date") or data.get("start-date") or data.get("date")
+    bday = _parse_date(raw_bday)
+    if not bday:
+        return {"error": "Please select a valid birth date."}
 
     today = date.today()
-    # Calculate birthday this year
-    try:
-        bday_this_year = date(today.year, bdate.month, bdate.day)
-    except ValueError:
-        # Handle Feb 29 on non-leap year
-        bday_this_year = date(today.year, 2, 28)
+    # Calculate half-birthday in the current year
+    half_bday_this_year = _add_months(date(today.year, bday.month, bday.day if bday.day <= 28 else min(bday.day, calendar.monthrange(today.year, bday.month)[1])), 6)
 
-    # Half birthday is 6 months later
-    half_bday = bday_this_year + relativedelta(months=6)
+    # If it has passed this year, take next year's
+    if half_bday_this_year < today:
+        next_half_bday = _add_months(date(today.year + 1, bday.month, bday.day if bday.day <= 28 else min(bday.day, calendar.monthrange(today.year + 1, bday.month)[1])), 6)
+    else:
+        next_half_bday = half_bday_this_year
 
-    # If already passed this year, find the next one
-    if half_bday < today:
-        try:
-            bday_next_year = date(today.year + 1, bdate.month, bdate.day)
-        except ValueError:
-            bday_next_year = date(today.year + 1, 2, 28)
-        half_bday = bday_next_year + relativedelta(months=6)
-
-    days_left = (half_bday - today).days
+    days_left = (next_half_bday - today).days
 
     return {
-        "Next Half-Birthday": half_bday.strftime("%A, %B %d, %Y"),
+        "Next Half-Birthday": next_half_bday.strftime("%A, %B %d, %Y"),
         "Days Remaining": f"{days_left} days away" if days_left > 0 else "Today is your Half-Birthday! 🎉",
-        "Celebration Milestone": f"Exactly 6 months from your birthday on {bdate.strftime('%B %d')}",
-        "Exact Date": half_bday.strftime("%Y-%m-%d"),
+        "Celebration Milestone": f"Exactly 6 months from your birthday on {bday.strftime('%B %d')}",
+        "Exact Date": next_half_bday.isoformat(),
     }
 
 
-def calc_age(data):
-    dob_val = data.get("dob-date") or data.get("birthday-date") or data.get("birthdate") or data.get("dob")
-    bdate = _parse_date(dob_val)
-    if not bdate:
-        return {"error": "Please provide a valid date of birth"}
+def age_calc(data: dict) -> dict:
+    raw_dob = data.get("dob-date") or data.get("birth-date") or data.get("start-date") or data.get("birthday-date")
+    dob = _parse_date(raw_dob)
+    if not dob:
+        return {"error": "Please select a valid date of birth."}
 
-    today = date.today()
-    if bdate > today:
-        return {"error": "Date of birth cannot be in the future"}
+    target = _parse_date(data.get("target-date") or data.get("current-date")) or date.today()
+    if dob > target:
+        return {"error": "Date of birth cannot be in the future relative to comparison date."}
 
-    delta = relativedelta(today, bdate)
-    total_days = (today - bdate).days
+    years, months, days = _diff_ymd(dob, target)
+    total_days = (target - dob).days
     total_weeks = total_days // 7
-    total_months = delta.years * 12 + delta.months
+    total_months = years * 12 + months
     total_hours = total_days * 24
 
     # Next birthday
     try:
-        next_bday = date(today.year, bdate.month, bdate.day)
-        if next_bday < today:
-            next_bday = date(today.year + 1, bdate.month, bdate.day)
+        next_bday = date(target.year, dob.month, dob.day)
     except ValueError:
-        next_bday = date(today.year if today < date(today.year, 2, 28) else today.year + 1, 2, 28)
+        # Leap year handling
+        next_bday = date(target.year, 2, 28)
 
-    days_to_next = (next_bday - today).days
+    if next_bday < target:
+        try:
+            next_bday = date(target.year + 1, dob.month, dob.day)
+        except ValueError:
+            next_bday = date(target.year + 1, 2, 28)
+
+    days_to_next = (next_bday - target).days
 
     return {
-        "Age": f"{delta.years} years, {delta.months} months, {delta.days} days",
+        "Age": f"{years} years, {months} months, {days} days",
         "Total Months": f"{total_months:,} months",
         "Total Weeks": f"{total_weeks:,} weeks",
         "Total Days": f"{total_days:,} days",
@@ -89,282 +120,208 @@ def calc_age(data):
     }
 
 
-def calc_age_difference(data):
-    d1_val = data.get("date-older") or data.get("date1") or data.get("start-date")
-    d2_val = data.get("date-newer") or data.get("date2") or data.get("end-date")
-    d1 = _parse_date(d1_val)
-    d2 = _parse_date(d2_val)
+def date_difference_calc(data: dict) -> dict:
+    d1 = _parse_date(data.get("date-older") or data.get("start-date") or data.get("date1"))
+    d2 = _parse_date(data.get("date-newer") or data.get("end-date") or data.get("date2"))
     if not d1 or not d2:
-        return {"error": "Please provide both dates"}
+        return {"error": "Please provide both dates."}
 
-    older, newer = (d1, d2) if d1 <= d2 else (d2, d1)
-    diff = relativedelta(newer, older)
-    total_days = (newer - older).days
+    if d1 > d2:
+        d1, d2 = d2, d1
+
+    years, months, days = _diff_ymd(d1, d2)
+    total_days = (d2 - d1).days
+    total_weeks = total_days // 7
+    rem_days = total_days % 7
+    total_hours = total_days * 24
 
     return {
-        "Age Difference": f"{diff.years} years, {diff.months} months, {diff.days} days",
+        "Age Difference": f"{years} years, {months} months, {days} days",
         "Total Days Difference": f"{total_days:,} days",
-        "Total Weeks": f"{(total_days // 7):,} weeks, {total_days % 7} days",
-        "Total Hours": f"{(total_days * 24):,} hours",
+        "Total Weeks": f"{total_weeks:,} weeks, {rem_days} days",
+        "Total Hours": f"{total_hours:,} hours",
     }
 
 
-def calc_date_difference(data):
-    return calc_age_difference(data)
-
-
-def calc_pregnancy_week(data):
-    lmp_val = data.get("lmp-date") or data.get("start-date")
-    calc_val = data.get("current-date") or date.today()
-    lmp = _parse_date(lmp_val)
-    calc_date = _parse_date(calc_val) or date.today()
+def pregnancy_week_calc(data: dict) -> dict:
+    raw_lmp = data.get("lmp-date") or data.get("start-date")
+    lmp = _parse_date(raw_lmp)
     if not lmp:
-        return {"error": "Please enter Last Menstrual Period (LMP) date"}
+        return {"error": "Please enter the first day of your Last Menstrual Period (LMP)."}
 
-    edc = lmp + timedelta(days=280)  # Naegele's rule
-    days_pregnant = (calc_date - lmp).days
+    curr = _parse_date(data.get("current-date")) or date.today()
+    
+    # Due date is LMP + 280 days (40 weeks)
+    due_date = lmp + timedelta(days=280)
+    days_pregnant = (curr - lmp).days
+
     if days_pregnant < 0:
-        return {"error": "LMP date cannot be in the future"}
+        return {"error": "LMP date cannot be in the future."}
 
     weeks = days_pregnant // 7
     days = days_pregnant % 7
+    days_left = max(0, (due_date - curr).days)
 
-    if weeks <= 13:
-        trimester = "First Trimester (Weeks 1 - 13)"
-    elif weeks <= 27:
-        trimester = "Second Trimester (Weeks 14 - 27)"
-    elif weeks <= 42:
+    trimester = "First Trimester (Weeks 1 - 13)"
+    if weeks >= 28:
         trimester = "Third Trimester (Weeks 28 - 40+)"
-    else:
-        trimester = "Post-term"
-
-    days_left = (edc - calc_date).days
+    elif weeks >= 14:
+        trimester = "Second Trimester (Weeks 14 - 27)"
 
     return {
-        "Estimated Due Date (EDC)": edc.strftime("%A, %B %d, %Y"),
+        "Estimated Due Date (EDC)": due_date.strftime("%A, %B %d, %Y"),
         "Current Gestational Age": f"{weeks} weeks, {days} days",
         "Trimester": trimester,
-        "Days Remaining to Due Date": f"{max(0, days_left)} days",
+        "Days Remaining to Due Date": f"{days_left} days",
     }
 
 
-def calc_anniversary_milestone(data):
-    start_val = data.get("start-date") or data.get("event-date")
-    sdate = _parse_date(start_val)
-    if not sdate:
-        return {"error": "Please provide a valid event or wedding date"}
+def anniversary_calc(data: dict) -> dict:
+    raw_start = data.get("start-date") or data.get("date")
+    start = _parse_date(raw_start)
+    if not start:
+        return {"error": "Please select a start date."}
 
     today = date.today()
-    diff = relativedelta(today, sdate)
-    total_days = (today - sdate).days
+    if start > today:
+        return {"error": "Start date cannot be in the future."}
 
-    # Next annual anniversary
+    years, months, days = _diff_ymd(start, today)
+    total_days = (today - start).days
+
     try:
-        next_ann = date(today.year, sdate.month, sdate.day)
-        if next_ann < today:
-            next_ann = date(today.year + 1, sdate.month, sdate.day)
+        next_ann = date(today.year, start.month, start.day)
     except ValueError:
-        next_ann = date(today.year + 1, 2, 28)
+        next_ann = date(today.year, 2, 28)
 
-    days_to_ann = (next_ann - today).days
+    if next_ann < today:
+        try:
+            next_ann = date(today.year + 1, start.month, start.day)
+        except ValueError:
+            next_ann = date(today.year + 1, 2, 28)
+
+    days_until_next = (next_ann - today).days
 
     return {
-        "Time Elapsed": f"{diff.years} years, {diff.months} months, {diff.days} days",
+        "Time Elapsed": f"{years} years, {months} months, {days} days",
         "Total Days Together": f"{total_days:,} days",
-        "Next Anniversary": f"{next_ann.strftime('%A, %B %d, %Y')} ({days_to_ann} days away)",
-        "Next Milestone (Years)": f"{diff.years + 1}th Anniversary",
+        "Next Anniversary": f"{next_ann.strftime('%A, %B %d, %Y')} ({days_until_next} days away)",
+        "Next Milestone (Years)": f"{years + 1}th Anniversary",
     }
 
 
-def calc_animal_age(data):
-    age = float(data.get("input-age", 1))
-    direction = str(data.get("conversion-type", "Dog Years → Human Years"))
-    
-    if "Dog" in direction and "Human" in direction:
-        if direction.startswith("Dog"):
-            # Dog -> Human
-            if age <= 1:
-                human_age = age * 15
-            elif age <= 2:
-                human_age = 15 + (age - 1) * 9
-            else:
-                human_age = 24 + (age - 2) * 5
-            return {
-                "Equivalent Human Age": f"{round(human_age, 1)} years old",
-                "Input Dog Age": f"{age} years",
-                "Calculation Rule": "First year ≈ 15 human years, 2nd year ≈ +9, each subsequent ≈ +5",
-            }
+def animal_age_calc(data: dict) -> dict:
+    age_str = data.get("input-age") or data.get("age")
+    direction = str(data.get("conversion-type") or "")
+    try:
+        age = float(str(age_str or "0"))
+    except (TypeError, ValueError):
+        return {"error": "Please enter a valid numeric age."}
+
+    if "Human Years → Dog" in direction:
+        # Human to Dog
+        if age <= 15:
+            dog_age = age / 15.0
+        elif age <= 24:
+            dog_age = 1 + (age - 15) / 9.0
         else:
-            # Human -> Dog
-            if age <= 15:
-                dog_age = age / 15
-            elif age <= 24:
-                dog_age = 1 + (age - 15) / 9
-            else:
-                dog_age = 2 + (age - 24) / 5
-            return {
-                "Equivalent Dog Age": f"{round(dog_age, 1)} dog years",
-                "Input Human Age": f"{age} years",
-                "Calculation Rule": "Standard canine biological aging curve",
-            }
-
-    return {"Calculated Age": f"{age * 7} equivalent years"}
-
-
-def calc_day_of_week(data):
-    d_val = data.get("input-date") or data.get("date") or data.get("date-input")
-    d = _parse_date(d_val)
-    if not d:
-        return {"error": "Please select a valid date"}
-
-    return {
-        "Day of the Week": d.strftime("%A"),
-        "Formatted Date": d.strftime("%B %d, %Y"),
-        "Day of Year": f"Day {d.strftime('%j')} of {d.year}",
-        "ISO Week Number": f"Week {d.isocalendar()[1]}",
-        "Is Leap Year": "Yes" if (d.year % 4 == 0 and (d.year % 100 != 0 or d.year % 400 == 0)) else "No",
-    }
+            dog_age = 2 + (age - 24) / 5.0
+        return {
+            "Equivalent Dog Age": f"{round(dog_age, 1)} dog years",
+            "Input Human Age": f"{age} years",
+            "Calculation Rule": "First year ≈ 15 human years, 2nd year ≈ +9, each subsequent ≈ +5",
+        }
+    else:
+        # Dog to Human
+        if age <= 1:
+            human_age = age * 15
+        elif age <= 2:
+            human_age = 15 + (age - 1) * 9
+        else:
+            human_age = 24 + (age - 2) * 5
+        return {
+            "Equivalent Human Age": f"{round(human_age, 1)} years old",
+            "Input Dog Age": f"{age} years",
+            "Calculation Rule": "First year ≈ 15 human years, 2nd year ≈ +9, each subsequent ≈ +5",
+        }
 
 
-def calc_lease_end(data):
-    start_val = data.get("start-date") or data.get("date")
-    months = int(data.get("lease-term-months") or data.get("months") or 12)
-    sdate = _parse_date(start_val)
-    if not sdate:
-        return {"error": "Please enter lease start date"}
-
-    end_date = sdate + relativedelta(months=months) - timedelta(days=1)
-    return {
-        "Lease End Date": end_date.strftime("%A, %B %d, %Y"),
-        "Lease Duration": f"{months} months",
-        "Start Date": sdate.strftime("%B %d, %Y"),
-        "Exact Expiration Date": end_date.strftime("%Y-%m-%d"),
-    }
-
-
-def calc_retirement_date(data):
-    curr_age = float(data.get("current-age", 30))
-    ret_age = float(data.get("target-retirement-age", 65))
-    calc_date_val = data.get("current-date") or date.today()
-    cdate = _parse_date(calc_date_val) or date.today()
-
-    years_left = max(0.0, ret_age - curr_age)
-    ret_date = cdate + relativedelta(years=int(years_left), months=int((years_left % 1) * 12))
-
-    return {
-        "Target Retirement Date": ret_date.strftime("%B %Y"),
-        "Years Remaining to Work": f"{years_left:.1f} years",
-        "Target Retirement Age": f"{ret_age} years old",
-        "Current Age": f"{curr_age} years old",
-    }
-
-
-# Register all Date & Time calculators with high-precision Python handlers
+# Register all Date/Time calculators with explicit high precision
 register_calculator(
-    "half-birthday-calculator", "🎂 Half-Birthday Calculator", "date_time",
-    "Calculate the exact date of your next half-birthday exactly 6 months from your birthday.",
+    "half-birthday-calculator", "🎂 'Half-Birthday' Calculator", "date_time",
+    "Calculate your exact half-birthday date (6 months away) and countdown timer.",
     fields=[
-        CalcField("birthday-date", "Birthday Date (Month and Day)", type="date"),
+        CalcField("birthday-date", "Date of Birth", type="date", required=True),
     ],
-    fn=calc_half_birthday,
+    fn=half_birthday_calc,
 )
 
 register_calculator(
     "age-calculator", "🎂 Age Calculator", "date_time",
-    "Calculate exact age in years, months, weeks, days, and next birthday countdown.",
+    "Calculate precise age in years, months, days, hours, and countdown to next birthday.",
     fields=[
-        CalcField("dob-date", "Date of Birth (DOB)", type="date"),
+        CalcField("dob-date", "Date of Birth (DOB)", type="date", required=True),
     ],
-    fn=calc_age,
+    fn=age_calc,
 )
 
 register_calculator(
     "chronological-age-calculator", "📅 Chronological Age Calculator", "date_time",
-    "Calculate chronological age from birthdate with detailed time breakdown.",
+    "Calculate exact chronological age from date of birth to current or target date.",
     fields=[
-        CalcField("dob-date", "Date of Birth (DOB)", type="date"),
+        CalcField("dob-date", "Date of Birth", type="date", required=True),
     ],
-    fn=calc_age,
+    fn=age_calc,
 )
 
 register_calculator(
     "age-difference-calculator", "🧮 Age Difference Calculator", "date_time",
-    "Calculate the exact difference in years, months, and days between two people or dates.",
+    "Calculate the exact difference in years, months, and days between two birthdays.",
     fields=[
-        CalcField("date-older", "Date 1 (Older Person / Start Date)", type="date"),
-        CalcField("date-newer", "Date 2 (Younger Person / End Date)", type="date"),
+        CalcField("date-older", "Date 1 (Older Person's Birthday)", type="date", required=True),
+        CalcField("date-newer", "Date 2 (Younger Person's Birthday)", type="date", required=True),
     ],
-    fn=calc_age_difference,
+    fn=date_difference_calc,
 )
 
 register_calculator(
     "date-difference-calculator", "📆 Date Difference Calculator", "date_time",
-    "Calculate exact days, weeks, and months between two dates.",
+    "Calculate elapsed time, days, weeks, and hours between any two calendar dates.",
     fields=[
-        CalcField("date-older", "Start Date", type="date"),
-        CalcField("date-newer", "End Date", type="date"),
+        CalcField("date-older", "Start Date", type="date", required=True),
+        CalcField("date-newer", "End Date", type="date", required=True),
     ],
-    fn=calc_date_difference,
+    fn=date_difference_calc,
 )
 
 register_calculator(
-    "pregnancy-week-calculator", "🤰 Pregnancy Week & Due Date Calculator", "date_time",
-    "Calculate estimated due date (EDC), current gestational age, and trimester.",
+    "pregnancy-week-calculator", "🤰 Pregnancy Week Calculator", "date_time",
+    "Calculate gestational age, current trimester, and estimated delivery due date (EDC).",
     fields=[
-        CalcField("lmp-date", "Last Menstrual Period (LMP) Date", type="date"),
-        CalcField("current-date", "Calculation Date", type="date"),
+        CalcField("lmp-date", "First Day of Last Menstrual Period (LMP)", type="date", required=True),
+        CalcField("current-date", "Current Calculation Date", type="date", default=date.today().isoformat()),
     ],
-    fn=calc_pregnancy_week,
+    fn=pregnancy_week_calc,
 )
 
 register_calculator(
     "anniversary-and-milestone-calculator", "💖 Anniversary & Milestone Calculator", "date_time",
-    "Calculate relationship milestones, elapsed days, and upcoming anniversaries.",
+    "Calculate elapsed relationship milestones, next anniversary date, and days together.",
     fields=[
-        CalcField("start-date", "Date of Event (Wedding / Anniversary)", type="date"),
+        CalcField("start-date", "Date of Event / Wedding", type="date", required=True),
     ],
-    fn=calc_anniversary_milestone,
+    fn=anniversary_calc,
 )
 
 register_calculator(
     "animal-age-calculator", "🐾 Animal Age Converter", "date_time",
-    "Convert pet age between human years and animal years.",
+    "Convert between dog/cat years and equivalent human years with veterinary accuracy.",
     fields=[
-        CalcField("input-age", "Age", type="number", default=2),
+        CalcField("input-age", "Age", type="number", default=5),
         CalcField("conversion-type", "Conversion Direction", type="select", options=[
             {"value": "Dog Years → Human Years", "label": "Dog Years → Human Years"},
-            {"value": "Human Years → Dog Years", "label": "Human Years → Dog Years"}
-        ], default="Dog Years → Human Years"),
+            {"value": "Human Years → Dog Years", "label": "Human Years → Dog Years"},
+        ]),
     ],
-    fn=calc_animal_age,
-)
-
-register_calculator(
-    "day-of-the-week-calculator", "📆 Day of the Week Calculator", "date_time",
-    "Find the exact day of the week for any past or future date.",
-    fields=[
-        CalcField("input-date", "Select Date", type="date"),
-    ],
-    fn=calc_day_of_week,
-)
-
-register_calculator(
-    "lease-end-date-calculator", "🏢 Lease End Date Calculator", "date_time",
-    "Calculate exact lease expiration date from start date and term.",
-    fields=[
-        CalcField("start-date", "Lease Start Date", type="date"),
-        CalcField("lease-term-months", "Lease Term (Months)", type="number", default=12),
-    ],
-    fn=calc_lease_end,
-)
-
-register_calculator(
-    "retirement-date-calculator", "🏖️ Retirement Date Calculator", "date_time",
-    "Calculate target retirement date and years remaining to work.",
-    fields=[
-        CalcField("current-age", "Current Age", type="number", default=30),
-        CalcField("target-retirement-age", "Target Retirement Age", type="number", default=65),
-        CalcField("current-date", "Current Date", type="date"),
-    ],
-    fn=calc_retirement_date,
+    fn=animal_age_calc,
 )
