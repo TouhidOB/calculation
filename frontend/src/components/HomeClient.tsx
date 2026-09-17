@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react"
 import { listCalculators, runCalculator, type CategoryMap, type CalculatorDef, CATEGORY_META } from "@/lib/calculator-api"
 import { getCalcIcon } from "@/lib/calc-icons"
 import JsExecutor from "@/components/JsExecutor"
+import ModernDatePicker from "@/components/ModernDatePicker"
 import { getIconComponent } from "@/lib/icon-registry"
 import DOMPurify from "dompurify"
 
@@ -71,6 +72,7 @@ import HelpIcon from "@mui/icons-material/Help"
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
 import SpeedIcon from "@mui/icons-material/Speed"
 import BackspaceIcon from "@mui/icons-material/Backspace"
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined"
 
 const DRAWER_WIDTH = 270
 
@@ -1011,8 +1013,15 @@ function CalculatorRunner({
 }) {
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
+    const todayStr = new Date().toISOString().split("T")[0]
     for (const f of calc.fields) {
-      init[f.name] = f.default != null ? String(f.default) : ""
+      if (f.default != null && f.default !== "") {
+        init[f.name] = String(f.default)
+      } else if (f.type === "date") {
+        init[f.name] = todayStr
+      } else {
+        init[f.name] = ""
+      }
     }
     return init
   })
@@ -1100,24 +1109,78 @@ function CalculatorRunner({
       <Grid container spacing={3.5}>
         <Grid size={{ xs: 12, lg: 6.5 }}>
           <Paper elevation={0} sx={{ p: { xs: 2.5, sm: 3.5 }, borderRadius: 3.5, bgcolor: "#ffffff", border: "1px solid #e2e8f0" }}>
+            {/* Instruction Banner */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.2,
+                p: 1.2,
+                px: 1.8,
+                mb: 2.5,
+                borderRadius: 2,
+                bgcolor: "#eff6ff",
+                border: "1px solid #dbeafe",
+                color: "#1e40af",
+              }}
+            >
+              <InfoOutlinedIcon sx={{ fontSize: 18, color: "#2563eb", flexShrink: 0 }} />
+              <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: "#1e40af" }}>
+                Modify the values and click the Calculate button to use
+              </Typography>
+            </Box>
+
             <form onSubmit={submit}>
               <Stack spacing={2.5}>
-                {calc.fields.map((f) => (
-                  <TextField
-                    key={f.name}
-                    type={f.type === "number" ? "number" : "text"}
-                    label={f.label}
-                    value={values[f.name] ?? ""}
-                    onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
-                    fullWidth
-                    slotProps={{
-                      input: {
-                        endAdornment: f.unit ? <InputAdornment position="end">{f.unit}</InputAdornment> : null,
-                      },
-                    }}
-                    helperText={f.help || undefined}
-                  />
-                ))}
+                {calc.fields.map((f) => {
+                  if (f.type === "select") {
+                    return (
+                      <FormControl key={f.name} fullWidth size="medium">
+                        <InputLabel>{f.label}</InputLabel>
+                        <Select
+                          value={values[f.name]}
+                          label={f.label}
+                          onChange={(e) =>
+                            setValues({ ...values, [f.name]: e.target.value })
+                          }
+                        >
+                          {(f.options || []).map((o) => (
+                            <MenuItem key={o.value} value={o.value}>
+                              {o.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    )
+                  }
+                  if (f.type === "date") {
+                    return (
+                      <ModernDatePicker
+                        key={f.name}
+                        label={f.label}
+                        value={values[f.name]}
+                        onChange={(val) => setValues({ ...values, [f.name]: val })}
+                        helperText={f.help || undefined}
+                      />
+                    )
+                  }
+                  return (
+                    <TextField
+                      key={f.name}
+                      type={f.type === "number" ? "number" : "text"}
+                      label={f.label}
+                      value={values[f.name] ?? ""}
+                      onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
+                      fullWidth
+                      slotProps={{
+                        input: {
+                          endAdornment: f.unit ? <InputAdornment position="end">{f.unit}</InputAdornment> : null,
+                        },
+                      }}
+                      helperText={f.help || undefined}
+                    />
+                  )
+                })}
                 <Button
                   type="submit"
                   variant="contained"

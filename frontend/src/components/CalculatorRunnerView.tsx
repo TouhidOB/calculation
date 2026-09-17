@@ -13,6 +13,7 @@ import { getCalcIcon } from "@/lib/calc-icons"
 import { getIconComponent } from "@/lib/icon-registry"
 import JsExecutor from "@/components/JsExecutor"
 import GlobalNavbar from "@/components/GlobalNavbar"
+import ModernDatePicker from "@/components/ModernDatePicker"
 import { seoHowToFor, seoFaqFor, seoIntroFor, seoTitleFor } from "@/lib/seo-helpers"
 import DOMPurify from "dompurify"
 
@@ -52,14 +53,22 @@ import HomeIcon from "@mui/icons-material/Home"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined"
 
 export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) {
   const router = useRouter()
 
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
+    const todayStr = new Date().toISOString().split("T")[0]
     for (const f of calc.fields) {
-      init[f.name] = f.default != null ? String(f.default) : ""
+      if (f.default != null && f.default !== "") {
+        init[f.name] = String(f.default)
+      } else if (f.type === "date") {
+        init[f.name] = todayStr
+      } else {
+        init[f.name] = ""
+      }
     }
     return init
   })
@@ -257,9 +266,30 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                     {calc.fields.length} inputs
                   </Typography>
                 </Stack>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   {calc.description}
                 </Typography>
+
+                {/* Instruction Banner */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.2,
+                    p: 1.2,
+                    px: 1.8,
+                    mb: 2.5,
+                    borderRadius: 2,
+                    bgcolor: "#eff6ff",
+                    border: "1px solid #dbeafe",
+                    color: "#1e40af",
+                  }}
+                >
+                  <InfoOutlinedIcon sx={{ fontSize: 18, color: "#2563eb", flexShrink: 0 }} />
+                  <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: "#1e40af" }}>
+                    Modify the values and click the Calculate button to use
+                  </Typography>
+                </Box>
 
                 <form onSubmit={submit}>
                   <Stack spacing={2.5}>
@@ -286,16 +316,11 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                       }
                       if (f.type === "date") {
                         return (
-                          <TextField
+                          <ModernDatePicker
                             key={f.name}
-                            type="date"
                             label={f.label}
-                            value={values[f.name] || ""}
-                            onChange={(e) =>
-                              setValues({ ...values, [f.name]: e.target.value })
-                            }
-                            fullWidth
-                            slotProps={{ inputLabel: { shrink: true } }}
+                            value={values[f.name]}
+                            onChange={(val) => setValues({ ...values, [f.name]: val })}
                             helperText={f.help || undefined}
                           />
                         )
