@@ -52,7 +52,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
     try {
       // Fetch script if not cached
       if (!scriptCache.current) {
-        const res = await fetch(`/api/calculators/${calcId}/script`)
+        const res = await fetch(`/api/calculators/${calcId}/script/`)
         if (!res.ok) {
           if (res.status === 404) {
             // No JS for this calculator — it runs server-side

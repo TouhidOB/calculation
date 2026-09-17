@@ -54,13 +54,13 @@ async function handle<T>(res: Response): Promise<T> {
 
 export async function listCalculators(): Promise<{ categories: CategoryMap; total: number }> {
   return handle(
-    await fetch("/api/calculators", { cache: "no-store" })
+    await fetch("/api/calculators/", { cache: "no-store" })
   )
 }
 
 export async function getCalculator(id: string): Promise<CalculatorDef> {
   return handle(
-    await fetch(`/api/calculators/${id}`, { cache: "no-store" })
+    await fetch(`/api/calculators/${id}/`, { cache: "no-store" })
   )
 }
 
@@ -69,7 +69,7 @@ export async function runCalculator(
   values: Record<string, string | number>
 ): Promise<RunResult> {
   return handle(
-    await fetch(`/api/calculators/${id}/run`, {
+    await fetch(`/api/calculators/${id}/run/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
@@ -79,7 +79,7 @@ export async function runCalculator(
 
 export async function getCalculatorScript(id: string): Promise<{ js_key: string; script: string }> {
   return handle(
-    await fetch(`/api/calculators/${id}/script`, { cache: "no-store" })
+    await fetch(`/api/calculators/${id}/script/`, { cache: "no-store" })
   )
 }
 
