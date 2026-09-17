@@ -136,7 +136,7 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
       // First try backend run
       const res = await runCalculator(calc.id, payload)
       if (res.result && Object.keys(res.result).length > 0) {
-        if ("js_required" in res.result) {
+        if ("js_required" in res.result || (typeof res.result.note === "string" && res.result.note.includes("client-side"))) {
           // Backend signaled this requires JS execution
           setJsTrigger(prev => prev + 1)
           return

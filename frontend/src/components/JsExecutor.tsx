@@ -134,18 +134,25 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
       doc.write(`<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <style>
-* { box-sizing: border-box; font-family: system-ui, sans-serif; }
-body { padding: 8px; font-size: 14px; color: #333; }
+* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { padding: 12px; font-size: 15px; color: #0f172a; line-height: 1.6; }
 .d-none { display: none; }
-.result-area { margin-top: 8px; }
-table { border-collapse: collapse; width: 100%; }
-th, td { padding: 6px 8px; border: 1px solid #ddd; text-align: left; }
-th { background: #f5f5f5; font-weight: 600; }
-.text-success, .text-green { color: #16a34a; }
-.text-danger, .text-red { color: #dc2626; }
-.text-warning { color: #d97706; }
-.text-info { color: #0891b2; }
-strong { font-weight: 600; }
+.result-area { margin-top: 12px; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+th, td { padding: 10px 14px; border: 1px solid #e2e8f0; text-align: left; }
+th { background: #f8fafc; font-weight: 700; color: #0f172a; }
+tr:nth-child(even) td { background: #f8fafc; }
+.text-success, .text-green { color: #16a34a; font-weight: 600; }
+.text-danger, .text-red { color: #dc2626; font-weight: 600; }
+.text-warning { color: #d97706; font-weight: 600; }
+.text-info { color: #0284c7; font-weight: 600; }
+.date-display, .result-value, .display-4, .display-5, .display-6 { font-size: 1.5rem; font-weight: 800; color: #4338ca; margin: 8px 0; }
+.party-emoji { font-size: 1.8rem; }
+.alert { padding: 12px 16px; border-radius: 8px; margin: 10px 0; }
+.alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+strong { font-weight: 700; color: #0f172a; }
 </style>
 </head><body>
 <form id="${fid}">

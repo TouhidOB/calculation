@@ -11,7 +11,7 @@ from .engine import CalcField, register_calculator
 
 def _js_calc(data):
     """Placeholder: actual calculation runs client-side in JavaScript."""
-    return {"note": "This calculator runs client-side", "inputs": {k: v for k, v in data.items()}}
+    return {"js_required": True, "note": "This calculator runs client-side", "inputs": {k: v for k, v in data.items()}}
 
 
 register_calculator(
