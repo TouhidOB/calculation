@@ -42,6 +42,7 @@ import Skeleton from "@mui/material/Skeleton"
 import Badge from "@mui/material/Badge"
 import Stack from "@mui/material/Stack"
 import Tooltip from "@mui/material/Tooltip"
+import Snackbar from "@mui/material/Snackbar"
 import useMediaQuery from "@mui/material/useMediaQuery"
 import Accordion from "@mui/material/Accordion"
 import AccordionSummary from "@mui/material/AccordionSummary"
@@ -73,6 +74,9 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
 import SpeedIcon from "@mui/icons-material/Speed"
 import BackspaceIcon from "@mui/icons-material/Backspace"
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined"
+import FlashOnIcon from "@mui/icons-material/FlashOn"
+import RestartAltIcon from "@mui/icons-material/RestartAlt"
+import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 
 const DRAWER_WIDTH = 270
 
@@ -1000,6 +1004,55 @@ function CalcCard({ calc, onOpen }: { calc: CalculatorDef; onOpen: (c: Calculato
   )
 }
 
+function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, string> {
+  const ex: Record<string, string> = {}
+  for (const f of fields) {
+    const name = f.name.toLowerCase()
+    const label = (f.label || "").toLowerCase()
+
+    if (f.type === "select") {
+      ex[f.name] = f.options && f.options.length > 0 ? String(f.options[0].value) : ""
+    } else if (f.type === "date") {
+      if (name.includes("dob") || name.includes("birth") || label.includes("birth")) {
+        ex[f.name] = "1998-05-15"
+      } else if (name.includes("start") || name.includes("older") || name.includes("date1") || name.includes("lmp")) {
+        ex[f.name] = "2024-01-15"
+      } else if (name.includes("end") || name.includes("newer") || name.includes("date2") || name.includes("target")) {
+        ex[f.name] = "2026-09-17"
+      } else {
+        ex[f.name] = "2024-06-01"
+      }
+    } else {
+      if (f.default != null && f.default !== "") {
+        ex[f.name] = String(f.default)
+      } else if (name.includes("price") || name.includes("loan") || name.includes("amount") || name.includes("principal")) {
+        ex[f.name] = "50000"
+      } else if (name.includes("rate") || name.includes("interest") || name.includes("percent") || name.includes("tax")) {
+        ex[f.name] = "6.5"
+      } else if (name.includes("term") || name.includes("year") || name.includes("period") || name.includes("tenure")) {
+        ex[f.name] = "15"
+      } else if (name.includes("month")) {
+        ex[f.name] = "12"
+      } else if (name.includes("age")) {
+        ex[f.name] = "28"
+      } else if (name.includes("height")) {
+        ex[f.name] = "175"
+      } else if (name.includes("weight")) {
+        ex[f.name] = "70"
+      } else if (name.includes("income") || name.includes("salary")) {
+        ex[f.name] = "65000"
+      } else if (name.includes("down")) {
+        ex[f.name] = "10000"
+      } else if (f.type === "number") {
+        ex[f.name] = "100"
+      } else {
+        ex[f.name] = "Sample"
+      }
+    }
+  }
+  return ex
+}
+
 /* ---------- Calculator Runner (Inline or Modal) ---------- */
 
 function CalculatorRunner({
@@ -1030,11 +1083,51 @@ function CalculatorRunner({
   const [jsTrigger, setJsTrigger] = useState(0)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  const [copyToast, setCopyToast] = useState(false)
 
   const howToSteps = useMemo(() => seoHowToFor(calc), [calc])
   const faqs = useMemo(() => seoFaqFor(calc), [calc])
   const seoIntro = useMemo(() => seoIntroFor(calc), [calc])
   const seoTitle = useMemo(() => seoTitleFor(calc), [calc])
+
+  const handleFillExample = () => {
+    const ex = generateExampleValues(calc.fields)
+    setValues(ex)
+  }
+
+  const handleReset = () => {
+    const init: Record<string, string> = {}
+    const todayStr = new Date().toISOString().split("T")[0]
+    for (const f of calc.fields) {
+      if (f.default != null && f.default !== "") {
+        init[f.name] = String(f.default)
+      } else if (f.type === "date") {
+        init[f.name] = todayStr
+      } else {
+        init[f.name] = ""
+      }
+    }
+    setValues(init)
+    setResult(null)
+    setJsHtml(null)
+    setErr(null)
+  }
+
+  const handleCopyResult = () => {
+    let textToCopy = `${calc.name} Results:\n`
+    if (result) {
+      for (const [k, v] of Object.entries(result)) {
+        textToCopy += `${String(k).replaceAll("_", " ")}: ${String(v)}\n`
+      }
+    } else if (jsHtml) {
+      const tmp = document.createElement("div")
+      tmp.innerHTML = jsHtml
+      textToCopy += tmp.textContent || tmp.innerText || ""
+    }
+    textToCopy += `\nCalculated on TryCalc.net`
+    navigator.clipboard.writeText(textToCopy)
+    setCopyToast(true)
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -1110,29 +1203,138 @@ function CalculatorRunner({
         </Typography>
       </Box>
 
+      {/* 3-Step Operation Visual Bar */}
+      <Box sx={{ mb: 3.5, p: 2, borderRadius: 3.5, bgcolor: "#ffffff", border: "1px solid #e2e8f0" }}>
+        <Grid container spacing={2} sx={{ alignItems: "center" }}>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  bgcolor: "#4f46e5",
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 14,
+                  fontWeight: 800,
+                }}
+              >
+                1
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a" }}>
+                  Enter Parameters
+                </Typography>
+                <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
+                  Fill inputs or use ⚡ Fill Example
+                </Typography>
+              </Box>
+            </Stack>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  bgcolor: busy ? "#f59e0b" : "#f1f5f9",
+                  color: busy ? "#fff" : "#475569",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 14,
+                  fontWeight: 800,
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                2
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: busy ? "#d97706" : "#0f172a" }}>
+                  Calculate
+                </Typography>
+                <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
+                  Deterministic instant engine
+                </Typography>
+              </Box>
+            </Stack>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  bgcolor: result || jsHtml ? "#10b981" : "#f1f5f9",
+                  color: result || jsHtml ? "#fff" : "#475569",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 14,
+                  fontWeight: 800,
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                3
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: result || jsHtml ? "#16a34a" : "#0f172a" }}>
+                  Instant Results
+                </Typography>
+                <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
+                  View, copy & analyze
+                </Typography>
+              </Box>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Box>
+
       <Grid container spacing={3.5}>
         <Grid size={{ xs: 12, lg: 6.5 }}>
           <Paper elevation={0} sx={{ p: { xs: 2.5, sm: 3.5 }, borderRadius: 3.5, bgcolor: "#ffffff", border: "1px solid #e2e8f0" }}>
-            {/* Instruction Banner */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1.2,
-                p: 1.2,
-                px: 1.8,
-                mb: 2.5,
-                borderRadius: 2,
-                bgcolor: "#eff6ff",
-                border: "1px solid #dbeafe",
-                color: "#1e40af",
-              }}
-            >
-              <InfoOutlinedIcon sx={{ fontSize: 18, color: "#2563eb", flexShrink: 0 }} />
-              <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: "#1e40af" }}>
-                Modify the values and click the Calculate button to use
-              </Typography>
-            </Box>
+            {/* Quick Toolbar */}
+            <Stack direction="row" spacing={1} sx={{ mb: 2.5, flexWrap: "wrap", gap: 1 }}>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<FlashOnIcon sx={{ color: "#f59e0b" }} />}
+                onClick={handleFillExample}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 700,
+                  fontSize: 12.5,
+                  color: "#0f172a",
+                  borderColor: "#e2e8f0",
+                  bgcolor: "#f8fafc",
+                  "&:hover": { bgcolor: "#f1f5f9", borderColor: "#cbd5e1" },
+                }}
+              >
+                ⚡ Fill Example
+              </Button>
+              <Button
+                size="small"
+                variant="text"
+                startIcon={<RestartAltIcon />}
+                onClick={handleReset}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: 12.5,
+                  color: "#64748b",
+                  "&:hover": { bgcolor: "#f8fafc", color: "#0f172a" },
+                }}
+              >
+                ↺ Reset
+              </Button>
+            </Stack>
 
             <form onSubmit={submit}>
               <Stack spacing={2.5}>
@@ -1191,9 +1393,18 @@ function CalculatorRunner({
                   size="large"
                   disabled={busy}
                   startIcon={<PlayArrowIcon />}
-                  sx={{ py: 1.5, borderRadius: 2.5, fontWeight: 700 }}
+                  sx={{
+                    py: 1.6,
+                    borderRadius: 3,
+                    fontWeight: 800,
+                    textTransform: "none",
+                    fontSize: 16,
+                    bgcolor: "#4f46e5",
+                    "&:hover": { bgcolor: "#4338ca" },
+                    boxShadow: "0 4px 14px rgba(79, 70, 229, 0.4)",
+                  }}
                 >
-                  {busy ? "Calculating..." : "Calculate"}
+                  {busy ? "Calculating..." : "⚡ Calculate"}
                 </Button>
               </Stack>
             </form>
@@ -1218,11 +1429,11 @@ function CalculatorRunner({
           {result || jsHtml ? (
             <Paper elevation={0} sx={{ p: { xs: 2.5, sm: 3.5 }, borderRadius: 3.5, bgcolor: "#ffffff", border: "1px solid #e2e8f0" }}>
               <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2 }}>
-                <CheckCircleIcon color="success" />
-                <Typography variant="h6" sx={{ fontWeight: 700, color: "#0f172a" }}>
+                <CheckCircleIcon sx={{ color: "#10b981" }} />
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
                   Results
                 </Typography>
-                <Chip label="Calculated" size="small" color="success" variant="outlined" sx={{ ml: "auto", fontWeight: 700 }} />
+                <Chip label="Ready" size="small" sx={{ ml: "auto", bgcolor: "#ecfdf5", color: "#059669", fontWeight: 700, border: "1px solid #a7f3d0" }} />
               </Stack>
               {jsHtml ? (
                 <Box
@@ -1234,7 +1445,7 @@ function CalculatorRunner({
               ) : result ? (
                 <Stack spacing={1.5}>
                   {Object.entries(result).map(([k, val]) => (
-                    <Box key={k} sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", pb: 1.5, borderBottom: "1px solid #e2e8f0" }}>
+                    <Box key={k} sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", pb: 1.5, borderBottom: "1px solid #f1f5f9" }}>
                       <Typography variant="body2" sx={{ color: "#475569", textTransform: "capitalize", fontWeight: 600 }}>
                         {String(k).replaceAll("_", " ")}
                       </Typography>
@@ -1245,20 +1456,49 @@ function CalculatorRunner({
                   ))}
                 </Stack>
               ) : null}
+
+              {/* Copy results button */}
+              <Stack direction="row" spacing={1.5} sx={{ mt: 3, pt: 2, borderTop: "1px solid #e2e8f0" }}>
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<ContentCopyIcon />}
+                  onClick={handleCopyResult}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    bgcolor: "#4f46e5",
+                    "&:hover": { bgcolor: "#4338ca" },
+                  }}
+                >
+                  Copy Results
+                </Button>
+              </Stack>
             </Paper>
           ) : (
             <Paper elevation={0} sx={{ p: 5, border: "1px dashed #cbd5e1", borderRadius: 3.5, textAlign: "center", bgcolor: "#ffffff" }}>
               <CalculateIcon sx={{ fontSize: 56, color: "#94a3b8", mb: 1.5 }} />
               <Typography variant="h6" sx={{ fontWeight: 700, color: "#0f172a" }}>
-                Fill in the form and click Calculate
+                Ready to Calculate
               </Typography>
-              <Typography variant="body2" sx={{ color: "#475569", mt: 0.5 }}>
-                Instant breakdown and exact results will appear here
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
+                Fill in the form or click <strong>⚡ Fill Example</strong> to see instant results
               </Typography>
             </Paper>
           )}
         </Grid>
       </Grid>
+
+      {/* Copy Toast */}
+      <Snackbar
+        open={copyToast}
+        autoHideDuration={2500}
+        onClose={() => setCopyToast(false)}
+        message="✅ Results copied to clipboard!"
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      />
     </Container>
   )
 }
