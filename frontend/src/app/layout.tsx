@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
+import Script from "next/script"
 import ThemeRegistry from "@/theme/ThemeRegistry"
 import OrganizationJsonLd from "@/components/OrganizationJsonLd"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-KXFZGDCLVQ"
 const siteName = "CalcHub"
 const defaultTitle = "CalcHub — 689 Free Online Calculators"
 const defaultDescription = "Free online calculators for finance, health, construction, conversion, math, date/time, real estate, and more. 689 calculators across 11 categories with instant results. No signup required."
@@ -84,6 +86,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body>
+        {/* Google Analytics (GA4) */}
+        {GA_MEASUREMENT_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_MEASUREMENT_ID}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        )}
         <OrganizationJsonLd />
         <ThemeRegistry>{children}</ThemeRegistry>
       </body>
