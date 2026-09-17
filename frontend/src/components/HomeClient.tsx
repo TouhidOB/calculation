@@ -574,24 +574,8 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
         }}
       >
         <Container maxWidth="xl" disableGutters sx={{ px: { xs: 1.5, sm: 2.5, md: 3 } }}>
-          <Toolbar disableGutters sx={{ minHeight: { xs: 60, md: 68 }, gap: 2 }}>
-            <IconButton
-              aria-label="open categories drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{
-                color: "#0f172a",
-                border: "1px solid #e2e8f0",
-                borderRadius: 2,
-                p: 0.8,
-                bgcolor: "#f8fafc",
-                "&:hover": { bgcolor: "#f1f5f9" },
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-
-            {/* Brand Logo & Name */}
+          <Toolbar disableGutters sx={{ minHeight: { xs: 60, md: 68 }, gap: { xs: 1.5, sm: 2 } }}>
+            {/* Brand Logo & Name (On the Left Side) */}
             <Box
               onClick={() => selectCategory(null)}
               sx={{
@@ -601,6 +585,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                 cursor: "pointer",
                 textDecoration: "none",
                 color: "inherit",
+                flexShrink: 0,
               }}
             >
               <Box
@@ -632,6 +617,22 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                 Try<Box component="span" sx={{ color: "#4f46e5" }}>Calc</Box>
               </Typography>
             </Box>
+
+            {/* Hamburger Menu (Right of Logo) */}
+            <IconButton
+              aria-label="open categories drawer"
+              onClick={handleDrawerToggle}
+              sx={{
+                color: "#0f172a",
+                border: "1px solid #e2e8f0",
+                borderRadius: 2,
+                p: 0.8,
+                bgcolor: "#f8fafc",
+                "&:hover": { bgcolor: "#f1f5f9" },
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
 
             {/* Search Input in Navbar */}
             <Box sx={{ flexGrow: 1, maxWidth: { xs: 300, sm: 460, md: 600 }, mx: "auto" }}>

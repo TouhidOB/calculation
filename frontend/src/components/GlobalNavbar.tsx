@@ -330,24 +330,7 @@ export default function GlobalNavbar({
       >
         <Container maxWidth="xl" disableGutters sx={{ px: { xs: 1.5, sm: 2.5, md: 4 } }}>
           <Toolbar disableGutters sx={{ minHeight: { xs: 58, md: 66 }, gap: { xs: 1, sm: 2 } }}>
-            {/* Drawer Toggle */}
-            <IconButton
-              aria-label="open drawer"
-              edge="start"
-              onClick={() => setDrawerOpen(true)}
-              sx={{
-                color: "#0f172a",
-                border: "1px solid #e2e8f0",
-                borderRadius: 2,
-                p: 0.8,
-                bgcolor: "#f8fafc",
-                "&:hover": { bgcolor: "#f1f5f9" },
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-
-            {/* Brand Logo & Name */}
+            {/* Brand Logo & Name (On the Left Side) */}
             <Box
               component={Link}
               href="/"
@@ -357,7 +340,7 @@ export default function GlobalNavbar({
                 gap: { xs: 1, sm: 1.2 },
                 textDecoration: "none",
                 color: "inherit",
-                mr: { xs: 1, sm: 2 },
+                mr: { xs: 0.5, sm: 1 },
                 flexShrink: 0,
               }}
             >
@@ -407,6 +390,22 @@ export default function GlobalNavbar({
                 </Typography>
               </Box>
             </Box>
+
+            {/* Drawer Toggle (Right of Logo) */}
+            <IconButton
+              aria-label="open drawer"
+              onClick={() => setDrawerOpen(true)}
+              sx={{
+                color: "#0f172a",
+                border: "1px solid #e2e8f0",
+                borderRadius: 2,
+                p: 0.8,
+                bgcolor: "#f8fafc",
+                "&:hover": { bgcolor: "#f1f5f9" },
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
 
             {/* Global Quick Search Bar */}
             <Box sx={{ flexGrow: 1, position: "relative", maxWidth: { xs: "100%", md: 540 } }}>
