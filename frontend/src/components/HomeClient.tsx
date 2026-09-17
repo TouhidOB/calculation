@@ -796,11 +796,9 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                       ["mortgage", "bmi", "loan", "compound", "age", "percentage", "tip", "calorie", "concrete", "currency", "simple-interest", "discount"].some((p) => c.id.includes(p))
                     )
                     .slice(0, 12)
-                    .map((calc, i) => (
+                    .map((calc) => (
                       <Grid key={calc.id} size={{ xs: 12, sm: 6, lg: 4 }}>
-                        <Fade in timeout={200 + i * 60}>
-                          <CalcCard calc={calc} onOpen={(c) => { window.location.href = `/calculators/${c.id}` }} />
-                        </Fade>
+                        <CalcCard calc={calc} onOpen={(c) => { window.location.href = `/calculators/${c.id}` }} />
                       </Grid>
                     ))}
                 </Grid>
@@ -841,12 +839,10 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
 
               {/* Calculator cards grid */}
               <Grid container spacing={2}>
-                {displayCalcs.map((calc, i) => {
+                {displayCalcs.map((calc) => {
                   return (
                     <Grid key={calc.id} size={{ xs: 12, sm: 6, lg: 4 }}>
-                      <Fade in timeout={200 + i * 60}>
-                        <CalcCard calc={calc} onOpen={(c) => { window.location.href = `/calculators/${c.id}` }} />
-                      </Fade>
+                      <CalcCard calc={calc} onOpen={(c) => { window.location.href = `/calculators/${c.id}` }} />
                     </Grid>
                   )
                 })}
@@ -1193,26 +1189,25 @@ function CalculatorRunner({
           {/* Result section */}
           <Grid size={{ xs: 12, md: 6 }}>
             {(result || jsHtml) ? (
-              <Fade in>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    border: "1px solid",
-                    borderColor: "primary.main",
-                    borderRadius: 3,
-                    background: (theme) =>
-                      theme.palette.mode === "dark"
-                        ? "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))"
-                        : "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.02))",
-                  }}
-                >
-                  <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2 }}>
-                    <CheckCircleIcon color="primary" />
-                    <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700 }}>
-                      Your Result
-                    </Typography>
-                  </Stack>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  border: "1px solid",
+                  borderColor: "primary.main",
+                  borderRadius: 3,
+                  background: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))"
+                      : "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.02))",
+                }}
+              >
+                <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2 }}>
+                  <CheckCircleIcon color="primary" />
+                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700 }}>
+                    Your Result
+                  </Typography>
+                </Stack>
 
                   {jsHtml ? (
                     <Box
@@ -1255,7 +1250,6 @@ function CalculatorRunner({
                     </Stack>
                   ) : null}
                 </Paper>
-              </Fade>
             ) : (
               <Paper
                 elevation={0}

@@ -288,69 +288,67 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
           {/* Result section */}
           <Grid size={{ xs: 12, md: 6 }}>
             {(result || jsHtml) ? (
-              <Fade in>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    border: "1px solid",
-                    borderColor: "primary.main",
-                    borderRadius: 3,
-                    background: (theme) =>
-                      theme.palette.mode === "dark"
-                        ? "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))"
-                        : "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.02))",
-                  }}
-                >
-                  <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2 }}>
-                    <CheckCircleIcon color="primary" />
-                    <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700 }}>
-                      Your Result
-                    </Typography>
-                  </Stack>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  border: "1px solid",
+                  borderColor: "primary.main",
+                  borderRadius: 3,
+                  background: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))"
+                      : "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.02))",
+                }}
+              >
+                <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2 }}>
+                  <CheckCircleIcon color="primary" />
+                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700 }}>
+                    Your Result
+                  </Typography>
+                </Stack>
 
-                  {jsHtml ? (
-                    <Box
-                      sx={{
-                        overflow: 'auto',
-                        maxHeight: 400,
-                        fontSize: 14,
-                        lineHeight: 1.6,
-                      }}
-                      component="div"
-                      dangerouslySetInnerHTML={{ __html: jsHtml }}
-                    />
-                  ) : result ? (
-                    <Stack spacing={1.5}>
-                      {Object.entries(result).map(([key, val]) => (
-                        <Box
-                          key={key}
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "baseline",
-                            gap: 2,
-                            pb: 1.5,
-                            borderBottom: "1px solid",
-                            borderColor: "divider",
-                          }}
+                {jsHtml ? (
+                  <Box
+                    sx={{
+                      overflow: 'auto',
+                      maxHeight: 400,
+                      fontSize: 14,
+                      lineHeight: 1.6,
+                    }}
+                    component="div"
+                    dangerouslySetInnerHTML={{ __html: jsHtml }}
+                  />
+                ) : result ? (
+                  <Stack spacing={1.5}>
+                    {Object.entries(result).map(([key, val]) => (
+                      <Box
+                        key={key}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "baseline",
+                          gap: 2,
+                          pb: 1.5,
+                          borderBottom: "1px solid",
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ textTransform: "capitalize" }}
                         >
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ textTransform: "capitalize" }}
-                          >
-                            {String(key).replaceAll("_", " ")}
-                          </Typography>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 700, fontFamily: "monospace" }}>
-                            {renderValue(val)}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                  ) : null}
-                </Paper>
-              </Fade>
+                          {String(key).replaceAll("_", " ")}
+                        </Typography>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, fontFamily: "monospace" }}>
+                          {renderValue(val)}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                ) : null}
+              </Paper>
             ) : (
               <Paper
                 elevation={0}
