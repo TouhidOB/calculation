@@ -40,6 +40,8 @@ import CalculateIcon from "@mui/icons-material/Calculate"
 import HomeIcon from "@mui/icons-material/Home"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import CloseIcon from "@mui/icons-material/Close"
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
+import ChevronRightIcon from "@mui/icons-material/ChevronRight"
 
 // Category Icons
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney"
@@ -90,6 +92,16 @@ export default function GlobalNavbar({
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchAnchor, setSearchAnchor] = useState<null | HTMLElement>(null)
+  const categoryScrollRef = React.useRef<HTMLDivElement>(null)
+
+  const scrollCategories = (direction: "left" | "right") => {
+    if (categoryScrollRef.current) {
+      categoryScrollRef.current.scrollBy({
+        left: direction === "left" ? -280 : 280,
+        behavior: "smooth",
+      })
+    }
+  }
 
   useEffect(() => {
     listCalculators()
@@ -526,68 +538,128 @@ export default function GlobalNavbar({
           {showCategoryBar && (
             <Box
               sx={{
-                py: 1,
-                borderTop: "1px solid #f1f5f9",
-                overflowX: "auto",
-                whiteSpace: "nowrap",
+                position: "relative",
                 display: "flex",
                 alignItems: "center",
-                gap: 1,
-                "&::-webkit-scrollbar": { display: "none" },
-                scrollbarWidth: "none",
+                borderTop: "1px solid #f1f5f9",
+                py: 0.8,
               }}
             >
-              <Chip
-                component={Link}
-                href="/"
-                clickable
-                icon={<HomeIcon sx={{ fontSize: "16px !important", color: !currentCategory ? "#fff !important" : "#475569 !important" }} />}
-                label="All (689+)"
+              {/* Left Scroll Chevron */}
+              <IconButton
                 size="small"
+                onClick={() => scrollCategories("left")}
                 sx={{
-                  fontWeight: 700,
-                  fontSize: 12,
-                  height: 30,
-                  px: 0.5,
-                  bgcolor: !currentCategory ? "#4f46e5" : "#f1f5f9",
-                  color: !currentCategory ? "#ffffff" : "#0f172a",
-                  border: "1px solid",
-                  borderColor: !currentCategory ? "#4f46e5" : "#e2e8f0",
-                  "&:hover": {
-                    bgcolor: !currentCategory ? "#4338ca" : "#e2e8f0",
-                  },
+                  display: { xs: "none", sm: "flex" },
+                  width: 28,
+                  height: 28,
+                  mr: 0.5,
+                  bgcolor: "#ffffff",
+                  border: "1px solid #e2e8f0",
+                  color: "#475569",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                  "&:hover": { bgcolor: "#f1f5f9", color: "#4f46e5" },
                 }}
-              />
-              {Object.keys(CATEGORY_META).map((catKey) => {
-                const meta = CATEGORY_META[catKey]
-                const count = categories[catKey]?.length || 0
-                const isSelected = currentCategory === catKey
+                aria-label="Scroll left"
+              >
+                <ChevronLeftIcon sx={{ fontSize: 18 }} />
+              </IconButton>
 
-                return (
-                  <Chip
-                    key={catKey}
-                    component={Link}
-                    href={`/?cat=${catKey}`}
-                    clickable
-                    label={`${meta.emoji} ${meta.label}${count > 0 ? ` (${count})` : ""}`}
-                    size="small"
-                    sx={{
-                      fontWeight: isSelected ? 700 : 500,
-                      fontSize: 12,
-                      height: 30,
-                      px: 0.5,
-                      bgcolor: isSelected ? "#4f46e5" : "#f8fafc",
-                      color: isSelected ? "#ffffff" : "#0f172a",
-                      border: "1px solid",
-                      borderColor: isSelected ? "#4f46e5" : "#e2e8f0",
-                      "&:hover": {
-                        borderColor: meta.color,
-                        bgcolor: isSelected ? "#4338ca" : `${meta.color}15`,
-                      },
-                    }}
-                  />
-                )
-              })}
+              {/* Scrollable Container */}
+              <Box
+                ref={categoryScrollRef}
+                onWheel={(e) => {
+                  if (e.deltaY && categoryScrollRef.current) {
+                    categoryScrollRef.current.scrollLeft += e.deltaY * 0.8
+                  }
+                }}
+                sx={{
+                  flexGrow: 1,
+                  overflowX: "auto",
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  pr: { xs: 4, sm: 6, md: 8 },
+                  pl: 0.5,
+                  scrollBehavior: "smooth",
+                  "&::-webkit-scrollbar": { display: "none" },
+                  scrollbarWidth: "none",
+                }}
+              >
+                <Chip
+                  component={Link}
+                  href="/"
+                  clickable
+                  icon={<HomeIcon sx={{ fontSize: "16px !important", color: !currentCategory ? "#fff !important" : "#475569 !important" }} />}
+                  label="All (689+)"
+                  size="small"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: 12,
+                    height: 30,
+                    px: 0.5,
+                    bgcolor: !currentCategory ? "#4f46e5" : "#f1f5f9",
+                    color: !currentCategory ? "#ffffff" : "#0f172a",
+                    border: "1px solid",
+                    borderColor: !currentCategory ? "#4f46e5" : "#e2e8f0",
+                    "&:hover": {
+                      bgcolor: !currentCategory ? "#4338ca" : "#e2e8f0",
+                    },
+                  }}
+                />
+                {Object.keys(CATEGORY_META).map((catKey) => {
+                  const meta = CATEGORY_META[catKey]
+                  const count = categories[catKey]?.length || 0
+                  const isSelected = currentCategory === catKey
+
+                  return (
+                    <Chip
+                      key={catKey}
+                      component={Link}
+                      href={`/?cat=${catKey}`}
+                      clickable
+                      label={`${meta.emoji} ${meta.label}${count > 0 ? ` (${count})` : ""}`}
+                      size="small"
+                      sx={{
+                        fontWeight: isSelected ? 700 : 500,
+                        fontSize: 12,
+                        height: 30,
+                        px: 0.5,
+                        flexShrink: 0,
+                        bgcolor: isSelected ? "#4f46e5" : "#ffffff",
+                        color: isSelected ? "#ffffff" : "#0f172a",
+                        border: "1px solid",
+                        borderColor: isSelected ? "#4f46e5" : "#e2e8f0",
+                        "&:hover": {
+                          borderColor: meta.color,
+                          bgcolor: isSelected ? "#4338ca" : `${meta.color}15`,
+                        },
+                      }}
+                    />
+                  )
+                })}
+              </Box>
+
+              {/* Right Scroll Chevron */}
+              <IconButton
+                size="small"
+                onClick={() => scrollCategories("right")}
+                sx={{
+                  display: { xs: "none", sm: "flex" },
+                  width: 28,
+                  height: 28,
+                  ml: 0.5,
+                  bgcolor: "#ffffff",
+                  border: "1px solid #e2e8f0",
+                  color: "#475569",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                  "&:hover": { bgcolor: "#f1f5f9", color: "#4f46e5" },
+                }}
+                aria-label="Scroll right"
+              >
+                <ChevronRightIcon sx={{ fontSize: 18 }} />
+              </IconButton>
             </Box>
           )}
         </Container>
