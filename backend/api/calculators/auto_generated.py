@@ -85,8 +85,8 @@ register_calculator(
     "car-affordability-calculator", "Car Affordability Calculator", "finance",
     "Car Affordability Calculator",
     fields=[
-        CalcField("income", "Gross Monthly Income ($)"),
-        CalcField("debts", "Total Monthly Debts (Non-Car) ($)"),
+        CalcField("income", "Gross Monthly Income ()"),
+        CalcField("debts", "Total Monthly Debts (Non-Car) ()"),
         CalcField("rate", "Annual Loan Interest Rate (%)"),
         CalcField("term", "Loan Term (Total Months, e.g., 60)"),
     ],
@@ -122,7 +122,7 @@ register_calculator(
     "Charitable Donation Tax Deduction Calculator",
     fields=[
         CalcField("donation-name", "Charity name / description", type="text"),
-        CalcField("donation-amount", "Amount ($)"),
+        CalcField("donation-amount", "Amount ()"),
         CalcField("don-tax", "Don Tax"),
     ],
     fn=_js_calc,
@@ -264,7 +264,7 @@ register_calculator(
     fields=[
         CalcField("hol-name", "e.g., Bali getaway", type="text"),
         CalcField("item-name", "Item (Flight / Hotel / Food)", type="text"),
-        CalcField("item-amount", "Amount ($)"),
+        CalcField("item-amount", "Amount ()"),
     ],
     fn=_js_calc,
 )
@@ -307,8 +307,8 @@ register_calculator(
     "mortgage-affordability-calculator", "Mortgage Affordability Calculator", "finance",
     "Mortgage Affordability Calculator",
     fields=[
-        CalcField("income", "Gross Monthly Income ($)"),
-        CalcField("debts", "Total Monthly Debts ($)"),
+        CalcField("income", "Gross Monthly Income ()"),
+        CalcField("debts", "Total Monthly Debts ()"),
         CalcField("rate", "Annual Interest Rate (%)"),
         CalcField("term", "Term (Total Months, e.g., 360 for 30 yrs)"),
     ],
@@ -320,7 +320,7 @@ register_calculator(
     "Moving Cost Calculator",
     fields=[
         CalcField("move-name", "Cost item (movers/truck/deposit)", type="text"),
-        CalcField("move-amount", "Amount ($)"),
+        CalcField("move-amount", "Amount ()"),
     ],
     fn=_js_calc,
 )
@@ -341,9 +341,9 @@ register_calculator(
     "net-worth-projection-calculator", "Net Worth Projection Calculator", "finance",
     "Net Worth Projection Calculator",
     fields=[
-        CalcField("current-assets", "Current Assets ($)"),
-        CalcField("current-debts", "Current Debts ($)"),
-        CalcField("annual-contribution", "Annual Contribution ($)"),
+        CalcField("current-assets", "Current Assets ()"),
+        CalcField("current-debts", "Current Debts ()"),
+        CalcField("annual-contribution", "Annual Contribution ()"),
         CalcField("annual-growth", "Expected Annual Growth (%)"),
         CalcField("years", "Number of Years"),
     ],
@@ -354,7 +354,7 @@ register_calculator(
     "no-spend-challenge-calculator", "No-Spend Challenge Savings Calculator", "finance",
     "No-Spend Challenge Savings Calculator",
     fields=[
-        CalcField("spend-input", "Typical Discretionary Monthly Spend ($)"),
+        CalcField("spend-input", "Typical Discretionary Monthly Spend ()"),
         CalcField("challenge-days", "Days of No-Spend Challenge"),
     ],
     fn=_js_calc,
@@ -401,10 +401,10 @@ register_calculator(
     "Personal Loan Comparison",
     fields=[
         CalcField("loan-name", "Lender name", type="text"),
-        CalcField("loan-amount", "Loan amount ($)"),
+        CalcField("loan-amount", "Loan amount ()"),
         CalcField("loan-rate", "Annual rate (%)"),
         CalcField("loan-term", "Term (years)"),
-        CalcField("loan-fees", "Upfront fees ($)"),
+        CalcField("loan-fees", "Upfront fees ()"),
     ],
     fn=_js_calc,
 )
@@ -424,8 +424,8 @@ register_calculator(
     "rent-affordability-calculator", "Rent Affordability Calculator", "finance",
     "Rent Affordability Calculator",
     fields=[
-        CalcField("income", "Gross Monthly Income ($)"),
-        CalcField("debts", "Total Monthly Debts ($)"),
+        CalcField("income", "Gross Monthly Income ()"),
+        CalcField("debts", "Total Monthly Debts ()"),
     ],
     fn=_js_calc,
 )
@@ -466,7 +466,7 @@ register_calculator(
         CalcField("target-amount", "Target Amount"),
         CalcField("current-savings", "Current Savings"),
         CalcField("annual-rate", "e.g., 5 for 5%"),
-        CalcField("monthly-contrib", "Monthly contribution ($)"),
+        CalcField("monthly-contrib", "Monthly contribution ()"),
         CalcField("months-to", "Months to reach (integer)"),
     ],
     fn=_js_calc,
@@ -497,7 +497,7 @@ register_calculator(
     "sp500-historical-return-simulator", "S&P 500 Historical Return Simulator", "finance",
     "S&P 500 Historical Return Simulator",
     fields=[
-        CalcField("initial-investment", "Initial Investment ($)"),
+        CalcField("initial-investment", "Initial Investment ()"),
         CalcField("years", "Investment Years"),
         CalcField("annual-return", "Expected Annual Return (%)"),
     ],
@@ -518,10 +518,10 @@ register_calculator(
     "student-loan-affordability-calculator", "Student Loan Affordability Calculator", "finance",
     "Student Loan Affordability Calculator",
     fields=[
-        CalcField("principal", "Loan Amount ($)"),
+        CalcField("principal", "Loan Amount ()"),
         CalcField("rate", "Annual Interest Rate (%)"),
         CalcField("term", "Term (Total Months)"),
-        CalcField("income", "Gross Monthly Income ($)"),
+        CalcField("income", "Gross Monthly Income ()"),
     ],
     fn=_js_calc,
 )
@@ -630,8 +630,8 @@ register_calculator(
 )
 
 register_calculator(
-    "combination-calculator", "Combination Calculator ($\text{nCr}$)", "basic",
-    "Combination Calculator ($\text{nCr}$)",
+    "combination-calculator", "Combination Calculator (nCr)", "basic",
+    "Combination Calculator (nCr)",
     fields=[
         CalcField("n-input", "e.g., 10 (Total members)"),
         CalcField("r-input", "e.g., 3 (Committee members)"),
@@ -700,8 +700,8 @@ register_calculator(
 )
 
 register_calculator(
-    "factorial-calculator", "Factorial Calculator ($\mathbf{n!}$)", "basic",
-    "Factorial Calculator ($\mathbf{n!}$)",
+    "factorial-calculator", "Factorial Calculator (n!)", "basic",
+    "Factorial Calculator (n!)",
     fields=[
         CalcField("n-input", "e.g., 7 or 15"),
     ],
@@ -817,8 +817,8 @@ register_calculator(
 )
 
 register_calculator(
-    "matrix-calculator", "Matrix Calculator ($2 \times 2$)", "basic",
-    "Matrix Calculator ($2 \times 2$)",
+    "matrix-calculator", "Matrix Calculator (2 \times 2)", "basic",
+    "Matrix Calculator (2 \times 2)",
     fields=[
         CalcField("a11", "a11"),
         CalcField("a12", "a12"),
@@ -828,7 +828,7 @@ register_calculator(
         CalcField("b12", "b12"),
         CalcField("b21", "b21"),
         CalcField("b22", "b22"),
-        CalcField("operation", "Operation:", type="select", options=[{"value": "A + B (Addition)", "label": "A + B (Addition)"}, {"value": "A - B (Subtraction)", "label": "A - B (Subtraction)"}, {"value": "A $\times$ B (Multiplication)", "label": "A $\times$ B (Multiplication)"}, {"value": "det(A) (Determinant of A)", "label": "det(A) (Determinant of A)"}, {"value": "det(B) (Determinant of B)", "label": "det(B) (Determinant of B)"}]),
+        CalcField("operation", "Operation:", type="select", options=[{"value": "A + B (Addition)", "label": "A + B (Addition)"}, {"value": "A - B (Subtraction)", "label": "A - B (Subtraction)"}, {"value": "A \times B (Multiplication)", "label": "A \times B (Multiplication)"}, {"value": "det(A) (Determinant of A)", "label": "det(A) (Determinant of A)"}, {"value": "det(B) (Determinant of B)", "label": "det(B) (Determinant of B)"}]),
     ],
     fn=_js_calc,
 )
@@ -843,8 +843,8 @@ register_calculator(
 )
 
 register_calculator(
-    "modulo-calculator", "Modulo Calculator ($\mathbf{A \pmod N}$)", "basic",
-    "Modulo Calculator ($\mathbf{A \pmod N}$)",
+    "modulo-calculator", "Modulo Calculator (A mod N)", "basic",
+    "Modulo Calculator (A mod N)",
     fields=[
         CalcField("dividend-a", "e.g., -10"),
         CalcField("divisor-n", "e.g., 3"),
@@ -884,8 +884,8 @@ register_calculator(
 )
 
 register_calculator(
-    "permutation-calculator", "Permutation Calculator ($\mathbf{nPr}$)", "basic",
-    "Permutation Calculator ($\mathbf{nPr}$)",
+    "permutation-calculator", "Permutation Calculator (nPr)", "basic",
+    "Permutation Calculator (nPr)",
     fields=[
         CalcField("n-input", "e.g., 10 (Total people)"),
         CalcField("r-input", "e.g., 3 (Positions)"),
@@ -894,8 +894,8 @@ register_calculator(
 )
 
 register_calculator(
-    "pi-digit-finder", "Pi ($\pi$) Digit Finder", "basic",
-    "Pi ($\pi$) Digit Finder",
+    "pi-digit-finder", "Pi (π) Digit Finder", "basic",
+    "Pi (π) Digit Finder",
     fields=[
         CalcField("position-input", "e.g., 10"),
     ],
@@ -936,7 +936,7 @@ register_calculator(
     "pythagorean-calculator", "Pythagorean Theorem Calculator", "basic",
     "Pythagorean Theorem Calculator",
     fields=[
-        CalcField("calculate-mode", "Select Unknown Side:", type="select", options=[{"value": "Hypotenuse ($\mathbf{c}$) - Given $\mathbf{a}$ and $\mathbf{b}$", "label": "Hypotenuse ($\mathbf{c}$) - Given $\mathbf{a}$ and $\mathbf{b}$"}, {"value": "Leg ($\mathbf{a}$) - Given $\mathbf{c}$ and $\mathbf{b}$", "label": "Leg ($\mathbf{a}$) - Given $\mathbf{c}$ and $\mathbf{b}$"}, {"value": "Leg ($\mathbf{b}$) - Given $\mathbf{c}$ and $\mathbf{a}$", "label": "Leg ($\mathbf{b}$) - Given $\mathbf{c}$ and $\mathbf{a}$"}]),
+        CalcField("calculate-mode", "Select Unknown Side:", type="select", options=[{"value": "Hypotenuse (c) - Given a and b", "label": "Hypotenuse (c) - Given a and b"}, {"value": "Leg (a) - Given c and b", "label": "Leg (a) - Given c and b"}, {"value": "Leg (b) - Given c and a", "label": "Leg (b) - Given c and a"}]),
         CalcField("input-a", "Side a"),
         CalcField("input-b", "Side b"),
         CalcField("input-c", "Calculated c"),
@@ -956,8 +956,8 @@ register_calculator(
 )
 
 register_calculator(
-    "radical-simplifier", "Radical Simplifier ($\mathbf{\sqrt{N}}$)", "basic",
-    "Radical Simplifier ($\mathbf{\sqrt{N}}$)",
+    "radical-simplifier", "Radical Simplifier (√N)", "basic",
+    "Radical Simplifier (√N)",
     fields=[
         CalcField("radicand-n", "e.g., 72 or 150"),
     ],
@@ -995,8 +995,8 @@ register_calculator(
 )
 
 register_calculator(
-    "series-sum-calculator", "Sum of Series Calculator ($\mathbf{S_n}$)", "basic",
-    "Sum of Series Calculator ($\mathbf{S_n}$)",
+    "series-sum-calculator", "Sum of Series Calculator (S_n)", "basic",
+    "Sum of Series Calculator (S_n)",
     fields=[
         CalcField("arithmetic-a-input", "e.g., 2", type="text"),
         CalcField("arithmetic-d-input", "e.g., 3", type="text"),
@@ -1018,8 +1018,8 @@ register_calculator(
 )
 
 register_calculator(
-    "standard-deviation-calculator", "Standard Deviation Calculator ($\sigma$)", "basic",
-    "Standard Deviation Calculator ($\sigma$)",
+    "standard-deviation-calculator", "Standard Deviation Calculator (σ)", "basic",
+    "Standard Deviation Calculator (σ)",
     fields=[
         CalcField("data-input", "e.g., 2, 4, 4, 4, 5, 5, 7, 9"),
     ],
@@ -1027,8 +1027,8 @@ register_calculator(
 )
 
 register_calculator(
-    "system-solver", "System of Equations Solver ($2 \times 2$)", "basic",
-    "System of Equations Solver ($2 \times 2$)",
+    "system-solver", "System of Equations Solver (2 \times 2)", "basic",
+    "System of Equations Solver (2 \times 2)",
     fields=[
         CalcField("a1", "a1", type="text"),
         CalcField("b1", "b1", type="text"),
@@ -1311,8 +1311,8 @@ register_calculator(
 )
 
 register_calculator(
-    "cycling-pwr-calculator", "Cycling Power-to-Weight Ratio ($\text{W}/\text{kg}$)", "health",
-    "Cycling Power-to-Weight Ratio ($\text{W}/\text{kg}$)",
+    "cycling-pwr-calculator", "Cycling Power-to-Weight Ratio (W/kg)", "health",
+    "Cycling Power-to-Weight Ratio (W/kg)",
     fields=[
         CalcField("ftp_input", "Your FTP (20-minute power x 0.95)"),
         CalcField("weight_input", "Current Riding Weight"),
@@ -1404,7 +1404,7 @@ register_calculator(
     "hill-grade-calculator", "Hill Grade Percentage Calculator", "health",
     "Hill Grade Percentage Calculator",
     fields=[
-        CalcField("measurement_unit", "Measurement Unit", type="select", options=[{"value": "Meters ($\text{m}$)", "label": "Meters ($\text{m}$)"}, {"value": "Feet ($\text{ft}$)", "label": "Feet ($\text{ft}$)"}]),
+        CalcField("measurement_unit", "Measurement Unit", type="select", options=[{"value": "Meters (m)", "label": "Meters (m)"}, {"value": "Feet (ft)", "label": "Feet (ft)"}]),
         CalcField("rise_input", "e.g., 10"),
         CalcField("run_input", "e.g., 100"),
     ],
@@ -1514,8 +1514,8 @@ register_calculator(
 )
 
 register_calculator(
-    "psa-density-calculator", "PSA Density ($\text{PSAD}$) Calculator", "health",
-    "PSA Density ($\text{PSAD}$) Calculator",
+    "psa-density-calculator", "PSA Density (PSAD) Calculator", "health",
+    "PSA Density (PSAD) Calculator",
     fields=[
         CalcField("total_psa", "e.g., 6.5"),
         CalcField("prostate_volume", "e.g., 40"),
@@ -1527,8 +1527,8 @@ register_calculator(
     "race-pace-planner", "⏱ Race Pace Strategy Planner", "health",
     "⏱ Race Pace Strategy Planner",
     fields=[
-        CalcField("race_distance", "Race Distance", type="select", options=[{"value": "-- Select Distance --", "label": "-- Select Distance --"}, {"value": "5K", "label": "5K"}, {"value": "10K", "label": "10K"}, {"value": "Half Marathon ($\text{21.1}$ km)", "label": "Half Marathon ($\text{21.1}$ km)"}, {"value": "Marathon ($\text{42.2}$ km)", "label": "Marathon ($\text{42.2}$ km)"}]),
-        CalcField("pace_unit", "Pace Unit", type="select", options=[{"value": "Kilometers ($\text{km}$)", "label": "Kilometers ($\text{km}$)"}, {"value": "Miles ($\text{mi}$)", "label": "Miles ($\text{mi}$)"}]),
+        CalcField("race_distance", "Race Distance", type="select", options=[{"value": "-- Select Distance --", "label": "-- Select Distance --"}, {"value": "5K", "label": "5K"}, {"value": "10K", "label": "10K"}, {"value": "Half Marathon (21.1 km)", "label": "Half Marathon (21.1 km)"}, {"value": "Marathon (42.2 km)", "label": "Marathon (42.2 km)"}]),
+        CalcField("pace_unit", "Pace Unit", type="select", options=[{"value": "Kilometers (km)", "label": "Kilometers (km)"}, {"value": "Miles (mi)", "label": "Miles (mi)"}]),
         CalcField("time_h", "Hours (H)"),
         CalcField("time_m", "Minutes (M)"),
         CalcField("time_s", "Seconds (S)"),
@@ -1540,7 +1540,7 @@ register_calculator(
     "race-time-predictor", "Race Time Predictor", "health",
     "Race Time Predictor",
     fields=[
-        CalcField("race_distance_km", "Race Distance Km", type="select", options=[{"value": "-- Select Distance --", "label": "-- Select Distance --"}, {"value": "5K ($\text{3.1}$ miles)", "label": "5K ($\text{3.1}$ miles)"}, {"value": "10K ($\text{6.2}$ miles)", "label": "10K ($\text{6.2}$ miles)"}, {"value": "Half Marathon ($\text{13.1}$ miles)", "label": "Half Marathon ($\text{13.1}$ miles)"}, {"value": "Marathon ($\text{26.2}$ miles)", "label": "Marathon ($\text{26.2}$ miles)"}]),
+        CalcField("race_distance_km", "Race Distance Km", type="select", options=[{"value": "-- Select Distance --", "label": "-- Select Distance --"}, {"value": "5K (3.1 miles)", "label": "5K (3.1 miles)"}, {"value": "10K (6.2 miles)", "label": "10K (6.2 miles)"}, {"value": "Half Marathon (13.1 miles)", "label": "Half Marathon (13.1 miles)"}, {"value": "Marathon (26.2 miles)", "label": "Marathon (26.2 miles)"}]),
         CalcField("time_h", "Hours (H)"),
         CalcField("time_m", "Minutes (M)"),
         CalcField("time_s", "Seconds (S)"),
@@ -1575,8 +1575,8 @@ register_calculator(
     "sleep-cycle-calculator", "Sleep Cycle Calculator (Wake-up Time)", "health",
     "Sleep Cycle Calculator (Wake-up Time)",
     fields=[
-        CalcField("bedtime_h", "Bedtime H", type="select"),
-        CalcField("bedtime_m", "Bedtime M", type="select", options=[{"value": "00", "label": "00"}, {"value": "15", "label": "15"}, {"value": "30", "label": "30"}, {"value": "45", "label": "45"}]),
+        CalcField("bedtime_h", "Bedtime Hour", type="select", options=[{"value": str(i).zfill(2), "label": str(i).zfill(2)} for i in range(1, 13)], default="10"),
+        CalcField("bedtime_m", "Bedtime Minute", type="select", options=[{"value": "00", "label": "00"}, {"value": "15", "label": "15"}, {"value": "30", "label": "30"}, {"value": "45", "label": "45"}], default="00"),
     ],
     fn=_js_calc,
 )
@@ -1598,7 +1598,7 @@ register_calculator(
     "swimming-interval-calculator", "Set Interval Planner", "health",
     "Set Interval Planner",
     fields=[
-        CalcField("distance_unit", "Distance Unit", type="select", options=[{"value": "Meters ($\text{m}$)", "label": "Meters ($\text{m}$)"}, {"value": "Yards ($\text{yd}$)", "label": "Yards ($\text{yd}$)"}]),
+        CalcField("distance_unit", "Distance Unit", type="select", options=[{"value": "Meters (m)", "label": "Meters (m)"}, {"value": "Yards (yd)", "label": "Yards (yd)"}]),
         CalcField("pace_m", "Min (M)"),
         CalcField("pace_s", "Sec (S)"),
         CalcField("swim_distance", "e.g., 100"),
@@ -1654,7 +1654,7 @@ register_calculator(
     "treadmill-pace-converter", "Treadmill Pace Converter", "health",
     "Treadmill Pace Converter",
     fields=[
-        CalcField("input_format", "Input Format", type="select", options=[{"value": "-- Select Input Format --", "label": "-- Select Input Format --"}, {"value": "Speed: Kilometers per hour ($\text{km/h}$)", "label": "Speed: Kilometers per hour ($\text{km/h}$)"}, {"value": "Speed: Miles per hour ($\text{mph}$)", "label": "Speed: Miles per hour ($\text{mph}$)"}, {"value": "Pace: Time per Kilometre ($\text{M:SS/km}$)", "label": "Pace: Time per Kilometre ($\text{M:SS/km}$)"}, {"value": "Pace: Time per Mile ($\text{M:SS/mi}$)", "label": "Pace: Time per Mile ($\text{M:SS/mi}$)"}]),
+        CalcField("input_format", "Input Format", type="select", options=[{"value": "-- Select Input Format --", "label": "-- Select Input Format --"}, {"value": "Speed: Kilometers per hour (km/h)", "label": "Speed: Kilometers per hour (km/h)"}, {"value": "Speed: Miles per hour (mph)", "label": "Speed: Miles per hour (mph)"}, {"value": "Pace: Time per Kilometre (M:SS/km)", "label": "Pace: Time per Kilometre (M:SS/km)"}, {"value": "Pace: Time per Mile (M:SS/mi)", "label": "Pace: Time per Mile (M:SS/mi)"}]),
         CalcField("speed_input", "e.g., 10"),
         CalcField("pace_m", "Min (M)"),
         CalcField("pace_s", "Sec (S)"),
@@ -2381,8 +2381,8 @@ register_calculator(
     "beta-coefficient-calculator", "Beta Coefficient Calculator", "business_investment",
     "Beta Coefficient Calculator",
     fields=[
-        CalcField("covariance", "Covariance ($\text{Stock}, \text{Market}$)"),
-        CalcField("variance", "Variance ($\text{Market}$)"),
+        CalcField("covariance", "Covariance (Stock, Market)"),
+        CalcField("variance", "Variance (Market)"),
     ],
     fn=_js_calc,
 )
@@ -2404,9 +2404,9 @@ register_calculator(
     "break-even-analysis-calculator", "Break-Even Analysis Calculator", "business_investment",
     "Break-Even Analysis Calculator",
     fields=[
-        CalcField("fixed_costs", "Total Fixed Costs ($)"),
-        CalcField("selling_price", "Selling Price per Unit ($)"),
-        CalcField("variable_cost", "Variable Cost per Unit ($)"),
+        CalcField("fixed_costs", "Total Fixed Costs ()"),
+        CalcField("selling_price", "Selling Price per Unit ()"),
+        CalcField("variable_cost", "Variable Cost per Unit ()"),
     ],
     fn=_js_calc,
 )
@@ -2426,7 +2426,7 @@ register_calculator(
     "business-loan-calculator", "Business Loan Calculator (Amortization)", "business_investment",
     "Business Loan Calculator (Amortization)",
     fields=[
-        CalcField("loan_amount", "Loan Principal ($)"),
+        CalcField("loan_amount", "Loan Principal ()"),
         CalcField("annual_rate", "Annual Interest Rate (%)"),
         CalcField("loan_term_years", "Loan Term (Years)"),
     ],
@@ -2481,9 +2481,9 @@ register_calculator(
     "compound-annual-growth-rate-calculator", "CAGR (Compound Annual Growth Rate) Calculator", "business_investment",
     "CAGR (Compound Annual Growth Rate) Calculator",
     fields=[
-        CalcField("initial_value", "Initial Value ($\mathbf{PV}$)"),
-        CalcField("final_value", "Final Value ($\mathbf{FV}$)"),
-        CalcField("years", "Number of Years ($\mathbf{n}$)"),
+        CalcField("initial_value", "Initial Value (PV)"),
+        CalcField("final_value", "Final Value (FV)"),
+        CalcField("years", "Number of Years (n)"),
     ],
     fn=_js_calc,
 )
@@ -2492,11 +2492,11 @@ register_calculator(
     "compound-interest-calculator", "Advanced Compound Interest Calculator", "business_investment",
     "Advanced Compound Interest Calculator",
     fields=[
-        CalcField("principal", "Initial Principal ($)"),
+        CalcField("principal", "Initial Principal ()"),
         CalcField("rate", "Annual Interest Rate (%)"),
         CalcField("years", "Time Period (Years)"),
-        CalcField("compounding_n", "Compounding Frequency ($n$)", type="select", options=[{"value": "Annually (1)", "label": "Annually (1)"}, {"value": "Semi-annually (2)", "label": "Semi-annually (2)"}, {"value": "Quarterly (4)", "label": "Quarterly (4)"}, {"value": "Monthly (12)", "label": "Monthly (12)"}, {"value": "Daily (365)", "label": "Daily (365)"}]),
-        CalcField("contribution", "Regular Contribution (per period) ($)"),
+        CalcField("compounding_n", "Compounding Frequency (n)", type="select", options=[{"value": "Annually (1)", "label": "Annually (1)"}, {"value": "Semi-annually (2)", "label": "Semi-annually (2)"}, {"value": "Quarterly (4)", "label": "Quarterly (4)"}, {"value": "Monthly (12)", "label": "Monthly (12)"}, {"value": "Daily (365)", "label": "Daily (365)"}]),
+        CalcField("contribution", "Regular Contribution (per period) ()"),
     ],
     fn=_js_calc,
 )
@@ -2517,8 +2517,8 @@ register_calculator(
     fields=[
         CalcField("cryptoName", "Cryptocurrency", type="text"),
         CalcField("amount", "Amount (COIN)"),
-        CalcField("entryPrice", "Entry Price ($)"),
-        CalcField("exitPrice", "Exit Price ($)"),
+        CalcField("entryPrice", "Entry Price ()"),
+        CalcField("exitPrice", "Exit Price ()"),
         CalcField("buyFee", "Buy Fee Rate (%)"),
         CalcField("sellFee", "Sell Fee Rate (%)"),
     ],
@@ -2539,7 +2539,7 @@ register_calculator(
     "customer-acquisition-cost-calculator", "Customer Acquisition Cost (CAC) Calculator", "business_investment",
     "Customer Acquisition Cost (CAC) Calculator",
     fields=[
-        CalcField("total_cost", "Total Sales and Marketing Costs ($)"),
+        CalcField("total_cost", "Total Sales and Marketing Costs ()"),
         CalcField("new_customers", "Number of New Customers Acquired"),
     ],
     fn=_js_calc,
@@ -2549,7 +2549,7 @@ register_calculator(
     "customer-lifetime-value-calculator", "Customer Lifetime Value (CLV) Calculator", "business_investment",
     "Customer Lifetime Value (CLV) Calculator",
     fields=[
-        CalcField("avg_purchase_value", "Average Purchase Value ($)"),
+        CalcField("avg_purchase_value", "Average Purchase Value ()"),
         CalcField("avg_purchase_frequency", "Average Purchase Frequency (Per Year)"),
         CalcField("customer_lifespan", "Average Customer Lifespan (Years)"),
     ],
@@ -2581,7 +2581,7 @@ register_calculator(
     "discount-calculator", "Discount Calculator", "business_investment",
     "Discount Calculator",
     fields=[
-        CalcField("original_price", "Original Price ($)"),
+        CalcField("original_price", "Original Price ()"),
         CalcField("discount_percent", "Discount Percentage (%)"),
     ],
     fn=_js_calc,
@@ -2591,8 +2591,8 @@ register_calculator(
     "dividend-yield-calculator", "Dividend Yield Calculator", "business_investment",
     "Dividend Yield Calculator",
     fields=[
-        CalcField("annual_dividend", "Annual Dividend Per Share ($)"),
-        CalcField("current_price", "Current Share Price ($)"),
+        CalcField("annual_dividend", "Annual Dividend Per Share ()"),
+        CalcField("current_price", "Current Share Price ()"),
     ],
     fn=_js_calc,
 )
@@ -2601,10 +2601,10 @@ register_calculator(
     "dollar-cost-averaging-calculator", "Dollar-Cost Averaging (DCA) Calculator", "business_investment",
     "Dollar-Cost Averaging (DCA) Calculator",
     fields=[
-        CalcField("investment_amount", "Fixed Investment Amount per Period ($)"),
+        CalcField("investment_amount", "Fixed Investment Amount per Period ()"),
         CalcField("num_periods", "Number of Investment Periods"),
-        CalcField("start_price", "Asset Price at Start of Period 1 ($)"),
-        CalcField("end_price", "Asset Price at End of Final Period ($)"),
+        CalcField("start_price", "Asset Price at Start of Period 1 ()"),
+        CalcField("end_price", "Asset Price at End of Final Period ()"),
     ],
     fn=_js_calc,
 )
@@ -2613,8 +2613,8 @@ register_calculator(
     "earnings-per-share-calculator", "Earnings Per Share (EPS) Calculator", "business_investment",
     "Earnings Per Share (EPS) Calculator",
     fields=[
-        CalcField("net_income", "Net Income ($)"),
-        CalcField("preferred_dividends", "Preferred Dividends ($)"),
+        CalcField("net_income", "Net Income ()"),
+        CalcField("preferred_dividends", "Preferred Dividends ()"),
         CalcField("shares_outstanding", "Weighted Average Common Shares Outstanding"),
     ],
     fn=_js_calc,
@@ -2663,8 +2663,8 @@ register_calculator(
     "gross-profit-margin-calculator", "Gross Profit Margin Calculator", "business_investment",
     "Gross Profit Margin Calculator",
     fields=[
-        CalcField("revenue", "Net Sales Revenue ($)"),
-        CalcField("cogs", "Cost of Goods Sold (COGS) ($)"),
+        CalcField("revenue", "Net Sales Revenue ()"),
+        CalcField("cogs", "Cost of Goods Sold (COGS) ()"),
     ],
     fn=_js_calc,
 )
@@ -2673,9 +2673,9 @@ register_calculator(
     "hsa-contribution-calculator", "HSA Contribution Calculator", "business_investment",
     "HSA Contribution Calculator",
     fields=[
-        CalcField("age", "2. Your Age"),
-        CalcField("months", "3. HDHP Months Eligible", type="select"),
-        CalcField("goal", "4. Your Annual Contribution Goal"),
+        CalcField("age", "2. Your Age", default=30),
+        CalcField("months", "3. HDHP Months Eligible", type="select", options=[{"value": str(i), "label": f"{i} months"} for i in range(1, 13)], default="12"),
+        CalcField("goal", "4. Your Annual Contribution Goal", default=3850),
     ],
     fn=_js_calc,
 )
@@ -2684,7 +2684,7 @@ register_calculator(
     "internal-rate-of-return-calculator", "Internal Rate of Return (IRR) Calculator", "business_investment",
     "Internal Rate of Return (IRR) Calculator",
     fields=[
-        CalcField("initial_investment", "Initial Investment ($) (Year 0 Outflow)"),
+        CalcField("initial_investment", "Initial Investment () (Year 0 Outflow)"),
         CalcField("hurdle_rate", "Required Rate of Return (Hurdle Rate) (%)"),
         CalcField("num_periods", "Number of Cash Flow Periods (Years)", type="select", options=[{"value": "1 Year", "label": "1 Year"}, {"value": "2 Years", "label": "2 Years"}, {"value": "3 Years", "label": "3 Years"}, {"value": "4 Years", "label": "4 Years"}, {"value": "5 Years", "label": "5 Years"}, {"value": "6 Years", "label": "6 Years"}, {"value": "7 Years", "label": "7 Years"}, {"value": "8 Years", "label": "8 Years"}, {"value": "9 Years", "label": "9 Years"}, {"value": "10 Years", "label": "10 Years"}]),
     ],
@@ -2706,7 +2706,7 @@ register_calculator(
     "net-present-value-calculator", "Net Present Value (NPV) Calculator", "business_investment",
     "Net Present Value (NPV) Calculator",
     fields=[
-        CalcField("initial_investment", "Initial Investment ($) (Year 0 Outflow)"),
+        CalcField("initial_investment", "Initial Investment () (Year 0 Outflow)"),
         CalcField("discount_rate", "Discount Rate / Required Rate of Return (%)"),
         CalcField("num_periods", "Number of Cash Flow Periods (Years)", type="select", options=[{"value": "1 Year", "label": "1 Year"}, {"value": "2 Years", "label": "2 Years"}, {"value": "3 Years", "label": "3 Years"}, {"value": "4 Years", "label": "4 Years"}, {"value": "5 Years", "label": "5 Years"}, {"value": "6 Years", "label": "6 Years"}, {"value": "7 Years", "label": "7 Years"}, {"value": "8 Years", "label": "8 Years"}, {"value": "9 Years", "label": "9 Years"}, {"value": "10 Years", "label": "10 Years"}]),
     ],
@@ -2717,8 +2717,8 @@ register_calculator(
     "net-profit-margin-calculator", "Net Profit Margin Calculator", "business_investment",
     "Net Profit Margin Calculator",
     fields=[
-        CalcField("revenue", "Net Sales Revenue ($)"),
-        CalcField("expenses", "Total Expenses (All Costs) ($)"),
+        CalcField("revenue", "Net Sales Revenue ()"),
+        CalcField("expenses", "Total Expenses (All Costs) ()"),
     ],
     fn=_js_calc,
 )
@@ -2727,7 +2727,7 @@ register_calculator(
     "payback-period-calculator", "Payback Period Calculator", "business_investment",
     "Payback Period Calculator",
     fields=[
-        CalcField("initial_investment", "Initial Investment ($) (Year 0 Outflow)"),
+        CalcField("initial_investment", "Initial Investment () (Year 0 Outflow)"),
         CalcField("max_payback", "Maximum Acceptable Payback Period (Years)"),
         CalcField("num_periods", "Number of Cash Flow Periods (Years)", type="select", options=[{"value": "1 Year", "label": "1 Year"}, {"value": "2 Years", "label": "2 Years"}, {"value": "3 Years", "label": "3 Years"}, {"value": "4 Years", "label": "4 Years"}, {"value": "5 Years", "label": "5 Years"}, {"value": "6 Years", "label": "6 Years"}, {"value": "7 Years", "label": "7 Years"}, {"value": "8 Years", "label": "8 Years"}, {"value": "9 Years", "label": "9 Years"}, {"value": "10 Years", "label": "10 Years"}]),
     ],
@@ -2747,8 +2747,8 @@ register_calculator(
     "price-to-earnings-ratio-calculator", "Price-to-Earnings (P/E) Ratio Calculator", "business_investment",
     "Price-to-Earnings (P/E) Ratio Calculator",
     fields=[
-        CalcField("market_price", "Current Market Price per Share ($)"),
-        CalcField("eps", "Earnings per Share (EPS) ($)"),
+        CalcField("market_price", "Current Market Price per Share ()"),
+        CalcField("eps", "Earnings per Share (EPS) ()"),
     ],
     fn=_js_calc,
 )
@@ -2757,9 +2757,9 @@ register_calculator(
     "profit-and-loss-calculator", "Option P/L Calculator", "business_investment",
     "Option P/L Calculator",
     fields=[
-        CalcField("strike", "Strike Price ($)"),
-        CalcField("premium", "Premium Paid/Received ($)"),
-        CalcField("finalPrice", "Final Stock Price at Expiration ($)"),
+        CalcField("strike", "Strike Price ()"),
+        CalcField("premium", "Premium Paid/Received ()"),
+        CalcField("finalPrice", "Final Stock Price at Expiration ()"),
     ],
     fn=_js_calc,
 )
@@ -2794,8 +2794,8 @@ register_calculator(
     "return-on-ad-spend-calculator", "Return on Ad Spend (ROAS) Calculator", "business_investment",
     "Return on Ad Spend (ROAS) Calculator",
     fields=[
-        CalcField("revenue", "Revenue Generated from Ads ($)"),
-        CalcField("cost", "Total Advertising Cost ($)"),
+        CalcField("revenue", "Revenue Generated from Ads ()"),
+        CalcField("cost", "Total Advertising Cost ()"),
     ],
     fn=_js_calc,
 )
@@ -2830,7 +2830,7 @@ register_calculator(
     "sba-loan-calculator", "SBA Loan Calculator (7a Fee & Amortization)", "business_investment",
     "SBA Loan Calculator (7a Fee & Amortization)",
     fields=[
-        CalcField("loan_amount", "Loan Principal ($)"),
+        CalcField("loan_amount", "Loan Principal ()"),
         CalcField("annual_rate", "Annual Interest Rate (%)"),
         CalcField("loan_term_years", "Loan Term (Years)"),
         CalcField("guarantee_percent", "SBA Guaranteed Percentage (%)"),
@@ -2843,9 +2843,9 @@ register_calculator(
     "sharpe-ratio-calculator", "Sharpe Ratio Calculator", "business_investment",
     "Sharpe Ratio Calculator",
     fields=[
-        CalcField("portfolio_return", "Portfolio/Asset Return ($\mathbf{R_a}$)"),
-        CalcField("risk_free_rate", "Risk-Free Rate ($\mathbf{R_f}$)"),
-        CalcField("standard_deviation", "Standard Deviation ($\mathbf{\sigma_a}$)"),
+        CalcField("portfolio_return", "Portfolio/Asset Return (R_a)"),
+        CalcField("risk_free_rate", "Risk-Free Rate (R_f)"),
+        CalcField("standard_deviation", "Standard Deviation (σ_a)"),
     ],
     fn=_js_calc,
 )
@@ -2866,10 +2866,10 @@ register_calculator(
     "stock-total-return-calculator", "Stock Total Return Calculator (with Dividends)", "business_investment",
     "Stock Total Return Calculator (with Dividends)",
     fields=[
-        CalcField("purchase_price", "Initial Purchase Price per Share ($)"),
-        CalcField("selling_price", "Final Selling Price per Share or Current Price ($)"),
+        CalcField("purchase_price", "Initial Purchase Price per Share ()"),
+        CalcField("selling_price", "Final Selling Price per Share or Current Price ()"),
         CalcField("num_shares", "Number of Shares Purchased"),
-        CalcField("total_dividends", "Total Dividends Received ($)"),
+        CalcField("total_dividends", "Total Dividends Received ()"),
         CalcField("investment_years", "Investment Period (Years)"),
     ],
     fn=_js_calc,
@@ -2900,7 +2900,7 @@ register_calculator(
     "Acceleration Converter (m/s², ft/s², g)",
     fields=[
         CalcField("inputValue", "Acceleration Value to Convert"),
-        CalcField("inputUnitSelect", "Input Unit", type="select", options=[{"value": "Meters per Second Squared ($\text{m}/\text{s}^2$)", "label": "Meters per Second Squared ($\text{m}/\text{s}^2$)"}, {"value": "Feet per Second Squared ($\text{ft}/\text{s}^2$)", "label": "Feet per Second Squared ($\text{ft}/\text{s}^2$)"}, {"value": "Standard Gravity ($g$)", "label": "Standard Gravity ($g$)"}]),
+        CalcField("inputUnitSelect", "Input Unit", type="select", options=[{"value": "Meters per Second Squared (m/s^2)", "label": "Meters per Second Squared (m/s^2)"}, {"value": "Feet per Second Squared (ft/s^2)", "label": "Feet per Second Squared (ft/s^2)"}, {"value": "Standard Gravity (g)", "label": "Standard Gravity (g)"}]),
     ],
     fn=_js_calc,
 )
@@ -2909,12 +2909,12 @@ register_calculator(
     "angle-converter", "Angle Converter (Degrees to Radians, etc.)", "conversion",
     "Angle Converter (Degrees to Radians, etc.)",
     fields=[
-        CalcField("inputMethodSelect", "Input Method", type="select", options=[{"value": "Decimal/Standard Input (e.g., 90, 1.57)", "label": "Decimal/Standard Input (e.g., 90, 1.57)"}, {"value": "Degrees-Minutes-Seconds (DMS) Input", "label": "Degrees-Minutes-Seconds (DMS) Input"}]),
-        CalcField("decimalValueInput", "Enter Angle Value"),
-        CalcField("unitSelect", "Unitselect", type="select"),
-        CalcField("dmsDegrees", "Degrees $\left(^{\circ}\right)$"),
-        CalcField("dmsMinutes", "Minutes $\left(\prime\right)$"),
-        CalcField("dmsSeconds", "Seconds $\left(\prime\prime\right)$"),
+        CalcField("inputMethodSelect", "Input Method", type="select", options=[{"value": "Decimal/Standard Input (e.g., 90, 1.57)", "label": "Decimal/Standard Input (e.g., 90, 1.57)"}, {"value": "Degrees-Minutes-Seconds (DMS) Input", "label": "Degrees-Minutes-Seconds (DMS) Input"}], default="Decimal/Standard Input (e.g., 90, 1.57)"),
+        CalcField("decimalValueInput", "Enter Angle Value", default=45),
+        CalcField("unitSelect", "Angle Unit", type="select", options=[{"value": "Degrees (°)", "label": "Degrees (°)"}, {"value": "Radians (rad)", "label": "Radians (rad)"}, {"value": "Gradians (grad)", "label": "Gradians (grad)"}, {"value": "Turns / Revolutions", "label": "Turns / Revolutions"}], default="Degrees (°)"),
+        CalcField("dmsDegrees", "Degrees (°)", default=45),
+        CalcField("dmsMinutes", "Minutes (′)", default=0),
+        CalcField("dmsSeconds", "Seconds (″)", default=0),
     ],
     fn=_js_calc,
 )
@@ -2946,9 +2946,9 @@ register_calculator(
     "blood-sugar-unit-converter", "Blood Sugar Unit Converter (mg/dL to mmol/L)", "conversion",
     "Blood Sugar Unit Converter (mg/dL to mmol/L)",
     fields=[
-        CalcField("calculationMode", "Input Unit", type="select", options=[{"value": "Milligrams per Deciliter ($\text{mg/dL}$)", "label": "Milligrams per Deciliter ($\text{mg/dL}$)"}, {"value": "Millimoles per Liter ($\text{mmol/L}$)", "label": "Millimoles per Liter ($\text{mmol/L}$)"}]),
-        CalcField("mgdlValue", "Value in $\text{mg/dL}$"),
-        CalcField("mmolValue", "Value in $\text{mmol/L}$"),
+        CalcField("calculationMode", "Input Unit", type="select", options=[{"value": "Milligrams per Deciliter (mg/dL)", "label": "Milligrams per Deciliter (mg/dL)"}, {"value": "Millimoles per Liter (mmol/L)", "label": "Millimoles per Liter (mmol/L)"}]),
+        CalcField("mgdlValue", "Value in mg/dL"),
+        CalcField("mmolValue", "Value in mmol/L"),
     ],
     fn=_js_calc,
 )
@@ -2958,7 +2958,7 @@ register_calculator(
     "Braille Converter (English Text)",
     fields=[
         CalcField("inputValue", "Enter Text or Braille Characters"),
-        CalcField("directionSelect", "Directionselect", type="select", options=[{"value": "English Text $\rightarrow$ Braille", "label": "English Text $\rightarrow$ Braille"}, {"value": "Braille $\rightarrow$ English Text", "label": "Braille $\rightarrow$ English Text"}]),
+        CalcField("directionSelect", "Directionselect", type="select", options=[{"value": "English Text → Braille", "label": "English Text → Braille"}, {"value": "Braille → English Text", "label": "Braille → English Text"}]),
     ],
     fn=_js_calc,
 )
@@ -2968,7 +2968,7 @@ register_calculator(
     "Catalytic Activity Converter (Katal to Enzyme Unit)",
     fields=[
         CalcField("inputValue", "Activity Value to Convert"),
-        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Enzyme Units ($\text{U}$) $\rightarrow$ Katal ($\text{kat}$)", "label": "Enzyme Units ($\text{U}$) $\rightarrow$ Katal ($\text{kat}$)"}, {"value": "Katal ($\text{kat}$) $\rightarrow$ Enzyme Units ($\text{U}$)", "label": "Katal ($\text{kat}$) $\rightarrow$ Enzyme Units ($\text{U}$)"}]),
+        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Enzyme Units (U) → Katal (kat)", "label": "Enzyme Units (U) → Katal (kat)"}, {"value": "Katal (kat) → Enzyme Units (U)", "label": "Katal (kat) → Enzyme Units (U)"}]),
     ],
     fn=_js_calc,
 )
@@ -2977,9 +2977,9 @@ register_calculator(
     "clothing-size-converter", "Clothing Size Converter (S/M/L, Numeric)", "conversion",
     "Clothing Size Converter (S/M/L, Numeric)",
     fields=[
-        CalcField("categorySelect", "Select Garment/Gender Category", type="select", options=[{"value": "Men's Tops (Focus on Chest/Shirt Size)", "label": "Men's Tops (Focus on Chest/Shirt Size)"}, {"value": "Women's Tops (Focus on Bust Size)", "label": "Women's Tops (Focus on Bust Size)"}, {"value": "Men's Bottoms (Focus on Waist Size)", "label": "Men's Bottoms (Focus on Waist Size)"}, {"value": "Women's Bottoms (Focus on Hip Size)", "label": "Women's Bottoms (Focus on Hip Size)"}]),
-        CalcField("inputValue", "Enter Size", type="text"),
-        CalcField("unitSelect", "Unitselect", type="select"),
+        CalcField("categorySelect", "Select Garment/Gender Category", type="select", options=[{"value": "Men's Tops (Focus on Chest/Shirt Size)", "label": "Men's Tops (Focus on Chest/Shirt Size)"}, {"value": "Women's Tops (Focus on Bust Size)", "label": "Women's Tops (Focus on Bust Size)"}, {"value": "Men's Bottoms (Focus on Waist Size)", "label": "Men's Bottoms (Focus on Waist Size)"}, {"value": "Women's Bottoms (Focus on Hip Size)", "label": "Women's Bottoms (Focus on Hip Size)"}], default="Men's Tops (Focus on Chest/Shirt Size)"),
+        CalcField("inputValue", "Enter Size", type="text", default="M"),
+        CalcField("unitSelect", "Source Size System", type="select", options=[{"value": "US / International Letter (S/M/L/XL)", "label": "US / International Letter (S/M/L/XL)"}, {"value": "US Numeric Size", "label": "US Numeric Size"}, {"value": "UK Numeric Size", "label": "UK Numeric Size"}, {"value": "EU Numeric Size", "label": "EU Numeric Size"}], default="US / International Letter (S/M/L/XL)"),
     ],
     fn=_js_calc,
 )
@@ -3025,7 +3025,7 @@ register_calculator(
     "Density Converter (kg/m³, g/cm³, lb/ft³)",
     fields=[
         CalcField("inputValue", "Density Value to Convert"),
-        CalcField("inputUnitSelect", "Input Unit", type="select", options=[{"value": "Kilograms per Cubic Meter ($\text{kg}/\text{m}^3$)", "label": "Kilograms per Cubic Meter ($\text{kg}/\text{m}^3$)"}, {"value": "Grams per Cubic Centimeter ($\text{g}/\text{cm}^3$)", "label": "Grams per Cubic Centimeter ($\text{g}/\text{cm}^3$)"}, {"value": "Pounds per Cubic Foot ($\text{lb}/\text{ft}^3$)", "label": "Pounds per Cubic Foot ($\text{lb}/\text{ft}^3$)"}]),
+        CalcField("inputUnitSelect", "Input Unit", type="select", options=[{"value": "Kilograms per Cubic Meter (kg/m^3)", "label": "Kilograms per Cubic Meter (kg/m^3)"}, {"value": "Grams per Cubic Centimeter (g/cm^3)", "label": "Grams per Cubic Centimeter (g/cm^3)"}, {"value": "Pounds per Cubic Foot (lb/ft^3)", "label": "Pounds per Cubic Foot (lb/ft^3)"}]),
     ],
     fn=_js_calc,
 )
@@ -3047,8 +3047,8 @@ register_calculator(
     "earthquake-magnitude-scale-calculator", "Earthquake Magnitude Scale Converter (M to Energy)", "conversion",
     "Earthquake Magnitude Scale Converter (M to Energy)",
     fields=[
-        CalcField("calculationMode", "What do you want to calculate?", type="select", options=[{"value": "Energy Released (Joules/TNT) from Magnitude", "label": "Energy Released (Joules/TNT) from Magnitude"}, {"value": "Magnitude ($\mathbf{M}$) from Energy (Joules)", "label": "Magnitude ($\mathbf{M}$) from Energy (Joules)"}, {"value": "Energy Comparison of Two Magnitudes", "label": "Energy Comparison of Two Magnitudes"}]),
-        CalcField("magnitudeValue", "Earthquake Magnitude ($\mathbf{M}$)"),
+        CalcField("calculationMode", "What do you want to calculate?", type="select", options=[{"value": "Energy Released (Joules/TNT) from Magnitude", "label": "Energy Released (Joules/TNT) from Magnitude"}, {"value": "Magnitude (M) from Energy (Joules)", "label": "Magnitude (M) from Energy (Joules)"}, {"value": "Energy Comparison of Two Magnitudes", "label": "Energy Comparison of Two Magnitudes"}]),
+        CalcField("magnitudeValue", "Earthquake Magnitude (M)"),
         CalcField("energyValue", "Seismic Energy Released (in Joules)"),
         CalcField("magA", "Maga"),
         CalcField("magB", "Magb"),
@@ -3080,7 +3080,7 @@ register_calculator(
     "Flow Rate Converter (GPM, L/s, m³/h)",
     fields=[
         CalcField("inputValue", "Value to Convert"),
-        CalcField("inputUnitSelect", "Input Unit", type="select", options=[{"value": "Gallons per Minute (GPM)", "label": "Gallons per Minute (GPM)"}, {"value": "Liters per Second (L/s)", "label": "Liters per Second (L/s)"}, {"value": "Cubic Meters per Hour ($\text{m}^3/\text{h}$)", "label": "Cubic Meters per Hour ($\text{m}^3/\text{h}$)"}]),
+        CalcField("inputUnitSelect", "Input Unit", type="select", options=[{"value": "Gallons per Minute (GPM)", "label": "Gallons per Minute (GPM)"}, {"value": "Liters per Second (L/s)", "label": "Liters per Second (L/s)"}, {"value": "Cubic Meters per Hour (m^3/h)", "label": "Cubic Meters per Hour (m^3/h)"}]),
     ],
     fn=_js_calc,
 )
@@ -3090,7 +3090,7 @@ register_calculator(
     "Force Converter (Newton to Pound-force)",
     fields=[
         CalcField("inputValue", "Force Value to Convert"),
-        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Newton ($\text{N}$) $\rightarrow$ Pound-force ($\text{lbf}$)", "label": "Newton ($\text{N}$) $\rightarrow$ Pound-force ($\text{lbf}$)"}, {"value": "Pound-force ($\text{lbf}$) $\rightarrow$ Newton ($\text{N}$)", "label": "Pound-force ($\text{lbf}$) $\rightarrow$ Newton ($\text{N}$)"}]),
+        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Newton (N) → Pound-force (lbf)", "label": "Newton (N) → Pound-force (lbf)"}, {"value": "Pound-force (lbf) → Newton (N)", "label": "Pound-force (lbf) → Newton (N)"}]),
     ],
     fn=_js_calc,
 )
@@ -3132,7 +3132,7 @@ register_calculator(
         CalcField("widthInput", "Width (in)"),
         CalcField("lengthInput", "Length (ft)"),
         CalcField("quantityInput", "Quantity"),
-        CalcField("pricePerBFInput", "Price Per Board Foot ($)"),
+        CalcField("pricePerBFInput", "Price Per Board Foot ()"),
     ],
     fn=_js_calc,
 )
@@ -3142,7 +3142,7 @@ register_calculator(
     "Luminous Intensity Converter (Candela to Candlepower)",
     fields=[
         CalcField("inputValue", "Intensity Value to Convert"),
-        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Candela ($\text{cd}$) $\rightarrow$ Candlepower ($\text{CP}$)", "label": "Candela ($\text{cd}$) $\rightarrow$ Candlepower ($\text{CP}$)"}, {"value": "Candlepower ($\text{CP}$) $\rightarrow$ Candela ($\text{cd}$)", "label": "Candlepower ($\text{CP}$) $\rightarrow$ Candela ($\text{cd}$)"}]),
+        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Candela (cd) → Candlepower (CP)", "label": "Candela (cd) → Candlepower (CP)"}, {"value": "Candlepower (CP) → Candela (cd)", "label": "Candlepower (CP) → Candela (cd)"}]),
     ],
     fn=_js_calc,
 )
@@ -3167,7 +3167,7 @@ register_calculator(
     "Metric Prefix Converter (Kilo, Mega, Giga, Tera)",
     fields=[
         CalcField("inputValue", "Value to Convert"),
-        CalcField("inputUnitSelect", "Input Prefix", type="select", options=[{"value": "Tera ($\text{T}$ - $10^{12}$)", "label": "Tera ($\text{T}$ - $10^{12}$)"}, {"value": "Giga ($\text{G}$ - $10^9$)", "label": "Giga ($\text{G}$ - $10^9$)"}, {"value": "Mega ($\text{M}$ - $10^6$)", "label": "Mega ($\text{M}$ - $10^6$)"}, {"value": "Kilo ($\text{k}$ - $10^3$)", "label": "Kilo ($\text{k}$ - $10^3$)"}, {"value": "Base Unit (U - $10^0$)", "label": "Base Unit (U - $10^0$)"}]),
+        CalcField("inputUnitSelect", "Input Prefix", type="select", options=[{"value": "Tera (T - 10^{12})", "label": "Tera (T - 10^{12})"}, {"value": "Giga (G - 10^9)", "label": "Giga (G - 10^9)"}, {"value": "Mega (M - 10^6)", "label": "Mega (M - 10^6)"}, {"value": "Kilo (k - 10^3)", "label": "Kilo (k - 10^3)"}, {"value": "Base Unit (U - 10^0)", "label": "Base Unit (U - 10^0)"}]),
     ],
     fn=_js_calc,
 )
@@ -3177,7 +3177,7 @@ register_calculator(
     "Moment of Inertia Converter (kg⋅m² to g⋅cm² to lbm⋅ft²)",
     fields=[
         CalcField("inputValue", "Moment of Inertia Value to Convert"),
-        CalcField("inputUnitSelect", "Input Unit", type="select", options=[{"value": "Kilogram meter squared ($\text{kg}\cdot\text{m}^2$)", "label": "Kilogram meter squared ($\text{kg}\cdot\text{m}^2$)"}, {"value": "Gram centimeter squared ($\text{g}\cdot\text{cm}^2$)", "label": "Gram centimeter squared ($\text{g}\cdot\text{cm}^2$)"}, {"value": "Pound-mass foot squared ($\text{lbm}\cdot\text{ft}^2$)", "label": "Pound-mass foot squared ($\text{lbm}\cdot\text{ft}^2$)"}]),
+        CalcField("inputUnitSelect", "Input Unit", type="select", options=[{"value": "Kilogram meter squared (kg·m^2)", "label": "Kilogram meter squared (kg·m^2)"}, {"value": "Gram centimeter squared (g·cm^2)", "label": "Gram centimeter squared (g·cm^2)"}, {"value": "Pound-mass foot squared (lbm·ft^2)", "label": "Pound-mass foot squared (lbm·ft^2)"}]),
     ],
     fn=_js_calc,
 )
@@ -3187,7 +3187,7 @@ register_calculator(
     "Morse Code Converter",
     fields=[
         CalcField("inputValue", "Enter Text or Morse Code"),
-        CalcField("directionSelect", "Directionselect", type="select", options=[{"value": "Text $\rightarrow$ Morse Code", "label": "Text $\rightarrow$ Morse Code"}, {"value": "Morse Code $\rightarrow$ Text", "label": "Morse Code $\rightarrow$ Text"}]),
+        CalcField("directionSelect", "Directionselect", type="select", options=[{"value": "Text → Morse Code", "label": "Text → Morse Code"}, {"value": "Morse Code → Text", "label": "Morse Code → Text"}]),
     ],
     fn=_js_calc,
 )
@@ -3220,9 +3220,9 @@ register_calculator(
     "ph-to-hydrogen-ion-concentration-converter", "pH to Hydrogen Ion Concentration Converter", "conversion",
     "pH to Hydrogen Ion Concentration Converter",
     fields=[
-        CalcField("calculationMode", "What do you want to calculate?", type="select", options=[{"value": "Concentration ($[\text{H}^+]$) from $\text{pH}$", "label": "Concentration ($[\text{H}^+]$) from $\text{pH}$"}, {"value": "$\text{pH}$ from Concentration ($[\text{H}^+]$)", "label": "$\text{pH}$ from Concentration ($[\text{H}^+]$)"}]),
-        CalcField("phValue", "Input $\text{pH}$ Value"),
-        CalcField("concentrationValue", "Input Hydrogen Ion Concentration ($[\text{H}^+]$)"),
+        CalcField("calculationMode", "What do you want to calculate?", type="select", options=[{"value": "Concentration ([H^+]) from pH", "label": "Concentration ([H^+]) from pH"}, {"value": "pH from Concentration ([H^+])", "label": "pH from Concentration ([H^+])"}]),
+        CalcField("phValue", "Input pH Value"),
+        CalcField("concentrationValue", "Input Hydrogen Ion Concentration ([H^+])"),
     ],
     fn=_js_calc,
 )
@@ -3260,7 +3260,7 @@ register_calculator(
     "Radioactivity Converter (Becquerel to Curie)",
     fields=[
         CalcField("inputValue", "Activity Value to Convert"),
-        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Becquerel ($\text{Bq}$) $\rightarrow$ Curie ($\text{Ci}$)", "label": "Becquerel ($\text{Bq}$) $\rightarrow$ Curie ($\text{Ci}$)"}, {"value": "Curie ($\text{Ci}$) $\rightarrow$ Becquerel ($\text{Bq}$)", "label": "Curie ($\text{Ci}$) $\rightarrow$ Becquerel ($\text{Bq}$)"}]),
+        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Becquerel (Bq) → Curie (Ci)", "label": "Becquerel (Bq) → Curie (Ci)"}, {"value": "Curie (Ci) → Becquerel (Bq)", "label": "Curie (Ci) → Becquerel (Bq)"}]),
     ],
     fn=_js_calc,
 )
@@ -3280,7 +3280,7 @@ register_calculator(
     "Roman Numeral Converter",
     fields=[
         CalcField("inputValue", "Enter Number or Roman Numeral", type="text"),
-        CalcField("directionSelect", "Directionselect", type="select", options=[{"value": "Decimal $\rightarrow$ Roman", "label": "Decimal $\rightarrow$ Roman"}, {"value": "Roman $\rightarrow$ Decimal", "label": "Roman $\rightarrow$ Decimal"}]),
+        CalcField("directionSelect", "Directionselect", type="select", options=[{"value": "Decimal → Roman", "label": "Decimal → Roman"}, {"value": "Roman → Decimal", "label": "Roman → Decimal"}]),
     ],
     fn=_js_calc,
 )
@@ -3289,9 +3289,9 @@ register_calculator(
     "screen-aspect-ratio-calculator", "Screen Aspect Ratio Calculator", "conversion",
     "Screen Aspect Ratio Calculator",
     fields=[
-        CalcField("calculationMode", "What do you want to calculate?", type="select", options=[{"value": "Aspect Ratio ($\text{X}:\text{Y}$)", "label": "Aspect Ratio ($\text{X}:\text{Y}$)"}, {"value": "Screen Height ($\text{px}$)", "label": "Screen Height ($\text{px}$)"}, {"value": "Screen Width ($\text{px}$)", "label": "Screen Width ($\text{px}$)"}]),
-        CalcField("widthValue", "Width ($\text{px}$)"),
-        CalcField("heightValue", "Height ($\text{px}$)"),
+        CalcField("calculationMode", "What do you want to calculate?", type="select", options=[{"value": "Aspect Ratio (X:Y)", "label": "Aspect Ratio (X:Y)"}, {"value": "Screen Height (px)", "label": "Screen Height (px)"}, {"value": "Screen Width (px)", "label": "Screen Width (px)"}]),
+        CalcField("widthValue", "Width (px)"),
+        CalcField("heightValue", "Height (px)"),
         CalcField("ratioX", "Ratiox"),
         CalcField("ratioY", "Ratioy"),
     ],
@@ -3321,7 +3321,7 @@ register_calculator(
     "Surface Tension Converter (N/m <> dyne/cm)",
     fields=[
         CalcField("inputValue", "Surface Tension Value to Convert"),
-        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Newton per Meter ($\text{N}/\text{m}$) $\rightarrow$ Dyne per Centimeter ($\text{dyne}/\text{cm}$)", "label": "Newton per Meter ($\text{N}/\text{m}$) $\rightarrow$ Dyne per Centimeter ($\text{dyne}/\text{cm}$)"}, {"value": "Dyne per Centimeter ($\text{dyne}/\text{cm}$) $\rightarrow$ Newton per Meter ($\text{N}/\text{m}$)", "label": "Dyne per Centimeter ($\text{dyne}/\text{cm}$) $\rightarrow$ Newton per Meter ($\text{N}/\text{m}$)"}]),
+        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Newton per Meter (N/m) → Dyne per Centimeter (dyne/cm)", "label": "Newton per Meter (N/m) → Dyne per Centimeter (dyne/cm)"}, {"value": "Dyne per Centimeter (dyne/cm) → Newton per Meter (N/m)", "label": "Dyne per Centimeter (dyne/cm) → Newton per Meter (N/m)"}]),
     ],
     fn=_js_calc,
 )
@@ -3339,9 +3339,9 @@ register_calculator(
     "time-zone-converter", "Time Zone Converter (World Clocks)", "conversion",
     "Time Zone Converter (World Clocks)",
     fields=[
-        CalcField("dateTimeInput", "Source Date & Time (Leave blank for NOW)", type="date"),
-        CalcField("sourceTimeZone", "Source Time Zone", type="select"),
-        CalcField("targetTimeZone", "Target Time Zone", type="select"),
+        CalcField("dateTimeInput", "Source Date & Time (Leave blank for NOW)", type="date", default="2026-09-17"),
+        CalcField("sourceTimeZone", "Source Time Zone", type="select", options=[{"value": "UTC", "label": "UTC (Coordinated Universal Time)"}, {"value": "America/New_York", "label": "New York (EST/EDT)"}, {"value": "America/Los_Angeles", "label": "Los Angeles (PST/PDT)"}, {"value": "Europe/London", "label": "London (GMT/BST)"}, {"value": "Europe/Paris", "label": "Paris / Berlin (CET/CEST)"}, {"value": "Asia/Dhaka", "label": "Dhaka (BST)"}, {"value": "Asia/Tokyo", "label": "Tokyo (JST)"}], default="UTC"),
+        CalcField("targetTimeZone", "Target Time Zone", type="select", options=[{"value": "UTC", "label": "UTC (Coordinated Universal Time)"}, {"value": "America/New_York", "label": "New York (EST/EDT)"}, {"value": "America/Los_Angeles", "label": "Los Angeles (PST/PDT)"}, {"value": "Europe/London", "label": "London (GMT/BST)"}, {"value": "Europe/Paris", "label": "Paris / Berlin (CET/CEST)"}, {"value": "Asia/Dhaka", "label": "Dhaka (BST)"}, {"value": "Asia/Tokyo", "label": "Tokyo (JST)"}], default="America/New_York"),
     ],
     fn=_js_calc,
 )
@@ -3351,7 +3351,7 @@ register_calculator(
     "Torque Converter (Newton-Meters to Foot-Pounds)",
     fields=[
         CalcField("inputValue", "Torque Value to Convert"),
-        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Newton-Meters ($\text{N}\cdot\text{m}$) $\rightarrow$ Foot-Pounds ($\text{ft}\cdot\text{lb}$)", "label": "Newton-Meters ($\text{N}\cdot\text{m}$) $\rightarrow$ Foot-Pounds ($\text{ft}\cdot\text{lb}$)"}, {"value": "Foot-Pounds ($\text{ft}\cdot\text{lb}$) $\rightarrow$ Newton-Meters ($\text{N}\cdot\text{m}$)", "label": "Foot-Pounds ($\text{ft}\cdot\text{lb}$) $\rightarrow$ Newton-Meters ($\text{N}\cdot\text{m}$)"}]),
+        CalcField("directionSelect", "Conversion Direction", type="select", options=[{"value": "Newton-Meters (N·m) → Foot-Pounds (ft·lb)", "label": "Newton-Meters (N·m) → Foot-Pounds (ft·lb)"}, {"value": "Foot-Pounds (ft·lb) → Newton-Meters (N·m)", "label": "Foot-Pounds (ft·lb) → Newton-Meters (N·m)"}]),
     ],
     fn=_js_calc,
 )
@@ -3360,9 +3360,9 @@ register_calculator(
     "typography-unit-converter", "Typography Unit Converter (pt, px, em)", "conversion",
     "Typography Unit Converter (pt, px, em)",
     fields=[
-        CalcField("baseFontSize", "Base Font Size (in Pixels, $\text{px}$)"),
+        CalcField("baseFontSize", "Base Font Size (in Pixels, px)"),
         CalcField("inputValue", "Value to Convert"),
-        CalcField("inputUnitSelect", "Input Unit", type="select", options=[{"value": "Pixels ($\text{px}$)", "label": "Pixels ($\text{px}$)"}, {"value": "Points ($\text{pt}$)", "label": "Points ($\text{pt}$)"}, {"value": "Ems ($\text{em}$)", "label": "Ems ($\text{em}$)"}]),
+        CalcField("inputUnitSelect", "Input Unit", type="select", options=[{"value": "Pixels (px)", "label": "Pixels (px)"}, {"value": "Points (pt)", "label": "Points (pt)"}, {"value": "Ems (em)", "label": "Ems (em)"}]),
     ],
     fn=_js_calc,
 )
@@ -3371,8 +3371,8 @@ register_calculator(
     "video-file-size-calculator", "Video File Size Calculator (Bitrate & Duration to MB)", "conversion",
     "Video File Size Calculator (Bitrate & Duration to MB)",
     fields=[
-        CalcField("videoBitrateValue", "Video Bitrate ($\text{kbps}$)"),
-        CalcField("audioBitrateValue", "Audio Bitrate ($\text{kbps}$)"),
+        CalcField("videoBitrateValue", "Video Bitrate (kbps)"),
+        CalcField("audioBitrateValue", "Audio Bitrate (kbps)"),
         CalcField("durationH", "Durationh"),
         CalcField("durationM", "Durationm"),
         CalcField("durationS", "Durations"),
@@ -3385,7 +3385,7 @@ register_calculator(
     "Viscosity Converter (Dynamic & Kinematic)",
     fields=[
         CalcField("inputValue", "Value to Convert"),
-        CalcField("inputUnitSelect", "Input Unit (Select the unit of your input)", type="select", options=[{"value": "Pascal-seconds ($\text{Pa} \cdot \text{s}$)", "label": "Pascal-seconds ($\text{Pa} \cdot \text{s}$)"}, {"value": "Centipoise ($\text{cP}$)", "label": "Centipoise ($\text{cP}$)"}, {"value": "Square meters per second ($\text{m}^2/\text{s}$)", "label": "Square meters per second ($\text{m}^2/\text{s}$)"}, {"value": "Centistokes ($\text{cSt}$)", "label": "Centistokes ($\text{cSt}$)"}]),
+        CalcField("inputUnitSelect", "Input Unit (Select the unit of your input)", type="select", options=[{"value": "Pascal-seconds (Pa · s)", "label": "Pascal-seconds (Pa · s)"}, {"value": "Centipoise (cP)", "label": "Centipoise (cP)"}, {"value": "Square meters per second (m^2/s)", "label": "Square meters per second (m^2/s)"}, {"value": "Centistokes (cSt)", "label": "Centistokes (cSt)"}]),
     ],
     fn=_js_calc,
 )
@@ -3605,7 +3605,7 @@ register_calculator(
     "half-and-double-time-calculator", "💵 Overtime Pay Calculator", "date_time",
     "💵 Overtime Pay Calculator",
     fields=[
-        CalcField("regular-rate", "Regular Hourly Rate ($)"),
+        CalcField("regular-rate", "Regular Hourly Rate ()"),
         CalcField("time-and-a-half-hours", "Time & a Half Hours (1.5x)"),
         CalcField("double-time-hours", "Double Time Hours (2.0x)"),
     ],
@@ -3648,9 +3648,9 @@ register_calculator(
     "international-phone-call-time-planner", "📞 International Phone Call Time Planner", "date_time",
     "📞 International Phone Call Time Planner",
     fields=[
-        CalcField("origin-time", "Call Start Time (In Your Time Zone)", type="date"),
-        CalcField("origin-timezone", "Your Time Zone", type="select"),
-        CalcField("destination-timezone", "Destination Time Zone", type="select"),
+        CalcField("origin-time", "Call Start Time (In Your Time Zone)", type="date", default="2026-09-17"),
+        CalcField("origin-timezone", "Your Time Zone", type="select", options=[{"value": "UTC", "label": "UTC (Coordinated Universal Time)"}, {"value": "America/New_York", "label": "New York (EST/EDT)"}, {"value": "America/Los_Angeles", "label": "Los Angeles (PST/PDT)"}, {"value": "Europe/London", "label": "London (GMT/BST)"}, {"value": "Asia/Dhaka", "label": "Dhaka (BST)"}, {"value": "Asia/Tokyo", "label": "Tokyo (JST)"}], default="UTC"),
+        CalcField("destination-timezone", "Destination Time Zone", type="select", options=[{"value": "UTC", "label": "UTC (Coordinated Universal Time)"}, {"value": "America/New_York", "label": "New York (EST/EDT)"}, {"value": "America/Los_Angeles", "label": "Los Angeles (PST/PDT)"}, {"value": "Europe/London", "label": "London (GMT/BST)"}, {"value": "Asia/Dhaka", "label": "Dhaka (BST)"}, {"value": "Asia/Tokyo", "label": "Tokyo (JST)"}], default="America/New_York"),
     ],
     fn=_js_calc,
 )
@@ -3679,7 +3679,7 @@ register_calculator(
     "🕰️ Overtime Hours & Pay Calculator",
     fields=[
         CalcField("weekly-threshold", "Weekly OT Threshold (Hours)"),
-        CalcField("regular-wage", "Regular Hourly Wage ($)"),
+        CalcField("regular-wage", "Regular Hourly Wage ()"),
         CalcField("overtime-rate-multiplier", "OT Rate Multiplier (e.g., 1.5 for Time-and-a-Half)"),
         CalcField("form-control-sm", "Form Control Sm", type="date"),
     ],
@@ -3795,8 +3795,8 @@ register_calculator(
     fields=[
         CalcField("target-date", "Date to Calculate", type="date"),
         CalcField("timezone-offset", "Timezone Offset (Hours from UTC)"),
-        CalcField("latitude", "Latitude ($\phi$)"),
-        CalcField("longitude", "Longitude ($\lambda$)"),
+        CalcField("latitude", "Latitude (φ)"),
+        CalcField("longitude", "Longitude (λ)"),
     ],
     fn=_js_calc,
 )
@@ -3870,7 +3870,7 @@ register_calculator(
     "weekly-timesheet-pay-calculator", "📈 Weekly Timesheet Calculator", "date_time",
     "📈 Weekly Timesheet Calculator",
     fields=[
-        CalcField("hourly-wage", "Hourly Wage ($)"),
+        CalcField("hourly-wage", "Hourly Wage ()"),
         CalcField("form-control-sm", "Form Control Sm", type="date"),
     ],
     fn=_js_calc,
@@ -3903,8 +3903,8 @@ register_calculator(
     "world-clock-meeting-planner", "🤝 World Clock Meeting Planner", "date_time",
     "🤝 World Clock Meeting Planner",
     fields=[
-        CalcField("base-date", "Base Date for Calculation (Affects DST)", type="date"),
-        CalcField("timezone-select", "Add a Time Zone", type="select"),
+        CalcField("base-date", "Base Date for Calculation (Affects DST)", type="date", default="2026-09-17"),
+        CalcField("timezone-select", "Select Time Zone", type="select", options=[{"value": "UTC", "label": "UTC (Coordinated Universal Time)"}, {"value": "America/New_York", "label": "New York (EST/EDT)"}, {"value": "America/Los_Angeles", "label": "Los Angeles (PST/PDT)"}, {"value": "Europe/London", "label": "London (GMT/BST)"}, {"value": "Asia/Dhaka", "label": "Dhaka (BST)"}, {"value": "Asia/Tokyo", "label": "Tokyo (JST)"}], default="UTC"),
     ],
     fn=_js_calc,
 )
@@ -3927,7 +3927,7 @@ register_calculator(
         CalcField("current-gpa", "Current Gpa"),
         CalcField("current-credits", "Current Credits"),
         CalcField("form-control-sm", "Form Control Sm", type="text"),
-        CalcField("form-select-sm", "Form Select Sm", type="select", options=[{"value": "${g}", "label": "${g}"}]),
+        CalcField("form-select-sm", "Form Select Sm", type="select", options=[{"value": "{g}", "label": "{g}"}]),
     ],
     fn=_js_calc,
 )
@@ -3947,7 +3947,7 @@ register_calculator(
     "citation-generator", "📚 Academic Citation Generator", "education",
     "📚 Academic Citation Generator",
     fields=[
-        CalcField("${f.id}", "${F.Id}"),
+        CalcField("{f.id}", "{F.Id}"),
         CalcField("citation_style", "Citation Style", type="select", options=[{"value": "APA (7th Ed.)", "label": "APA (7th Ed.)"}, {"value": "MLA (9th Ed.)", "label": "MLA (9th Ed.)"}]),
         CalcField("source_type", "Source Type", type="select", options=[{"value": "Website / Article", "label": "Website / Article"}, {"value": "Book / Textbook", "label": "Book / Textbook"}]),
     ],
@@ -3972,7 +3972,7 @@ register_calculator(
     "class-schedule-conflict-checker", "🗓️ Class Schedule Conflict Checker", "education",
     "🗓️ Class Schedule Conflict Checker",
     fields=[
-        CalcField("day-${day}-${rowId}", "${day}"),
+        CalcField("day-{day}-{rowId}", "{day}"),
         CalcField("course-name", "Course Name", type="text"),
         CalcField("start-time", "Start Time", type="date"),
         CalcField("end-time", "End Time", type="date"),
@@ -3988,7 +3988,7 @@ register_calculator(
         CalcField("prev_gpa", "Prev Gpa"),
         CalcField("prev_credits", "Prev Credits"),
         CalcField("course-credits", "Course Credits"),
-        CalcField("course-grade", "Course Grade", type="select", options=[{"value": "${g}", "label": "${g}"}, {"value": "Pass (P)", "label": "Pass (P)"}, {"value": "No Pass (NP)", "label": "No Pass (NP)"}]),
+        CalcField("course-grade", "Course Grade", type="select", options=[{"value": "{g}", "label": "{g}"}, {"value": "Pass (P)", "label": "Pass (P)"}, {"value": "No Pass (NP)", "label": "No Pass (NP)"}]),
     ],
     fn=_js_calc,
 )
@@ -4073,8 +4073,8 @@ register_calculator(
         CalcField("prior_gpa", "Prior Gpa"),
         CalcField("prior_credits", "Prior Credits"),
         CalcField("course-name", "Course Name", type="text"),
-        CalcField("course-credits", "Course Credits", type="select", options=[{"value": "${c} cr", "label": "${c} cr"}]),
-        CalcField("course-grade", "Course Grade", type="select", options=[{"value": "${g}", "label": "${g}"}]),
+        CalcField("course-credits", "Course Credits", type="select", options=[{"value": "{c} cr", "label": "{c} cr"}]),
+        CalcField("course-grade", "Course Grade", type="select", options=[{"value": "{g}", "label": "{g}"}]),
     ],
     fn=_js_calc,
 )
@@ -4108,8 +4108,8 @@ register_calculator(
     "🏫 High School GPA Calculator",
     fields=[
         CalcField("course-credits", "Course Credits"),
-        CalcField("course-grade", "Course Grade", type="select", options=[{"value": "${g}", "label": "${g}"}]),
-        CalcField("course-level", "Course Level", type="select", options=[{"value": "${l}", "label": "${l}"}]),
+        CalcField("course-grade", "Course Grade", type="select", options=[{"value": "{g}", "label": "{g}"}]),
+        CalcField("course-level", "Course Level", type="select", options=[{"value": "{l}", "label": "{l}"}]),
     ],
     fn=_js_calc,
 )
@@ -4269,7 +4269,7 @@ register_calculator(
     fields=[
         CalcField("form-control-sm", "Form Control Sm", type="text"),
         CalcField("text-center", "Text Center"),
-        CalcField("form-select-sm", "Form Select Sm", type="select", options=[{"value": "${lvl.label}", "label": "${lvl.label}"}]),
+        CalcField("form-select-sm", "Form Select Sm", type="select", options=[{"value": "{lvl.label}", "label": "{lvl.label}"}]),
     ],
     fn=_js_calc,
 )
@@ -4373,7 +4373,7 @@ register_calculator(
     "📊 Student Monthly Budget",
     fields=[
         CalcField("form-control-sm", "Form Control Sm", type="text"),
-        CalcField("${type}-amount", "${Type} Amount"),
+        CalcField("{type}-amount", "{Type} Amount"),
         CalcField("-amount", "Amount"),
     ],
     fn=_js_calc,
@@ -4784,7 +4784,7 @@ register_calculator(
     "HOI Premium Estimator",
     fields=[
         CalcField("dwelling-cost", "Dwelling Cost"),
-        CalcField("deductible", "Deductible", type="select", options=[{"value": "$500 (Lower deductible)", "label": "$500 (Lower deductible)"}, {"value": "$1,000 (Standard)", "label": "$1,000 (Standard)"}, {"value": "$2,500 (Higher deductible)", "label": "$2,500 (Higher deductible)"}, {"value": "$5,000 (Lowest premium)", "label": "$5,000 (Lowest premium)"}]),
+        CalcField("deductible", "Deductible", type="select", options=[{"value": "500 (Lower deductible)", "label": "500 (Lower deductible)"}, {"value": "1,000 (Standard)", "label": "1,000 (Standard)"}, {"value": "2,500 (Higher deductible)", "label": "2,500 (Higher deductible)"}, {"value": "5,000 (Lowest premium)", "label": "5,000 (Lowest premium)"}]),
         CalcField("construction", "Construction", type="select", options=[{"value": "Brick / Masonry", "label": "Brick / Masonry"}, {"value": "Wood Frame", "label": "Wood Frame"}]),
         CalcField("risk-zone", "Risk Zone", type="select", options=[{"value": "Low Risk (Suburban)", "label": "Low Risk (Suburban)"}, {"value": "Medium Risk (Urban)", "label": "Medium Risk (Urban)"}, {"value": "High Risk (Coastal/Catastrophe)", "label": "High Risk (Coastal/Catastrophe)"}]),
     ],
@@ -4940,7 +4940,7 @@ register_calculator(
         CalcField("packing-service", "Full Professional Packing"),
         CalcField("storage-service", "30-Day Transition Storage"),
         CalcField("home-size", "Home Size", type="select", options=[{"value": "Studio / 1 Bedroom Apt", "label": "Studio / 1 Bedroom Apt"}, {"value": "2 Bedroom Home", "label": "2 Bedroom Home"}, {"value": "3 Bedroom Home", "label": "3 Bedroom Home"}, {"value": "4+ Bedroom Home", "label": "4+ Bedroom Home"}]),
-        CalcField("insurance-tier", "Insurance Tier", type="select", options=[{"value": "Standard Release Value ($0.60/lb)", "label": "Standard Release Value ($0.60/lb)"}, {"value": "Full Value Protection (Basic)", "label": "Full Value Protection (Basic)"}, {"value": "High Value Protection", "label": "High Value Protection"}]),
+        CalcField("insurance-tier", "Insurance Tier", type="select", options=[{"value": "Standard Release Value (0.60/lb)", "label": "Standard Release Value (0.60/lb)"}, {"value": "Full Value Protection (Basic)", "label": "Full Value Protection (Basic)"}, {"value": "High Value Protection", "label": "High Value Protection"}]),
     ],
     fn=_js_calc,
 )
@@ -5186,7 +5186,7 @@ register_calculator(
     fields=[
         CalcField("gift-count", "Gift Count"),
         CalcField("add-logistics", "Add Logistics"),
-        CalcField("bag-tier", "Bag Tier", type="select", options=[{"value": "Paper Bag + Tissue ($1.50)", "label": "Paper Bag + Tissue ($1.50)"}, {"value": "Premium Gift Box ($5.00)", "label": "Premium Gift Box ($5.00)"}, {"value": "Branded Canvas Tote ($12.00)", "label": "Branded Canvas Tote ($12.00)"}]),
+        CalcField("bag-tier", "Bag Tier", type="select", options=[{"value": "Paper Bag + Tissue (1.50)", "label": "Paper Bag + Tissue (1.50)"}, {"value": "Premium Gift Box (5.00)", "label": "Premium Gift Box (5.00)"}, {"value": "Branded Canvas Tote (12.00)", "label": "Branded Canvas Tote (12.00)"}]),
         CalcField("content-tier", "Content Tier", type="select", options=[{"value": "Basic (Water + 2 Snacks)", "label": "Basic (Water + 2 Snacks)"}, {"value": "Standard (Snacks + 1 Keepsake)", "label": "Standard (Snacks + 1 Keepsake)"}, {"value": "Deluxe (Tech item + Gourmet)", "label": "Deluxe (Tech item + Gourmet)"}]),
     ],
     fn=_js_calc,
@@ -5209,8 +5209,8 @@ register_calculator(
     fields=[
         CalcField("paper-guests", "Paper Guests"),
         CalcField("add-dayof", "Add Dayof"),
-        CalcField("print-method", "Print Method", type="select", options=[{"value": "Digital (Flat) - $5.00/ea", "label": "Digital (Flat) - $5.00/ea"}, {"value": "Letterpress / Foil - $12.00/ea", "label": "Letterpress / Foil - $12.00/ea"}, {"value": "Digital Only / E-Invite", "label": "Digital Only / E-Invite"}]),
-        CalcField("postage-rate", "Postage Rate", type="select", options=[{"value": "Standard Stamp ($0.73)", "label": "Standard Stamp ($0.73)"}, {"value": "Heavy / Square ($1.50)", "label": "Heavy / Square ($1.50)"}, {"value": "No Mailing Needed", "label": "No Mailing Needed"}]),
+        CalcField("print-method", "Print Method", type="select", options=[{"value": "Digital (Flat) - 5.00/ea", "label": "Digital (Flat) - 5.00/ea"}, {"value": "Letterpress / Foil - 12.00/ea", "label": "Letterpress / Foil - 12.00/ea"}, {"value": "Digital Only / E-Invite", "label": "Digital Only / E-Invite"}]),
+        CalcField("postage-rate", "Postage Rate", type="select", options=[{"value": "Standard Stamp (0.73)", "label": "Standard Stamp (0.73)"}, {"value": "Heavy / Square (1.50)", "label": "Heavy / Square (1.50)"}, {"value": "No Mailing Needed", "label": "No Mailing Needed"}]),
     ],
     fn=_js_calc,
 )
@@ -5353,7 +5353,7 @@ register_calculator(
     fields=[
         CalcField("audio-sqft", "Audio Sqft"),
         CalcField("has-subs", "Has Subs"),
-        CalcField("audio-type", "Audio Type", type="select", options=[{"value": "Speech / Background ($0.5W/sqft$)", "label": "Speech / Background ($0.5W/sqft$)"}, {"value": "Wedding / Party ($1.5W/sqft$)", "label": "Wedding / Party ($1.5W/sqft$)"}, {"value": "Live Band / Concert ($4.0W/sqft$)", "label": "Live Band / Concert ($4.0W/sqft$)"}]),
+        CalcField("audio-type", "Audio Type", type="select", options=[{"value": "Speech / Background (0.5W/sqft)", "label": "Speech / Background (0.5W/sqft)"}, {"value": "Wedding / Party (1.5W/sqft)", "label": "Wedding / Party (1.5W/sqft)"}, {"value": "Live Band / Concert (4.0W/sqft)", "label": "Live Band / Concert (4.0W/sqft)"}]),
         CalcField("audio-env", "Audio Env", type="select", options=[{"value": "Indoor (Standard)", "label": "Indoor (Standard)"}, {"value": "Outdoor (Requires +50%)", "label": "Outdoor (Requires +50%)"}]),
     ],
     fn=_js_calc,
@@ -5365,7 +5365,7 @@ register_calculator(
     fields=[
         CalcField("speaker-count", "Speaker Count"),
         CalcField("add-travel", "Add Travel"),
-        CalcField("speaker-tier", "Speaker Tier", type="select", options=[{"value": "Subject Matter Expert ($1.5k-$5k)", "label": "Subject Matter Expert ($1.5k-$5k)"}, {"value": "Professional Keynoter ($5k-$15k)", "label": "Professional Keynoter ($5k-$15k)"}, {"value": "Recognized Authority ($20k-$40k)", "label": "Recognized Authority ($20k-$40k)"}, {"value": "Celebrity / Icon ($50k+)", "label": "Celebrity / Icon ($50k+)"}]),
+        CalcField("speaker-tier", "Speaker Tier", type="select", options=[{"value": "Subject Matter Expert (1.5k-5k)", "label": "Subject Matter Expert (1.5k-5k)"}, {"value": "Professional Keynoter (5k-15k)", "label": "Professional Keynoter (5k-15k)"}, {"value": "Recognized Authority (20k-40k)", "label": "Recognized Authority (20k-40k)"}, {"value": "Celebrity / Icon (50k+)", "label": "Celebrity / Icon (50k+)"}]),
         CalcField("engagement-type", "Engagement Type", type="select", options=[{"value": "Keynote Only (60 min)", "label": "Keynote Only (60 min)"}, {"value": "Keynote + Workshop", "label": "Keynote + Workshop"}, {"value": "Panelist / Virtual Only", "label": "Panelist / Virtual Only"}]),
     ],
     fn=_js_calc,
@@ -5415,7 +5415,7 @@ register_calculator(
     fields=[
         CalcField("rental-guests", "Rental Guests"),
         CalcField("table-price", "Table Price"),
-        CalcField("chair-tier", "Chair Tier", type="select", options=[{"value": "Folding / Resin ($2.50)", "label": "Folding / Resin ($2.50)"}, {"value": "Chiavari / Ghost ($8.00)", "label": "Chiavari / Ghost ($8.00)"}, {"value": "Luxury Velvet / Armed ($15.00)", "label": "Luxury Velvet / Armed ($15.00)"}]),
+        CalcField("chair-tier", "Chair Tier", type="select", options=[{"value": "Folding / Resin (2.50)", "label": "Folding / Resin (2.50)"}, {"value": "Chiavari / Ghost (8.00)", "label": "Chiavari / Ghost (8.00)"}, {"value": "Luxury Velvet / Armed (15.00)", "label": "Luxury Velvet / Armed (15.00)"}]),
         CalcField("table-capacity", "Table Capacity", type="select", options=[{"value": "Round 60\" (Seats 8)", "label": "Round 60\" (Seats 8)"}, {"value": "Round 72\" (Seats 10)", "label": "Round 72\" (Seats 10)"}, {"value": "8' Rectangle (Seats 8)", "label": "8' Rectangle (Seats 8)"}, {"value": "6' Rectangle (Seats 6)", "label": "6' Rectangle (Seats 6)"}]),
     ],
     fn=_js_calc,
@@ -5466,7 +5466,7 @@ register_calculator(
         CalcField("vip-count", "Vip Count"),
         CalcField("hotel-rate", "Hotel Rate"),
         CalcField("add-stipend", "Add Stipend"),
-        CalcField("air-class", "Air Class", type="select", options=[{"value": "Coach / Economy ($550)", "label": "Coach / Economy ($550)"}, {"value": "Business Class ($1,200)", "label": "Business Class ($1,200)"}, {"value": "International / First ($3,500)", "label": "International / First ($3,500)"}]),
+        CalcField("air-class", "Air Class", type="select", options=[{"value": "Coach / Economy (550)", "label": "Coach / Economy (550)"}, {"value": "Business Class (1,200)", "label": "Business Class (1,200)"}, {"value": "International / First (3,500)", "label": "International / First (3,500)"}]),
         CalcField("hotel-nights", "Hotel Nights", type="select", options=[{"value": "1 Night", "label": "1 Night"}, {"value": "2 Nights", "label": "2 Nights"}, {"value": "3 Nights", "label": "3 Nights"}]),
     ],
     fn=_js_calc,

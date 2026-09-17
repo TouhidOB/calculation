@@ -230,12 +230,13 @@ register_calculator(
 
 
 def _emergency_fund(data):
-    target = data["monthly_expenses"] * data["months"]
+    months = float(data["months"])
+    target = data["monthly_expenses"] * months
     return {
         "target_amount": round(target, 2),
         "monthly_expenses": data["monthly_expenses"],
-        "months": data["months"],
-        "recommendation": f"Keep ${target:,.0f} saved for {int(data['months'])} months of expenses.",
+        "months": int(months),
+        "recommendation": f"Keep ${target:,.0f} saved for {int(months)} months of expenses.",
     }
 
 

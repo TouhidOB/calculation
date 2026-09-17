@@ -42,22 +42,28 @@ class Calculator:
         for f in self.fields:
             raw = data.get(f.name, None)
             if raw is None or (isinstance(raw, str) and raw == ""):
-                if f.required and f.default is None:
+                if f.default is not None:
+                    raw = f.default
+                elif f.type == "select" and f.options:
+                    raw = f.options[0]["value"]
+                elif f.type == "number":
+                    raw = 0
+                elif f.required:
                     errors.append(f"'{f.name}' is required")
                     continue
-                raw = f.default
+                else:
+                    raw = ""
             if f.type in ("number",):
                 try:
                     cleaned[f.name] = float(raw)
                 except (TypeError, ValueError):
                     errors.append(f"'{f.name}' must be numeric")
             elif f.type == "select":
-                val = str(raw)
-                allowed = [o["value"] for o in (f.options or [])]
+                val = str(raw) if raw is not None else ""
+                allowed = [str(o["value"]) for o in (f.options or [])]
                 if allowed and val not in allowed:
-                    errors.append(f"'{f.name}' must be one of {allowed}")
-                else:
-                    cleaned[f.name] = val
+                    val = allowed[0]
+                cleaned[f.name] = val
             else:
                 cleaned[f.name] = str(raw)
         if errors:

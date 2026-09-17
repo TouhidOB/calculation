@@ -68,12 +68,13 @@ register_calculator(
 
 def _paint(data):
     area = data["length"] * data["width"]  # wall area m²
-    litres = area / 10 * data["coats"]     # 1L covers ~10m² per coat
+    coats = float(data["coats"])
+    litres = area / 10 * coats     # 1L covers ~10m² per coat
     return {
         "area_m2": round(area, 2),
         "litres": round(litres, 2),
         "gallons": round(litres / 3.78541, 2),
-        "coats": int(data["coats"]),
+        "coats": int(coats),
     }
 
 
