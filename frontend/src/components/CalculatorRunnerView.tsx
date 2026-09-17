@@ -1451,6 +1451,24 @@ export default function CalculatorRunnerView({
               </Grid>
             </Box>
           )}
+
+          {/* Embedded Footer Link */}
+          {embedded && (
+            <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid #e2e8f0", textAlign: "center" }}>
+              <Typography variant="caption" sx={{ color: "#64748b", display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                Powered by{" "}
+                <MuiLink
+                  href={`https://trycalc.net/calculators/${calc.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: "#4f46e5", fontWeight: 700, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+                >
+                  TryCalc.net
+                </MuiLink>{" "}
+                — Free Online Calculators
+              </Typography>
+            </Box>
+          )}
         </Container>
       </Box>
 
