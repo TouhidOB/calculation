@@ -11,6 +11,7 @@ import type { CalculatorDef } from "@/lib/calculator-api"
 import { listCalculators, runCalculator, CATEGORY_META } from "@/lib/calculator-api"
 import JsExecutor from "@/components/JsExecutor"
 import GlobalNavbar from "@/components/GlobalNavbar"
+import GlobalFooter from "@/components/GlobalFooter"
 import ModernDatePicker from "@/components/ModernDatePicker"
 import { seoHowToFor, seoFaqFor, seoIntroFor, seoFormulaFor } from "@/lib/seo-helpers"
 import DOMPurify from "dompurify"
@@ -1472,6 +1473,9 @@ export default function CalculatorRunnerView({
             </Box>
           </Box>
         </Container>
+
+        {/* Global Footer with Trust & Legal Links */}
+        {!embedded && <GlobalFooter />}
       </Box>
 
       {/* History Drawer */}

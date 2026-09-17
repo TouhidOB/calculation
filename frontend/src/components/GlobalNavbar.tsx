@@ -28,6 +28,7 @@ import ClickAwayListener from "@mui/material/ClickAwayListener"
 import MenuItem from "@mui/material/MenuItem"
 import MenuList from "@mui/material/MenuList"
 import Button from "@mui/material/Button"
+import Stack from "@mui/material/Stack"
 
 // Icons
 import CalculatorLogoIcon from "@/components/CalculatorLogoIcon"
@@ -282,7 +283,32 @@ export default function GlobalNavbar({
       </List>
       <Divider sx={{ borderColor: "#e2e8f0" }} />
       <Box sx={{ p: 2, bgcolor: "#f8fafc", textAlign: "center" }}>
-        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 500, display: "block" }}>
+        <Stack direction="row" spacing={1.5} sx={{ justifyContent: "center", mb: 1, flexWrap: "wrap", gap: 0.5 }}>
+          <Link href="/about" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none" }}>
+            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, "&:hover": { color: "#4f46e5" } }}>
+              About
+            </Typography>
+          </Link>
+          <Typography variant="caption" sx={{ color: "#cbd5e1" }}>·</Typography>
+          <Link href="/contact" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none" }}>
+            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, "&:hover": { color: "#4f46e5" } }}>
+              Contact
+            </Typography>
+          </Link>
+          <Typography variant="caption" sx={{ color: "#cbd5e1" }}>·</Typography>
+          <Link href="/privacy" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none" }}>
+            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, "&:hover": { color: "#4f46e5" } }}>
+              Privacy
+            </Typography>
+          </Link>
+          <Typography variant="caption" sx={{ color: "#cbd5e1" }}>·</Typography>
+          <Link href="/terms" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none" }}>
+            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, "&:hover": { color: "#4f46e5" } }}>
+              Terms
+            </Typography>
+          </Link>
+        </Stack>
+        <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 500, display: "block" }}>
           TryCalc © 2026 · 100% Free &amp; Open
         </Typography>
       </Box>

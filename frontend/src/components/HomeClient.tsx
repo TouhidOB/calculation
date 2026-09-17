@@ -7,6 +7,7 @@ import { listCalculators, runCalculator, type CategoryMap, type CalculatorDef, C
 import { getCalcIcon } from "@/lib/calc-icons"
 import JsExecutor from "@/components/JsExecutor"
 import ModernDatePicker from "@/components/ModernDatePicker"
+import GlobalFooter from "@/components/GlobalFooter"
 import { getIconComponent } from "@/lib/icon-registry"
 import DOMPurify from "dompurify"
 
@@ -692,6 +693,8 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           mt: { xs: 7.5, md: 8.5 },
           minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
           bgcolor: "#f8fafc",
         }}
       >
@@ -922,6 +925,9 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
             )}
           </Container>
         )}
+
+        {/* Global Footer */}
+        <GlobalFooter />
       </Box>
     </Box>
   )
