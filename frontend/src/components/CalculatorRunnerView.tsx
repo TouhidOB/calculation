@@ -5,14 +5,14 @@
  * Fill Example / Reset + Copy Results + 100% Pure Light Theme.
  */
 import * as React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
 import type { CalculatorDef } from "@/lib/calculator-api"
 import { listCalculators, runCalculator, CATEGORY_META } from "@/lib/calculator-api"
 import JsExecutor from "@/components/JsExecutor"
 import GlobalNavbar from "@/components/GlobalNavbar"
 import ModernDatePicker from "@/components/ModernDatePicker"
-import { seoHowToFor, seoFaqFor, seoIntroFor, seoTitleFor } from "@/lib/seo-helpers"
+import { seoHowToFor, seoFaqFor, seoIntroFor, seoTitleFor, seoFormulaFor } from "@/lib/seo-helpers"
 import DOMPurify from "dompurify"
 
 // MUI components
@@ -43,6 +43,10 @@ import Skeleton from "@mui/material/Skeleton"
 import Drawer from "@mui/material/Drawer"
 import IconButton from "@mui/material/IconButton"
 import Divider from "@mui/material/Divider"
+import Dialog from "@mui/material/Dialog"
+import DialogTitle from "@mui/material/DialogTitle"
+import DialogContent from "@mui/material/DialogContent"
+import DialogActions from "@mui/material/DialogActions"
 
 // Icons
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
@@ -63,12 +67,99 @@ import ShareIcon from "@mui/icons-material/Share"
 import HistoryIcon from "@mui/icons-material/History"
 import DeleteIcon from "@mui/icons-material/Delete"
 import CloseIcon from "@mui/icons-material/Close"
+import CodeIcon from "@mui/icons-material/Code"
+import MenuBookIcon from "@mui/icons-material/MenuBook"
+import PieChartIcon from "@mui/icons-material/PieChart"
 
 interface HistoryEntry {
   id: string
   time: string
   values: Record<string, string>
   summary: string
+}
+
+function ResultBreakdownChart({ result }: { result: Record<string, unknown> }) {
+  const chartItems = React.useMemo(() => {
+    const entries = Object.entries(result)
+      .filter(([k, v]) => {
+        if (k === "note" || k === "js_required") return false
+        const kLower = k.toLowerCase()
+        if (kLower.includes("total") || kLower.includes("sum")) return false
+        const num = typeof v === "number" ? v : parseFloat(String(v).replace(/[^0-9.-]+/g, ""))
+        return !isNaN(num) && num > 0
+      })
+      .map(([k, v]) => {
+        const num = typeof v === "number" ? v : parseFloat(String(v).replace(/[^0-9.-]+/g, ""))
+        return { label: k.replaceAll("_", " "), value: num }
+      })
+    return entries.length >= 2 && entries.length <= 6 ? entries.slice(0, 5) : []
+  }, [result])
+
+  if (chartItems.length < 2) return null
+
+  const sum = chartItems.reduce((acc, curr) => acc + curr.value, 0)
+  if (sum <= 0) return null
+
+  const colors = ["#4f46e5", "#06b6d4", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6"]
+  let accumulatedPercent = 0
+  const radius = 38
+  const circumference = 2 * Math.PI * radius
+
+  return (
+    <Box sx={{ mt: 3, pt: 2.5, borderTop: "1px solid #e2e8f0" }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2 }}>
+        <PieChartIcon sx={{ color: "#4f46e5", fontSize: 20 }} />
+        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
+          Visual Breakdown
+        </Typography>
+      </Stack>
+
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, flexWrap: "wrap" }}>
+        <Box sx={{ position: "relative", width: 96, height: 96, flexShrink: 0 }}>
+          <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ transform: "rotate(-90deg)" }}>
+            {chartItems.map((item, idx) => {
+              const percent = item.value / sum
+              const strokeDasharray = `${percent * circumference} ${circumference}`
+              const strokeDashoffset = -accumulatedPercent * circumference
+              accumulatedPercent += percent
+              return (
+                <circle
+                  key={idx}
+                  cx="50"
+                  cy="50"
+                  r={radius}
+                  fill="transparent"
+                  stroke={colors[idx % colors.length]}
+                  strokeWidth="14"
+                  strokeDasharray={strokeDasharray}
+                  strokeDashoffset={strokeDashoffset}
+                />
+              )
+            })}
+          </svg>
+        </Box>
+
+        <Stack spacing={1} sx={{ flexGrow: 1, minWidth: 160 }}>
+          {chartItems.map((item, idx) => {
+            const percent = Math.round((item.value / sum) * 100)
+            return (
+              <Box key={idx} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                  <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: colors[idx % colors.length], flexShrink: 0 }} />
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: "#475569", textTransform: "capitalize" }}>
+                    {item.label}
+                  </Typography>
+                </Stack>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: "#0f172a", fontFamily: "monospace" }}>
+                  {percent}%
+                </Typography>
+              </Box>
+            )
+          })}
+        </Stack>
+      </Box>
+    </Box>
+  )
 }
 
 function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, string> {
@@ -120,7 +211,13 @@ function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, 
   return ex
 }
 
-export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) {
+export default function CalculatorRunnerView({
+  calc,
+  embedded = false,
+}: {
+  calc: CalculatorDef
+  embedded?: boolean
+}) {
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
     const todayStr = new Date().toISOString().split("T")[0]
@@ -152,6 +249,7 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [embedOpen, setEmbedOpen] = useState(false)
   const [history, setHistory] = useState<HistoryEntry[]>(() => {
     if (typeof window === "undefined") return []
     try {
@@ -423,6 +521,7 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
   }, [calc.fields, executeCalculation, values])
 
   const catMeta = CATEGORY_META[calc.category]
+  const formulaGuide = useMemo(() => seoFormulaFor(calc), [calc])
 
   return (
     <>
@@ -432,50 +531,90 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
       />
 
       {/* Global Universal Header */}
-      <GlobalNavbar currentCategory={calc.category} currentCalcId={calc.id} />
+      {!embedded && <GlobalNavbar currentCategory={calc.category} currentCalcId={calc.id} />}
 
-      <Box sx={{ minHeight: "100vh", bgcolor: "#f8fafc", py: { xs: 2.5, md: 4 } }}>
-        <Container maxWidth="xl">
+      <Box sx={{ minHeight: embedded ? "auto" : "100vh", bgcolor: "#f8fafc", py: embedded ? 1.5 : { xs: 2.5, md: 4 } }}>
+        <Container maxWidth="xl" sx={{ px: embedded ? 1.5 : undefined }}>
           {/* Breadcrumbs */}
-          <Breadcrumbs
-            className="no-print"
-            separator={<NavigateNextIcon fontSize="small" sx={{ color: "#94a3b8" }} />}
-            sx={{ mb: 2.5 }}
-          >
-            <MuiLink
-              component={Link}
-              href="/"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
-                textDecoration: "none",
-                color: "#64748b",
-                fontSize: 13,
-                fontWeight: 600,
-                "&:hover": { color: "#4f46e5" },
-              }}
+          {!embedded && (
+            <Breadcrumbs
+              className="no-print"
+              separator={<NavigateNextIcon fontSize="small" sx={{ color: "#94a3b8" }} />}
+              sx={{ mb: 2.5 }}
             >
-              <HomeIcon sx={{ fontSize: 16 }} />
-              Home
-            </MuiLink>
-            <MuiLink
-              component={Link}
-              href={`/?cat=${calc.category}`}
-              sx={{
-                textDecoration: "none",
-                color: "#64748b",
-                fontSize: 13,
-                fontWeight: 600,
-                "&:hover": { color: "#4f46e5" },
-              }}
-            >
-              {catMeta?.label || calc.category}
-            </MuiLink>
-            <Typography sx={{ color: "#0f172a", fontSize: 13, fontWeight: 700 }}>
-              {calc.name}
-            </Typography>
-          </Breadcrumbs>
+              <MuiLink
+                component={Link}
+                href="/"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  textDecoration: "none",
+                  color: "#64748b",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  "&:hover": { color: "#4f46e5" },
+                }}
+              >
+                <HomeIcon sx={{ fontSize: 16 }} />
+                Home
+              </MuiLink>
+              <MuiLink
+                component={Link}
+                href={`/?cat=${calc.category}`}
+                sx={{
+                  textDecoration: "none",
+                  color: "#64748b",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  "&:hover": { color: "#4f46e5" },
+                }}
+              >
+                {catMeta?.label || calc.category}
+              </MuiLink>
+              <Typography sx={{ color: "#0f172a", fontSize: 13, fontWeight: 700 }}>
+                {calc.name}
+              </Typography>
+            </Breadcrumbs>
+          )}
+
+          {embedded && (
+            <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", mb: 2, pb: 1.5, borderBottom: "1px solid #e2e8f0" }}>
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                <Box
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "6px",
+                    bgcolor: "#eef2ff",
+                    color: "#4f46e5",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <CalculateIcon sx={{ fontSize: 18 }} />
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: 16, sm: 18 } }}>
+                  {calc.name}
+                </Typography>
+              </Stack>
+              <MuiLink
+                href={`https://trycalc.net/calculators/${calc.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "#4f46e5",
+                  textDecoration: "none",
+                  "&:hover": { textDecoration: "underline" },
+                }}
+              >
+                TryCalc.net ↗
+              </MuiLink>
+            </Stack>
+          )}
 
           {/* Dedicated print-only report header */}
           <Box className="print-only" sx={{ mb: 3 }}>
@@ -505,163 +644,167 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
           </Box>
 
           {/* Calculator Header Intro */}
-          <Box className="no-print" sx={{ mb: 3 }}>
-            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 1 }}>
-              <Chip
-                label={catMeta?.label || calc.category}
-                size="small"
-                sx={{
-                  bgcolor: `${catMeta?.color || "#4f46e5"}18`,
-                  color: catMeta?.color || "#4f46e5",
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              />
-              <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                ⚡ 100% Free · No Signup Required · Instant Breakdown
+          {!embedded && (
+            <Box className="no-print" sx={{ mb: 3 }}>
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 1 }}>
+                <Chip
+                  label={catMeta?.label || calc.category}
+                  size="small"
+                  sx={{
+                    bgcolor: `${catMeta?.color || "#4f46e5"}18`,
+                    color: catMeta?.color || "#4f46e5",
+                    fontWeight: 700,
+                    fontSize: 12,
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
+                  ⚡ 100% Free · No Signup Required · Instant Breakdown
+                </Typography>
+              </Stack>
+
+              <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, letterSpacing: "-0.5px", color: "#0f172a" }}>
+                {seoTitle.split(" — ")[0]}
               </Typography>
-            </Stack>
 
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, letterSpacing: "-0.5px", color: "#0f172a" }}>
-              {seoTitle.split(" — ")[0]}
-            </Typography>
-
-            {/* Direct Answer / Formula Capsule for GEO/AEO & Quick Read */}
-            <Box
-              sx={{
-                p: 2,
-                mb: 1.5,
-                bgcolor: "#f0fdf4",
-                border: "1px solid #bbf7d0",
-                borderRadius: 2.5,
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 1.5,
-              }}
-            >
+              {/* Direct Answer / Formula Capsule for GEO/AEO & Quick Read */}
               <Box
                 sx={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: "8px",
-                  bgcolor: "#16a34a",
-                  color: "#ffffff",
+                  p: 2,
+                  mb: 1.5,
+                  bgcolor: "#f0fdf4",
+                  border: "1px solid #bbf7d0",
+                  borderRadius: 2.5,
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  mt: 0.2,
+                  alignItems: "flex-start",
+                  gap: 1.5,
                 }}
               >
-                <FunctionsIcon sx={{ fontSize: 16 }} />
+                <Box
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "8px",
+                    bgcolor: "#16a34a",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    mt: 0.2,
+                  }}
+                >
+                  <FunctionsIcon sx={{ fontSize: 16 }} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#166534", mb: 0.2 }}>
+                    Direct Calculation Overview &amp; Formula Guide
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#14532d", lineHeight: 1.5 }}>
+                    The <strong>{calc.name}</strong> evaluates {calc.fields.length} key input variables ({calc.fields.slice(0, 3).map(f => f.label).join(", ")}{calc.fields.length > 3 ? ", and more" : ""}) using industry-standard deterministic algorithms. Fill parameters below to generate complete instant breakdowns, amortizations, and formatted exportable results.
+                  </Typography>
+                </Box>
               </Box>
-              <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#166534", mb: 0.2 }}>
-                  Direct Calculation Overview &amp; Formula Guide
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#14532d", lineHeight: 1.5 }}>
-                  The <strong>{calc.name}</strong> evaluates {calc.fields.length} key input variables ({calc.fields.slice(0, 3).map(f => f.label).join(", ")}{calc.fields.length > 3 ? ", and more" : ""}) using industry-standard deterministic algorithms. Fill parameters below to generate complete instant breakdowns, amortizations, and formatted exportable results.
-                </Typography>
-              </Box>
-            </Box>
 
-            <Typography variant="body1" sx={{ color: "#475569", lineHeight: 1.6, maxWidth: 900 }}>
-              {seoIntro}
-            </Typography>
-          </Box>
+              <Typography variant="body1" sx={{ color: "#475569", lineHeight: 1.6, maxWidth: 900 }}>
+                {seoIntro}
+              </Typography>
+            </Box>
+          )}
 
           {/* 3-Step Operation Status Visual Bar */}
-          <Box className="no-print" sx={{ mb: 3.5, p: 2, borderRadius: 3.5, bgcolor: "#ffffff", border: "1px solid #e2e8f0" }}>
-            <Grid container spacing={2} sx={{ alignItems: "center" }}>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      bgcolor: "#4f46e5",
-                      color: "#fff",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 14,
-                      fontWeight: 800,
-                      boxShadow: "0 2px 8px rgba(79, 70, 229, 0.3)",
-                    }}
-                  >
-                    1
-                  </Box>
-                  <Box>
-                    <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a" }}>
-                      Enter Parameters
-                    </Typography>
-                    <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
-                      Fill or use ⚡ Fill Example
-                    </Typography>
-                  </Box>
-                </Stack>
+          {!embedded && (
+            <Box className="no-print" sx={{ mb: 3.5, p: 2, borderRadius: 3.5, bgcolor: "#ffffff", border: "1px solid #e2e8f0" }}>
+              <Grid container spacing={2} sx={{ alignItems: "center" }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        bgcolor: "#4f46e5",
+                        color: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 14,
+                        fontWeight: 800,
+                        boxShadow: "0 2px 8px rgba(79, 70, 229, 0.3)",
+                      }}
+                    >
+                      1
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a" }}>
+                        Enter Parameters
+                      </Typography>
+                      <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
+                        Fill or use ⚡ Fill Example
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        bgcolor: busy ? "#f59e0b" : "#f1f5f9",
+                        color: busy ? "#fff" : "#475569",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 14,
+                        fontWeight: 800,
+                        border: "1px solid #e2e8f0",
+                      }}
+                    >
+                      2
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: busy ? "#d97706" : "#0f172a" }}>
+                        Calculate
+                      </Typography>
+                      <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
+                        Milli-second deterministic engine
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        bgcolor: result || jsHtml ? "#10b981" : "#f1f5f9",
+                        color: result || jsHtml ? "#fff" : "#475569",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 14,
+                        fontWeight: 800,
+                        border: "1px solid #e2e8f0",
+                      }}
+                    >
+                      3
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: result || jsHtml ? "#16a34a" : "#0f172a" }}>
+                        Instant Results
+                      </Typography>
+                      <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
+                        Live breakdown, copy & print
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
               </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      bgcolor: busy ? "#f59e0b" : "#f1f5f9",
-                      color: busy ? "#fff" : "#475569",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 14,
-                      fontWeight: 800,
-                      border: "1px solid #e2e8f0",
-                    }}
-                  >
-                    2
-                  </Box>
-                  <Box>
-                    <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: busy ? "#d97706" : "#0f172a" }}>
-                      Calculate
-                    </Typography>
-                    <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
-                      Milli-second deterministic engine
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      bgcolor: result || jsHtml ? "#10b981" : "#f1f5f9",
-                      color: result || jsHtml ? "#fff" : "#475569",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 14,
-                      fontWeight: 800,
-                      border: "1px solid #e2e8f0",
-                    }}
-                  >
-                    3
-                  </Box>
-                  <Box>
-                    <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: result || jsHtml ? "#16a34a" : "#0f172a" }}>
-                      Instant Results
-                    </Typography>
-                    <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
-                      Live breakdown, copy & print
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Grid>
-            </Grid>
-          </Box>
+            </Box>
+          )}
 
           <Grid container spacing={3.5}>
             {/* Form section */}
@@ -738,6 +881,26 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                   >
                     Share Link
                   </Button>
+                  {!embedded && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<CodeIcon sx={{ fontSize: 16 }} />}
+                      onClick={() => setEmbedOpen(true)}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontWeight: 600,
+                        fontSize: 12.5,
+                        color: "#475569",
+                        borderColor: "#e2e8f0",
+                        bgcolor: "#f8fafc",
+                        "&:hover": { bgcolor: "#f1f5f9", borderColor: "#cbd5e1", color: "#0f172a" },
+                      }}
+                    >
+                      Embed
+                    </Button>
+                  )}
                   {history.length > 0 && (
                     <Button
                       size="small"
@@ -947,6 +1110,8 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                     </Stack>
                   ) : null}
 
+                  {result && <ResultBreakdownChart result={result} />}
+
                   {/* Result Actions */}
                   <Stack direction="row" spacing={1.5} className="no-print" sx={{ mt: 3, pt: 2, borderTop: "1px solid #e2e8f0", flexWrap: "wrap", gap: 1 }}>
                     <Button
@@ -1025,129 +1190,196 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
             </Grid>
           </Grid>
 
-          {/* How-To & FAQ Sections */}
-          <Box className="no-print" sx={{ mt: 5 }}>
-            <Grid container spacing={3.5}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3.5,
-                    borderRadius: 3.5,
-                    border: "1px solid #e2e8f0",
-                    bgcolor: "#ffffff",
-                    height: "100%",
-                  }}
-                >
-                  <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2.5 }}>
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: "10px",
-                        bgcolor: "#eff6ff",
-                        color: "#2563eb",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <AutoAwesomeIcon fontSize="small" />
-                    </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                      How to Use This Calculator
-                    </Typography>
-                  </Stack>
-                  <Stack spacing={2}>
-                    {howToSteps.map((step, idx) => (
-                      <Stack key={idx} direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
-                        <Box
-                          sx={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: "50%",
-                            bgcolor: "#f1f5f9",
-                            color: "#4f46e5",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 12,
-                            fontWeight: 800,
-                            flexShrink: 0,
-                            mt: 0.2,
-                          }}
-                        >
-                          {idx + 1}
-                        </Box>
-                        <Typography variant="body2" sx={{ color: "#475569", lineHeight: 1.6 }}>
-                          {step}
-                        </Typography>
-                      </Stack>
-                    ))}
-                  </Stack>
-                </Paper>
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3.5,
-                    borderRadius: 3.5,
-                    border: "1px solid #e2e8f0",
-                    bgcolor: "#ffffff",
-                    height: "100%",
-                  }}
-                >
-                  <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2.5 }}>
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: "10px",
-                        bgcolor: "#fef3c7",
-                        color: "#d97706",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <HelpIcon fontSize="small" />
-                    </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                      Frequently Asked Questions
-                    </Typography>
-                  </Stack>
-                  <Stack spacing={1.5}>
-                    {faqs.map((faq, idx) => (
-                      <Accordion
-                        key={idx}
-                        disableGutters
-                        elevation={0}
+          {/* How-To, Formula & FAQ Sections */}
+          {!embedded && (
+            <Box className="no-print" sx={{ mt: 5 }}>
+              <Grid container spacing={3.5}>
+                {/* Mathematical Formula & Methodology Section (Google E-E-A-T) */}
+                <Grid size={{ xs: 12 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 3.5,
+                      borderRadius: 3.5,
+                      border: "1px solid #e2e8f0",
+                      bgcolor: "#ffffff",
+                    }}
+                  >
+                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2 }}>
+                      <Box
                         sx={{
-                          border: "1px solid #e2e8f0",
-                          borderRadius: "12px !important",
-                          "&:before": { display: "none" },
-                          bgcolor: "#f8fafc",
+                          width: 36,
+                          height: 36,
+                          borderRadius: "10px",
+                          bgcolor: "#f0fdf4",
+                          color: "#16a34a",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
-                        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: "#64748b" }} />}>
-                          <Typography sx={{ fontWeight: 700, fontSize: 14, color: "#0f172a" }}>
-                            {faq.q}
-                          </Typography>
-                        </AccordionSummary>
-                        <AccordionDetails sx={{ pt: 0 }}>
+                        <MenuBookIcon fontSize="small" />
+                      </Box>
+                      <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                          Formula &amp; Calculation Methodology
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#64748b" }}>
+                          Verified standard mathematical models and algorithmic implementation
+                        </Typography>
+                      </Box>
+                    </Stack>
+
+                    <Box
+                      sx={{
+                        p: 2.5,
+                        bgcolor: "#f8fafc",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: 2.5,
+                        mb: 2,
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ color: "#4f46e5", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, display: "block", mb: 0.5 }}>
+                        Formula Representation
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontFamily: "monospace", fontWeight: 700, color: "#0f172a", wordBreak: "break-word" }}>
+                        {formulaGuide.formula}
+                      </Typography>
+                    </Box>
+
+                    <Typography variant="body2" sx={{ color: "#475569", lineHeight: 1.7, mb: 1.5 }}>
+                      {formulaGuide.explanation}
+                    </Typography>
+
+                    <Divider sx={{ my: 2 }} />
+
+                    <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
+                      <strong>Source &amp; Reference:</strong> {formulaGuide.source}. Built for instant client-side execution with continuous unit test validation on TryCalc.
+                    </Typography>
+                  </Paper>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 3.5,
+                      borderRadius: 3.5,
+                      border: "1px solid #e2e8f0",
+                      bgcolor: "#ffffff",
+                      height: "100%",
+                    }}
+                  >
+                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2.5 }}>
+                      <Box
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "10px",
+                          bgcolor: "#eff6ff",
+                          color: "#2563eb",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <AutoAwesomeIcon fontSize="small" />
+                      </Box>
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                        How to Use This Calculator
+                      </Typography>
+                    </Stack>
+                    <Stack spacing={2}>
+                      {howToSteps.map((step, idx) => (
+                        <Stack key={idx} direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: "50%",
+                              bgcolor: "#f1f5f9",
+                              color: "#4f46e5",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: 12,
+                              fontWeight: 800,
+                              flexShrink: 0,
+                              mt: 0.2,
+                            }}
+                          >
+                            {idx + 1}
+                          </Box>
                           <Typography variant="body2" sx={{ color: "#475569", lineHeight: 1.6 }}>
-                            {faq.a}
+                            {step}
                           </Typography>
-                        </AccordionDetails>
-                      </Accordion>
-                    ))}
-                  </Stack>
-                </Paper>
+                        </Stack>
+                      ))}
+                    </Stack>
+                  </Paper>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 3.5,
+                      borderRadius: 3.5,
+                      border: "1px solid #e2e8f0",
+                      bgcolor: "#ffffff",
+                      height: "100%",
+                    }}
+                  >
+                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2.5 }}>
+                      <Box
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "10px",
+                          bgcolor: "#fef3c7",
+                          color: "#d97706",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <HelpIcon fontSize="small" />
+                      </Box>
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                        Frequently Asked Questions
+                      </Typography>
+                    </Stack>
+                    <Stack spacing={1.5}>
+                      {faqs.map((faq, idx) => (
+                        <Accordion
+                          key={idx}
+                          disableGutters
+                          elevation={0}
+                          sx={{
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "12px !important",
+                            "&:before": { display: "none" },
+                            bgcolor: "#f8fafc",
+                          }}
+                        >
+                          <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: "#64748b" }} />}>
+                            <Typography sx={{ fontWeight: 700, fontSize: 14, color: "#0f172a" }}>
+                              {faq.q}
+                            </Typography>
+                          </AccordionSummary>
+                          <AccordionDetails sx={{ pt: 0 }}>
+                            <Typography variant="body2" sx={{ color: "#475569", lineHeight: 1.6 }}>
+                              {faq.a}
+                            </Typography>
+                          </AccordionDetails>
+                        </Accordion>
+                      ))}
+                    </Stack>
+                  </Paper>
+                </Grid>
               </Grid>
-            </Grid>
-          </Box>
+            </Box>
+          )}
 
           {/* Related / Category Calculators Internal Linking */}
           {relatedCalcs.length > 0 && (
@@ -1338,6 +1570,75 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
         message={toast.message}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       />
+
+      {/* Embed Code Dialog */}
+      {!embedded && (
+        <Dialog
+          open={embedOpen}
+          onClose={() => setEmbedOpen(false)}
+          maxWidth="sm"
+          fullWidth
+          slotProps={{
+            backdrop: {
+              sx: { bgcolor: "rgba(15, 23, 42, 0.35)", backdropFilter: "blur(2px)" },
+            },
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: 800, color: "#0f172a", pb: 1 }}>
+            Embed This Calculator on Your Website
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" sx={{ color: "#475569", mb: 2 }}>
+              Copy and paste the HTML code below into your blog, CMS, or website to embed the interactive <strong>{calc.name}</strong> directly on your page.
+            </Typography>
+            <Box
+              sx={{
+                p: 2,
+                bgcolor: "#0f172a",
+                color: "#e2e8f0",
+                borderRadius: 2,
+                fontFamily: "monospace",
+                fontSize: 12.5,
+                wordBreak: "break-all",
+                userSelect: "all",
+                border: "1px solid #334155",
+              }}
+            >
+              {`<iframe src="https://trycalc.net/embed/${calc.id}" width="100%" height="700" frameborder="0" style="border:1px solid #e2e8f0;border-radius:12px;max-width:900px;" title="${calc.name} — TryCalc"></iframe>`}
+            </Box>
+            <Typography variant="caption" sx={{ color: "#64748b", mt: 1.5, display: "block" }}>
+              💡 Responsive design: The widget automatically adapts to desktop, tablet, and mobile layouts.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2.5 }}>
+            <Button
+              onClick={() => setEmbedOpen(false)}
+              sx={{ textTransform: "none", color: "#64748b", fontWeight: 600 }}
+            >
+              Close
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<ContentCopyIcon />}
+              onClick={() => {
+                const code = `<iframe src="https://trycalc.net/embed/${calc.id}" width="100%" height="700" frameborder="0" style="border:1px solid #e2e8f0;border-radius:12px;max-width:900px;" title="${calc.name} — TryCalc"></iframe>`
+                navigator.clipboard.writeText(code).then(() => {
+                  setToast({ open: true, message: "Embed code copied to clipboard!" })
+                  setEmbedOpen(false)
+                })
+              }}
+              sx={{
+                textTransform: "none",
+                fontWeight: 700,
+                bgcolor: "#4f46e5",
+                "&:hover": { bgcolor: "#4338ca" },
+              }}
+            >
+              Copy Embed Code
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </>
   )
 }
