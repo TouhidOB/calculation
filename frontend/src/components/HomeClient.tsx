@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { listCalculators, runCalculator, type CategoryMap, type CalculatorDef, CATEGORY_META } from "@/lib/calculator-api"
 import { getCalcIcon } from "@/lib/calc-icons"
 import JsExecutor from "@/components/JsExecutor"
@@ -40,8 +41,6 @@ import Alert from "@mui/material/Alert"
 import Badge from "@mui/material/Badge"
 import Stack from "@mui/material/Stack"
 import Snackbar from "@mui/material/Snackbar"
-import useMediaQuery from "@mui/material/useMediaQuery"
-import { useTheme } from "@mui/material/styles"
 
 // Icons
 import CalculatorLogoIcon from "@/components/CalculatorLogoIcon"
@@ -69,8 +68,7 @@ import BackspaceIcon from "@mui/icons-material/Backspace"
 import FlashOnIcon from "@mui/icons-material/FlashOn"
 import RestartAltIcon from "@mui/icons-material/RestartAlt"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-
-const DRAWER_WIDTH = 270
+import CloseIcon from "@mui/icons-material/Close"
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   finance: <AttachMoneyIcon />,
@@ -332,8 +330,6 @@ export interface HomeClientProps {
 
 export default function HomeClient({ initialCategories, initialTotal }: HomeClientProps = {}) {
   const router = useRouter()
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
 
   const [categories, setCategories] = useState<CategoryMap>(initialCategories || {})
   const [total, setTotal] = useState(
@@ -351,7 +347,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
   })
   const [search, setSearch] = useState("")
   const [selectedCalc, setSelectedCalc] = useState<CalculatorDef | null>(null)
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [allFiltered, setAllFiltered] = useState(false)
 
   // Sync category param from URL on popstate
@@ -376,18 +372,18 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
       })
   }, [initialCategories])
 
-  const handleDrawerToggle = () => setMobileOpen(!mobileOpen)
+  const handleDrawerToggle = () => setDrawerOpen((prev) => !prev)
 
   const selectCategory = (cat: string | null) => {
     setActiveCat(cat)
     setSelectedCalc(null)
     setAllFiltered(false)
-    if (isMobile) setMobileOpen(false)
+    setDrawerOpen(false)
   }
 
   const openCalculator = (calc: CalculatorDef) => {
     setSelectedCalc(calc)
-    if (isMobile) setMobileOpen(false)
+    setDrawerOpen(false)
   }
 
   // Filtered calculators
@@ -415,36 +411,42 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%", bgcolor: "#ffffff" }}>
       <Box
         sx={{
-          p: 2.5,
+          p: 2,
+          px: 2.5,
           display: "flex",
           alignItems: "center",
-          gap: 1.5,
+          justifyContent: "space-between",
           borderBottom: "1px solid #e2e8f0",
         }}
       >
-        <Box
-          sx={{
-            width: 38,
-            height: 38,
-            borderRadius: "10px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
-            color: "#ffffff",
-            boxShadow: "0 2px 8px rgba(79, 70, 229, 0.3)",
-          }}
-        >
-          <CalculatorLogoIcon size={24} color="#ffffff" />
-        </Box>
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", lineHeight: 1.1 }}>
-            TryCalc
-          </Typography>
-          <Typography variant="caption" sx={{ color: "#475569", fontWeight: 600 }}>
-            {total} Free Calculators
-          </Typography>
-        </Box>
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: "10px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+              color: "#ffffff",
+              boxShadow: "0 2px 8px rgba(79, 70, 229, 0.3)",
+            }}
+          >
+            <CalculatorLogoIcon size={22} color="#ffffff" />
+          </Box>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", lineHeight: 1.1, fontSize: 17 }}>
+              TryCalc
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#475569", fontWeight: 600 }}>
+              {total} Free Calculators
+            </Typography>
+          </Box>
+        </Stack>
+        <IconButton size="small" onClick={() => setDrawerOpen(false)} sx={{ color: "#64748b" }}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
       </Box>
 
       {/* Categories List */}
@@ -524,9 +526,34 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
       </List>
 
       {/* Footer info */}
-      <Box sx={{ p: 2, borderTop: "1px solid #e2e8f0", bgcolor: "#f8fafc" }}>
-        <Typography variant="caption" sx={{ color: "#475569", display: "block", textAlign: "center", fontWeight: 600 }}>
-          100% Free & Open · No Signup
+      <Box sx={{ p: 2, borderTop: "1px solid #e2e8f0", bgcolor: "#f8fafc", textAlign: "center" }}>
+        <Stack direction="row" spacing={1.5} sx={{ justifyContent: "center", mb: 1, flexWrap: "wrap", gap: 0.5 }}>
+          <Link href="/about" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none" }}>
+            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, "&:hover": { color: "#4f46e5" } }}>
+              About
+            </Typography>
+          </Link>
+          <Typography variant="caption" sx={{ color: "#cbd5e1" }}>·</Typography>
+          <Link href="/contact" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none" }}>
+            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, "&:hover": { color: "#4f46e5" } }}>
+              Contact
+            </Typography>
+          </Link>
+          <Typography variant="caption" sx={{ color: "#cbd5e1" }}>·</Typography>
+          <Link href="/privacy" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none" }}>
+            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, "&:hover": { color: "#4f46e5" } }}>
+              Privacy
+            </Typography>
+          </Link>
+          <Typography variant="caption" sx={{ color: "#cbd5e1" }}>·</Typography>
+          <Link href="/terms" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none" }}>
+            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, "&:hover": { color: "#4f46e5" } }}>
+              Terms
+            </Typography>
+          </Link>
+        </Stack>
+        <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 500, display: "block" }}>
+          TryCalc © 2026 · 100% Free &amp; Open
         </Typography>
       </Box>
     </Box>
@@ -549,11 +576,17 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
         <Container maxWidth="xl" disableGutters sx={{ px: { xs: 1.5, sm: 2.5, md: 3 } }}>
           <Toolbar disableGutters sx={{ minHeight: { xs: 60, md: 68 }, gap: 2 }}>
             <IconButton
-              color="inherit"
-              aria-label="open drawer"
+              aria-label="open categories drawer"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{ display: { md: "none" } }}
+              sx={{
+                color: "#0f172a",
+                border: "1px solid #e2e8f0",
+                borderRadius: 2,
+                p: 0.8,
+                bgcolor: "#f8fafc",
+                "&:hover": { bgcolor: "#f1f5f9" },
+              }}
             >
               <MenuIcon />
             </IconButton>
@@ -641,56 +674,32 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
         </Container>
       </AppBar>
 
-      {/* Sidebar Drawer */}
-      <Box
-        component="nav"
-        sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}
-        aria-label="calculator categories"
+      {/* Slide-out Category Drawer (Hidden by default; opens only on hamburger click) */}
+      <Drawer
+        variant="temporary"
+        anchor="left"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: { xs: 290, sm: 330 },
+            borderRight: "1px solid #e2e8f0",
+            bgcolor: "#ffffff",
+          },
+        }}
       >
-        {/* Mobile drawer */}
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: "block", md: "none" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: DRAWER_WIDTH,
-              borderRight: "1px solid #e2e8f0",
-            },
-          }}
-        >
-          {drawerContent}
-        </Drawer>
+        {drawerContent}
+      </Drawer>
 
-        {/* Desktop permanent drawer */}
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: "none", md: "block" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: DRAWER_WIDTH,
-              top: 68,
-              height: "calc(100% - 68px)",
-              borderRight: "1px solid #e2e8f0",
-            },
-          }}
-          open
-        >
-          {drawerContent}
-        </Drawer>
-      </Box>
-
-      {/* Main Content Area (Spacious & Wide) */}
+      {/* Main Content Area (Spacious & Wide, Full Width) */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
+          width: "100%",
           p: { xs: 2, sm: 3, md: 4 },
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           mt: { xs: 7.5, md: 8.5 },
           minHeight: "100vh",
           display: "flex",
