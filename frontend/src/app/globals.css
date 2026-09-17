@@ -35,6 +35,10 @@ body {
 }
 
 /* Print stylesheets for clean report printing & PDF export */
+.print-only {
+  display: none !important;
+}
+
 @media print {
   .no-print,
   nav,
@@ -60,11 +64,5 @@ body {
     border: 1px solid #cbd5e1 !important;
     box-shadow: none !important;
     page-break-inside: avoid;
-  }
-}
-
-@media screen {
-  .print-only {
-    display: none !important;
   }
 }

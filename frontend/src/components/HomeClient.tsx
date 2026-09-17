@@ -1175,117 +1175,23 @@ function CalculatorRunner({
       <Button
         startIcon={<ArrowBackIcon />}
         onClick={onBack}
-        sx={{ mb: 2.5, fontWeight: 700, color: "#475569" }}
+        sx={{ mb: 2, fontWeight: 700, color: "#475569" }}
       >
         Back to Dashboard
       </Button>
 
-      <Box sx={{ mb: 3 }}>
-        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 1 }}>
+      {/* Clean Sleek Header — Tool-First */}
+      <Box sx={{ mb: 2.5 }}>
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 800, color: "#0f172a" }}>
+            {calc.name}
+          </Typography>
           <Chip
             label={catMeta?.label || calc.category}
             size="small"
             sx={{ bgcolor: `${catMeta?.color || "#4f46e5"}18`, color: catMeta?.color || "#4f46e5", fontWeight: 700 }}
           />
         </Stack>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 800, color: "#0f172a", mb: 1 }}>
-          {calc.name}
-        </Typography>
-        <Typography variant="body1" sx={{ color: "#475569", maxWidth: 900 }}>
-          {seoIntro}
-        </Typography>
-      </Box>
-
-      {/* 3-Step Operation Visual Bar */}
-      <Box sx={{ mb: 3.5, p: 2, borderRadius: 3.5, bgcolor: "#ffffff", border: "1px solid #e2e8f0" }}>
-        <Grid container spacing={2} sx={{ alignItems: "center" }}>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  bgcolor: "#4f46e5",
-                  color: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 14,
-                  fontWeight: 800,
-                }}
-              >
-                1
-              </Box>
-              <Box>
-                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a" }}>
-                  Enter Parameters
-                </Typography>
-                <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
-                  Fill inputs or use ⚡ Fill Example
-                </Typography>
-              </Box>
-            </Stack>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  bgcolor: busy ? "#f59e0b" : "#f1f5f9",
-                  color: busy ? "#fff" : "#475569",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 14,
-                  fontWeight: 800,
-                  border: "1px solid #e2e8f0",
-                }}
-              >
-                2
-              </Box>
-              <Box>
-                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: busy ? "#d97706" : "#0f172a" }}>
-                  Calculate
-                </Typography>
-                <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
-                  Deterministic instant engine
-                </Typography>
-              </Box>
-            </Stack>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  bgcolor: result || jsHtml ? "#10b981" : "#f1f5f9",
-                  color: result || jsHtml ? "#fff" : "#475569",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 14,
-                  fontWeight: 800,
-                  border: "1px solid #e2e8f0",
-                }}
-              >
-                3
-              </Box>
-              <Box>
-                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: result || jsHtml ? "#16a34a" : "#0f172a" }}>
-                  Instant Results
-                </Typography>
-                <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
-                  View, copy & analyze
-                </Typography>
-              </Box>
-            </Stack>
-          </Grid>
-        </Grid>
       </Box>
 
       <Grid container spacing={3.5}>
@@ -1483,6 +1389,120 @@ function CalculatorRunner({
           )}
         </Grid>
       </Grid>
+
+      {/* Overview & Guides — Below-the-Fold */}
+      <Box sx={{ mt: 5 }}>
+        {/* Direct Overview */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3.5,
+            mb: 3.5,
+            borderRadius: 3.5,
+            border: "1px solid #e2e8f0",
+            bgcolor: "#ffffff",
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", mb: 1 }}>
+            About {calc.name}
+          </Typography>
+          <Typography variant="body1" sx={{ color: "#475569", lineHeight: 1.7 }}>
+            {seoIntro}
+          </Typography>
+        </Paper>
+
+        {/* 3-Step Operation Visual Bar */}
+        <Box sx={{ mb: 3.5, p: 2, borderRadius: 3.5, bgcolor: "#ffffff", border: "1px solid #e2e8f0" }}>
+          <Grid container spacing={2} sx={{ alignItems: "center" }}>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    bgcolor: "#4f46e5",
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                    fontWeight: 800,
+                  }}
+                >
+                  1
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a" }}>
+                    Enter Parameters
+                  </Typography>
+                  <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
+                    Fill inputs or use ⚡ Fill Example
+                  </Typography>
+                </Box>
+              </Stack>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    bgcolor: busy ? "#f59e0b" : "#f1f5f9",
+                    color: busy ? "#fff" : "#475569",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                    fontWeight: 800,
+                    border: "1px solid #e2e8f0",
+                  }}
+                >
+                  2
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: busy ? "#d97706" : "#0f172a" }}>
+                    Calculate
+                  </Typography>
+                  <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
+                    Deterministic instant engine
+                  </Typography>
+                </Box>
+              </Stack>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    bgcolor: result || jsHtml ? "#10b981" : "#f1f5f9",
+                    color: result || jsHtml ? "#fff" : "#475569",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                    fontWeight: 800,
+                    border: "1px solid #e2e8f0",
+                  }}
+                >
+                  3
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: result || jsHtml ? "#059669" : "#0f172a" }}>
+                    Instant Results
+                  </Typography>
+                  <Typography sx={{ fontSize: 11.5, color: "#64748b" }}>
+                    View, copy & analyze
+                  </Typography>
+                </Box>
+              </Stack>
+            </Grid>
+          </Grid>
+        </Box>
+      </Box>
 
       {/* Copy Toast */}
       <Snackbar

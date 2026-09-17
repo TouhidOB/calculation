@@ -12,7 +12,7 @@ import { listCalculators, runCalculator, CATEGORY_META } from "@/lib/calculator-
 import JsExecutor from "@/components/JsExecutor"
 import GlobalNavbar from "@/components/GlobalNavbar"
 import ModernDatePicker from "@/components/ModernDatePicker"
-import { seoHowToFor, seoFaqFor, seoIntroFor, seoTitleFor, seoFormulaFor } from "@/lib/seo-helpers"
+import { seoHowToFor, seoFaqFor, seoIntroFor, seoFormulaFor } from "@/lib/seo-helpers"
 import DOMPurify from "dompurify"
 
 // MUI components
@@ -277,7 +277,6 @@ export default function CalculatorRunnerView({
   const howToSteps = React.useMemo(() => seoHowToFor(calc), [calc])
   const faqs = React.useMemo(() => seoFaqFor(calc), [calc])
   const seoIntro = React.useMemo(() => seoIntroFor(calc), [calc])
-  const seoTitle = React.useMemo(() => seoTitleFor(calc), [calc])
 
   // Structured data for SEO
   const structuredData = {
@@ -616,8 +615,15 @@ export default function CalculatorRunnerView({
             </Stack>
           )}
 
-          {/* Dedicated print-only report header */}
-          <Box className="print-only" sx={{ mb: 3 }}>
+          {/* Dedicated print-only report header (strictly hidden on screen, visible only when printing) */}
+          <Box
+            className="print-only"
+            style={{ display: "none" }}
+            sx={{
+              "@media print": { display: "block !important" },
+              mb: 3,
+            }}
+          >
             <Typography variant="h5" sx={{ fontWeight: 900, color: "#000000", mb: 0.5 }}>
               TryCalc.net — {calc.name}
             </Typography>
@@ -643,10 +649,22 @@ export default function CalculatorRunnerView({
             </Box>
           </Box>
 
-          {/* Compact Calculator Header — Tool-First Architecture */}
+          {/* Sleek Tool-First Header */}
           {!embedded && (
-            <Box className="no-print" sx={{ mb: 2.5 }}>
-              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 0.75, flexWrap: "wrap", gap: 1 }}>
+            <Box className="no-print" sx={{ mb: 2 }}>
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  sx={{
+                    fontWeight: 800,
+                    letterSpacing: "-0.5px",
+                    color: "#0f172a",
+                    fontSize: { xs: 22, sm: 26, md: 30 },
+                  }}
+                >
+                  {calc.name}
+                </Typography>
                 <Chip
                   label={catMeta?.label || calc.category}
                   size="small"
@@ -657,23 +675,10 @@ export default function CalculatorRunnerView({
                     fontSize: 12,
                   }}
                 />
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                  ⚡ 100% Free · No Signup Required · Instant Output
+                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, display: { xs: "none", sm: "inline" } }}>
+                  • {calc.fields.length} inputs • 100% Free
                 </Typography>
               </Stack>
-
-              <Typography
-                variant="h4"
-                component="h1"
-                sx={{
-                  fontWeight: 800,
-                  letterSpacing: "-0.5px",
-                  color: "#0f172a",
-                  fontSize: { xs: 24, sm: 28, md: 32 },
-                }}
-              >
-                {seoTitle.split(" — ")[0]}
-              </Typography>
             </Box>
           )}
 
@@ -689,15 +694,6 @@ export default function CalculatorRunnerView({
                   bgcolor: "#ffffff",
                 }}
               >
-                <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 1 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                    {calc.name}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "#64748b", ml: "auto", fontWeight: 600 }}>
-                    {calc.fields.length} inputs
-                  </Typography>
-                </Stack>
-
                 {/* Quick actions toolbar */}
                 <Stack direction="row" spacing={1} className="no-print" sx={{ mb: 2.5, flexWrap: "wrap", gap: 1 }}>
                   <Button
