@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import ThemeRegistry from "@/theme/ThemeRegistry"
 import OrganizationJsonLd from "@/components/OrganizationJsonLd"
 
-const siteUrl = "https://calchub.io"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const siteName = "CalcHub"
 const defaultTitle = "CalcHub — 689 Free Online Calculators"
 const defaultDescription = "Free online calculators for finance, health, construction, conversion, math, date/time, real estate, and more. 689 calculators across 11 categories with instant results. No signup required."

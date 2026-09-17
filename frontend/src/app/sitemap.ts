@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next"
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://calchub.io"
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 
 // Categories from the backend registry (11 categories)
 const CATEGORIES: { slug: string; priority: number }[] = [

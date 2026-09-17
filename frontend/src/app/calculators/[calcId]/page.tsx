@@ -4,7 +4,7 @@ import CalculatorRunnerView from "@/components/CalculatorRunnerView"
 import { seoIntroFor, seoTitleFor, seoFaqFor } from "@/lib/seo-helpers"
 import type { CalculatorDef } from "@/lib/calculator-api"
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://calchub.io"
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
 
 /** ISR: pages are cached and refreshed daily. */

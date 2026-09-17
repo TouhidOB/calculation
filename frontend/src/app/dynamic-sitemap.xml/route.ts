@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://calchub.io"
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 
 /**
  * Dynamic sitemap that pulls ALL calculator IDs from the backend registry.

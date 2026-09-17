@@ -1,5 +1,5 @@
 export default function OrganizationJsonLd() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://calchub.io"
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 
   const jsonLd = {
     "@context": "https://schema.org",
