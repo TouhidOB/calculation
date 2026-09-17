@@ -39,6 +39,10 @@ import AccordionDetails from "@mui/material/AccordionDetails"
 import Breadcrumbs from "@mui/material/Breadcrumbs"
 import MuiLink from "@mui/material/Link"
 import Snackbar from "@mui/material/Snackbar"
+import Skeleton from "@mui/material/Skeleton"
+import Drawer from "@mui/material/Drawer"
+import IconButton from "@mui/material/IconButton"
+import Divider from "@mui/material/Divider"
 
 // Icons
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
@@ -55,6 +59,17 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import PrintIcon from "@mui/icons-material/Print"
 import FunctionsIcon from "@mui/icons-material/Functions"
+import ShareIcon from "@mui/icons-material/Share"
+import HistoryIcon from "@mui/icons-material/History"
+import DeleteIcon from "@mui/icons-material/Delete"
+import CloseIcon from "@mui/icons-material/Close"
+
+interface HistoryEntry {
+  id: string
+  time: string
+  values: Record<string, string>
+  summary: string
+}
 
 function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, string> {
   const ex: Record<string, string> = {}
@@ -118,6 +133,17 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
         init[f.name] = ""
       }
     }
+    if (typeof window !== "undefined") {
+      try {
+        const sp = new URLSearchParams(window.location.search)
+        for (const f of calc.fields) {
+          const v = sp.get(f.name)
+          if (v !== null && v !== "") {
+            init[f.name] = v
+          }
+        }
+      } catch {}
+    }
     return init
   })
   const [result, setResult] = useState<Record<string, unknown> | null>(null)
@@ -125,7 +151,20 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
   const [jsTrigger, setJsTrigger] = useState(0)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const [copyToast, setCopyToast] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [history, setHistory] = useState<HistoryEntry[]>(() => {
+    if (typeof window === "undefined") return []
+    try {
+      const stored = localStorage.getItem(`trycalc_hist_${calc.id}`)
+      return stored ? (JSON.parse(stored) as HistoryEntry[]) : []
+    } catch {
+      return []
+    }
+  })
+  const [toast, setToast] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: "",
+  })
   const [relatedCalcs, setRelatedCalcs] = useState<{ id: string; name: string; description: string }[]>([])
 
   useEffect(() => {
@@ -203,6 +242,92 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
     setErr(null)
   }
 
+  const saveHistory = React.useCallback(
+    (
+      inputVals: Record<string, string>,
+      resObj: Record<string, unknown> | null,
+      htmlStr: string | null
+    ) => {
+      if (typeof window === "undefined") return
+      try {
+        let summary = ""
+        if (resObj) {
+          const valid = Object.entries(resObj).filter(
+            ([k]) => k !== "note" && k !== "js_required"
+          )
+          if (valid.length > 0) {
+            summary = `${valid[0][0].replaceAll("_", " ")}: ${String(valid[0][1])}`
+            if (valid.length > 1) {
+              summary += ` | ${valid[1][0].replaceAll("_", " ")}: ${String(valid[1][1])}`
+            }
+          }
+        } else if (htmlStr) {
+          const tmp = document.createElement("div")
+          tmp.innerHTML = htmlStr
+          const firstLine = (tmp.textContent || tmp.innerText || "").trim().split("\n")[0]
+          summary = firstLine ? firstLine.slice(0, 60) : "Calculated"
+        }
+        if (!summary) summary = "Calculated"
+
+        const newEntry: HistoryEntry = {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          time: `${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · ${new Date().toLocaleDateString()}`,
+          values: { ...inputVals },
+          summary,
+        }
+
+        setHistory((prev) => {
+          const filtered = prev.filter(
+            (h) => JSON.stringify(h.values) !== JSON.stringify(inputVals)
+          )
+          const next = [newEntry, ...filtered].slice(0, 10)
+          try {
+            localStorage.setItem(`trycalc_hist_${calc.id}`, JSON.stringify(next))
+          } catch {}
+          return next
+        })
+      } catch {}
+    },
+    [calc.id]
+  )
+
+  const executeCalculation = React.useCallback(
+    async (inputVals: Record<string, string>) => {
+      setBusy(true)
+      setErr(null)
+      setResult(null)
+      setJsHtml(null)
+      try {
+        const payload: Record<string, string | number> = {}
+        for (const f of calc.fields) {
+          const v = inputVals[f.name]
+          payload[f.name] =
+            f.type === "number" && v !== "" && v !== undefined ? Number(v) : (v ?? "")
+        }
+        const res = await runCalculator(calc.id, payload)
+        if (res.result && Object.keys(res.result).length > 0) {
+          if (
+            "js_required" in res.result ||
+            (typeof res.result.note === "string" &&
+              res.result.note.includes("client-side"))
+          ) {
+            setJsTrigger((prev) => prev + 1)
+            return
+          } else {
+            setResult(res.result)
+            setBusy(false)
+            saveHistory(inputVals, res.result, null)
+            return
+          }
+        }
+        setJsTrigger((prev) => prev + 1)
+      } catch {
+        setJsTrigger((prev) => prev + 1)
+      }
+    },
+    [calc.fields, calc.id, saveHistory]
+  )
+
   const handleCopyResult = () => {
     let textToCopy = `${calc.name} Results:\n`
     if (result) {
@@ -215,48 +340,87 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
       textToCopy += tmp.textContent || tmp.innerText || ""
     }
     textToCopy += `\nCalculated on TryCalc.net`
-    navigator.clipboard.writeText(textToCopy)
-    setCopyToast(true)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        setToast({ open: true, message: "✅ Results copied to clipboard!" })
+      })
+    }
   }
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setBusy(true)
-    setErr(null)
-    setResult(null)
-    setJsHtml(null)
-    try {
-      const payload: Record<string, string | number> = {}
-      for (const f of calc.fields) {
-        const v = values[f.name]
-        payload[f.name] = f.type === "number" && v !== "" ? Number(v) : v
+  const handleShare = () => {
+    if (typeof window === "undefined") return
+    const sp = new URLSearchParams()
+    for (const f of calc.fields) {
+      const v = values[f.name]
+      if (v !== undefined && v !== null && v !== "") {
+        sp.set(f.name, String(v))
       }
-      const res = await runCalculator(calc.id, payload)
-      if (res.result && Object.keys(res.result).length > 0) {
-        if ("js_required" in res.result || (typeof res.result.note === "string" && res.result.note.includes("client-side"))) {
-          setJsTrigger((prev) => prev + 1)
-          return
-        } else {
-          setResult(res.result)
-          setBusy(false)
-          return
-        }
-      }
-      setJsTrigger((prev) => prev + 1)
-    } catch {
-      setJsTrigger((prev) => prev + 1)
     }
+    const queryString = sp.toString()
+    const shareUrl = `${window.location.origin}${window.location.pathname}${queryString ? `?${queryString}` : ""}`
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(shareUrl)
+        .then(() => {
+          setToast({ open: true, message: "🔗 Shareable link with inputs copied to clipboard!" })
+        })
+        .catch(() => {
+          setToast({ open: true, message: "Could not copy link to clipboard." })
+        })
+    }
+  }
+
+  const handleRestoreHistory = (item: HistoryEntry) => {
+    setValues(item.values)
+    setHistoryOpen(false)
+    executeCalculation(item.values)
+  }
+
+  const handleClearHistory = () => {
+    try {
+      localStorage.removeItem(`trycalc_hist_${calc.id}`)
+    } catch {}
+    setHistory([])
+  }
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault()
+    executeCalculation(values)
   }
 
   const handleJsResult = (sandboxResult: { html: string; text: string }) => {
     setJsHtml(sandboxResult.html)
     setBusy(false)
+    saveHistory(values, null, sandboxResult.html)
   }
 
   const handleJsError = (error: string) => {
     setErr(`Calculation failed: ${error}`)
     setBusy(false)
   }
+
+  // Auto-run when opened with shareable URL parameters
+  const autoCalculatedRef = React.useRef(false)
+  useEffect(() => {
+    if (autoCalculatedRef.current || typeof window === "undefined") return
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      let hasParam = false
+      for (const f of calc.fields) {
+        if (sp.get(f.name)) {
+          hasParam = true
+          break
+        }
+      }
+      if (hasParam) {
+        autoCalculatedRef.current = true
+        const timer = setTimeout(() => {
+          executeCalculation(values)
+        }, 150)
+        return () => clearTimeout(timer)
+      }
+    } catch {}
+  }, [calc.fields, executeCalculation, values])
 
   const catMeta = CATEGORY_META[calc.category]
 
@@ -274,6 +438,7 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
         <Container maxWidth="xl">
           {/* Breadcrumbs */}
           <Breadcrumbs
+            className="no-print"
             separator={<NavigateNextIcon fontSize="small" sx={{ color: "#94a3b8" }} />}
             sx={{ mb: 2.5 }}
           >
@@ -312,8 +477,35 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
             </Typography>
           </Breadcrumbs>
 
+          {/* Dedicated print-only report header */}
+          <Box className="print-only" sx={{ mb: 3 }}>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: "#000000", mb: 0.5 }}>
+              TryCalc.net — {calc.name}
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#475569", mb: 2 }}>
+              Category: {catMeta?.label || calc.category} · Generated: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · URL: https://trycalc.net/calculators/{calc.id}
+            </Typography>
+            <Box sx={{ p: 2, border: "1px solid #cbd5e1", borderRadius: 2, mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1, color: "#0f172a" }}>
+                Input Parameters:
+              </Typography>
+              <Grid container spacing={1}>
+                {calc.fields.map((f) => (
+                  <Grid key={f.name} size={{ xs: 6 }}>
+                    <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
+                      {f.label}:
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a" }}>
+                      {values[f.name] || f.default || "—"} {f.unit || ""}
+                    </Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          </Box>
+
           {/* Calculator Header Intro */}
-          <Box sx={{ mb: 3 }}>
+          <Box className="no-print" sx={{ mb: 3 }}>
             <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 1 }}>
               <Chip
                 label={catMeta?.label || calc.category}
@@ -379,7 +571,7 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
           </Box>
 
           {/* 3-Step Operation Status Visual Bar */}
-          <Box sx={{ mb: 3.5, p: 2, borderRadius: 3.5, bgcolor: "#ffffff", border: "1px solid #e2e8f0" }}>
+          <Box className="no-print" sx={{ mb: 3.5, p: 2, borderRadius: 3.5, bgcolor: "#ffffff", border: "1px solid #e2e8f0" }}>
             <Grid container spacing={2} sx={{ alignItems: "center" }}>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
@@ -493,7 +685,7 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                 </Stack>
 
                 {/* Quick actions toolbar */}
-                <Stack direction="row" spacing={1} sx={{ mb: 2.5, flexWrap: "wrap", gap: 1 }}>
+                <Stack direction="row" spacing={1} className="no-print" sx={{ mb: 2.5, flexWrap: "wrap", gap: 1 }}>
                   <Button
                     size="small"
                     variant="outlined"
@@ -528,6 +720,44 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                   >
                     ↺ Reset
                   </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<ShareIcon sx={{ fontSize: 16 }} />}
+                    onClick={handleShare}
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      fontSize: 12.5,
+                      color: "#475569",
+                      borderColor: "#e2e8f0",
+                      bgcolor: "#f8fafc",
+                      "&:hover": { bgcolor: "#f1f5f9", borderColor: "#cbd5e1", color: "#0f172a" },
+                    }}
+                  >
+                    Share Link
+                  </Button>
+                  {history.length > 0 && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<HistoryIcon sx={{ fontSize: 16 }} />}
+                      onClick={() => setHistoryOpen(true)}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontWeight: 600,
+                        fontSize: 12.5,
+                        color: "#475569",
+                        borderColor: "#e2e8f0",
+                        bgcolor: "#f8fafc",
+                        "&:hover": { bgcolor: "#f1f5f9", borderColor: "#cbd5e1", color: "#0f172a" },
+                      }}
+                    >
+                      History ({history.length})
+                    </Button>
+                  )}
                 </Stack>
 
                 <form onSubmit={submit}>
@@ -591,6 +821,7 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                       variant="contained"
                       size="large"
                       disabled={busy}
+                      className="no-print"
                       startIcon={<PlayArrowIcon />}
                       sx={{
                         py: 1.6,
@@ -631,9 +862,40 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                 </Alert>
               ) : null}
 
-              {result || jsHtml ? (
+              {busy ? (
                 <Paper
                   elevation={0}
+                  sx={{
+                    p: { xs: 2.5, sm: 3.5 },
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 3.5,
+                    bgcolor: "#ffffff",
+                  }}
+                >
+                  <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 3 }}>
+                    <Skeleton variant="circular" width={24} height={24} />
+                    <Skeleton variant="text" width={120} height={32} />
+                    <Skeleton variant="rounded" width={70} height={24} sx={{ ml: "auto", borderRadius: 1 }} />
+                  </Stack>
+
+                  <Stack spacing={2.5}>
+                    {[1, 2, 3, 4].map((i) => (
+                      <Box key={i} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1.5, borderBottom: "1px solid #f1f5f9" }}>
+                        <Skeleton variant="text" width="40%" height={24} />
+                        <Skeleton variant="text" width="28%" height={28} />
+                      </Box>
+                    ))}
+                  </Stack>
+
+                  <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid #e2e8f0", display: "flex", gap: 1.5 }}>
+                    <Skeleton variant="rounded" width={130} height={36} sx={{ borderRadius: 2 }} />
+                    <Skeleton variant="rounded" width={80} height={36} sx={{ borderRadius: 2 }} />
+                  </Box>
+                </Paper>
+              ) : result || jsHtml ? (
+                <Paper
+                  elevation={0}
+                  className="print-card"
                   sx={{
                     p: { xs: 2.5, sm: 3.5 },
                     border: "1px solid #e2e8f0",
@@ -686,7 +948,7 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                   ) : null}
 
                   {/* Result Actions */}
-                  <Stack direction="row" spacing={1.5} sx={{ mt: 3, pt: 2, borderTop: "1px solid #e2e8f0" }}>
+                  <Stack direction="row" spacing={1.5} className="no-print" sx={{ mt: 3, pt: 2, borderTop: "1px solid #e2e8f0", flexWrap: "wrap", gap: 1 }}>
                     <Button
                       size="small"
                       variant="contained"
@@ -706,6 +968,23 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                     <Button
                       size="small"
                       variant="outlined"
+                      startIcon={<ShareIcon />}
+                      onClick={handleShare}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontWeight: 600,
+                        fontSize: 13,
+                        color: "#475569",
+                        borderColor: "#e2e8f0",
+                        "&:hover": { bgcolor: "#f8fafc", borderColor: "#cbd5e1" },
+                      }}
+                    >
+                      Share Link
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
                       startIcon={<PrintIcon />}
                       onClick={() => typeof window !== "undefined" && window.print()}
                       sx={{
@@ -718,13 +997,14 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                         "&:hover": { bgcolor: "#f8fafc", borderColor: "#cbd5e1" },
                       }}
                     >
-                      Print
+                      Print Report
                     </Button>
                   </Stack>
                 </Paper>
               ) : (
                 <Paper
                   elevation={0}
+                  className="no-print"
                   sx={{
                     p: 5,
                     border: "1px dashed #cbd5e1",
@@ -746,7 +1026,7 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
           </Grid>
 
           {/* How-To & FAQ Sections */}
-          <Box sx={{ mt: 5 }}>
+          <Box className="no-print" sx={{ mt: 5 }}>
             <Grid container spacing={3.5}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Paper
@@ -871,7 +1151,7 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
 
           {/* Related / Category Calculators Internal Linking */}
           {relatedCalcs.length > 0 && (
-            <Box sx={{ mt: 5, mb: 2 }}>
+            <Box className="no-print" sx={{ mt: 5, mb: 2 }}>
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5 }}>
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
@@ -942,12 +1222,120 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
         </Container>
       </Box>
 
-      {/* Copy Toast Notification */}
+      {/* History Drawer */}
+      <Drawer
+        anchor="right"
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        slotProps={{
+          backdrop: {
+            sx: { bgcolor: "rgba(15, 23, 42, 0.25)", backdropFilter: "blur(2px)" },
+          },
+        }}
+      >
+        <Box sx={{ width: { xs: 320, sm: 400 }, p: 3, display: "flex", flexDirection: "column", height: "100%" }}>
+          <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <HistoryIcon sx={{ color: "#4f46e5", fontSize: 24 }} />
+              <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", fontSize: 18 }}>
+                Calculation History
+              </Typography>
+            </Stack>
+            <IconButton size="small" onClick={() => setHistoryOpen(false)}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Stack>
+          <Typography variant="caption" sx={{ color: "#64748b", mb: 2 }}>
+            Saved locally in this browser. Click any calculation to restore inputs.
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+
+          <Box sx={{ flexGrow: 1, overflowY: "auto", pr: 0.5 }}>
+            {history.length === 0 ? (
+              <Box sx={{ textAlign: "center", py: 8 }}>
+                <HistoryIcon sx={{ fontSize: 48, color: "#cbd5e1", mb: 1 }} />
+                <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 600 }}>
+                  No calculations saved yet
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+                  Run a calculation to see your history here.
+                </Typography>
+              </Box>
+            ) : (
+              <Stack spacing={1.5}>
+                {history.map((item) => (
+                  <Card
+                    key={item.id}
+                    elevation={0}
+                    sx={{
+                      border: "1px solid #e2e8f0",
+                      borderRadius: 2.5,
+                      bgcolor: "#ffffff",
+                      transition: "all 0.15s ease",
+                      "&:hover": { borderColor: "#4f46e5", bgcolor: "#f8fafc" },
+                    }}
+                  >
+                    <CardActionArea onClick={() => handleRestoreHistory(item)} sx={{ p: 2 }}>
+                      <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.75 }}>
+                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
+                          {item.time}
+                        </Typography>
+                        <Chip
+                          label="Restore"
+                          size="small"
+                          sx={{ height: 20, fontSize: 11, fontWeight: 700, bgcolor: "#eef2ff", color: "#4f46e5" }}
+                        />
+                      </Stack>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a", mb: 0.5 }}>
+                        {item.summary}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#64748b",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          fontSize: 11,
+                        }}
+                      >
+                        {Object.entries(item.values)
+                          .filter(([, v]) => v !== "")
+                          .map(([k, v]) => `${calc.fields.find((f) => f.name === k)?.label || k}: ${v}`)
+                          .join(" · ")}
+                      </Typography>
+                    </CardActionArea>
+                  </Card>
+                ))}
+              </Stack>
+            )}
+          </Box>
+
+          {history.length > 0 && (
+            <Box sx={{ pt: 2, borderTop: "1px solid #e2e8f0", mt: 2 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="error"
+                size="small"
+                startIcon={<DeleteIcon />}
+                onClick={handleClearHistory}
+                sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
+              >
+                Clear History
+              </Button>
+            </Box>
+          )}
+        </Box>
+      </Drawer>
+
+      {/* Global Toast Notification */}
       <Snackbar
-        open={copyToast}
+        open={toast.open}
         autoHideDuration={2500}
-        onClose={() => setCopyToast(false)}
-        message="✅ Results copied to clipboard!"
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        message={toast.message}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       />
     </>
