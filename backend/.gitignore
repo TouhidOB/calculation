@@ -94,11 +94,9 @@ poetry.lock
 .env.*.local
 
 # Generated files
-extracted_*.json
-extracted_js_logic.json
+# Note: auto_generated.py & extracted_js_logic.json are committed as core calculator data
 generate_registry.py
 extract_*.py
-auto_generated.py
 
 # Docker
 *.log
