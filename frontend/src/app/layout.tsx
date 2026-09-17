@@ -70,6 +70,13 @@ export const metadata: Metadata = {
     description: defaultDescription,
     images: ["/og-image.png"],
   },
+  icons: {
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   verification: {
     google: "googlec41ad06c9e4b72b6",
   },

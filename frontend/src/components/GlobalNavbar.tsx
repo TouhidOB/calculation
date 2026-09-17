@@ -341,9 +341,10 @@ export default function GlobalNavbar({
               }}
             >
               <Box
+                aria-label="TryCalc Calculator Logo"
                 sx={{
-                  width: 36,
-                  height: 36,
+                  width: { xs: 34, sm: 36 },
+                  height: { xs: 34, sm: 36 },
                   borderRadius: "10px",
                   background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
                   display: "flex",
@@ -351,9 +352,10 @@ export default function GlobalNavbar({
                   justifyContent: "center",
                   color: "#fff",
                   boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
+                  flexShrink: 0,
                 }}
               >
-                <CalculateIcon sx={{ fontSize: 22 }} />
+                <CalculateIcon sx={{ fontSize: { xs: 20, sm: 22 } }} />
               </Box>
               <Box sx={{ display: { xs: "none", sm: "block" } }}>
                 <Typography
