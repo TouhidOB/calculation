@@ -12,6 +12,7 @@ import { getCalcIcon } from "@/lib/calc-icons"
 import { getIconComponent } from "@/lib/icon-registry"
 import JsExecutor from "@/components/JsExecutor"
 import { seoHowToFor, seoFaqFor, seoIntroFor, seoTitleFor } from "@/lib/seo-helpers"
+import DOMPurify from "dompurify"
 
 // MUI components
 import Box from "@mui/material/Box"
@@ -317,7 +318,9 @@ export default function CalculatorRunnerView({ calc }: { calc: CalculatorDef }) 
                       lineHeight: 1.6,
                     }}
                     component="div"
-                    dangerouslySetInnerHTML={{ __html: jsHtml }}
+                    dangerouslySetInnerHTML={{
+                      __html: typeof window !== "undefined" ? DOMPurify.sanitize(jsHtml) : jsHtml,
+                    }}
                   />
                 ) : result ? (
                   <Stack spacing={1.5}>

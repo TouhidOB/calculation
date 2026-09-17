@@ -7,6 +7,7 @@ import { listCalculators, runCalculator, type CategoryMap, type CalculatorDef, C
 import { getCalcIcon } from "@/lib/calc-icons"
 import JsExecutor from "@/components/JsExecutor"
 import { getIconComponent } from "@/lib/icon-registry"
+import DOMPurify from "dompurify"
 
 // MUI components
 import AppBar from "@mui/material/AppBar"
@@ -1218,7 +1219,9 @@ function CalculatorRunner({
                         lineHeight: 1.6,
                       }}
                       component="div"
-                      dangerouslySetInnerHTML={{ __html: jsHtml }}
+                      dangerouslySetInnerHTML={{
+                        __html: typeof window !== "undefined" ? DOMPurify.sanitize(jsHtml) : jsHtml,
+                      }}
                     />
                   ) : result ? (
                     <Stack spacing={1.5}>
