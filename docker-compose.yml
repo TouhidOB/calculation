@@ -1,17 +1,19 @@
-name: calchub
+name: trycalc
 
 services:
   # Django REST API backend
   backend:
     build: ./backend
-    container_name: calchub_backend
+    container_name: trycalc_backend
     restart: unless-stopped
     environment:
       DEBUG: "False"
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
-      ALLOWED_HOSTS: localhost,127.0.0.1,backend
+      DJANGO_SECRET_KEY: "trycalc-prod-secret-key-super-random-98234"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,backend,trycalc.net,www.trycalc.net,172.17.0.1,163.227.239.114"
+      CORS_ALLOWED_ORIGINS: "https://trycalc.net,https://www.trycalc.net,http://localhost:3002"
+      CSRF_TRUSTED_ORIGINS: "https://trycalc.net,https://www.trycalc.net"
     ports:
-      - "8000:8000"
+      - "8088:8000"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8000/api/health/')\" || exit 1"]
       interval: 15s
@@ -19,15 +21,17 @@ services:
       retries: 5
       start_period: 20s
 
-  # Next.js frontend (3000 is taken by another stack, exposed on 3001)
+  # Next.js frontend
   frontend:
     build: ./frontend
-    container_name: calchub_frontend
+    container_name: trycalc_frontend
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000/api
+      NEXT_PUBLIC_SITE_URL: "https://trycalc.net"
+      BACKEND_URL: "http://backend:8000"
+      NEXT_PUBLIC_API_URL: "/api"
     ports:
-      - "3001:3000"
+      - "3002:3000"
     depends_on:
       backend:
         condition: service_healthy
