@@ -2,14 +2,8 @@
 
 /**
  * JS Sandbox Executor — runs Django template JS in a sandboxed iframe.
- * The original calculators use DOM (getElementById, innerHTML) to read inputs
- * and write results. Most use addEventListener('submit') on a named form.
- *
- * Strategy:
- * 1. Build an iframe with form elements matching the calculator's field names
- * 2. Set input values from user-supplied values
- * 3. Inject the original JS and dispatch a submit event
- * 4. Capture the rendered result HTML
+ * Uses original template HTML/CSS when available for high-fidelity rendering,
+ * with resilient input matching, event dispatching, and guaranteed error recovery.
  */
 
 import { useEffect, useRef, useCallback } from "react"
@@ -31,237 +25,283 @@ interface JsExecutorProps {
   trigger: number // increment to re-run
 }
 
+interface CalcRuntime {
+  script: string
+  html?: string
+  css?: string
+}
+
 function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
-  const scriptCache = useRef<string | null>(null)
-  const formId = useRef<string>("")
-
-  // Build form ID from calcId (e.g. "budget-calculator" -> "budget-form")
-  // The JS typically uses <calcname>-form as the form ID
-  const guessFormId = useCallback((js: string, cid: string): string => {
-    // Extract the actual form ID from the JS
-    const match = js.match(/getElementById\s*\(\s*['"]([^'"]*-form)['"]\s*\)/)
-    if (match) return match[1]
-    // Try calcId-form as fallback  
-    return `${cid}-form`
-  }, [])
+  const runtimeCache = useRef<CalcRuntime | null>(null)
+  const isExecuting = useRef(false)
 
   const execute = useCallback(async () => {
-    if (trigger === 0) return
+    if (trigger === 0 || isExecuting.current) return
+    isExecuting.current = true
 
     try {
-      // Fetch script if not cached
-      if (!scriptCache.current) {
+      // 1. Fetch script + template runtime if not cached
+      if (!runtimeCache.current) {
         const res = await fetch(`/api/calculators/${calcId}/script/`)
         if (!res.ok) {
           if (res.status === 404) {
-            // No JS for this calculator — it runs server-side
+            onError("Calculator script not found.")
+            isExecuting.current = false
             return
           }
-          throw new Error(`Failed to fetch script: ${res.status}`)
+          throw new Error(`Failed to load calculator engine (${res.status})`)
         }
         const data = await res.json()
-        scriptCache.current = data.script
-        formId.current = guessFormId(data.script, calcId)
+        runtimeCache.current = {
+          script: data.script || "",
+          html: data.html || "",
+          css: data.css || "",
+        }
       }
 
-      const script = scriptCache.current
-      if (!script) return
-
-      const iframe = iframeRef.current
-      if (!iframe) return
-
-      const doc = iframe.contentDocument || iframe.contentWindow?.document
-      if (!doc) {
-        onError("Cannot access iframe")
+      const runtime = runtimeCache.current
+      if (!runtime || !runtime.script) {
+        onError("No computational script available for this calculator.")
+        isExecuting.current = false
         return
       }
 
-      // Extract ALL element IDs referenced in the JS
-      const idMatches = script.matchAll(/getElementById\s*\(\s*['"](.*?)['"]\s*\)/g)
-      const referencedIds = new Set<string>()
-      for (const m of idMatches) {
-        referencedIds.add(m[1])
+      const iframe = iframeRef.current
+      if (!iframe) {
+        onError("Sandboxed runner unavailable.")
+        isExecuting.current = false
+        return
       }
 
-      // Also extract IDs from querySelector
-      const qsMatches = script.matchAll(/querySelector\s*\(\s*['"]#(.*?)['"]\s*\)/g)
-      for (const m of qsMatches) {
-        referencedIds.add(m[1])
+      const doc = iframe.contentDocument || iframe.contentWindow?.document
+      if (!doc) {
+        onError("Cannot access runner sandbox.")
+        isExecuting.current = false
+        return
       }
 
-      // Build input elements — match field names AND any referenced IDs
-      const inputElements: string[] = []
-      const fieldNames = new Set(fields.map(f => f.name))
-
-      for (const f of fields) {
-        const val = String(f.value).replace(/"/g, '&quot;')
-        if (f.type === "select") {
-          inputElements.push(`<select id="${f.name}" name="${f.name}"><option value="${val}" selected>${val}</option></select>`)
-        } else {
-          inputElements.push(`<input type="text" id="${f.name}" name="${f.name}" value="${val}">`)
+      // Build DOM: Use original template HTML if available; otherwise fallback
+      let templateHtml = runtime.html || ""
+      if (!templateHtml) {
+        const inputElements: string[] = []
+        for (const f of fields) {
+          const val = String(f.value ?? "").replace(/"/g, "&quot;")
+          if (f.type === "select") {
+            inputElements.push(
+              `<select id="${f.name}" name="${f.name}"><option value="${val}" selected>${val}</option></select>`
+            )
+          } else {
+            inputElements.push(
+              `<input type="${f.type === "number" ? "number" : "text"}" id="${f.name}" name="${f.name}" value="${val}">`
+            )
+          }
         }
+        templateHtml = `
+          <form id="${calcId}-form">
+            ${inputElements.join("\n")}
+            <button type="submit" id="calculate-btn">Calculate</button>
+          </form>
+          <div id="results-container" class="result-area"></div>
+          <div id="result" class="result-area"></div>
+          <div id="output" class="result-area"></div>
+        `
       }
 
-      // Create placeholder elements for any referenced IDs we haven't covered
-      const resultContainers = [
-        "results-container", "solution-output", "results-ui", "resultsList",
-        "result-title", "result-container", "result", "results-card",
-        "result-box", "result-date-display", "masonry-result",
-        "output", "answer", "calculation-result", "resultDiv"
-      ]
-
-      for (const id of referencedIds) {
-        if (fieldNames.has(id)) continue // Already created as input
-        if (resultContainers.includes(id) || id.includes("result") || id.includes("output")) {
-          inputElements.push(`<div id="${id}" class="result-area"></div>`)
-        } else if (!fieldNames.has(id)) {
-          // Generic placeholder — might be a label, chart, or other element
-          inputElements.push(`<div id="${id}"></div>`)
-        }
-      }
-
-      // Ensure all known result containers exist
-      for (const rc of resultContainers) {
-        if (!referencedIds.has(rc)) {
-          inputElements.push(`<div id="${rc}" class="result-area" style="display:none"></div>`)
-        }
-      }
-
-      const fid = formId.current
+      const fullHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { padding: 12px; margin: 0; font-size: 14px; color: #0f172a; line-height: 1.5; background: #ffffff; }
+    .d-none { display: none !important; }
+    .alert-danger { background: #fef2f2; color: #991b1b; padding: 10px 14px; border-radius: 8px; border: 1px solid #fecaca; margin: 10px 0; }
+    .alert-info { background: #eff6ff; color: #1e40af; padding: 10px 14px; border-radius: 8px; border: 1px solid #bfdbfe; margin: 10px 0; }
+    .alert-success { background: #f0fdf4; color: #166534; padding: 10px 14px; border-radius: 8px; border: 1px solid #bbf7d0; margin: 10px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    th, td { padding: 8px 12px; border: 1px solid #e2e8f0; text-align: left; }
+    th { background: #f8fafc; font-weight: 700; }
+    ${runtime.css || ""}
+  </style>
+</head>
+<body>
+  ${templateHtml}
+  <script>
+    // Chart stub
+    window.Chart = function(ctx, config) { this.destroy = function(){}; this.update = function(){}; this.data = config.data || {}; };
+    // Minimal jQuery shim for older calculators
+    window.$ = window.jQuery = function(sel) {
+      var el = typeof sel === 'string' ? document.querySelector(sel) : sel;
+      return {
+        val: function(v) { if (v !== undefined && el) { el.value = v; } return el ? el.value : ''; },
+        text: function(t) { if (t !== undefined && el) { el.innerText = t; } return el ? el.innerText : ''; },
+        html: function(h) { if (h !== undefined && el) { el.innerHTML = h; } return el ? el.innerHTML : ''; },
+        on: function(ev, fn) { if (el) { el.addEventListener(ev, fn); } },
+        show: function() { if (el) { el.style.display = ''; el.classList.remove('d-none'); } },
+        hide: function() { if (el) { el.style.display = 'none'; el.classList.add('d-none'); } },
+        addClass: function(c) { if (el) { el.classList.add(c); } },
+        removeClass: function(c) { if (el) { el.classList.remove(c); } }
+      };
+    };
+    try {
+      ${runtime.script}
+    } catch (e) {
+      console.error("Script execution error:", e);
+    }
+  </script>
+</body>
+</html>`
 
       doc.open()
-      doc.write(`<!DOCTYPE html>
-<html><head><meta charset="utf-8">
-<style>
-* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-body { padding: 12px; font-size: 15px; color: #0f172a; line-height: 1.6; }
-.d-none { display: none; }
-.result-area { margin-top: 12px; }
-table { border-collapse: collapse; width: 100%; margin: 12px 0; }
-th, td { padding: 10px 14px; border: 1px solid #e2e8f0; text-align: left; }
-th { background: #f8fafc; font-weight: 700; color: #0f172a; }
-tr:nth-child(even) td { background: #f8fafc; }
-.text-success, .text-green { color: #16a34a; font-weight: 600; }
-.text-danger, .text-red { color: #dc2626; font-weight: 600; }
-.text-warning { color: #d97706; font-weight: 600; }
-.text-info { color: #0284c7; font-weight: 600; }
-.date-display, .result-value, .display-4, .display-5, .display-6 { font-size: 1.5rem; font-weight: 800; color: #4338ca; margin: 8px 0; }
-.party-emoji { font-size: 1.8rem; }
-.alert { padding: 12px 16px; border-radius: 8px; margin: 10px 0; }
-.alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-.alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-.alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-strong { font-weight: 700; color: #0f172a; }
-</style>
-</head><body>
-<form id="${fid}">
-  ${inputElements.join("\n  ")}
-  <button type="submit" style="display:none">Go</button>
-</form>
-
-<script>
-// Shims for Bootstrap classes the JS toggles
-Element.prototype.classList._origAdd = Element.prototype.classList.add;
-document.addEventListener('DOMContentLoaded', function() {
-  // Remove d-none from result containers on write
-  var observer = new MutationObserver(function(muts) {
-    muts.forEach(function(m) {
-      if (m.target && m.target.classList) {
-        m.target.classList.remove('d-none');
-        m.target.style.display = '';
-      }
-    });
-  });
-  document.querySelectorAll('.result-area').forEach(function(el) {
-    observer.observe(el, { childList: true, subtree: true, characterData: true });
-  });
-});
-
-// Chart.js stub (many calculators try to create charts)
-window.Chart = function(ctx, config) {
-  this.destroy = function(){};
-  this.update = function(){};
-  this.data = config.data || {};
-};
-
-try {
-${script}
-} catch(e) {
-  console.error('Script init error:', e);
-}
-</script>
-</body></html>`)
+      doc.write(fullHtml)
       doc.close()
 
-      // Wait for DOMContentLoaded + script init, then trigger submit
+      // Allow DOM and script to initialize
       setTimeout(() => {
         const win = iframe.contentWindow
-        if (!win) return
-
-        const form = doc.getElementById(fid) as HTMLFormElement
-        if (form) {
-          // Dispatch submit event (most calculators listen for this)
-          const evt = new Event("submit", { bubbles: true, cancelable: true })
-          form.dispatchEvent(evt)
+        if (!win) {
+          onError("Runner window unavailable")
+          isExecuting.current = false
+          return
         }
 
-        // Also try calling common function names
+        const currentDoc = iframe.contentDocument || win.document
+
+        // Populate fields with user inputs
+        for (const f of fields) {
+          const val = String(f.value ?? "")
+          const el = (currentDoc.getElementById(f.name) ||
+                      currentDoc.querySelector(`[name="${f.name}"]`) ||
+                      currentDoc.querySelector(`input[id*="${f.name}"]`) ||
+                      currentDoc.querySelector(`select[id*="${f.name}"]`) ||
+                      currentDoc.querySelector(`input[id*="${f.name.replace(/-/g, '_')}"]`)) as HTMLInputElement | HTMLSelectElement | null
+
+          if (el) {
+            el.value = val
+            el.dispatchEvent(new Event("input", { bubbles: true }))
+            el.dispatchEvent(new Event("change", { bubbles: true }))
+          }
+        }
+
+        // Trigger execution: Submit event on form
+        const forms = currentDoc.querySelectorAll("form")
+        forms.forEach((form) => {
+          try {
+            form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }))
+          } catch {}
+        })
+
+        // Also trigger any submit / calculate button
+        const buttons = currentDoc.querySelectorAll(
+          'button[type="submit"], button#calculate-btn, button.btn-success, button.btn-primary, button.btn, input[type="submit"]'
+        )
+        buttons.forEach((b) => {
+          try {
+            ;(b as HTMLElement).click()
+          } catch {}
+        })
+
+        // Also trigger any known global functions
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const w = win as any
         const fns = ["calculate", "calculateResult", "updateResult", "compute", "runCalculation"]
         for (const fn of fns) {
           if (typeof w[fn] === "function") {
-            try { w[fn]() } catch { /* ignore */ }
+            try {
+              w[fn]()
+            } catch {}
           }
         }
 
-        // Capture results after JS runs
+        // Capture result after execution
         setTimeout(() => {
-          const parts: string[] = []
-
-          // Collect all result container content
-          for (const rc of resultContainers) {
-            const el = doc.getElementById(rc) as HTMLElement | null
-            if (el && el.innerHTML && el.innerHTML.trim()) {
-              parts.push(el.innerHTML)
+          try {
+            // Check for explicit error messages in status/alert divs
+            const statusDiv = currentDoc.getElementById("status-message") || currentDoc.querySelector(".alert-danger")
+            if (statusDiv) {
+              const statusText = statusDiv.textContent?.trim() || ""
+              const isVisible = !statusDiv.classList.contains("d-none") && statusDiv.style.display !== "none"
+              if (isVisible && statusText && (statusText.toLowerCase().includes("error") || statusText.toLowerCase().includes("please"))) {
+                onError(statusText)
+                isExecuting.current = false
+                return
+              }
             }
-          }
 
-          // Also scan any element with "result" in ID that has content
-          const allResults = doc.querySelectorAll("[id*='result'], [id*='output'], [id*='answer'], [id*='solution']")
-          allResults.forEach((el) => {
-            const htmlEl = el as HTMLElement
-            if (htmlEl.innerHTML && htmlEl.innerHTML.trim() && !resultContainers.includes(htmlEl.id)) {
-              parts.push(htmlEl.innerHTML)
+            // Look for visible result containers
+            const resultSelectors = [
+              "#results-container",
+              "#result-container",
+              "#result-section",
+              ".result-section",
+              "#results-card",
+              "#result-box",
+              "#calculation-result",
+              "#solution-output",
+              "#result",
+              "#results",
+              "#output",
+              "#answer"
+            ]
+
+            let foundHtml = ""
+            for (const sel of resultSelectors) {
+              const el = currentDoc.querySelector(sel) as HTMLElement | null
+              if (el) {
+                el.classList.remove("d-none")
+                el.style.display = ""
+                const h = el.innerHTML.trim()
+                const t = el.textContent?.trim() || ""
+                if (h && t.length > 0) {
+                  foundHtml = el.outerHTML
+                  break
+                }
+              }
             }
-          })
 
-          // Dedupe and join
-          const seen = new Set<string>()
-          const uniqueParts = parts.filter(p => {
-            const trimmed = p.trim()
-            if (seen.has(trimmed) || !trimmed) return false
-            seen.add(trimmed)
-            return true
-          })
+            // Fallback: search any element with result/output/answer in ID
+            if (!foundHtml) {
+              const anyResults = currentDoc.querySelectorAll(
+                "[id*='result']:not(form):not(input):not(button), [id*='output']:not(form):not(input):not(button), [id*='answer']:not(form):not(input):not(button)"
+              )
+              const parts: string[] = []
+              anyResults.forEach((r) => {
+                const el = r as HTMLElement
+                el.classList.remove("d-none")
+                el.style.display = ""
+                const content = el.innerHTML.trim()
+                if (content && el.textContent?.trim()) {
+                  parts.push(content)
+                }
+              })
+              if (parts.length > 0) {
+                foundHtml = parts.join("<hr style='margin:12px 0;border-color:#e2e8f0'>")
+              }
+            }
 
-          const html = uniqueParts.join("<hr style='margin:12px 0;border-color:#e5e7eb'>")
-          
-          // Extract plain text for structured display
-          const tempDiv = doc.createElement("div")
-          tempDiv.innerHTML = html
-          const text = tempDiv.textContent || tempDiv.innerText || ""
+            // Parse text
+            const tempDiv = currentDoc.createElement("div")
+            tempDiv.innerHTML = foundHtml
+            const cleanText = tempDiv.textContent || tempDiv.innerText || ""
 
-          if (html && text.trim()) {
-            onResult({ html, text: text.trim() })
+            if (foundHtml && cleanText.trim().length > 0) {
+              onResult({ html: foundHtml, text: cleanText.trim() })
+            } else {
+              onError("Calculation completed with no visible output. Please verify input values.")
+            }
+          } catch (captureErr) {
+            onError(captureErr instanceof Error ? captureErr.message : String(captureErr))
+          } finally {
+            isExecuting.current = false
           }
-        }, 300)
-      }, 200)
+        }, 250)
+      }, 150)
     } catch (e) {
       onError(e instanceof Error ? e.message : String(e))
+      isExecuting.current = false
     }
-  }, [calcId, fields, trigger, onResult, onError, guessFormId])
+  }, [calcId, fields, trigger, onResult, onError])
 
   useEffect(() => {
     execute()

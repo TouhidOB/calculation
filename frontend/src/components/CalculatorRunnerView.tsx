@@ -249,6 +249,16 @@ export default function CalculatorRunnerView({
   const [jsTrigger, setJsTrigger] = useState(0)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+
+  // Safety guard: never leave busy loading state stuck for more than 3.5s
+  useEffect(() => {
+    if (!busy) return
+    const timer = setTimeout(() => {
+      setBusy(false)
+      setErr((prev) => prev || "Calculation could not be completed. Please check your inputs.")
+    }, 3500)
+    return () => clearTimeout(timer)
+  }, [busy])
   const [historyOpen, setHistoryOpen] = useState(false)
   const [embedOpen, setEmbedOpen] = useState(false)
   const [history, setHistory] = useState<HistoryEntry[]>(() => {
