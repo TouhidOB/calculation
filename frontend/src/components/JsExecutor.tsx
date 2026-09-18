@@ -127,9 +127,25 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
 </head>
 <body>
   ${templateHtml}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
-    // Chart stub
-    window.Chart = function(ctx, config) { this.destroy = function(){}; this.update = function(){}; this.data = config.data || {}; };
+    // Chart fallback if CDN is unreachable
+    if (typeof window.Chart === 'undefined') {
+      window.Chart = function(ctx, config) { 
+        this.destroy = function(){}; 
+        this.update = function(){}; 
+        this.data = config ? (config.data || {}) : {}; 
+      };
+      window.Chart.register = function() {};
+      window.Chart.defaults = {};
+      window.Chart.plugins = {};
+    }
+    // MathJax stub so LaTeX calls never crash
+    window.MathJax = {
+      typesetPromise: function() { return Promise.resolve(); },
+      typeset: function() {},
+      startup: { ready: function() {} }
+    };
     // Minimal jQuery shim for older calculators
     window.$ = window.jQuery = function(sel) {
       var el = typeof sel === 'string' ? document.querySelector(sel) : sel;
@@ -168,21 +184,65 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
 
         const currentDoc = iframe.contentDocument || win.document
 
-        // Populate fields with user inputs
+        // Populate fields with user inputs: multi-tier matching
+        const populatedElements = new Set<HTMLElement>()
         for (const f of fields) {
           const val = String(f.value ?? "")
-          const el = (currentDoc.getElementById(f.name) ||
-                      currentDoc.querySelector(`[name="${f.name}"]`) ||
-                      currentDoc.querySelector(`input[id*="${f.name}"]`) ||
-                      currentDoc.querySelector(`select[id*="${f.name}"]`) ||
-                      currentDoc.querySelector(`input[id*="${f.name.replace(/-/g, '_')}"]`)) as HTMLInputElement | HTMLSelectElement | null
+          const normHyphen = f.name.replace(/_/g, "-")
+          const normUnder = f.name.replace(/-/g, "_")
+          
+          const candidates = [
+            `#${f.name}`,
+            `[name="${f.name}"]`,
+            `#${normHyphen}`,
+            `[name="${normHyphen}"]`,
+            `#${normUnder}`,
+            `[name="${normUnder}"]`,
+            `#inf-${normHyphen}`,
+            `#${normHyphen}-input`,
+            `#input-${normHyphen}`,
+            `input[id*="${f.name}"]`,
+            `select[id*="${f.name}"]`,
+            `input[id*="${normUnder}"]`,
+            `select[id*="${normUnder}"]`,
+          ]
+
+          let el: HTMLInputElement | HTMLSelectElement | null = null
+          for (const selector of candidates) {
+            try {
+              const found = currentDoc.querySelector(selector) as HTMLInputElement | HTMLSelectElement | null
+              if (found && !populatedElements.has(found)) {
+                el = found
+                break
+              }
+            } catch {}
+          }
 
           if (el) {
+            populatedElements.add(el)
             el.value = val
             el.dispatchEvent(new Event("input", { bubbles: true }))
             el.dispatchEvent(new Event("change", { bubbles: true }))
           }
         }
+
+        // Positional fallback for remaining unpopulated input elements
+        const unpopulatedInputs = Array.from(
+          currentDoc.querySelectorAll('input:not([type="submit"]):not([type="button"]):not([type="hidden"]), select')
+        ).filter((inp) => !populatedElements.has(inp as HTMLElement)) as (HTMLInputElement | HTMLSelectElement)[]
+
+        const unpopulatedFields = fields.filter((_, idx) => {
+          return idx >= populatedElements.size
+        })
+
+        unpopulatedFields.forEach((f, idx) => {
+          if (idx < unpopulatedInputs.length) {
+            const el = unpopulatedInputs[idx]
+            el.value = String(f.value ?? "")
+            el.dispatchEvent(new Event("input", { bubbles: true }))
+            el.dispatchEvent(new Event("change", { bubbles: true }))
+          }
+        })
 
         // Trigger execution: Submit event on form
         const forms = currentDoc.querySelectorAll("form")
