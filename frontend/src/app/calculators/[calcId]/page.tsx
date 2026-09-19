@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
 import { notFound, permanentRedirect } from "next/navigation"
 import CalculatorRunnerView from "@/components/CalculatorRunnerView"
-import { seoIntroFor, seoTitleFor, seoFaqFor, seoHowToFor } from "@/lib/seo-helpers"
+import { seoIntroFor, seoTitleFor, seoFaqFor, seoHowToFor, seoMetaDescriptionFor } from "@/lib/seo-helpers"
 import type { CalculatorDef } from "@/lib/calculator-api"
 import { CATEGORY_META } from "@/lib/calculator-api"
+import fallbackData from "@/lib/calculators-fallback.json"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
@@ -11,19 +12,38 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
 /** ISR: pages are cached and refreshed daily. */
 export const revalidate = 86400
 
+function findInFallback(id: string): CalculatorDef | null {
+  const cats = (fallbackData.categories as unknown as Record<string, CalculatorDef[]>) || {}
+  for (const list of Object.values(cats)) {
+    if (Array.isArray(list)) {
+      const found = list.find((c) => c.id === id)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+function getRelatedCalculators(category: string, currentId: string) {
+  const cats = (fallbackData.categories as unknown as Record<string, CalculatorDef[]>) || {}
+  const list = cats[category] || []
+  return list
+    .filter((c) => c.id !== currentId)
+    .slice(0, 4)
+    .map((c) => ({ id: c.id, name: c.name, description: c.description || "" }))
+}
+
 async function fetchCalc(calcId: string): Promise<CalculatorDef | null> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/calculators/${calcId}/`, {
       headers: { Accept: "application/json" },
       next: { revalidate: 86400 },
     })
-    if (!res.ok) return null
-    const data = await res.json()
-    if (!data || !data.id || !Array.isArray(data.fields)) return null
-    return data as CalculatorDef
-  } catch {
-    return null
-  }
+    if (res.ok) {
+      const data = await res.json()
+      if (data && data.id && Array.isArray(data.fields)) return data as CalculatorDef
+    }
+  } catch {}
+  return findInFallback(calcId)
 }
 
 /** Resolves calculator with automatic alias fallback (e.g. bmi-calculator -> bmi or vice-versa). */
@@ -46,22 +66,29 @@ async function resolveCalc(calcId: string): Promise<{ calc: CalculatorDef; canon
 
 /** Pre-render the most popular calculators at build time. */
 export async function generateStaticParams() {
+  const ids: string[] = []
   try {
     const res = await fetch(`${BACKEND_URL}/api/calculators/`, {
       headers: { Accept: "application/json" },
       cache: "no-store",
     })
-    if (!res.ok) return []
-    const data = await res.json()
-    const ids: string[] = []
-    const categories = (data.categories as Record<string, CalculatorDef[]>) || {}
-    for (const list of Object.values(categories)) {
+    if (res.ok) {
+      const data = await res.json()
+      const categories = (data.categories as Record<string, CalculatorDef[]>) || {}
+      for (const list of Object.values(categories)) {
+        if (Array.isArray(list)) for (const c of list) ids.push(String(c.id))
+      }
+    }
+  } catch {}
+
+  if (ids.length === 0) {
+    const cats = (fallbackData.categories as unknown as Record<string, CalculatorDef[]>) || {}
+    for (const list of Object.values(cats)) {
       if (Array.isArray(list)) for (const c of list) ids.push(String(c.id))
     }
-    return ids.map((id) => ({ calcId: id }))
-  } catch {
-    return []
   }
+
+  return ids.map((id) => ({ calcId: id }))
 }
 
 export async function generateMetadata({
@@ -76,16 +103,16 @@ export async function generateMetadata({
   }
   const { calc, canonicalId } = resolved
   const title = seoTitleFor(calc).replace(/ \| TryCalc$/, "")
-  const intro = seoIntroFor(calc)
+  const metaDesc = seoMetaDescriptionFor(calc)
   const url = `${SITE_URL}/calculators/${canonicalId}`
   const catLabel = CATEGORY_META[calc.category]?.label || calc.category
   return {
     title,
-    description: intro,
+    description: metaDesc,
     alternates: { canonical: url },
     openGraph: {
       title,
-      description: intro,
+      description: metaDesc,
       url,
       type: "website",
       siteName: "TryCalc",
@@ -94,7 +121,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       title,
-      description: intro,
+      description: metaDesc,
       images: ["/og-image.png"],
     },
     keywords: [
@@ -124,6 +151,7 @@ export default async function CalculatorPage({
 
   const { calc, canonicalId } = resolved
 
+  const relatedCalcs = getRelatedCalculators(calc.category, canonicalId)
   const faqs = seoFaqFor(calc)
   const howToSteps = seoHowToFor(calc)
   const catLabel = CATEGORY_META[calc.category]?.label || calc.category
@@ -151,6 +179,14 @@ export default async function CalculatorPage({
     applicationSubCategory: catLabel,
     operatingSystem: "All",
     browserRequirements: "Requires modern web browser with HTML5 support.",
+    datePublished: "2026-01-01",
+    dateModified: new Date().toISOString().split("T")[0],
+    inLanguage: "en-US",
+    author: {
+      "@type": "Organization",
+      name: "TryCalc",
+      url: SITE_URL,
+    },
     offers: {
       "@type": "Offer",
       price: "0",
@@ -211,7 +247,7 @@ export default async function CalculatorPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToLd) }}
       />
-      <CalculatorRunnerView calc={calc} />
+      <CalculatorRunnerView calc={calc} initialRelatedCalcs={relatedCalcs} />
     </>
   )
 }

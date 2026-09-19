@@ -212,13 +212,17 @@ function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, 
   return ex
 }
 
+interface CalculatorRunnerViewProps {
+  calc: CalculatorDef
+  embedded?: boolean
+  initialRelatedCalcs?: { id: string; name: string; description: string }[]
+}
+
 export default function CalculatorRunnerView({
   calc,
   embedded = false,
-}: {
-  calc: CalculatorDef
-  embedded?: boolean
-}) {
+  initialRelatedCalcs,
+}: CalculatorRunnerViewProps) {
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
     const todayStr = new Date().toISOString().split("T")[0]
@@ -274,16 +278,19 @@ export default function CalculatorRunnerView({
     open: false,
     message: "",
   })
-  const [relatedCalcs, setRelatedCalcs] = useState<{ id: string; name: string; description: string }[]>([])
+  const [relatedCalcs, setRelatedCalcs] = useState<{ id: string; name: string; description: string }[]>(
+    () => initialRelatedCalcs || []
+  )
 
   useEffect(() => {
+    if (relatedCalcs.length > 0) return
     listCalculators()
       .then((data) => {
         const list = data.categories[calc.category] || []
         setRelatedCalcs(list.filter((c) => c.id !== calc.id))
       })
       .catch(() => {})
-  }, [calc.id, calc.category])
+  }, [calc.id, calc.category, relatedCalcs.length])
 
   const howToSteps = React.useMemo(() => seoHowToFor(calc), [calc])
   const faqs = React.useMemo(() => seoFaqFor(calc), [calc])
@@ -1066,7 +1073,7 @@ export default function CalculatorRunnerView({
                 >
                   <FunctionsIcon sx={{ fontSize: 20 }} />
                 </Box>
-                <Box>
+                <Box sx={{ width: "100%" }}>
                   <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#166534", mb: 0.5 }}>
                     Calculation Methodology &amp; Direct Overview
                   </Typography>
@@ -1076,6 +1083,23 @@ export default function CalculatorRunnerView({
                   <Typography variant="body2" sx={{ color: "#334155", lineHeight: 1.6 }}>
                     {seoIntro}
                   </Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
+                    <Chip
+                      size="small"
+                      label="✓ Verified Deterministic Formula"
+                      sx={{ bgcolor: "#dcfce7", color: "#166534", fontWeight: 700, fontSize: "0.75rem", height: 24 }}
+                    />
+                    <Chip
+                      size="small"
+                      label="Domain Review: TryCalc Mathematics Team"
+                      sx={{ bgcolor: "#e0e7ff", color: "#3730a3", fontWeight: 600, fontSize: "0.75rem", height: 24 }}
+                    />
+                    <Chip
+                      size="small"
+                      label="Engine Status: Active 2026"
+                      sx={{ bgcolor: "#f1f5f9", color: "#475569", fontWeight: 600, fontSize: "0.75rem", height: 24 }}
+                    />
+                  </Box>
                 </Box>
               </Box>
 

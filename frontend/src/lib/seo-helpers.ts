@@ -10,6 +10,14 @@ export function seoTitleFor(calc: CalculatorDef): string {
   return `${calc.name} — Free Online ${cat.replace(" Calculators", " Calculator")} | TryCalc`
 }
 
+export function seoMetaDescriptionFor(calc: CalculatorDef): string {
+  const cat = (CATEGORY_META[calc.category]?.label || calc.category).replace(/ Calculators?$/i, "")
+  const fieldList = calc.fields.slice(0, 3).map((f) => f.label).join(", ")
+  const base = `Free online ${calc.name} for instant ${cat.toLowerCase()} results. Enter ${fieldList} for accurate figures, formula breakdown, and insights. Try it now!`
+  if (base.length <= 160) return base
+  return `Calculate ${calc.name} instantly with our free online tool. Accurate ${cat.toLowerCase()} calculations with step-by-step breakdown. 100% free, no signup.`
+}
+
 export function seoIntroFor(calc: CalculatorDef): string {
   const fname = calc.name.toLowerCase()
   const fieldList = calc.fields.slice(0, 4).map(f => f.label.toLowerCase()).join(", ")
