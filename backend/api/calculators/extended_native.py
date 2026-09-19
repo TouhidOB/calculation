@@ -566,13 +566,25 @@ def get_all_solvers() -> Dict[str, Callable[[dict], dict]]:
 
 
 def attach_native_solvers() -> int:
-    """Attach native solver functions to registered calculators."""
+    """Attach native solver functions to registered calculators and sanitize field types."""
     solvers = get_all_solvers()
+    string_field_names = {
+        'gender', 'race', 'state', 'filing-status', 'expression', 'input', 'values',
+        'scores', 'cash-flows', 'name1', 'name2', 'from-currency', 'to-currency',
+        'ip-address', 'subnet-mask', 'from-unit', 'to-unit', 'category', 'method',
+        'test-type', 'unit', 'goal', 'activity-level'
+    }
+    date_field_names = {'start-date', 'end-date', 'marriage-date', 'current-date', 'due-date'}
     count = 0
     for calc_id, solver_fn in solvers.items():
         calc = registry.get(calc_id)
         if calc:
             calc.calculate = solver_fn
+            for f in calc.fields:
+                if f.name in date_field_names:
+                    f.type = 'date'
+                elif f.name in string_field_names:
+                    f.type = 'text'
             count += 1
     return count
 
