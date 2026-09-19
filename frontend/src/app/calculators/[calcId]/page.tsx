@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, permanentRedirect } from "next/navigation"
 import CalculatorRunnerView from "@/components/CalculatorRunnerView"
 import { seoIntroFor, seoTitleFor, seoFaqFor, seoHowToFor } from "@/lib/seo-helpers"
 import type { CalculatorDef } from "@/lib/calculator-api"
@@ -24,6 +24,24 @@ async function fetchCalc(calcId: string): Promise<CalculatorDef | null> {
   } catch {
     return null
   }
+}
+
+/** Resolves calculator with automatic alias fallback (e.g. bmi-calculator -> bmi or vice-versa). */
+async function resolveCalc(calcId: string): Promise<{ calc: CalculatorDef; canonicalId: string } | null> {
+  const direct = await fetchCalc(calcId)
+  if (direct) return { calc: direct, canonicalId: calcId }
+
+  if (calcId.endsWith("-calculator")) {
+    const trimmed = calcId.replace(/-calculator$/, "")
+    const alt = await fetchCalc(trimmed)
+    if (alt) return { calc: alt, canonicalId: trimmed }
+  } else {
+    const suffixed = `${calcId}-calculator`
+    const alt = await fetchCalc(suffixed)
+    if (alt) return { calc: alt, canonicalId: suffixed }
+  }
+
+  return null
 }
 
 /** Pre-render the most popular calculators at build time. */
@@ -52,13 +70,14 @@ export async function generateMetadata({
   params: Promise<{ calcId: string }>
 }): Promise<Metadata> {
   const { calcId } = await params
-  const calc = await fetchCalc(calcId)
-  if (!calc) {
+  const resolved = await resolveCalc(calcId)
+  if (!resolved) {
     return { title: "Calculator not found | TryCalc" }
   }
+  const { calc, canonicalId } = resolved
   const title = seoTitleFor(calc).replace(/ \| TryCalc$/, "")
   const intro = seoIntroFor(calc)
-  const url = `${SITE_URL}/calculators/${calcId}`
+  const url = `${SITE_URL}/calculators/${canonicalId}`
   const catLabel = CATEGORY_META[calc.category]?.label || calc.category
   return {
     title,
@@ -96,8 +115,14 @@ export default async function CalculatorPage({
   params: Promise<{ calcId: string }>
 }) {
   const { calcId } = await params
-  const calc = await fetchCalc(calcId)
-  if (!calc) notFound()
+  const resolved = await resolveCalc(calcId)
+  if (!resolved) notFound()
+
+  if (resolved.canonicalId !== calcId) {
+    permanentRedirect(`/calculators/${resolved.canonicalId}`)
+  }
+
+  const { calc, canonicalId } = resolved
 
   const faqs = seoFaqFor(calc)
   const howToSteps = seoHowToFor(calc)
@@ -110,7 +135,7 @@ export default async function CalculatorPage({
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "TryCalc", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: catLabel, item: `${SITE_URL}/calculators?category=${calc.category}` },
-      { "@type": "ListItem", position: 3, name: calc.name, item: `${SITE_URL}/calculators/${calcId}` },
+      { "@type": "ListItem", position: 3, name: calc.name, item: `${SITE_URL}/calculators/${canonicalId}` },
     ],
   }
 
@@ -120,7 +145,7 @@ export default async function CalculatorPage({
     "@type": ["WebApplication", "SoftwareApplication"],
     name: `${calc.name} — Free Online Calculator`,
     alternateName: calc.name,
-    url: `${SITE_URL}/calculators/${calcId}`,
+    url: `${SITE_URL}/calculators/${canonicalId}`,
     description: seoIntroFor(calc),
     applicationCategory: "UtilityApplication",
     applicationSubCategory: catLabel,
