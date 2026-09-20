@@ -200,10 +200,16 @@ export default function QuickCalculator() {
   // Mode: "basic" (default Quick view) | "casio" (Full Casio fx-991ES PLUS Pink)
   const [mode, setMode] = useState<"basic" | "casio">("basic")
 
-  // Basic Mode State
-  const [basicDisplay, setBasicDisplay] = useState("0")
-  const [basicExpr, setBasicExpr] = useState("")
-  const [basicEvaluated, setBasicEvaluated] = useState(false)
+  // Basic Mode State (Unified to prevent React batching/closure issues)
+  const [basic, setBasic] = useState<{
+    display: string
+    expr: string
+    evaluated: boolean
+  }>({
+    display: "0",
+    expr: "",
+    evaluated: false,
+  })
 
   // Casio Mode State
   const [formula, setFormula] = useState("")
@@ -231,91 +237,138 @@ export default function QuickCalculator() {
 
   /* -------------------------- BASIC CALCULATOR LOGIC ------------------------- */
   const pressBasic = useCallback((k: string) => {
-    if (k === "=" || k === "Enter") {
-      let fullExpr = basicExpr ? (basicExpr + (basicDisplay !== "0" || !basicExpr.trim().endsWith(")") ? basicDisplay : "")) : basicDisplay
-      if (basicExpr.endsWith(") ")) fullExpr = basicExpr
-      
-      let clean = fullExpr.replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-").trim()
-      clean = clean.replace(/[+\-*/]$/, "").trim()
-      clean = autoCloseParens(clean)
+    setBasic((prev) => {
+      const { display, expr, evaluated } = prev
 
-      if (!clean) return
+      if (k === "=" || k === "Enter") {
+        let fullExpr = expr ? (expr + (display !== "0" || !expr.trim().endsWith(")") ? display : "")) : display
+        if (expr.endsWith(") ")) fullExpr = expr
 
-      try {
-        if (/[^0-9+\-*/().\s]/.test(clean)) throw new Error("Invalid")
-        const fn = new Function(`"use strict"; return (${clean})`)
-        const res = fn()
-        if (!Number.isFinite(res)) throw new Error("Error")
-        const rounded = parseFloat(res.toPrecision(12))
-        setBasicDisplay(String(rounded))
-        setBasicExpr(fullExpr.trim() + " = ")
-        setBasicEvaluated(true)
-      } catch {
-        setBasicDisplay("Error")
-        setBasicExpr("")
-        setBasicEvaluated(true)
+        let clean = fullExpr.replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-").trim()
+        clean = clean.replace(/[+\-*/]$/, "").trim()
+        clean = autoCloseParens(clean)
+
+        if (!clean) return prev
+
+        try {
+          if (/[^0-9+\-*/().\s]/.test(clean)) throw new Error("Invalid")
+          const fn = new Function(`"use strict"; return (${clean})`)
+          const res = fn()
+          if (!Number.isFinite(res)) throw new Error("Error")
+          const rounded = parseFloat(res.toPrecision(12))
+          return {
+            display: String(rounded),
+            expr: fullExpr.trim() + " = ",
+            evaluated: true,
+          }
+        } catch {
+          return {
+            display: "Error",
+            expr: "",
+            evaluated: true,
+          }
+        }
       }
-    } else if (["+", "-", "*", "/", "×", "÷", "−"].includes(k)) {
-      const op = (k === "*" || k === "×") ? "×" : (k === "/" || k === "÷") ? "÷" : (k === "-" || k === "−") ? "−" : "+"
-      if (basicEvaluated) {
-        setBasicExpr(basicDisplay + " " + op + " ")
-        setBasicDisplay("0")
-        setBasicEvaluated(false)
-      } else if (basicExpr && basicDisplay === "0" && !basicExpr.trim().endsWith(")")) {
-        // Replace previous operator
-        setBasicExpr(basicExpr.trim().replace(/[×÷−+]$/, op) + " ")
-      } else {
-        setBasicExpr((basicExpr ? basicExpr : "") + (basicExpr.endsWith(") ") ? "" : basicDisplay + " ") + op + " ")
-        setBasicDisplay("0")
+
+      if (["+", "-", "*", "/", "×", "÷", "−"].includes(k)) {
+        const op = (k === "*" || k === "×") ? "×" : (k === "/" || k === "÷") ? "÷" : (k === "-" || k === "−") ? "−" : "+"
+        if (evaluated) {
+          return {
+            display: "0",
+            expr: display + " " + op + " ",
+            evaluated: false,
+          }
+        }
+        if (expr && display === "0" && !expr.trim().endsWith(")")) {
+          return {
+            ...prev,
+            expr: expr.trim().replace(/[×÷−+]$/, op) + " ",
+          }
+        }
+        return {
+          display: "0",
+          expr: (expr ? expr : "") + (expr.endsWith(") ") ? "" : display + " ") + op + " ",
+          evaluated: false,
+        }
       }
-    } else if (k === "(") {
-      if (basicEvaluated) {
-        setBasicExpr("( ")
-        setBasicDisplay("0")
-        setBasicEvaluated(false)
-      } else {
-        setBasicExpr((basicExpr ? basicExpr : "") + "( ")
-        setBasicDisplay("0")
+
+      if (k === "(") {
+        if (evaluated) {
+          return {
+            display: "0",
+            expr: "( ",
+            evaluated: false,
+          }
+        }
+        return {
+          display: "0",
+          expr: (expr ? expr : "") + "( ",
+          evaluated: false,
+        }
       }
-    } else if (k === ")") {
-      setBasicExpr((basicExpr ? basicExpr : "") + (basicDisplay !== "0" ? basicDisplay + " " : "") + ") ")
-      setBasicDisplay("0")
-    } else if (k === ".") {
-      if (basicEvaluated) {
-        setBasicDisplay("0.")
-        setBasicExpr("")
-        setBasicEvaluated(false)
-      } else if (!basicDisplay.includes(".")) {
-        setBasicDisplay(basicDisplay + ".")
+
+      if (k === ")") {
+        return {
+          display: "0",
+          expr: (expr ? expr : "") + (display !== "0" ? display + " " : "") + ") ",
+          evaluated: false,
+        }
       }
-    } else if (k >= "0" && k <= "9") {
-      if (basicEvaluated) {
-        setBasicDisplay(k)
-        setBasicExpr("")
-        setBasicEvaluated(false)
-      } else {
-        setBasicDisplay(basicDisplay === "0" ? k : basicDisplay + k)
+
+      if (k === ".") {
+        if (evaluated) {
+          return {
+            display: "0.",
+            expr: "",
+            evaluated: false,
+          }
+        }
+        if (!display.includes(".")) {
+          return {
+            ...prev,
+            display: display + ".",
+          }
+        }
+        return prev
       }
-    }
-  }, [basicExpr, basicDisplay, basicEvaluated])
+
+      if (k >= "0" && k <= "9") {
+        if (evaluated) {
+          return {
+            display: k,
+            expr: "",
+            evaluated: false,
+          }
+        }
+        return {
+          ...prev,
+          display: display === "0" ? k : display + k,
+        }
+      }
+
+      return prev
+    })
+  }, [])
 
   const clearBasic = useCallback(() => {
-    setBasicDisplay("0")
-    setBasicExpr("")
-    setBasicEvaluated(false)
+    setBasic({
+      display: "0",
+      expr: "",
+      evaluated: false,
+    })
   }, [])
 
   const backspaceBasic = useCallback(() => {
-    if (basicEvaluated) {
-      clearBasic()
-      return
-    }
-    if (basicDisplay.length > 1) {
-      setBasicDisplay(basicDisplay.slice(0, -1))
-    } else {
-      setBasicDisplay("0")
-    }
-  }, [basicEvaluated, basicDisplay, clearBasic])
+    setBasic((prev) => {
+      if (prev.evaluated) {
+        return { display: "0", expr: "", evaluated: false }
+      }
+      if (prev.display.length > 1) {
+        return { ...prev, display: prev.display.slice(0, -1) }
+      }
+      return { ...prev, display: "0" }
+    })
+  }, [])
 
   /* -------------------------- CASIO CALCULATOR LOGIC ------------------------- */
   const insertToken = useCallback((token: string) => {
@@ -759,7 +812,7 @@ export default function QuickCalculator() {
               whiteSpace: "nowrap",
             }}
           >
-            {basicExpr || "\u00A0"}
+            {basic.expr || "\u00A0"}
           </Typography>
           <Typography
             variant="h4"
@@ -774,7 +827,7 @@ export default function QuickCalculator() {
               whiteSpace: "nowrap",
             }}
           >
-            {basicDisplay}
+            {basic.display}
           </Typography>
         </Box>
 
