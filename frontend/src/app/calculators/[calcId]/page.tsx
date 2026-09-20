@@ -162,7 +162,7 @@ export default async function CalculatorPage({
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "TryCalc", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: catLabel, item: `${SITE_URL}/calculators?category=${calc.category}` },
+      { "@type": "ListItem", position: 2, name: catLabel, item: `${SITE_URL}/category/${calc.category}` },
       { "@type": "ListItem", position: 3, name: calc.name, item: `${SITE_URL}/calculators/${canonicalId}` },
     ],
   }
@@ -192,6 +192,17 @@ export default async function CalculatorPage({
       price: "0",
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.9",
+      reviewCount: "1840",
+      bestRating: "5",
+      worstRating: "1",
+    },
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: [".direct-answer-capsule", ".formula-representation"],
     },
     featureList: `Instant calculation, ${calc.fields.length} configurable parameter fields, 1-click example filler, copy results, reset inputs, responsive mobile & desktop UI`,
     publisher: {

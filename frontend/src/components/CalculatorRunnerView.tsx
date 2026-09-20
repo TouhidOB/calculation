@@ -13,7 +13,14 @@ import JsExecutor from "@/components/JsExecutor"
 import GlobalNavbar from "@/components/GlobalNavbar"
 import GlobalFooter from "@/components/GlobalFooter"
 import ModernDatePicker from "@/components/ModernDatePicker"
-import { seoHowToFor, seoFaqFor, seoIntroFor, seoFormulaFor } from "@/lib/seo-helpers"
+import {
+  seoHowToFor,
+  seoFaqFor,
+  seoIntroFor,
+  seoFormulaFor,
+  seoDirectAnswerFor,
+  seoWorkedExampleFor,
+} from "@/lib/seo-helpers"
 import DOMPurify from "dompurify"
 import {
   InstrumentChassis,
@@ -622,6 +629,8 @@ export default function CalculatorRunnerView({
 
   const catMeta = CATEGORY_META[calc.category]
   const formulaGuide = useMemo(() => seoFormulaFor(calc), [calc])
+  const directAnswer = useMemo(() => seoDirectAnswerFor(calc), [calc])
+  const workedExample = useMemo(() => seoWorkedExampleFor(calc), [calc])
 
   return (
     <>
@@ -1349,6 +1358,36 @@ export default function CalculatorRunnerView({
                 </Grid>
               </Box>
 
+              {/* 2026 Direct Answer Capsule (GEO / AI Overviews / Featured Snippet) */}
+              <Paper
+                elevation={0}
+                className="direct-answer-capsule"
+                sx={{
+                  p: 3,
+                  mb: 3.5,
+                  borderRadius: 3,
+                  border: "1px solid #c7d2fe",
+                  bgcolor: "#f5f7ff",
+                }}
+              >
+                <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 1.5 }}>
+                  <Box sx={{ p: 0.8, borderRadius: 2, bgcolor: "#e0e7ff", color: "#4338ca", display: "flex" }}>
+                    <FlashOnIcon fontSize="small" />
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#1e1b4b", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                      Quick Answer &amp; Overview
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#6366f1" }}>
+                      Deterministic summary optimized for instant reference and search engine direct answers
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Typography variant="body1" sx={{ color: "#1e293b", lineHeight: 1.75, fontWeight: 500 }}>
+                  {directAnswer}
+                </Typography>
+              </Paper>
+
               <Grid container spacing={3.5}>
                 {/* Mathematical Formula & Methodology Section (Google E-E-A-T) */}
                 <Grid size={{ xs: 12 }}>
@@ -1387,6 +1426,7 @@ export default function CalculatorRunnerView({
                     </Stack>
 
                     <Box
+                      className="formula-representation"
                       sx={{
                         p: 2.5,
                         bgcolor: "#f8fafc",
@@ -1533,6 +1573,86 @@ export default function CalculatorRunnerView({
                     </Stack>
                   </Paper>
                 </Grid>
+
+                {/* Practical Worked Numerical Example (Information Gain Benchmark) */}
+                <Grid size={{ xs: 12 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 3.5,
+                      borderRadius: 3.5,
+                      border: "1px solid #e2e8f0",
+                      bgcolor: "#ffffff",
+                    }}
+                  >
+                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2 }}>
+                      <Box
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "10px",
+                          bgcolor: "#eff6ff",
+                          color: "#2563eb",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <CalculateIcon fontSize="small" />
+                      </Box>
+                      <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                          {workedExample.title}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#64748b" }}>
+                          Practical step-by-step numerical demonstration with real-world parameters
+                        </Typography>
+                      </Box>
+                    </Stack>
+
+                    <Typography variant="body2" sx={{ color: "#334155", mb: 2.5, fontWeight: 500, lineHeight: 1.6 }}>
+                      {workedExample.scenario}
+                    </Typography>
+
+                    <Grid container spacing={2} sx={{ mb: 2.5 }}>
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: 2, border: "1px solid #e2e8f0" }}>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748b", textTransform: "uppercase", display: "block", mb: 1 }}>
+                            Baseline Inputs
+                          </Typography>
+                          <Stack spacing={0.8}>
+                            {workedExample.inputs.map((inp, i) => (
+                              <Box key={i} sx={{ display: "flex", justifyContent: "space-between" }}>
+                                <Typography variant="body2" sx={{ color: "#475569" }}>{inp.label}:</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a" }}>{inp.value}</Typography>
+                              </Box>
+                            ))}
+                          </Stack>
+                        </Box>
+                      </Grid>
+
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Box sx={{ p: 2, bgcolor: "#f0fdf4", borderRadius: 2, border: "1px solid #bbf7d0" }}>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: "#166534", textTransform: "uppercase", display: "block", mb: 1 }}>
+                            Computed Benchmarks
+                          </Typography>
+                          <Stack spacing={0.8}>
+                            {workedExample.results.map((res, i) => (
+                              <Box key={i} sx={{ display: "flex", justifyContent: "space-between" }}>
+                                <Typography variant="body2" sx={{ color: "#15803d" }}>{res.label}:</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 800, color: "#14532d" }}>{res.value}</Typography>
+                              </Box>
+                            ))}
+                          </Stack>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
+                      <strong>Takeaway &amp; Analysis:</strong> {workedExample.explanation}
+                    </Typography>
+                  </Paper>
+                </Grid>
               </Grid>
             </Box>
           )}
@@ -1551,7 +1671,7 @@ export default function CalculatorRunnerView({
                 </Box>
                 <Button
                   component={Link}
-                  href={`/?cat=${calc.category}`}
+                  href={`/category/${calc.category}`}
                   endIcon={<ArrowForwardIcon />}
                   sx={{
                     textTransform: "none",
@@ -1559,7 +1679,7 @@ export default function CalculatorRunnerView({
                     color: "#4f46e5",
                   }}
                 >
-                  View All
+                  View All in {catMeta?.label || "Category"}
                 </Button>
               </Box>
 
