@@ -67,13 +67,19 @@ function autoCloseParens(str: string): string {
   return str
 }
 
-function sanitizeAndEvaluate(rawExpr: string, angleMode: "deg" | "rad"): { result: number; display: string } {
+function sanitizeAndEvaluate(
+  rawExpr: string,
+  angleMode: "deg" | "rad",
+  vars: { ans: number; mem: number } = { ans: 0, mem: 0 }
+): { result: number; display: string } {
   let expr = rawExpr
     .replace(/×/g, "*")
     .replace(/÷/g, "/")
     .replace(/−/g, "-")
     .replace(/π/g, `(${Math.PI})`)
     .replace(/\be\b/g, `(${Math.E})`)
+    .replace(/\bAns\b/g, `(${vars.ans})`)
+    .replace(/°/g, "")
 
   expr = autoCloseParens(expr)
 
@@ -99,17 +105,26 @@ function sanitizeAndEvaluate(rawExpr: string, angleMode: "deg" | "rad"): { resul
     deg2rad: (d: number) => (d * Math.PI) / 180,
     rad2deg: (r: number) => (r * 180) / Math.PI,
     fact: factorial,
-    sin: (x: number) => (angleMode === "deg" ? Math.sin((x * Math.PI) / 180) : Math.sin(x)),
-    cos: (x: number) => (angleMode === "deg" ? Math.cos((x * Math.PI) / 180) : Math.cos(x)),
+    sin: (x: number) => {
+      if (angleMode === "deg" && Math.abs(x % 180) === 0) return 0
+      return angleMode === "deg" ? Math.sin((x * Math.PI) / 180) : Math.sin(x)
+    },
+    cos: (x: number) => {
+      if (angleMode === "deg" && Math.abs(x % 180) === 90) return 0
+      return angleMode === "deg" ? Math.cos((x * Math.PI) / 180) : Math.cos(x)
+    },
     tan: (x: number) => {
-      if (angleMode === "deg" && Math.abs(x % 180) === 90) throw new Error("Undefined")
+      if (angleMode === "deg" && Math.abs(x % 180) === 90) throw new Error("Math ERROR")
+      if (angleMode === "deg" && Math.abs(x % 180) === 0) return 0
       return angleMode === "deg" ? Math.tan((x * Math.PI) / 180) : Math.tan(x)
     },
     asin: (x: number) => {
+      if (x < -1 || x > 1) throw new Error("Math ERROR")
       const res = Math.asin(x)
       return angleMode === "deg" ? (res * 180) / Math.PI : res
     },
     acos: (x: number) => {
+      if (x < -1 || x > 1) throw new Error("Math ERROR")
       const res = Math.acos(x)
       return angleMode === "deg" ? (res * 180) / Math.PI : res
     },
@@ -120,28 +135,48 @@ function sanitizeAndEvaluate(rawExpr: string, angleMode: "deg" | "rad"): { resul
     sinh: Math.sinh,
     cosh: Math.cosh,
     tanh: Math.tanh,
-    log: (x: number) => Math.log10(x),
-    ln: (x: number) => Math.log(x),
-    sqrt: (x: number) => Math.sqrt(x),
+    log: (x: number) => {
+      if (x <= 0) throw new Error("Math ERROR")
+      return Math.log10(x)
+    },
+    ln: (x: number) => {
+      if (x <= 0) throw new Error("Math ERROR")
+      return Math.log(x)
+    },
+    sqrt: (x: number) => {
+      if (x < 0) throw new Error("Math ERROR")
+      return Math.sqrt(x)
+    },
     cbrt: (x: number) => Math.cbrt(x),
     abs: (x: number) => Math.abs(x),
     exp: (x: number) => Math.exp(x),
+    A: vars.ans,
+    B: vars.ans,
+    C: vars.ans,
+    D: vars.ans,
+    E: vars.ans,
+    F: vars.ans,
+    X: vars.ans,
+    Y: vars.ans,
+    M: vars.mem,
   }
 
   if (/[^0-9+\-*/().,a-zA-Z_\s]/.test(expr)) {
     throw new Error("Invalid characters")
   }
 
-  const fn = new Function(...Object.keys(context), `return (${expr})`)
+  const fn = new Function(...Object.keys(context), `"use strict"; return (${expr})`)
   const rawRes = fn(...Object.values(context))
 
   if (!Number.isFinite(rawRes)) {
     if (rawRes === Infinity || rawRes === -Infinity) throw new Error("Infinity")
-    throw new Error("Math Error")
+    throw new Error("Math ERROR")
   }
 
   // Floating point rounding
-  const rounded = parseFloat(rawRes.toPrecision(12))
+  let rounded = parseFloat(rawRes.toPrecision(12))
+  if (Math.abs(rounded) < 1e-12) rounded = 0
+
   const cleanRes = Number.isInteger(rounded) ? rounded : +rounded.toFixed(10)
 
   return {
@@ -168,6 +203,7 @@ export default function QuickCalculator() {
   // Basic Mode State
   const [basicDisplay, setBasicDisplay] = useState("0")
   const [basicExpr, setBasicExpr] = useState("")
+  const [basicEvaluated, setBasicEvaluated] = useState(false)
 
   // Casio Mode State
   const [formula, setFormula] = useState("")
@@ -194,41 +230,92 @@ export default function QuickCalculator() {
   }, [])
 
   /* -------------------------- BASIC CALCULATOR LOGIC ------------------------- */
-  const pressBasic = (k: string) => {
-    if (k === "=") {
+  const pressBasic = useCallback((k: string) => {
+    if (k === "=" || k === "Enter") {
+      let fullExpr = basicExpr ? (basicExpr + (basicDisplay !== "0" || !basicExpr.trim().endsWith(")") ? basicDisplay : "")) : basicDisplay
+      if (basicExpr.endsWith(") ")) fullExpr = basicExpr
+      
+      let clean = fullExpr.replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-").trim()
+      clean = clean.replace(/[+\-*/]$/, "").trim()
+      clean = autoCloseParens(clean)
+
+      if (!clean) return
+
       try {
-        const clean = (basicExpr + basicDisplay).replace(/[^0-9+\-*/.]/g, "")
-        if (!clean) return
-        const fn = new Function(`return (${clean})`)
+        if (/[^0-9+\-*/().\s]/.test(clean)) throw new Error("Invalid")
+        const fn = new Function(`"use strict"; return (${clean})`)
         const res = fn()
-        const out = Number.isFinite(res) ? String(+res.toFixed(8)) : "Error"
-        setBasicDisplay(out)
-        setBasicExpr("")
+        if (!Number.isFinite(res)) throw new Error("Error")
+        const rounded = parseFloat(res.toPrecision(12))
+        setBasicDisplay(String(rounded))
+        setBasicExpr(fullExpr.trim() + " = ")
+        setBasicEvaluated(true)
       } catch {
         setBasicDisplay("Error")
+        setBasicExpr("")
+        setBasicEvaluated(true)
       }
-    } else if (["+", "-", "*", "/"].includes(k)) {
-      setBasicExpr(basicDisplay + " " + (k === "*" ? "×" : k === "/" ? "÷" : k) + " ")
+    } else if (["+", "-", "*", "/", "×", "÷", "−"].includes(k)) {
+      const op = (k === "*" || k === "×") ? "×" : (k === "/" || k === "÷") ? "÷" : (k === "-" || k === "−") ? "−" : "+"
+      if (basicEvaluated) {
+        setBasicExpr(basicDisplay + " " + op + " ")
+        setBasicDisplay("0")
+        setBasicEvaluated(false)
+      } else if (basicExpr && basicDisplay === "0" && !basicExpr.trim().endsWith(")")) {
+        // Replace previous operator
+        setBasicExpr(basicExpr.trim().replace(/[×÷−+]$/, op) + " ")
+      } else {
+        setBasicExpr((basicExpr ? basicExpr : "") + (basicExpr.endsWith(") ") ? "" : basicDisplay + " ") + op + " ")
+        setBasicDisplay("0")
+      }
+    } else if (k === "(") {
+      if (basicEvaluated) {
+        setBasicExpr("( ")
+        setBasicDisplay("0")
+        setBasicEvaluated(false)
+      } else {
+        setBasicExpr((basicExpr ? basicExpr : "") + "( ")
+        setBasicDisplay("0")
+      }
+    } else if (k === ")") {
+      setBasicExpr((basicExpr ? basicExpr : "") + (basicDisplay !== "0" ? basicDisplay + " " : "") + ") ")
       setBasicDisplay("0")
     } else if (k === ".") {
-      if (!basicDisplay.includes(".")) setBasicDisplay(basicDisplay + ".")
-    } else {
-      setBasicDisplay(basicDisplay === "0" ? k : basicDisplay + k)
+      if (basicEvaluated) {
+        setBasicDisplay("0.")
+        setBasicExpr("")
+        setBasicEvaluated(false)
+      } else if (!basicDisplay.includes(".")) {
+        setBasicDisplay(basicDisplay + ".")
+      }
+    } else if (k >= "0" && k <= "9") {
+      if (basicEvaluated) {
+        setBasicDisplay(k)
+        setBasicExpr("")
+        setBasicEvaluated(false)
+      } else {
+        setBasicDisplay(basicDisplay === "0" ? k : basicDisplay + k)
+      }
     }
-  }
+  }, [basicExpr, basicDisplay, basicEvaluated])
 
-  const clearBasic = () => {
+  const clearBasic = useCallback(() => {
     setBasicDisplay("0")
     setBasicExpr("")
-  }
+    setBasicEvaluated(false)
+  }, [])
 
-  const backspaceBasic = () => {
+  const backspaceBasic = useCallback(() => {
+    if (basicEvaluated) {
+      clearBasic()
+      return
+    }
     if (basicDisplay.length > 1) {
       setBasicDisplay(basicDisplay.slice(0, -1))
     } else {
       setBasicDisplay("0")
     }
-  }
+  }, [basicEvaluated, basicDisplay, clearBasic])
 
   /* -------------------------- CASIO CALCULATOR LOGIC ------------------------- */
   const insertToken = useCallback((token: string) => {
@@ -251,9 +338,7 @@ export default function QuickCalculator() {
   const evaluateCasio = useCallback(() => {
     if (!formula.trim()) return
     try {
-      // Replace Ans with actual ansValue
-      const exprWithAns = formula.replace(/\bAns\b/g, `(${ansValue})`)
-      const evalRes = sanitizeAndEvaluate(exprWithAns, angleMode)
+      const evalRes = sanitizeAndEvaluate(formula, angleMode, { ans: ansValue, mem: memoryValue })
       setResultDisplay(evalRes.display)
       setLastNumericResult(evalRes.result)
       setAnsValue(evalRes.result)
@@ -266,7 +351,7 @@ export default function QuickCalculator() {
       setResultDisplay(errMsg.includes("Undefined") ? "Math ERROR" : "Syntax ERROR")
       setHasEvaluated(true)
     }
-  }, [formula, ansValue, angleMode])
+  }, [formula, ansValue, memoryValue, angleMode])
 
   const allClearCasio = useCallback(() => {
     setFormula("")
@@ -285,7 +370,11 @@ export default function QuickCalculator() {
     setFormula((prev) => {
       if (!prev) return ""
       // Delete multi-char functions cleanly
-      const patterns = ["sin(", "cos(", "tan(", "asin(", "acos(", "atan(", "log(", "ln(", "sqrt(", "cbrt(", "abs(", "fact(", "Math.pow(", "Ans"]
+      const patterns = [
+        "sin(", "cos(", "tan(", "asin(", "acos(", "atan(",
+        "sinh(", "cosh(", "tanh(", "log(", "ln(", "sqrt(", "cbrt(",
+        "abs(", "fact(", "Math.pow(", "10^(", "exp(", "^(-1)", "*10^", "Ans"
+      ]
       for (const p of patterns) {
         if (prev.endsWith(p)) {
           return prev.slice(0, -p.length)
@@ -337,38 +426,67 @@ export default function QuickCalculator() {
 
   /* ---------------------------- KEYBOARD LISTENER --------------------------- */
   useEffect(() => {
-    if (mode !== "casio") return
     const handleKeyDown = (e: KeyboardEvent) => {
       if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) return
-      if (e.key >= "0" && e.key <= "9") {
-        insertToken(e.key)
-      } else if (e.key === ".") {
-        insertToken(".")
-      } else if (e.key === "+") {
-        insertToken("+")
-      } else if (e.key === "-") {
-        insertToken("−")
-      } else if (e.key === "*") {
-        insertToken("×")
-      } else if (e.key === "/") {
-        insertToken("÷")
-      } else if (e.key === "^") {
-        insertToken("^")
-      } else if (e.key === "(" || e.key === ")") {
-        insertToken(e.key)
-      } else if (e.key === "Enter" || e.key === "=") {
-        e.preventDefault()
-        evaluateCasio()
-      } else if (e.key === "Backspace") {
-        e.preventDefault()
-        deleteCasio()
-      } else if (e.key === "Escape") {
-        allClearCasio()
+
+      if (mode === "basic") {
+        if (e.key >= "0" && e.key <= "9") {
+          pressBasic(e.key)
+        } else if (e.key === ".") {
+          pressBasic(".")
+        } else if (e.key === "+") {
+          pressBasic("+")
+        } else if (e.key === "-") {
+          pressBasic("-")
+        } else if (e.key === "*") {
+          pressBasic("*")
+        } else if (e.key === "/") {
+          e.preventDefault()
+          pressBasic("/")
+        } else if (e.key === "(" || e.key === ")") {
+          pressBasic(e.key)
+        } else if (e.key === "Enter" || e.key === "=") {
+          e.preventDefault()
+          pressBasic("=")
+        } else if (e.key === "Backspace") {
+          e.preventDefault()
+          backspaceBasic()
+        } else if (e.key === "Escape" || e.key === "c" || e.key === "C") {
+          clearBasic()
+        }
+      } else {
+        // mode === "casio"
+        if (e.key >= "0" && e.key <= "9") {
+          insertToken(e.key)
+        } else if (e.key === ".") {
+          insertToken(".")
+        } else if (e.key === "+") {
+          insertToken("+")
+        } else if (e.key === "-") {
+          insertToken("−")
+        } else if (e.key === "*") {
+          insertToken("×")
+        } else if (e.key === "/") {
+          e.preventDefault()
+          insertToken("÷")
+        } else if (e.key === "^") {
+          insertToken("^")
+        } else if (e.key === "(" || e.key === ")") {
+          insertToken(e.key)
+        } else if (e.key === "Enter" || e.key === "=") {
+          e.preventDefault()
+          evaluateCasio()
+        } else if (e.key === "Backspace") {
+          e.preventDefault()
+          deleteCasio()
+        } else if (e.key === "Escape") {
+          allClearCasio()
+        }
       }
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [mode, insertToken, evaluateCasio, deleteCasio, allClearCasio])
+  }, [mode, pressBasic, clearBasic, backspaceBasic, insertToken, evaluateCasio, deleteCasio, allClearCasio])
 
   /* ========================================================================== */
   /*                               CASIO BUTTON RENDERER                        */
