@@ -82,6 +82,9 @@ export const metadata: Metadata = {
   },
   verification: {
     google: "googlec41ad06c9e4b72b6",
+    other: {
+      "msvalidate.01": "522D2E4EFA8276C956562B97F0CEBE0A",
+    },
   },
   category: "tools",
   classification: "Free Online Calculators",
