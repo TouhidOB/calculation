@@ -332,6 +332,55 @@ export default function QuickCalculator() {
         return prev
       }
 
+      if (k === "00") {
+        if (evaluated) {
+          return {
+            display: "0",
+            expr: "",
+            evaluated: false,
+          }
+        }
+        if (display === "0" || display === "") return prev
+        return {
+          ...prev,
+          display: display + "00",
+        }
+      }
+
+      if (k === "±") {
+        if (display === "0" || display === "Error") return prev
+        const toggled = display.startsWith("-") ? display.slice(1) : "-" + display
+        return { ...prev, display: toggled }
+      }
+
+      if (k === "%") {
+        if (display === "0" || display === "Error") return prev
+        const num = parseFloat(display)
+        if (isNaN(num)) return prev
+        const val = num / 100
+        return {
+          ...prev,
+          display: String(parseFloat(val.toPrecision(10))),
+        }
+      }
+
+      if (k === "√") {
+        const num = parseFloat(display)
+        if (isNaN(num) || num < 0) {
+          return {
+            display: "Error",
+            expr: "",
+            evaluated: true,
+          }
+        }
+        const val = Math.sqrt(num)
+        return {
+          display: String(parseFloat(val.toPrecision(10))),
+          expr: `√(${display}) = `,
+          evaluated: true,
+        }
+      }
+
       if (k >= "0" && k <= "9") {
         if (evaluated) {
           return {
@@ -542,6 +591,136 @@ export default function QuickCalculator() {
   }, [mode, pressBasic, clearBasic, backspaceBasic, insertToken, evaluateCasio, deleteCasio, allClearCasio])
 
   /* ========================================================================== */
+  /*                      DESKTOP HARDWARE KEY RENDERER                         */
+  /* ========================================================================== */
+
+  interface DesktopKeyProps {
+    label: string
+    displayLabel?: React.ReactNode
+    subLabel?: string
+    onClick: () => void
+    variant?: "num" | "op" | "ac" | "clear" | "fn" | "equals"
+    fontSize?: any
+    span?: number
+  }
+
+  const renderDesktopKey = ({
+    label,
+    displayLabel,
+    subLabel,
+    onClick,
+    variant = "num",
+    fontSize,
+    span = 1,
+  }: DesktopKeyProps) => {
+    let bg = "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)"
+    let color = "#0f172a"
+    let border = "1px solid #cbd5e1"
+    let boxShadow = "0 3.5px 0 #94a3b8, 0 4px 6px rgba(0,0,0,0.12)"
+    let hoverBg = "#f1f5f9"
+    let activeBorder = "1px solid #94a3b8"
+
+    if (variant === "ac") {
+      // Warm energetic orange-red All Clear key
+      bg = "linear-gradient(180deg, #ea580c 0%, #c2410c 100%)"
+      color = "#ffffff"
+      border = "1px solid #9a3412"
+      boxShadow = "0 3.5px 0 #7c2d12, 0 4px 8px rgba(194, 65, 12, 0.35)"
+      hoverBg = "linear-gradient(180deg, #f97316 0%, #ea580c 100%)"
+      activeBorder = "1px solid #7c2d12"
+    } else if (variant === "clear") {
+      // Crimson/Coral Clear / Backspace key
+      bg = "linear-gradient(180deg, #ef4444 0%, #dc2626 100%)"
+      color = "#ffffff"
+      border = "1px solid #b91c1c"
+      boxShadow = "0 3.5px 0 #991b1b, 0 4px 8px rgba(220, 38, 38, 0.3)"
+      hoverBg = "linear-gradient(180deg, #f87171 0%, #ef4444 100%)"
+      activeBorder = "1px solid #991b1b"
+    } else if (variant === "op") {
+      // Sleek executive dark slate for arithmetic operators
+      bg = "linear-gradient(180deg, #334155 0%, #1e293b 100%)"
+      color = "#ffffff"
+      border = "1px solid #0f172a"
+      boxShadow = "0 3.5px 0 #0f172a, 0 4px 7px rgba(15, 23, 42, 0.3)"
+      hoverBg = "linear-gradient(180deg, #475569 0%, #334155 100%)"
+      activeBorder = "1px solid #0f172a"
+    } else if (variant === "fn") {
+      // Brushed cool steel function keys
+      bg = "linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%)"
+      color = "#334155"
+      border = "1px solid #cbd5e1"
+      boxShadow = "0 3px 0 #94a3b8, 0 3px 5px rgba(0,0,0,0.08)"
+      hoverBg = "linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%)"
+      activeBorder = "1px solid #94a3b8"
+    } else if (variant === "equals") {
+      // Electric royal blue equals key
+      bg = "linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%)"
+      color = "#ffffff"
+      border = "1px solid #1e40af"
+      boxShadow = "0 3.5px 0 #1e3a8a, 0 4px 8px rgba(37, 99, 235, 0.35)"
+      hoverBg = "linear-gradient(180deg, #3b82f6 0%, #2563eb 100%)"
+      activeBorder = "1px solid #1e3a8a"
+    }
+
+    return (
+      <Button
+        key={label}
+        onClick={onClick}
+        disableRipple
+        sx={{
+          gridColumn: span > 1 ? `span ${span}` : "auto",
+          width: "100%",
+          height: { xs: 44, sm: 48 },
+          minWidth: 0,
+          borderRadius: "11px",
+          background: bg,
+          color: color,
+          border: border,
+          borderTop: "1px solid rgba(255, 255, 255, 0.6)",
+          boxShadow: boxShadow,
+          fontWeight: 800,
+          fontSize: fontSize || { xs: "1.05rem", sm: "1.18rem" },
+          fontFamily: "'Outfit', 'Roboto', 'Segoe UI', sans-serif",
+          textTransform: "none",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 0,
+          lineHeight: 1,
+          transition: "transform 0.06s ease, box-shadow 0.06s ease",
+          "&:hover": {
+            background: hoverBg,
+            transform: "translateY(1px)",
+            boxShadow: boxShadow.replace(/3\.5px|3px/, "2px"),
+          },
+          "&:active": {
+            transform: "translateY(3px)",
+            boxShadow: "0 0.5px 0 rgba(0,0,0,0.3), inset 0 1px 3px rgba(0,0,0,0.2)",
+            border: activeBorder,
+          },
+        }}
+      >
+        {displayLabel || label}
+        {subLabel && (
+          <Typography
+            component="span"
+            sx={{
+              fontSize: "0.58rem",
+              fontWeight: 700,
+              opacity: 0.75,
+              mt: "2px",
+              lineHeight: 1,
+            }}
+          >
+            {subLabel}
+          </Typography>
+        )}
+      </Button>
+    )
+  }
+
+  /* ========================================================================== */
   /*                               CASIO BUTTON RENDERER                        */
   /* ========================================================================== */
 
@@ -716,219 +895,440 @@ export default function QuickCalculator() {
 
   /* ----------------------- 1. BASIC QUICK VIEW (DEFAULT) -------------------- */
   if (mode === "basic") {
+    // Determine active operator for LCD display annunciator
+    const activeOp = basic.expr.trim().match(/[+−×÷]$/)?.[0] || ""
+
     return (
       <Paper
         elevation={0}
         component="section"
-        aria-label="Quick Calculator"
+        aria-label="TryCalc Electronic Desktop Calculator"
         sx={{
-          p: { xs: 2, sm: 2.5 },
-          borderRadius: 4,
-          border: "1px solid #e2e8f0",
-          background: "#ffffff",
-          boxShadow: "0 10px 30px -10px rgba(79, 70, 229, 0.12)",
+          p: { xs: 2, sm: 2.8 },
+          borderRadius: "32px",
+          // Soft satin silver/titanium executive chassis
+          background: "linear-gradient(180deg, #f8fafc 0%, #edf2f7 25%, #e2e8f0 70%, #cbd5e1 100%)",
+          border: "2px solid #94a3b8",
+          boxShadow:
+            "0 24px 50px -12px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.8) inset, 0 2px 4px rgba(255, 255, 255, 0.9) inset",
+          position: "relative",
         }}
       >
-        {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {/* Top Header: Brand, Solar Cell & Badges */}
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            {/* Brand Logo */}
+            <Box>
+              <Typography
+                sx={{
+                  fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
+                  fontWeight: 900,
+                  letterSpacing: "1.8px",
+                  fontSize: { xs: "1.05rem", sm: "1.2rem" },
+                  color: "#0f172a",
+                  textShadow: "0 1px 0 rgba(255, 255, 255, 0.8)",
+                  lineHeight: 1,
+                }}
+              >
+                TRYCALC
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "0.58rem",
+                  fontWeight: 800,
+                  color: "#64748b",
+                  letterSpacing: "0.5px",
+                  lineHeight: 1.2,
+                  mt: "2px",
+                }}
+              >
+                DESKTOP CALCULATOR
+              </Typography>
+            </Box>
+
+            {/* Authentic Photovoltaic Solar Cell Panel */}
             <Box
               sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 2,
-                bgcolor: "#eef2ff",
-                color: "#4f46e5",
+                width: { xs: 80, sm: 94 },
+                height: { xs: 24, sm: 28 },
+                borderRadius: "4px",
+                background: "linear-gradient(180deg, #381a04 0%, #170d2b 100%)",
+                border: "1.5px solid #78350f",
+                boxShadow: "inset 0 1px 3px rgba(0,0,0,0.6), 0 1px 2px rgba(255,255,255,0.6)",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
+                justifyContent: "space-around",
+                px: 0.5,
+                position: "relative",
               }}
             >
-              <CalculateIcon sx={{ fontSize: 20 }} />
+              {[0, 1, 2].map((i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    width: "1px",
+                    height: "80%",
+                    bgcolor: "rgba(245, 158, 11, 0.25)",
+                  }}
+                />
+              ))}
             </Box>
-            <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
-                Quick Calculator
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem" }}>
-                Instant · Basic Math
+
+            {/* Model Badge & Switch to Scientific */}
+            <Box sx={{ textAlign: "right" }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setMode("casio")}
+                startIcon={<ScienceIcon sx={{ color: "#ec4899 !important", fontSize: "16px" }} />}
+                sx={{
+                  fontWeight: 800,
+                  fontSize: "0.75rem",
+                  borderRadius: "14px",
+                  textTransform: "none",
+                  color: "#be185d",
+                  borderColor: "#fbcfe8",
+                  bgcolor: "#ffffff",
+                  py: 0.4,
+                  px: 1.4,
+                  boxShadow: "0 2px 6px rgba(244, 114, 182, 0.2)",
+                  "&:hover": {
+                    bgcolor: "#fdf2f8",
+                    borderColor: "#f472b6",
+                    transform: "translateY(-1px)",
+                  },
+                }}
+              >
+                Scientific Pro
+              </Button>
+              <Typography
+                sx={{
+                  display: "block",
+                  fontSize: "0.58rem",
+                  fontWeight: 800,
+                  color: "#64748b",
+                  letterSpacing: "0.5px",
+                  mt: "3px",
+                }}
+              >
+                DUAL POWER · 12-DIGIT
               </Typography>
             </Box>
           </Box>
-
-          {/* Mode Convert Button (Switch to Casio fx-991ES PLUS Pink) */}
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => setMode("casio")}
-            startIcon={<ScienceIcon sx={{ color: "#ec4899 !important" }} />}
-            sx={{
-              fontWeight: 800,
-              fontSize: "0.75rem",
-              borderRadius: 2.5,
-              textTransform: "none",
-              color: "#be185d",
-              borderColor: "#fbcfe8",
-              bgcolor: "#fdf2f8",
-              py: 0.5,
-              px: 1.5,
-              boxShadow: "0 2px 8px rgba(244, 114, 182, 0.15)",
-              "&:hover": {
-                bgcolor: "#fce7f3",
-                borderColor: "#f472b6",
-                transform: "translateY(-1px)",
-              },
-            }}
-          >
-            Scientific Pro
-          </Button>
         </Box>
 
-        {/* Display Screen */}
+        {/* ====================================================================== */}
+        {/*           AUTHENTIC DESKTOP ELECTRONIC CALCULATOR LCD DISPLAY          */}
+        {/* ====================================================================== */}
         <Box
           sx={{
-            p: 2,
-            mb: 2,
-            borderRadius: 3,
-            bgcolor: "#0f172a",
-            color: "#ffffff",
-            textAlign: "right",
-            minHeight: 82,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            boxShadow: "inset 0 2px 4px rgba(0,0,0,0.4)",
+            mb: 2.2,
+            p: { xs: 1.5, sm: 2 },
+            borderRadius: "18px",
+            background: "linear-gradient(180deg, #1e293b 0%, #334155 100%)",
+            border: "1.5px solid #475569",
+            boxShadow: "inset 0 4px 10px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(255, 255, 255, 0.8)",
           }}
         >
-          <Typography
-            variant="caption"
+          {/* Authentic STN Liquid Crystal Display Panel */}
+          <Box
             sx={{
-              color: "#94a3b8",
-              fontSize: "0.78rem",
-              fontFamily: "monospace",
-              minHeight: 18,
+              p: { xs: 1.2, sm: 1.6 },
+              borderRadius: "10px",
+              background: "linear-gradient(180deg, #c8d7b2 0%, #b8c8a0 100%)",
+              border: "1.5px solid #8e9e76",
+              boxShadow: "inset 0 2px 6px rgba(0, 0, 0, 0.25)",
+              position: "relative",
               overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
             }}
           >
-            {basic.expr || "\u00A0"}
-          </Typography>
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 700,
-              fontFamily: "monospace",
-              letterSpacing: 1,
-              color: "#f8fafc",
-              fontSize: { xs: "1.75rem", sm: "2.1rem" },
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {basic.display}
-          </Typography>
-        </Box>
+            {/* Glass Glare Reflection Highlight */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "45%",
+                background:
+                  "linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.05) 60%, transparent 100%)",
+                pointerEvents: "none",
+              }}
+            />
 
-        {/* Action Keys (C, Backspace, Parens) */}
-        <Grid container spacing={1} sx={{ mb: 1 }}>
-          <Grid size={{ xs: 3 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="error"
-              onClick={clearBasic}
-              sx={{ fontWeight: 800, borderRadius: 2, py: 1, borderColor: "#fca5a5" }}
+            {/* LCD Status Indicators Bar */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                pb: 0.5,
+                borderBottom: "1px dashed rgba(20, 32, 20, 0.15)",
+              }}
             >
-              C
-            </Button>
-          </Grid>
-          <Grid size={{ xs: 3 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={backspaceBasic}
-              sx={{ fontWeight: 700, borderRadius: 2, py: 1, color: "#475569", borderColor: "#cbd5e1" }}
-            >
-              <BackspaceIcon sx={{ fontSize: 18 }} />
-            </Button>
-          </Grid>
-          <Grid size={{ xs: 3 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => pressBasic("(")}
-              sx={{ fontWeight: 700, borderRadius: 2, py: 1, color: "#475569", borderColor: "#cbd5e1" }}
-            >
-              (
-            </Button>
-          </Grid>
-          <Grid size={{ xs: 3 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => pressBasic(")")}
-              sx={{ fontWeight: 700, borderRadius: 2, py: 1, color: "#475569", borderColor: "#cbd5e1" }}
-            >
-              )
-            </Button>
-          </Grid>
-        </Grid>
+              <Box sx={{ display: "flex", gap: 0.8, alignItems: "center" }}>
+                {/* [M] Memory Flag */}
+                <Typography
+                  sx={{
+                    fontSize: "0.65rem",
+                    fontWeight: 900,
+                    fontFamily: "monospace",
+                    color: "rgba(20, 32, 20, 0.25)",
+                    px: "3px",
+                  }}
+                >
+                  [M]
+                </Typography>
 
-        {/* Keypad Grid 4x4 */}
-        <Grid container spacing={1}>
-          {BASIC_KEYS.map((k) => (
-            <Grid size={{ xs: 3 }} key={k}>
-              <Button
-                fullWidth
-                variant={k === "=" ? "contained" : "outlined"}
-                color={k === "=" ? "primary" : "inherit"}
-                onClick={() => pressBasic(k)}
+                {/* [−] Negative Flag */}
+                <Typography
+                  sx={{
+                    fontSize: "0.68rem",
+                    fontWeight: 900,
+                    fontFamily: "monospace",
+                    color: basic.display.startsWith("-") ? "#142014" : "rgba(20, 32, 20, 0.2)",
+                    px: "3px",
+                  }}
+                >
+                  [−]
+                </Typography>
+
+                {/* Active Operator Flag */}
+                {["+", "−", "×", "÷"].map((op) => {
+                  const isActive = activeOp === op
+                  return (
+                    <Typography
+                      key={op}
+                      sx={{
+                        fontSize: "0.68rem",
+                        fontWeight: 900,
+                        fontFamily: "monospace",
+                        color: isActive ? "#142014" : "rgba(20, 32, 20, 0.18)",
+                        bgcolor: isActive ? "rgba(20, 32, 20, 0.18)" : "transparent",
+                        px: "4px",
+                        borderRadius: "2px",
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {op}
+                    </Typography>
+                  )
+                })}
+              </Box>
+
+              <Typography
                 sx={{
+                  fontSize: "0.62rem",
                   fontWeight: 800,
-                  fontSize: "1.15rem",
-                  py: 1.3,
-                  borderRadius: 2,
-                  ...(k === "="
-                    ? {
-                        bgcolor: "#4f46e5",
-                        color: "#ffffff",
-                        "&:hover": { bgcolor: "#4338ca" },
-                      }
-                    : ["+", "-", "*", "/"].includes(k)
-                    ? {
-                        bgcolor: "#f0fdf4",
-                        color: "#15803d",
-                        borderColor: "#bbf7d0",
-                        "&:hover": { bgcolor: "#dcfce7" },
-                      }
-                    : {
-                        bgcolor: "#f8fafc",
-                        color: "#0f172a",
-                        borderColor: "#e2e8f0",
-                        "&:hover": { bgcolor: "#f1f5f9" },
-                      }),
+                  fontFamily: "monospace",
+                  color: "rgba(20, 32, 20, 0.35)",
+                  letterSpacing: "0.5px",
                 }}
               >
-                {k === "*" ? "×" : k === "/" ? "÷" : k === "-" ? "−" : k}
-              </Button>
-            </Grid>
-          ))}
-        </Grid>
+                12-DIGIT DUAL POWER
+              </Typography>
+            </Box>
+
+            {/* Formula / Expression Row */}
+            <Typography
+              sx={{
+                color: "#2d3a24",
+                fontSize: "0.85rem",
+                fontFamily: "'Courier New', monospace",
+                fontWeight: 700,
+                minHeight: 22,
+                mt: 0.5,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                textAlign: "right",
+                letterSpacing: "0.5px",
+              }}
+            >
+              {basic.expr || "\u00A0"}
+            </Typography>
+
+            {/* Main LCD Digital Readout */}
+            <Typography
+              variant="h3"
+              sx={{
+                fontWeight: 900,
+                fontFamily: "monospace",
+                letterSpacing: "2px",
+                color: "#142014",
+                fontSize: { xs: "2.1rem", sm: "2.6rem" },
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                textAlign: "right",
+                lineHeight: 1.1,
+                mt: 0.2,
+                textShadow: "0 0 1px rgba(20, 32, 20, 0.4)",
+              }}
+            >
+              {basic.display}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* ====================================================================== */}
+        {/*                     3D MOLDED HARDWARE KEYPAD MATRIX                   */}
+        {/* ====================================================================== */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: { xs: 1, sm: 1.2 },
+          }}
+        >
+          {/* Row 1: AC, Backspace, (, ) */}
+          {renderDesktopKey({
+            label: "AC",
+            onClick: clearBasic,
+            variant: "ac",
+            fontSize: "0.95rem",
+          })}
+          {renderDesktopKey({
+            label: "DEL",
+            displayLabel: <BackspaceIcon sx={{ fontSize: 18 }} />,
+            onClick: backspaceBasic,
+            variant: "clear",
+          })}
+          {renderDesktopKey({
+            label: "(",
+            onClick: () => pressBasic("("),
+            variant: "fn",
+          })}
+          {renderDesktopKey({
+            label: ")",
+            onClick: () => pressBasic(")"),
+            variant: "fn",
+          })}
+
+          {/* Row 2: ±, %, √, ÷ */}
+          {renderDesktopKey({
+            label: "±",
+            onClick: () => pressBasic("±"),
+            variant: "fn",
+          })}
+          {renderDesktopKey({
+            label: "%",
+            onClick: () => pressBasic("%"),
+            variant: "fn",
+          })}
+          {renderDesktopKey({
+            label: "√",
+            onClick: () => pressBasic("√"),
+            variant: "fn",
+          })}
+          {renderDesktopKey({
+            label: "÷",
+            onClick: () => pressBasic("/"),
+            variant: "op",
+          })}
+
+          {/* Row 3: 7, 8, 9, × */}
+          {renderDesktopKey({
+            label: "7",
+            onClick: () => pressBasic("7"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "8",
+            onClick: () => pressBasic("8"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "9",
+            onClick: () => pressBasic("9"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "×",
+            onClick: () => pressBasic("*"),
+            variant: "op",
+          })}
+
+          {/* Row 4: 4, 5, 6, − */}
+          {renderDesktopKey({
+            label: "4",
+            onClick: () => pressBasic("4"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "5",
+            onClick: () => pressBasic("5"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "6",
+            onClick: () => pressBasic("6"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "−",
+            onClick: () => pressBasic("-"),
+            variant: "op",
+          })}
+
+          {/* Row 5: 1, 2, 3, + */}
+          {renderDesktopKey({
+            label: "1",
+            onClick: () => pressBasic("1"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "2",
+            onClick: () => pressBasic("2"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "3",
+            onClick: () => pressBasic("3"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "+",
+            onClick: () => pressBasic("+"),
+            variant: "op",
+          })}
+
+          {/* Row 6: 0, 00, ., = */}
+          {renderDesktopKey({
+            label: "0",
+            onClick: () => pressBasic("0"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "00",
+            onClick: () => pressBasic("00"),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: ".",
+            onClick: () => pressBasic("."),
+            variant: "num",
+          })}
+          {renderDesktopKey({
+            label: "=",
+            onClick: () => pressBasic("="),
+            variant: "equals",
+          })}
+        </Box>
 
         <Typography
           variant="caption"
           sx={{
             display: "block",
-            mt: 1.8,
+            mt: 2,
             textAlign: "center",
             color: "#64748b",
-            fontSize: "0.75rem",
-            fontWeight: 500,
+            fontSize: "0.72rem",
+            fontWeight: 700,
+            letterSpacing: "0.3px",
           }}
         >
-          Basic Math · Click <strong>Scientific Pro</strong> for trigonometry, powers & fractions
+          TryCalc · Electronic Desktop Calculator · Natural STN Display
         </Typography>
       </Paper>
     )
