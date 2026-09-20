@@ -22,122 +22,125 @@ const CATEGORY_KEYS = [
   "event_budget",
 ]
 
-export async function generateSitemaps() {
-  return [
-    { id: "core" },
-    ...CATEGORY_KEYS.map((k) => ({ id: k })),
-  ]
-}
-
-export default async function sitemap({ id }: { id: string }): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
 
-  // 1. Core Pages (Home, About, Privacy, Category Hubs)
-  if (id === "core") {
-    const entries: MetadataRoute.Sitemap = [
-      {
-        url: SITE_URL,
-        lastModified: now,
-        changeFrequency: "daily",
-        priority: 1.0,
-      },
-      {
-        url: `${SITE_URL}/about`,
-        lastModified: now,
-        changeFrequency: "monthly",
-        priority: 0.7,
-      },
-      {
-        url: `${SITE_URL}/contact`,
-        lastModified: now,
-        changeFrequency: "monthly",
-        priority: 0.7,
-      },
-      {
-        url: `${SITE_URL}/privacy`,
-        lastModified: now,
-        changeFrequency: "monthly",
-        priority: 0.6,
-      },
-      {
-        url: `${SITE_URL}/terms`,
-        lastModified: now,
-        changeFrequency: "monthly",
-        priority: 0.6,
-      },
-      {
-        url: `${SITE_URL}/disclaimer`,
-        lastModified: now,
-        changeFrequency: "monthly",
-        priority: 0.6,
-      },
-    ]
+  // 1. Core pages
+  const staticRoutes: MetadataRoute.Sitemap = [
+    {
+      url: `${SITE_URL}`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 1.0,
+    },
+    {
+      url: `${SITE_URL}/calculators`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/about`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${SITE_URL}/contact`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${SITE_URL}/disclaimer`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${SITE_URL}/privacy`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${SITE_URL}/privacy-policy`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${SITE_URL}/terms`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${SITE_URL}/terms-of-service`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+  ]
 
-    // All Category Hub URLs
-    CATEGORY_KEYS.forEach((catSlug) => {
-      entries.push({
-        url: `${SITE_URL}/category/${catSlug}`,
-        lastModified: now,
-        changeFrequency: "daily",
-        priority: 0.9,
-      })
-    })
-
-    return entries
-  }
-
-  // 2. Specific Category Sitemaps
-  const targetCategory = id
-  const entries: MetadataRoute.Sitemap = []
-
-  // Add the category hub itself to its specific partition
-  entries.push({
-    url: `${SITE_URL}/category/${targetCategory}`,
+  // 2. Hub-and-Spoke Semantic Category Hub URLs (2026 SEO Topical Authority)
+  const categoryRoutes: MetadataRoute.Sitemap = CATEGORY_KEYS.map((slug) => ({
+    url: `${SITE_URL}/category/${slug}`,
     lastModified: now,
     changeFrequency: "daily",
-    priority: 0.95,
-  })
+    priority: 0.9,
+  }))
 
-  // Fetch calculators for this category
+  // 3. All 689 Calculators
+  const calcRoutes: MetadataRoute.Sitemap = []
+  const seenIds = new Set<string>()
+
   try {
     const res = await fetch(`${BACKEND_URL}/api/calculators/`, {
-      headers: { Accept: "application/json" },
       next: { revalidate: 86400 },
+      headers: { Accept: "application/json" },
     })
     if (res.ok) {
       const data = await res.json()
-      if (data && data.categories && data.categories[targetCategory]) {
-        const list = data.categories[targetCategory]
-        if (Array.isArray(list)) {
-          for (const item of list) {
-            const calcId = String(item.id)
-            if (calcId) {
-              entries.push({
-                url: `${SITE_URL}/calculators/${calcId}`,
-                lastModified: now,
-                changeFrequency: "weekly",
-                priority: 0.85,
-              })
-            }
+      const categories = data.categories || {}
+      for (const catKey of Object.keys(categories)) {
+        const cat = categories[catKey]
+        const calcs: CalculatorDef[] = cat.calculators || []
+        for (const c of calcs) {
+          if (!seenIds.has(c.id)) {
+            seenIds.add(c.id)
+            calcRoutes.push({
+              url: `${SITE_URL}/calculators/${c.id}`,
+              lastModified: now,
+              changeFrequency: "weekly",
+              priority: 0.8,
+            })
           }
         }
-        return entries
       }
     }
-  } catch {}
-
-  // Fallback to bundled data if backend call fails during build
-  const fallbackCats = fallbackData.categories as unknown as Record<string, { calculators: CalculatorDef[] }>
-  const fallbackList = fallbackCats[targetCategory]?.calculators || []
-
-  for (const calc of fallbackList) {
-    entries.push({
-      url: `${SITE_URL}/calculators/${calc.id}`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    })
+  } catch (err) {
+    console.warn("Sitemap: Backend unreachable during build, using fallback registry:", err)
   }
 
-  return entries
+  // Ensure all 689 calculators are present via fallback if backend was unavailable
+  if (calcRoutes.length === 0) {
+    const fallbackCats = (fallbackData.categories as unknown) as Record<string, { calculators: CalculatorDef[] }>
+    for (const catKey of Object.keys(fallbackCats)) {
+      const calcs = fallbackCats[catKey]?.calculators || []
+      for (const c of calcs) {
+        if (!seenIds.has(c.id)) {
+          seenIds.add(c.id)
+          calcRoutes.push({
+            url: `${SITE_URL}/calculators/${c.id}`,
+            lastModified: now,
+            changeFrequency: "weekly",
+            priority: 0.8,
+          })
+        }
+      }
+    }
+  }
+
+  return [...staticRoutes, ...categoryRoutes, ...calcRoutes]
 }
