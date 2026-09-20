@@ -780,7 +780,7 @@ export default function QuickCalculator() {
               },
             }}
           >
-            Casio fx-991ES
+            Scientific Pro
           </Button>
         </Box>
 
@@ -928,22 +928,21 @@ export default function QuickCalculator() {
             fontWeight: 500,
           }}
         >
-          Basic Math · Click <strong>Casio fx-991ES</strong> for trigonometry, powers & fractions
+          Basic Math · Click <strong>Scientific Pro</strong> for trigonometry, powers & fractions
         </Typography>
       </Paper>
     )
   }
 
-  /* ---------------- 2. CASIO fx-991ES PLUS PINK 2nd EDITION ----------------- */
+  /* ---------------- 2. SCIENTIFIC PRO PINK EDITION ----------------- */
   return (
     <Paper
       elevation={0}
       component="section"
-      aria-label="Casio fx-991ES PLUS Pink Scientific Calculator"
+      aria-label="TryCalc Pink Scientific Calculator Pro"
       sx={{
         p: { xs: 2, sm: 2.8 },
         borderRadius: "32px",
-        // Soft Pastel Baby Pink authentic Casio 2nd Edition chassis
         background: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 35%, #fbcfe8 100%)",
         border: "2px solid #f472b6",
         boxShadow:
@@ -951,10 +950,10 @@ export default function QuickCalculator() {
         position: "relative",
       }}
     >
-      {/* Top Header: CASIO Brand, Solar Cell & Model Badges */}
+      {/* Top Header: Brand, Solar Cell & Feature Badges */}
       <Box sx={{ mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          {/* CASIO Logo */}
+          {/* Brand Logo */}
           <Box>
             <Typography
               sx={{
@@ -967,7 +966,7 @@ export default function QuickCalculator() {
                 lineHeight: 1,
               }}
             >
-              CASIO
+              TRYCALC
             </Typography>
             <Typography
               sx={{
@@ -979,7 +978,7 @@ export default function QuickCalculator() {
                 mt: "2px",
               }}
             >
-              TWO WAY POWER
+              DUAL POWER
             </Typography>
           </Box>
 
@@ -1024,15 +1023,15 @@ export default function QuickCalculator() {
                   lineHeight: 1.1,
                 }}
               >
-                fx-991ES PLUS
+                SCIENTIFIC
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 0.8, alignItems: "center", justifyContent: "flex-end", mt: "2px" }}>
               <Typography sx={{ fontSize: "0.6rem", fontWeight: 700, color: "#64748b" }}>
-                2nd EDITION
+                PRO EDITION
               </Typography>
               <Chip
-                label="NATURAL-V.P.A.M."
+                label="NATURAL DISPLAY"
                 size="small"
                 sx={{
                   height: 16,
@@ -1051,7 +1050,7 @@ export default function QuickCalculator() {
         {/* Mode Switcher Return Bar */}
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1.2 }}>
           <Chip
-            label="Pink Edition · Non-Programmable"
+            label="Pink Edition · High Precision"
             size="small"
             sx={{
               bgcolor: "rgba(255, 255, 255, 0.7)",
@@ -1744,7 +1743,7 @@ export default function QuickCalculator() {
           letterSpacing: "0.3px",
         }}
       >
-        CASIO COMPUTER CO., LTD. · fx-991ES PLUS Pink 2nd Edition · Natural-V.P.A.M.
+        TryCalc · High Precision Scientific Calculator · Natural Display
       </Typography>
     </Paper>
   )
