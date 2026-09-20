@@ -11,6 +11,7 @@ import ModernDatePicker from "@/components/ModernDatePicker"
 import GlobalFooter from "@/components/GlobalFooter"
 import { getIconComponent } from "@/lib/icon-registry"
 import DOMPurify from "dompurify"
+import QuickCalculator from "./QuickCalculator"
 
 // MUI components
 import AppBar from "@mui/material/AppBar"
@@ -148,180 +149,7 @@ export function seoFaqFor(calc: CalculatorDef): Array<{ q: string; a: string }> 
   ]
 }
 
-/* ---------- Quick Basic Calculator Widget ---------- */
 
-const BASIC_KEYS = [
-  "7", "8", "9", "/",
-  "4", "5", "6", "*",
-  "1", "2", "3", "-",
-  "0", ".", "=", "+",
-]
-
-function BasicCalculator() {
-  const [display, setDisplay] = useState("0")
-  const [expr, setExpr] = useState("")
-
-  const press = (k: string) => {
-    if (k === "=") {
-      try {
-        const clean = (expr + display).replace(/[^0-9+\-*/.]/g, "")
-        if (!clean) return
-        const fn = new Function(`return (${clean})`)
-        const res = fn()
-        const out = Number.isFinite(res) ? String(+res.toFixed(8)) : "Error"
-        setDisplay(out)
-        setExpr("")
-      } catch {
-        setDisplay("Error")
-        setExpr("")
-      }
-      return
-    }
-
-    if (["+", "-", "*", "/"].includes(k)) {
-      setExpr((prev) => (prev ? `${prev} ${display} ${k}` : `${display} ${k}`))
-      setDisplay("0")
-      return
-    }
-
-    if (k === ".") {
-      if (!display.includes(".")) setDisplay((prev) => prev + ".")
-      return
-    }
-
-    setDisplay((prev) => (prev === "0" || prev === "Error" ? k : prev + k))
-  }
-
-  const clearAll = () => {
-    setDisplay("0")
-    setExpr("")
-  }
-
-  const backspace = () => {
-    setDisplay((prev) => (prev.length > 1 ? prev.slice(0, -1) : "0"))
-  }
-
-  return (
-    <Paper
-      elevation={0}
-      component="section"
-      aria-label="Quick online calculator"
-      sx={{
-        p: { xs: 2, sm: 3 },
-        borderRadius: 4,
-        border: "1px solid",
-        borderColor: "divider",
-        bgcolor: "#ffffff",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-      }}
-    >
-      <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 1.5 }}>
-        <CalculateIcon color="primary" />
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "#0f172a" }}>
-          Quick Calculator
-        </Typography>
-        <Chip label="Free" size="small" color="primary" variant="outlined" sx={{ ml: "auto", fontWeight: 600 }} />
-      </Stack>
-
-      {/* Display */}
-      <Box
-        sx={{
-          bgcolor: "#f8fafc",
-          borderRadius: 3,
-          border: "1px solid #e2e8f0",
-          px: 2,
-          py: 1,
-          mb: 2,
-          textAlign: "right",
-          minHeight: 72,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          overflow: "hidden",
-        }}
-      >
-        <Typography variant="caption" color="text.secondary" sx={{ fontFamily: "monospace", minHeight: 16 }}>
-          {expr ? `${expr.replace(/\*/g, "×").replace(/\//g, "÷")}…` : "\u00A0"}
-        </Typography>
-        <Typography
-          variant="h4"
-          sx={{ fontFamily: "monospace", fontWeight: 700, color: "#0f172a", wordBreak: "break-all", lineHeight: 1.2 }}
-        >
-          {display.replace(/\*/g, "×").replace(/\//g, "÷")}
-        </Typography>
-      </Box>
-
-      {/* Keys */}
-      <Grid container spacing={1}>
-        <Grid size={{ xs: 12 }}>
-          <Stack direction="row" spacing={1}>
-            <Button
-              onClick={clearAll}
-              variant="contained"
-              color="error"
-              sx={{ flexGrow: 1, borderRadius: 2.5, py: 1.2, fontWeight: 700 }}
-            >
-              C
-            </Button>
-            <Button
-              onClick={backspace}
-              variant="outlined"
-              sx={{ flexGrow: 1, borderRadius: 2.5, py: 1.2, color: "#475569", borderColor: "#cbd5e1" }}
-              aria-label="backspace"
-            >
-              <BackspaceIcon />
-            </Button>
-            <Button
-              onClick={() => press("(")}
-              variant="outlined"
-              sx={{ flexGrow: 1, borderRadius: 2.5, py: 1.2, fontWeight: 700, color: "#475569", borderColor: "#cbd5e1" }}
-            >
-              (
-            </Button>
-            <Button
-              onClick={() => press(")")}
-              variant="outlined"
-              sx={{ flexGrow: 1, borderRadius: 2.5, py: 1.2, fontWeight: 700, color: "#475569", borderColor: "#cbd5e1" }}
-            >
-              )
-            </Button>
-          </Stack>
-        </Grid>
-        {BASIC_KEYS.map((k) => (
-          <Grid key={k} size={{ xs: 3, sm: 3 }}>
-            <Button
-              fullWidth
-              variant={k === "=" ? "contained" : /[+\-*/]/.test(k) ? "outlined" : "text"}
-              color={k === "=" ? "primary" : /[+\-*/]/.test(k) ? "secondary" : "inherit"}
-              onClick={() => press(k)}
-              sx={{
-                aspectRatio: "1.7",
-                minWidth: 0,
-                p: 0,
-                fontSize: "1.15rem",
-                fontWeight: 700,
-                borderRadius: 2.5,
-                bgcolor: /[0-9.]/.test(k) ? "#f8fafc" : undefined,
-                color: /[0-9.]/.test(k) ? "#0f172a" : undefined,
-                border: /[0-9.]/.test(k) ? "1px solid #e2e8f0" : undefined,
-                transition: "transform 0.08s ease, background-color 0.15s ease",
-                "&:hover": {
-                  bgcolor: /[0-9.]/.test(k) ? "#f1f5f9" : undefined,
-                },
-                "&:active": { transform: "scale(0.94)" },
-              }}
-            >
-              {k === "*" ? "×" : k === "/" ? "÷" : k}
-            </Button>
-          </Grid>
-        ))}
-      </Grid>
-      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5, textAlign: "center", fontWeight: 500 }}>
-        Addition · Subtraction · Multiplication · Division — instant results
-      </Typography>
-    </Paper>
-  )
-}
 
 export interface HomeClientProps {
   initialCategories?: CategoryMap
@@ -781,7 +609,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
 
                 {/* Quick Calculator on the right */}
                 <Grid size={{ xs: 12, md: 5 }}>
-                  <BasicCalculator />
+                  <QuickCalculator />
                 </Grid>
               </Grid>
             </Paper>
