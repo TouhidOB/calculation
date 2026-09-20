@@ -104,10 +104,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const data = await res.json()
       const categories = data.categories || {}
       for (const catKey of Object.keys(categories)) {
-        const cat = categories[catKey]
-        const calcs: CalculatorDef[] = cat.calculators || []
+        const raw = categories[catKey]
+        const calcs: CalculatorDef[] = Array.isArray(raw) ? raw : (raw?.calculators || [])
         for (const c of calcs) {
-          if (!seenIds.has(c.id)) {
+          if (c?.id && !seenIds.has(c.id)) {
             seenIds.add(c.id)
             calcRoutes.push({
               url: `${SITE_URL}/calculators/${c.id}`,
@@ -125,11 +125,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Ensure all 689 calculators are present via fallback if backend was unavailable
   if (calcRoutes.length === 0) {
-    const fallbackCats = (fallbackData.categories as unknown) as Record<string, { calculators: CalculatorDef[] }>
+    const fallbackCats = (fallbackData.categories as unknown) as Record<string, CalculatorDef[] | { calculators: CalculatorDef[] }>
     for (const catKey of Object.keys(fallbackCats)) {
-      const calcs = fallbackCats[catKey]?.calculators || []
+      const raw = fallbackCats[catKey]
+      const calcs: CalculatorDef[] = Array.isArray(raw) ? raw : (raw?.calculators || [])
       for (const c of calcs) {
-        if (!seenIds.has(c.id)) {
+        if (c?.id && !seenIds.has(c.id)) {
           seenIds.add(c.id)
           calcRoutes.push({
             url: `${SITE_URL}/calculators/${c.id}`,

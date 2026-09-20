@@ -177,13 +177,15 @@ async function getCategoryCalculators(categorySlug: string): Promise<CalculatorD
     if (res.ok) {
       const data = await res.json()
       if (data?.categories?.[categorySlug]) {
-        return data.categories[categorySlug].calculators || []
+        const raw = data.categories[categorySlug]
+        return Array.isArray(raw) ? raw : (raw.calculators || [])
       }
     }
   } catch {}
 
-  const fallbackCats = fallbackData.categories as unknown as Record<string, { calculators: CalculatorDef[] }>
-  return fallbackCats[categorySlug]?.calculators || []
+  const fallbackCats = fallbackData.categories as unknown as Record<string, CalculatorDef[] | { calculators: CalculatorDef[] }>
+  const raw = fallbackCats[categorySlug]
+  return Array.isArray(raw) ? raw : (raw?.calculators || [])
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
