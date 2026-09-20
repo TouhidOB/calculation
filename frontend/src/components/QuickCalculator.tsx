@@ -5,21 +5,56 @@ import Box from "@mui/material/Box"
 import Paper from "@mui/material/Paper"
 import Typography from "@mui/material/Typography"
 import Button from "@mui/material/Button"
-import Chip from "@mui/material/Chip"
-import Stack from "@mui/material/Stack"
 import Grid from "@mui/material/Grid"
+import Stack from "@mui/material/Stack"
+import Chip from "@mui/material/Chip"
+import Tooltip from "@mui/material/Tooltip"
+import IconButton from "@mui/material/IconButton"
+
+// Icons
 import CalculateIcon from "@mui/icons-material/Calculate"
 import ScienceIcon from "@mui/icons-material/Science"
 import BackspaceIcon from "@mui/icons-material/Backspace"
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp"
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown"
+import ArrowLeftIcon from "@mui/icons-material/ArrowLeft"
+import ArrowRightIcon from "@mui/icons-material/ArrowRight"
 
-/* ---------- Safe Math Engine ---------- */
+/* -------------------------------------------------------------------------- */
+/*                 MATHEMATICAL EVALUATION & ENGINE HELPERS                   */
+/* -------------------------------------------------------------------------- */
 
 function factorial(n: number): number {
   if (n < 0 || !Number.isInteger(n)) return NaN
   if (n === 0 || n === 1) return 1
+  if (n > 170) return Infinity
   let res = 1
-  for (let i = 2; i <= Math.min(n, 170); i++) res *= i
+  for (let i = 2; i <= n; i++) res *= i
   return res
+}
+
+function toFraction(val: number, maxDenom = 1000): string | null {
+  if (!Number.isFinite(val)) return null
+  if (Number.isInteger(val)) return String(val)
+  const sign = val < 0 ? "-" : ""
+  const absVal = Math.abs(val)
+  let bestNum = 1
+  let bestDen = 1
+  let minErr = Math.abs(absVal - bestNum / bestDen)
+  for (let d = 1; d <= maxDenom; d++) {
+    const n = Math.round(absVal * d)
+    const err = Math.abs(absVal - n / d)
+    if (err < minErr) {
+      minErr = err
+      bestNum = n
+      bestDen = d
+      if (err < 1e-9) break
+    }
+  }
+  if (minErr < 1e-5) {
+    return `${sign}${bestNum}/${bestDen}`
+  }
+  return null
 }
 
 function autoCloseParens(str: string): string {
@@ -32,78 +67,92 @@ function autoCloseParens(str: string): string {
   return str
 }
 
-function evaluateExpression(rawExpr: string, angleMode: "deg" | "rad"): string {
-  try {
-    if (!rawExpr || !rawExpr.trim()) return "0"
+function sanitizeAndEvaluate(rawExpr: string, angleMode: "deg" | "rad"): { result: number; display: string } {
+  let expr = rawExpr
+    .replace(/×/g, "*")
+    .replace(/÷/g, "/")
+    .replace(/−/g, "-")
+    .replace(/π/g, `(${Math.PI})`)
+    .replace(/\be\b/g, `(${Math.E})`)
 
-    let s = rawExpr
-      .replace(/×/g, "*")
-      .replace(/÷/g, "/")
-      .replace(/−/g, "-")
-      .replace(/π/g, "Math.PI")
-      .replace(/\be\b/g, "Math.E")
-      .replace(/√\(/g, "Math.sqrt(")
-      .replace(/∛\(/g, "Math.cbrt(")
+  expr = autoCloseParens(expr)
 
-    // Implicit multiplication: 2( -> 2*(, )( -> )*(, )2 -> )*2, 2π -> 2*π
-    s = s.replace(/(\d)(\()/g, "$1*(")
-    s = s.replace(/(\))(\()/g, "$1*(")
-    s = s.replace(/(\))(\d)/g, "$1*$2")
-    s = s.replace(/(\d)(π|e|sin|cos|tan|asin|acos|atan|log|ln|sqrt)/g, "$1*$2")
-    s = s.replace(/(π|e)(\d)/g, "$1*$2")
-    s = s.replace(/(π|e)(\()/g, "$1*(")
+  // Factorials: e.g. 5! -> fact(5)
+  expr = expr.replace(/(\d+(?:\.\d+)?|\([^)]+\))!/g, "fact($1)")
 
-    // Percentage: e.g. 50% -> (50/100)
-    s = s.replace(/(\d+(\.\d+)?|\([^)]+\))%/g, "($1/100)")
+  // Percentages: e.g. 50% -> (50/100)
+  expr = expr.replace(/(\d+(?:\.\d+)?)%/g, "($1/100)")
 
-    // Factorial: e.g. 5! -> factorial(5)
-    s = s.replace(/(\d+(\.\d+)?|\([^)]+\))!/g, "factorial($1)")
+  // Exponentiation: a^b -> Math.pow(a, b)
+  while (expr.includes("^")) {
+    const prev = expr
+    expr = expr.replace(/(\b\w+(?:\.\w+)?|\([^()]+\))\s*\^\s*(\b\w+(?:\.\w+)?|\([^()]+\))/, "Math.pow($1, $2)")
+    if (expr === prev) break
+  }
 
-    // Exponentiation: ^ to **
-    s = s.replace(/\^/g, "**")
+  // Implicit multiplication: 5(2) -> 5*(2), (2)(3) -> (2)*(3)
+  expr = expr.replace(/(\d)(\()/g, "$1*$2")
+  expr = expr.replace(/(\))(\d|\()/g, "$1*$2")
 
-    // Auto-close missing parentheses
-    s = autoCloseParens(s)
+  const context = {
+    Math,
+    deg2rad: (d: number) => (d * Math.PI) / 180,
+    rad2deg: (r: number) => (r * 180) / Math.PI,
+    fact: factorial,
+    sin: (x: number) => (angleMode === "deg" ? Math.sin((x * Math.PI) / 180) : Math.sin(x)),
+    cos: (x: number) => (angleMode === "deg" ? Math.cos((x * Math.PI) / 180) : Math.cos(x)),
+    tan: (x: number) => {
+      if (angleMode === "deg" && Math.abs(x % 180) === 90) throw new Error("Undefined")
+      return angleMode === "deg" ? Math.tan((x * Math.PI) / 180) : Math.tan(x)
+    },
+    asin: (x: number) => {
+      const res = Math.asin(x)
+      return angleMode === "deg" ? (res * 180) / Math.PI : res
+    },
+    acos: (x: number) => {
+      const res = Math.acos(x)
+      return angleMode === "deg" ? (res * 180) / Math.PI : res
+    },
+    atan: (x: number) => {
+      const res = Math.atan(x)
+      return angleMode === "deg" ? (res * 180) / Math.PI : res
+    },
+    sinh: Math.sinh,
+    cosh: Math.cosh,
+    tanh: Math.tanh,
+    log: (x: number) => Math.log10(x),
+    ln: (x: number) => Math.log(x),
+    sqrt: (x: number) => Math.sqrt(x),
+    cbrt: (x: number) => Math.cbrt(x),
+    abs: (x: number) => Math.abs(x),
+    exp: (x: number) => Math.exp(x),
+  }
 
-    const isDeg = angleMode === "deg"
-    const scope = {
-      Math,
-      factorial,
-      sin: (x: number) => Math.sin(isDeg ? (x * Math.PI) / 180 : x),
-      cos: (x: number) => Math.cos(isDeg ? (x * Math.PI) / 180 : x),
-      tan: (x: number) => {
-        if (isDeg && Math.abs((x % 180) - 90) < 1e-9) return NaN
-        return Math.tan(isDeg ? (x * Math.PI) / 180 : x)
-      },
-      asin: (x: number) =>
-        isDeg ? (Math.asin(x) * 180) / Math.PI : Math.asin(x),
-      acos: (x: number) =>
-        isDeg ? (Math.acos(x) * 180) / Math.PI : Math.acos(x),
-      atan: (x: number) =>
-        isDeg ? (Math.atan(x) * 180) / Math.PI : Math.atan(x),
-      sqrt: Math.sqrt,
-      cbrt: Math.cbrt,
-      log: Math.log10,
-      ln: Math.log,
-      exp: Math.exp,
-      abs: Math.abs,
-    }
+  if (/[^0-9+\-*/().,a-zA-Z_\s]/.test(expr)) {
+    throw new Error("Invalid characters")
+  }
 
-    const fn = new Function(...Object.keys(scope), `return (${s});`)
-    let val = fn(...Object.values(scope))
+  const fn = new Function(...Object.keys(context), `return (${expr})`)
+  const rawRes = fn(...Object.values(context))
 
-    if (typeof val !== "number" || !Number.isFinite(val)) {
-      return "Error"
-    }
+  if (!Number.isFinite(rawRes)) {
+    if (rawRes === Infinity || rawRes === -Infinity) throw new Error("Infinity")
+    throw new Error("Math Error")
+  }
 
-    if (Math.abs(val) < 1e-12) val = 0
-    return parseFloat(val.toPrecision(10)).toString()
-  } catch {
-    return "Error"
+  // Floating point rounding
+  const rounded = parseFloat(rawRes.toPrecision(12))
+  const cleanRes = Number.isInteger(rounded) ? rounded : +rounded.toFixed(10)
+
+  return {
+    result: cleanRes,
+    display: String(cleanRes),
   }
 }
 
-/* ---------- QuickCalculator Component ---------- */
+/* -------------------------------------------------------------------------- */
+/*                       MAIN QUICK CALCULATOR COMPONENT                      */
+/* -------------------------------------------------------------------------- */
 
 const BASIC_KEYS = [
   "7", "8", "9", "/",
@@ -113,984 +162,1418 @@ const BASIC_KEYS = [
 ]
 
 export default function QuickCalculator() {
-  const [mode, setMode] = useState<"basic" | "scientific">("basic")
-  const [display, setDisplay] = useState("0")
-  const [expr, setExpr] = useState("")
-  const [angleMode, setAngleMode] = useState<"deg" | "rad">("deg")
-  const [isInverse, setIsInverse] = useState(false)
-  const [ans, setAns] = useState("0")
+  // Mode: "basic" (default Quick view) | "casio" (Full Casio fx-991ES PLUS Pink)
+  const [mode, setMode] = useState<"basic" | "casio">("basic")
+
+  // Basic Mode State
+  const [basicDisplay, setBasicDisplay] = useState("0")
+  const [basicExpr, setBasicExpr] = useState("")
+
+  // Casio Mode State
+  const [formula, setFormula] = useState("")
+  const [resultDisplay, setResultDisplay] = useState("0")
   const [hasEvaluated, setHasEvaluated] = useState(false)
+  const [isFractionView, setIsFractionView] = useState(false)
+  const [lastNumericResult, setLastNumericResult] = useState<number>(0)
+  const [historyList, setHistoryList] = useState<string[]>([])
+  const [historyIndex, setHistoryIndex] = useState<number>(-1)
 
-  /* --- Evaluation Trigger --- */
-  const calculateResult = useCallback(() => {
-    let fullExpr = expr ? `${expr} ${display}` : display
-    if (fullExpr.endsWith("=") || !fullExpr.trim()) fullExpr = display
+  // Casio Indicators
+  const [isShift, setIsShift] = useState(false)
+  const [isAlpha, setIsAlpha] = useState(false)
+  const [angleMode, setAngleMode] = useState<"deg" | "rad">("deg")
+  const [hasMemory, setHasMemory] = useState(false)
+  const [memoryValue, setMemoryValue] = useState<number>(0)
+  const [ansValue, setAnsValue] = useState<number>(0)
 
-    const clean = fullExpr
-      .replace(/=/g, "")
-      .replace(/×/g, "*")
-      .replace(/÷/g, "/")
-      .replace(/−/g, "-")
+  // Blinking cursor
+  const [cursorVisible, setCursorVisible] = useState(true)
+  useEffect(() => {
+    const timer = setInterval(() => setCursorVisible((v) => !v), 600)
+    return () => clearInterval(timer)
+  }, [])
 
-    const res = evaluateExpression(clean, angleMode)
-    setExpr(fullExpr + " =")
-    setDisplay(res)
-    if (res !== "Error") {
-      setAns(res)
+  /* -------------------------- BASIC CALCULATOR LOGIC ------------------------- */
+  const pressBasic = (k: string) => {
+    if (k === "=") {
+      try {
+        const clean = (basicExpr + basicDisplay).replace(/[^0-9+\-*/.]/g, "")
+        if (!clean) return
+        const fn = new Function(`return (${clean})`)
+        const res = fn()
+        const out = Number.isFinite(res) ? String(+res.toFixed(8)) : "Error"
+        setBasicDisplay(out)
+        setBasicExpr("")
+      } catch {
+        setBasicDisplay("Error")
+      }
+    } else if (["+", "-", "*", "/"].includes(k)) {
+      setBasicExpr(basicDisplay + " " + (k === "*" ? "×" : k === "/" ? "÷" : k) + " ")
+      setBasicDisplay("0")
+    } else if (k === ".") {
+      if (!basicDisplay.includes(".")) setBasicDisplay(basicDisplay + ".")
+    } else {
+      setBasicDisplay(basicDisplay === "0" ? k : basicDisplay + k)
     }
-    setHasEvaluated(true)
-  }, [expr, display, angleMode])
+  }
 
-  /* --- Button Press Handling --- */
-  const press = useCallback(
-    (k: string) => {
-      // Equals
-      if (k === "=") {
-        calculateResult()
-        return
-      }
+  const clearBasic = () => {
+    setBasicDisplay("0")
+    setBasicExpr("")
+  }
 
-      // If user types a number right after evaluation, start fresh
-      if (hasEvaluated && /[0-9.]/.test(k)) {
-        setDisplay(k === "." ? "0." : k)
-        setExpr("")
+  const backspaceBasic = () => {
+    if (basicDisplay.length > 1) {
+      setBasicDisplay(basicDisplay.slice(0, -1))
+    } else {
+      setBasicDisplay("0")
+    }
+  }
+
+  /* -------------------------- CASIO CALCULATOR LOGIC ------------------------- */
+  const insertToken = useCallback((token: string) => {
+    setFormula((prev) => {
+      if (hasEvaluated) {
         setHasEvaluated(false)
-        return
-      }
-
-      // If user types an operator after evaluation, continue with answer
-      if (hasEvaluated && ["+", "-", "*", "/", "×", "÷", "−", "^"].includes(k)) {
-        setExpr(display + " " + (k === "*" ? "×" : k === "/" ? "÷" : k === "-" ? "−" : k))
-        setDisplay("0")
-        setHasEvaluated(false)
-        return
-      }
-
-      setHasEvaluated(false)
-
-      // Basic Binary Operators
-      if (["+", "-", "*", "/", "×", "÷", "−"].includes(k)) {
-        const symbol = k === "*" ? "×" : k === "/" ? "÷" : k === "-" ? "−" : k
-        setExpr((prev) => (prev ? `${prev} ${display} ${symbol}` : `${display} ${symbol}`))
-        setDisplay("0")
-        return
-      }
-
-      // Decimal
-      if (k === ".") {
-        if (!display.includes(".")) setDisplay((prev) => prev + ".")
-        return
-      }
-
-      // Plus / Minus Toggle (±)
-      if (k === "±") {
-        setDisplay((prev) => {
-          if (prev === "0" || prev === "Error") return prev
-          return prev.startsWith("-") ? prev.slice(1) : "-" + prev
-        })
-        return
-      }
-
-      // Scientific Function Calls: sin, cos, tan, log, ln, sqrt, etc.
-      if (["sin", "cos", "tan", "asin", "acos", "atan", "log", "ln", "sqrt"].includes(k)) {
-        if (display === "0" || display === "Error") {
-          setDisplay(`${k}(`)
-        } else {
-          setDisplay((prev) => `${k}(${prev})`)
+        setIsFractionView(false)
+        // If user presses an operator right after evaluation, chain from Ans
+        if (["+", "-", "×", "÷", "^"].includes(token)) {
+          return `Ans ${token} `
         }
-        return
+        return token
       }
+      return prev + token
+    })
+    setIsShift(false)
+    setIsAlpha(false)
+  }, [hasEvaluated])
 
-      // Exponentiation (x^y)
-      if (k === "^") {
-        setExpr((prev) => (prev ? `${prev} ${display} ^` : `${display} ^`))
-        setDisplay("0")
-        return
+  const evaluateCasio = useCallback(() => {
+    if (!formula.trim()) return
+    try {
+      // Replace Ans with actual ansValue
+      const exprWithAns = formula.replace(/\bAns\b/g, `(${ansValue})`)
+      const evalRes = sanitizeAndEvaluate(exprWithAns, angleMode)
+      setResultDisplay(evalRes.display)
+      setLastNumericResult(evalRes.result)
+      setAnsValue(evalRes.result)
+      setHasEvaluated(true)
+      setIsFractionView(false)
+      setHistoryList((prev) => [...prev.filter((h) => h !== formula), formula])
+      setHistoryIndex(-1)
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Syntax ERROR"
+      setResultDisplay(errMsg.includes("Undefined") ? "Math ERROR" : "Syntax ERROR")
+      setHasEvaluated(true)
+    }
+  }, [formula, ansValue, angleMode])
+
+  const allClearCasio = useCallback(() => {
+    setFormula("")
+    setResultDisplay("0")
+    setHasEvaluated(false)
+    setIsFractionView(false)
+    setIsShift(false)
+    setIsAlpha(false)
+  }, [])
+
+  const deleteCasio = useCallback(() => {
+    if (hasEvaluated) {
+      allClearCasio()
+      return
+    }
+    setFormula((prev) => {
+      if (!prev) return ""
+      // Delete multi-char functions cleanly
+      const patterns = ["sin(", "cos(", "tan(", "asin(", "acos(", "atan(", "log(", "ln(", "sqrt(", "cbrt(", "abs(", "fact(", "Math.pow(", "Ans"]
+      for (const p of patterns) {
+        if (prev.endsWith(p)) {
+          return prev.slice(0, -p.length)
+        }
       }
+      return prev.slice(0, -1)
+    })
+  }, [hasEvaluated, allClearCasio])
 
-      // Square (x^2)
-      if (k === "x²") {
-        setDisplay((prev) => `(${prev})^2`)
-        return
+  const toggleFractionView = useCallback(() => {
+    if (!hasEvaluated) return
+    if (isFractionView) {
+      setResultDisplay(String(lastNumericResult))
+      setIsFractionView(false)
+    } else {
+      const frac = toFraction(lastNumericResult)
+      if (frac) {
+        setResultDisplay(frac)
+        setIsFractionView(true)
       }
+    }
+  }, [hasEvaluated, isFractionView, lastNumericResult])
 
-      // 10^x
-      if (k === "10ˣ") {
-        setDisplay((prev) => `10^(${prev})`)
-        return
-      }
+  const cycleAngleMode = useCallback(() => {
+    setAngleMode((prev) => (prev === "deg" ? "rad" : "deg"))
+  }, [])
 
-      // e^x
-      if (k === "eˣ") {
-        setDisplay((prev) => `exp(${prev})`)
-        return
-      }
-
-      // Factorial (!)
-      if (k === "!") {
-        setDisplay((prev) => (prev === "0" ? "0" : `${prev}!`))
-        return
-      }
-
-      // Inverse (1/x)
-      if (k === "1/x") {
-        setDisplay((prev) => (prev === "0" ? "0" : `1/(${prev})`))
-        return
-      }
-
-      // Percent (%)
-      if (k === "%") {
-        setDisplay((prev) => (prev === "0" ? "0" : `${prev}%`))
-        return
-      }
-
-      // Constants π and e
-      if (k === "π" || k === "e") {
-        setDisplay((prev) => (prev === "0" || prev === "Error" ? k : prev + k))
-        return
-      }
-
-      // Previous Answer (Ans)
-      if (k === "Ans") {
-        setDisplay((prev) => (prev === "0" || prev === "Error" ? ans : prev + ans))
-        return
-      }
-
-      // Parentheses ( and )
-      if (k === "(" || k === ")") {
-        setDisplay((prev) => (prev === "0" && k === "(" ? "(" : prev + k))
-        return
-      }
-
-      // Standard Digits 0-9
-      setDisplay((prev) => (prev === "0" || prev === "Error" ? k : prev + k))
-    },
-    [display, expr, ans, hasEvaluated, calculateResult]
-  )
-
-  const clearAll = () => {
-    setDisplay("0")
-    setExpr("")
+  // Replay D-Pad History
+  const historyUp = () => {
+    if (historyList.length === 0) return
+    const newIdx = historyIndex === -1 ? historyList.length - 1 : Math.max(0, historyIndex - 1)
+    setHistoryIndex(newIdx)
+    setFormula(historyList[newIdx])
     setHasEvaluated(false)
   }
 
-  const backspace = () => {
-    setDisplay((prev) => (prev.length > 1 ? prev.slice(0, -1) : "0"))
+  const historyDown = () => {
+    if (historyList.length === 0 || historyIndex === -1) return
+    const newIdx = historyIndex + 1
+    if (newIdx >= historyList.length) {
+      setHistoryIndex(-1)
+      setFormula("")
+    } else {
+      setHistoryIndex(newIdx)
+      setFormula(historyList[newIdx])
+    }
+    setHasEvaluated(false)
   }
 
-  /* --- Keyboard Listener --- */
+  /* ---------------------------- KEYBOARD LISTENER --------------------------- */
   useEffect(() => {
+    if (mode !== "casio") return
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Avoid capturing when user is typing in search bar or input field
-      const target = e.target as HTMLElement
-      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return
-
-      if (e.key >= "0" && e.key <= "9") press(e.key)
-      else if (e.key === ".") press(".")
-      else if (e.key === "+") press("+")
-      else if (e.key === "-") press("-")
-      else if (e.key === "*") press("*")
-      else if (e.key === "/") {
-        e.preventDefault()
-        press("/")
+      if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) return
+      if (e.key >= "0" && e.key <= "9") {
+        insertToken(e.key)
+      } else if (e.key === ".") {
+        insertToken(".")
+      } else if (e.key === "+") {
+        insertToken("+")
+      } else if (e.key === "-") {
+        insertToken("−")
+      } else if (e.key === "*") {
+        insertToken("×")
+      } else if (e.key === "/") {
+        insertToken("÷")
+      } else if (e.key === "^") {
+        insertToken("^")
+      } else if (e.key === "(" || e.key === ")") {
+        insertToken(e.key)
       } else if (e.key === "Enter" || e.key === "=") {
         e.preventDefault()
-        press("=")
+        evaluateCasio()
       } else if (e.key === "Backspace") {
-        backspace()
+        e.preventDefault()
+        deleteCasio()
       } else if (e.key === "Escape") {
-        clearAll()
+        allClearCasio()
       }
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [press])
+  }, [mode, insertToken, evaluateCasio, deleteCasio, allClearCasio])
 
-  return (
-    <Paper
-      elevation={0}
-      component="section"
-      aria-label={mode === "basic" ? "Quick online calculator" : "Realistic scientific calculator"}
-      sx={{
-        p: { xs: 2, sm: 2.5 },
-        borderRadius: 4,
-        border: "1px solid",
-        borderColor: "divider",
-        bgcolor: "#ffffff",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-      }}
-    >
-      {/* Header: Title + Mode Toggle Button */}
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{ alignItems: "center", justifyContent: "space-between", mb: 1.5 }}
+  /* ========================================================================== */
+  /*                               CASIO BUTTON RENDERER                        */
+  /* ========================================================================== */
+
+  interface CasioKeyProps {
+    label: string
+    shiftLabel?: string
+    alphaLabel?: string
+    onClick: () => void
+    variant?: "fn" | "num" | "op" | "del" | "ac" | "shift" | "alpha" | "mode" | "equals"
+    fontSize?: any
+    span?: number
+  }
+
+  const renderCasioKey = ({
+    label,
+    shiftLabel,
+    alphaLabel,
+    onClick,
+    variant = "fn",
+    fontSize,
+    span = 1,
+  }: CasioKeyProps) => {
+    // Style by variant
+    let bg = "#ffffff"
+    let color = "#1e293b"
+    let border = "1px solid #f9a8d4"
+    let boxShadow = "0 3px 0 #f472b6, 0 4px 6px rgba(244, 114, 182, 0.25)"
+    let hoverBg = "#fdf2f8"
+
+    if (variant === "fn") {
+      bg = "#fdf2f8"
+      color = "#334155"
+      border = "1px solid #fbcfe8"
+      boxShadow = "0 2.5px 0 #f472b6, 0 3px 5px rgba(244, 114, 182, 0.2)"
+      hoverBg = "#fce7f3"
+    } else if (variant === "shift") {
+      bg = isShift ? "#fef3c7" : "#fffbeb"
+      color = "#b45309"
+      border = isShift ? "2px solid #f59e0b" : "1px solid #fde68a"
+      boxShadow = isShift ? "0 1px 0 #d97706, inset 0 2px 4px rgba(0,0,0,0.1)" : "0 2.5px 0 #d97706"
+      hoverBg = "#fef3c7"
+    } else if (variant === "alpha") {
+      bg = isAlpha ? "#fce7f3" : "#fff1f2"
+      color = "#be185d"
+      border = isAlpha ? "2px solid #ec4899" : "1px solid #fbcfe8"
+      boxShadow = isAlpha ? "0 1px 0 #db2777, inset 0 2px 4px rgba(0,0,0,0.1)" : "0 2.5px 0 #db2777"
+      hoverBg = "#fce7f3"
+    } else if (variant === "del") {
+      bg = "#e11d48"
+      color = "#ffffff"
+      border = "1px solid #be123c"
+      boxShadow = "0 3px 0 #9f1239, 0 4px 6px rgba(225, 29, 72, 0.3)"
+      hoverBg = "#be123c"
+    } else if (variant === "ac") {
+      bg = "#ea580c"
+      color = "#ffffff"
+      border = "1px solid #c2410c"
+      boxShadow = "0 3px 0 #9a3412, 0 4px 6px rgba(234, 88, 12, 0.35)"
+      hoverBg = "#c2410c"
+    } else if (variant === "equals") {
+      bg = "#0284c7"
+      color = "#ffffff"
+      border = "1px solid #0369a1"
+      boxShadow = "0 3px 0 #075985, 0 4px 6px rgba(2, 132, 199, 0.35)"
+      hoverBg = "#0369a1"
+    } else if (variant === "op") {
+      bg = "#f8fafc"
+      color = "#0f172a"
+      border = "1px solid #cbd5e1"
+      boxShadow = "0 3px 0 #94a3b8"
+      hoverBg = "#f1f5f9"
+    } else if (variant === "num") {
+      bg = "#ffffff"
+      color = "#0f172a"
+      border = "1px solid #f9a8d4"
+      boxShadow = "0 3px 0 #f472b6, 0 4px 6px rgba(244, 114, 182, 0.2)"
+      hoverBg = "#fdf2f8"
+    }
+
+    return (
+      <Box
+        key={label + (shiftLabel || "")}
+        sx={{
+          gridColumn: span > 1 ? `span ${span}` : "auto",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          minHeight: { xs: 44, sm: 48 },
+          position: "relative",
+          userSelect: "none",
+        }}
       >
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-          {mode === "basic" ? (
-            <CalculateIcon color="primary" sx={{ fontSize: 24 }} />
-          ) : (
-            <ScienceIcon sx={{ color: "#4f46e5", fontSize: 24 }} />
-          )}
-          <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: "1.05rem", sm: "1.2rem" } }}>
-            {mode === "basic" ? "Quick Calculator" : "Scientific Calculator"}
-          </Typography>
-        </Stack>
-
-        {/* The Toggle Button (Converts to Scientific / Basic) */}
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-          {mode === "scientific" && (
-            <Chip
-              label={angleMode.toUpperCase()}
-              size="small"
-              onClick={() => setAngleMode((prev) => (prev === "deg" ? "rad" : "deg"))}
+        {/* Shift / Alpha top micro-labels printed on calculator casing */}
+        {(shiftLabel || alphaLabel) && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              width: "100%",
+              px: 0.5,
+              mb: "2px",
+              lineHeight: 1,
+              pointerEvents: "none",
+            }}
+          >
+            <Typography
+              component="span"
               sx={{
-                fontWeight: 700,
-                fontSize: "0.75rem",
-                bgcolor: "#e0e7ff",
-                color: "#3730a3",
-                cursor: "pointer",
-                "&:hover": { bgcolor: "#c7d2fe" },
+                fontSize: "0.62rem",
+                fontWeight: 800,
+                color: "#b45309", // Gold/Amber Shift label
+                fontFamily: "sans-serif",
+                textShadow: "0 0.5px 0 #ffffff",
               }}
-              title="Click to toggle DEG / RAD"
-            />
-          )}
+            >
+              {shiftLabel || ""}
+            </Typography>
+            <Typography
+              component="span"
+              sx={{
+                fontSize: "0.62rem",
+                fontWeight: 800,
+                color: "#be185d", // Magenta/Pink Alpha label
+                fontFamily: "sans-serif",
+                textShadow: "0 0.5px 0 #ffffff",
+              }}
+            >
+              {alphaLabel || ""}
+            </Typography>
+          </Box>
+        )}
 
+        {/* Physical Button Key */}
+        <Button
+          fullWidth
+          onClick={onClick}
+          disableRipple
+          sx={{
+            py: { xs: 0.6, sm: 0.8 },
+            px: 0.5,
+            minWidth: 0,
+            height: "100%",
+            borderRadius: "9px",
+            background: bg,
+            color: color,
+            border: border,
+            boxShadow: boxShadow,
+            fontWeight: 800,
+            fontSize: fontSize || { xs: "0.82rem", sm: "0.92rem" },
+            fontFamily: "'Outfit', 'Roboto', 'Segoe UI', sans-serif",
+            textTransform: "none",
+            transition: "all 0.08s ease-in-out",
+            "&:hover": {
+              background: hoverBg,
+            },
+            "&:active": {
+              transform: "translateY(2px)",
+              boxShadow: "0 0.5px 0 transparent, inset 0 2px 4px rgba(0,0,0,0.15)",
+            },
+          }}
+        >
+          {label}
+        </Button>
+      </Box>
+    )
+  }
+
+  /* ========================================================================== */
+  /*                                   RENDER                                   */
+  /* ========================================================================== */
+
+  /* ----------------------- 1. BASIC QUICK VIEW (DEFAULT) -------------------- */
+  if (mode === "basic") {
+    return (
+      <Paper
+        elevation={0}
+        component="section"
+        aria-label="Quick Calculator"
+        sx={{
+          p: { xs: 2, sm: 2.5 },
+          borderRadius: 4,
+          border: "1px solid #e2e8f0",
+          background: "#ffffff",
+          boxShadow: "0 10px 30px -10px rgba(79, 70, 229, 0.12)",
+        }}
+      >
+        {/* Header */}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 2,
+                bgcolor: "#eef2ff",
+                color: "#4f46e5",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CalculateIcon sx={{ fontSize: 20 }} />
+            </Box>
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
+                Quick Calculator
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem" }}>
+                Instant · Basic Math
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Mode Convert Button (Switch to Casio fx-991ES PLUS Pink) */}
           <Button
             variant="outlined"
             size="small"
-            startIcon={mode === "basic" ? <ScienceIcon /> : <CalculateIcon />}
-            onClick={() => setMode((prev) => (prev === "basic" ? "scientific" : "basic"))}
+            onClick={() => setMode("casio")}
+            startIcon={<ScienceIcon sx={{ color: "#ec4899 !important" }} />}
             sx={{
+              fontWeight: 800,
+              fontSize: "0.75rem",
               borderRadius: 2.5,
-              fontWeight: 700,
               textTransform: "none",
-              fontSize: "0.82rem",
-              px: 1.5,
+              color: "#be185d",
+              borderColor: "#fbcfe8",
+              bgcolor: "#fdf2f8",
               py: 0.5,
-              color: mode === "basic" ? "#4f46e5" : "#0f172a",
-              borderColor: mode === "basic" ? "#c7d2fe" : "#cbd5e1",
-              bgcolor: mode === "basic" ? "#f5f3ff" : "#f8fafc",
-              boxShadow: mode === "basic" ? "0 2px 6px rgba(79, 70, 229, 0.12)" : "none",
+              px: 1.5,
+              boxShadow: "0 2px 8px rgba(244, 114, 182, 0.15)",
               "&:hover": {
-                bgcolor: mode === "basic" ? "#ede9fe" : "#f1f5f9",
-                borderColor: mode === "basic" ? "#a5b4fc" : "#94a3b8",
+                bgcolor: "#fce7f3",
+                borderColor: "#f472b6",
+                transform: "translateY(-1px)",
               },
             }}
           >
-            {mode === "basic" ? "Scientific" : "Basic"}
+            Casio fx-991ES
           </Button>
-        </Stack>
-      </Stack>
+        </Box>
 
-      {/* Realistic Digital LCD Screen */}
-      <Box
-        sx={{
-          bgcolor: "#0f172a",
-          borderRadius: 3,
-          border: "1px solid #1e293b",
-          px: 2,
-          py: 1.2,
-          mb: 2,
-          textAlign: "right",
-          minHeight: 76,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          overflow: "hidden",
-          boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)",
-          position: "relative",
-        }}
-      >
-        {/* Upper Screen Status / Expression History */}
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between", mb: 0.3 }}>
-          <Stack direction="row" spacing={0.6}>
-            {mode === "scientific" && (
-              <>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontFamily: "monospace",
-                    fontSize: "0.68rem",
-                    fontWeight: 800,
-                    px: 0.6,
-                    py: 0.1,
-                    borderRadius: 1,
-                    bgcolor: "rgba(56, 189, 248, 0.15)",
-                    color: "#38bdf8",
-                  }}
-                >
-                  {angleMode.toUpperCase()}
-                </Typography>
-                {isInverse && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontFamily: "monospace",
-                      fontSize: "0.68rem",
-                      fontWeight: 800,
-                      px: 0.6,
-                      py: 0.1,
-                      borderRadius: 1,
-                      bgcolor: "rgba(244, 114, 182, 0.2)",
-                      color: "#f472b6",
-                    }}
-                  >
-                    INV
-                  </Typography>
-                )}
-              </>
-            )}
-          </Stack>
+        {/* Display Screen */}
+        <Box
+          sx={{
+            p: 2,
+            mb: 2,
+            borderRadius: 3,
+            bgcolor: "#0f172a",
+            color: "#ffffff",
+            textAlign: "right",
+            minHeight: 82,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            boxShadow: "inset 0 2px 4px rgba(0,0,0,0.4)",
+          }}
+        >
           <Typography
             variant="caption"
             sx={{
-              fontFamily: "monospace",
               color: "#94a3b8",
-              fontSize: "0.85rem",
-              whiteSpace: "nowrap",
+              fontSize: "0.78rem",
+              fontFamily: "monospace",
+              minHeight: 18,
               overflow: "hidden",
               textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
-            {expr ? `${expr.replace(/\*/g, "×").replace(/\//g, "÷")}` : "\u00A0"}
+            {basicExpr || "\u00A0"}
           </Typography>
-        </Stack>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              fontFamily: "monospace",
+              letterSpacing: 1,
+              color: "#f8fafc",
+              fontSize: { xs: "1.75rem", sm: "2.1rem" },
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {basicDisplay}
+          </Typography>
+        </Box>
 
-        {/* Main Display: Bold High-Contrast Monospace Digits */}
-        <Typography
-          variant="h4"
-          sx={{
-            fontFamily: "monospace",
-            fontWeight: 800,
-            color: "#f8fafc",
-            wordBreak: "break-all",
-            lineHeight: 1.15,
-            fontSize: display.length > 12 ? "1.45rem" : display.length > 8 ? "1.85rem" : "2.1rem",
-            letterSpacing: "-0.5px",
-          }}
-        >
-          {display.replace(/\*/g, "×").replace(/\//g, "÷")}
-        </Typography>
-      </Box>
-
-      {/* ==================== BASIC KEYPAD (DEFAULT) ==================== */}
-      {mode === "basic" && (
-        <Grid container spacing={1}>
-          <Grid size={{ xs: 12 }}>
-            <Stack direction="row" spacing={1}>
-              <Button
-                onClick={clearAll}
-                variant="contained"
-                color="error"
-                sx={{ flexGrow: 1, borderRadius: 2.5, py: 1.1, fontWeight: 800 }}
-              >
-                C
-              </Button>
-              <Button
-                onClick={backspace}
-                variant="outlined"
-                sx={{ flexGrow: 1, borderRadius: 2.5, py: 1.1, color: "#475569", borderColor: "#cbd5e1" }}
-                aria-label="backspace"
-              >
-                <BackspaceIcon fontSize="small" />
-              </Button>
-              <Button
-                onClick={() => press("(")}
-                variant="outlined"
-                sx={{ flexGrow: 1, borderRadius: 2.5, py: 1.1, fontWeight: 700, color: "#475569", borderColor: "#cbd5e1" }}
-              >
-                (
-              </Button>
-              <Button
-                onClick={() => press(")")}
-                variant="outlined"
-                sx={{ flexGrow: 1, borderRadius: 2.5, py: 1.1, fontWeight: 700, color: "#475569", borderColor: "#cbd5e1" }}
-              >
-                )
-              </Button>
-            </Stack>
+        {/* Action Keys (C, Backspace, Parens) */}
+        <Grid container spacing={1} sx={{ mb: 1 }}>
+          <Grid size={{ xs: 3 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="error"
+              onClick={clearBasic}
+              sx={{ fontWeight: 800, borderRadius: 2, py: 1, borderColor: "#fca5a5" }}
+            >
+              C
+            </Button>
           </Grid>
+          <Grid size={{ xs: 3 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={backspaceBasic}
+              sx={{ fontWeight: 700, borderRadius: 2, py: 1, color: "#475569", borderColor: "#cbd5e1" }}
+            >
+              <BackspaceIcon sx={{ fontSize: 18 }} />
+            </Button>
+          </Grid>
+          <Grid size={{ xs: 3 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => pressBasic("(")}
+              sx={{ fontWeight: 700, borderRadius: 2, py: 1, color: "#475569", borderColor: "#cbd5e1" }}
+            >
+              (
+            </Button>
+          </Grid>
+          <Grid size={{ xs: 3 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => pressBasic(")")}
+              sx={{ fontWeight: 700, borderRadius: 2, py: 1, color: "#475569", borderColor: "#cbd5e1" }}
+            >
+              )
+            </Button>
+          </Grid>
+        </Grid>
+
+        {/* Keypad Grid 4x4 */}
+        <Grid container spacing={1}>
           {BASIC_KEYS.map((k) => (
-            <Grid key={k} size={{ xs: 3, sm: 3 }}>
+            <Grid size={{ xs: 3 }} key={k}>
               <Button
                 fullWidth
-                variant={k === "=" ? "contained" : /[+\-*/]/.test(k) ? "outlined" : "text"}
-                color={k === "=" ? "primary" : /[+\-*/]/.test(k) ? "secondary" : "inherit"}
-                onClick={() => press(k)}
+                variant={k === "=" ? "contained" : "outlined"}
+                color={k === "=" ? "primary" : "inherit"}
+                onClick={() => pressBasic(k)}
                 sx={{
-                  aspectRatio: "1.7",
-                  minWidth: 0,
-                  p: 0,
-                  fontSize: "1.2rem",
-                  fontWeight: 700,
-                  borderRadius: 2.5,
-                  bgcolor: /[0-9.]/.test(k) ? "#f8fafc" : undefined,
-                  color: /[0-9.]/.test(k) ? "#0f172a" : undefined,
-                  border: /[0-9.]/.test(k) ? "1px solid #e2e8f0" : undefined,
-                  transition: "transform 0.08s ease, background-color 0.15s ease",
-                  "&:hover": {
-                    bgcolor: /[0-9.]/.test(k) ? "#f1f5f9" : undefined,
-                  },
-                  "&:active": { transform: "scale(0.94)" },
+                  fontWeight: 800,
+                  fontSize: "1.15rem",
+                  py: 1.3,
+                  borderRadius: 2,
+                  ...(k === "="
+                    ? {
+                        bgcolor: "#4f46e5",
+                        color: "#ffffff",
+                        "&:hover": { bgcolor: "#4338ca" },
+                      }
+                    : ["+", "-", "*", "/"].includes(k)
+                    ? {
+                        bgcolor: "#f0fdf4",
+                        color: "#15803d",
+                        borderColor: "#bbf7d0",
+                        "&:hover": { bgcolor: "#dcfce7" },
+                      }
+                    : {
+                        bgcolor: "#f8fafc",
+                        color: "#0f172a",
+                        borderColor: "#e2e8f0",
+                        "&:hover": { bgcolor: "#f1f5f9" },
+                      }),
                 }}
               >
-                {k === "*" ? "×" : k === "/" ? "÷" : k}
+                {k === "*" ? "×" : k === "/" ? "÷" : k === "-" ? "−" : k}
               </Button>
             </Grid>
           ))}
         </Grid>
-      )}
 
-      {/* ==================== SCIENTIFIC KEYPAD ==================== */}
-      {mode === "scientific" && (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.8 }}>
-          {/* Row 1: DEG/RAD, Inv, π, e, C */}
-          <Grid container spacing={0.8}>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => setAngleMode((prev) => (prev === "deg" ? "rad" : "deg"))}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.82rem",
-                  fontWeight: 800,
-                  borderRadius: 2,
-                  bgcolor: "#f1f5f9",
-                  color: "#334155",
-                  borderColor: "#cbd5e1",
-                }}
-              >
-                {angleMode.toUpperCase()}
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant={isInverse ? "contained" : "outlined"}
-                onClick={() => setIsInverse((prev) => !prev)}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.82rem",
-                  fontWeight: 800,
-                  borderRadius: 2,
-                  bgcolor: isInverse ? "#4f46e5" : "#f1f5f9",
-                  color: isInverse ? "#ffffff" : "#334155",
-                  borderColor: "#cbd5e1",
-                }}
-              >
-                Inv
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press("π")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.95rem",
-                  fontWeight: 800,
-                  borderRadius: 2,
-                  bgcolor: "#eef2ff",
-                  color: "#4338ca",
-                  borderColor: "#c7d2fe",
-                }}
-              >
-                π
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press("e")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.95rem",
-                  fontWeight: 800,
-                  borderRadius: 2,
-                  bgcolor: "#eef2ff",
-                  color: "#4338ca",
-                  borderColor: "#c7d2fe",
-                }}
-              >
-                e
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="contained"
-                color="error"
-                onClick={clearAll}
-                sx={{ py: 0.9, minWidth: 0, fontSize: "0.95rem", fontWeight: 800, borderRadius: 2 }}
-              >
-                AC
-              </Button>
-            </Grid>
-          </Grid>
+        <Typography
+          variant="caption"
+          sx={{
+            display: "block",
+            mt: 1.8,
+            textAlign: "center",
+            color: "#64748b",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+          }}
+        >
+          Basic Math · Click <strong>Casio fx-991ES</strong> for trigonometry, powers & fractions
+        </Typography>
+      </Paper>
+    )
+  }
 
-          {/* Row 2: sin/asin, cos/acos, tan/atan, (, ) */}
-          <Grid container spacing={0.8}>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press(isInverse ? "asin" : "sin")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.82rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#eef2ff",
-                  color: "#4338ca",
-                  borderColor: "#c7d2fe",
-                }}
-              >
-                {isInverse ? "sin⁻¹" : "sin"}
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press(isInverse ? "acos" : "cos")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.82rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#eef2ff",
-                  color: "#4338ca",
-                  borderColor: "#c7d2fe",
-                }}
-              >
-                {isInverse ? "cos⁻¹" : "cos"}
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press(isInverse ? "atan" : "tan")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.82rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#eef2ff",
-                  color: "#4338ca",
-                  borderColor: "#c7d2fe",
-                }}
-              >
-                {isInverse ? "tan⁻¹" : "tan"}
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press("(")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.95rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#f8fafc",
-                  color: "#334155",
-                  borderColor: "#cbd5e1",
-                }}
-              >
-                (
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press(")")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.95rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#f8fafc",
-                  color: "#334155",
-                  borderColor: "#cbd5e1",
-                }}
-              >
-                )
-              </Button>
-            </Grid>
-          </Grid>
+  /* ---------------- 2. CASIO fx-991ES PLUS PINK 2nd EDITION ----------------- */
+  return (
+    <Paper
+      elevation={0}
+      component="section"
+      aria-label="Casio fx-991ES PLUS Pink Scientific Calculator"
+      sx={{
+        p: { xs: 2, sm: 2.8 },
+        borderRadius: "32px",
+        // Soft Pastel Baby Pink authentic Casio 2nd Edition chassis
+        background: "linear-gradient(180deg, #fce7f3 0%, #fdf2f8 35%, #fbcfe8 100%)",
+        border: "2px solid #f472b6",
+        boxShadow:
+          "0 24px 50px -15px rgba(244, 114, 182, 0.45), 0 0 0 1px rgba(251, 207, 232, 0.9), inset 0 2px 4px rgba(255, 255, 255, 0.9)",
+        position: "relative",
+      }}
+    >
+      {/* Top Header: CASIO Brand, Solar Cell & Model Badges */}
+      <Box sx={{ mb: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          {/* CASIO Logo */}
+          <Box>
+            <Typography
+              sx={{
+                fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
+                fontWeight: 900,
+                letterSpacing: "1.8px",
+                fontSize: { xs: "1.05rem", sm: "1.2rem" },
+                color: "#1e293b",
+                textShadow: "0 1px 0 rgba(255, 255, 255, 0.8)",
+                lineHeight: 1,
+              }}
+            >
+              CASIO
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: "0.58rem",
+                fontWeight: 800,
+                color: "#64748b",
+                letterSpacing: "0.5px",
+                lineHeight: 1.2,
+                mt: "2px",
+              }}
+            >
+              TWO WAY POWER
+            </Typography>
+          </Box>
 
-          {/* Row 3: ln/e^x, log/10^x, sqrt/x^2, x^y, ÷ */}
-          <Grid container spacing={0.8}>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press(isInverse ? "eˣ" : "ln")}
+          {/* Authentic Solar Cell Panel */}
+          <Box
+            sx={{
+              width: { xs: 80, sm: 94 },
+              height: { xs: 24, sm: 28 },
+              borderRadius: "4px",
+              background: "linear-gradient(180deg, #451a03 0%, #2e1065 100%)",
+              border: "1.5px solid #78350f",
+              boxShadow: "inset 0 1px 3px rgba(0,0,0,0.6), 0 1px 2px rgba(255,255,255,0.6)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-around",
+              px: 0.5,
+              position: "relative",
+            }}
+          >
+            {/* Photovoltaic Cells grid lines */}
+            {[0, 1, 2].map((i) => (
+              <Box
+                key={i}
                 sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.82rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#eef2ff",
-                  color: "#4338ca",
-                  borderColor: "#c7d2fe",
+                  width: "1px",
+                  height: "80%",
+                  bgcolor: "rgba(245, 158, 11, 0.25)",
                 }}
-              >
-                {isInverse ? "eˣ" : "ln"}
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press(isInverse ? "10ˣ" : "log")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.82rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#eef2ff",
-                  color: "#4338ca",
-                  borderColor: "#c7d2fe",
-                }}
-              >
-                {isInverse ? "10ˣ" : "log"}
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press(isInverse ? "x²" : "sqrt")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.85rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#eef2ff",
-                  color: "#4338ca",
-                  borderColor: "#c7d2fe",
-                }}
-              >
-                {isInverse ? "x²" : "√"}
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press("^")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.9rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#eef2ff",
-                  color: "#4338ca",
-                  borderColor: "#c7d2fe",
-                }}
-              >
-                xʸ
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="secondary"
-                onClick={() => press("/")}
-                sx={{ py: 0.9, minWidth: 0, fontSize: "1.1rem", fontWeight: 800, borderRadius: 2 }}
-              >
-                ÷
-              </Button>
-            </Grid>
-          </Grid>
-
-          {/* Row 4: x!, 1/x, %, ±, × */}
-          <Grid container spacing={0.8}>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press("!")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.85rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#f1f5f9",
-                  color: "#334155",
-                  borderColor: "#cbd5e1",
-                }}
-              >
-                x!
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press("1/x")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.82rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#f1f5f9",
-                  color: "#334155",
-                  borderColor: "#cbd5e1",
-                }}
-              >
-                1/x
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press("%")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.9rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#f1f5f9",
-                  color: "#334155",
-                  borderColor: "#cbd5e1",
-                }}
-              >
-                %
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press("±")}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.9rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#f1f5f9",
-                  color: "#334155",
-                  borderColor: "#cbd5e1",
-                }}
-              >
-                ±
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="secondary"
-                onClick={() => press("*")}
-                sx={{ py: 0.9, minWidth: 0, fontSize: "1.1rem", fontWeight: 800, borderRadius: 2 }}
-              >
-                ×
-              </Button>
-            </Grid>
-          </Grid>
-
-          {/* Row 5: 7, 8, 9, ⌫, − */}
-          <Grid container spacing={0.8}>
-            {["7", "8", "9"].map((num) => (
-              <Grid key={num} size={{ xs: 2.4 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  onClick={() => press(num)}
-                  sx={{
-                    py: 0.9,
-                    minWidth: 0,
-                    fontSize: "1.1rem",
-                    fontWeight: 700,
-                    borderRadius: 2,
-                    bgcolor: "#ffffff",
-                    color: "#0f172a",
-                    borderColor: "#e2e8f0",
-                    "&:hover": { bgcolor: "#f1f5f9" },
-                  }}
-                >
-                  {num}
-                </Button>
-              </Grid>
+              />
             ))}
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={backspace}
-                sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  borderRadius: 2,
-                  bgcolor: "#f8fafc",
-                  color: "#475569",
-                  borderColor: "#cbd5e1",
-                }}
-                aria-label="backspace"
-              >
-                <BackspaceIcon fontSize="small" />
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="secondary"
-                onClick={() => press("-")}
-                sx={{ py: 0.9, minWidth: 0, fontSize: "1.2rem", fontWeight: 800, borderRadius: 2 }}
-              >
-                −
-              </Button>
-            </Grid>
-          </Grid>
+          </Box>
 
-          {/* Row 6: 4, 5, 6, Ans, + */}
-          <Grid container spacing={0.8}>
-            {["4", "5", "6"].map((num) => (
-              <Grid key={num} size={{ xs: 2.4 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  onClick={() => press(num)}
-                  sx={{
-                    py: 0.9,
-                    minWidth: 0,
-                    fontSize: "1.1rem",
-                    fontWeight: 700,
-                    borderRadius: 2,
-                    bgcolor: "#ffffff",
-                    color: "#0f172a",
-                    borderColor: "#e2e8f0",
-                    "&:hover": { bgcolor: "#f1f5f9" },
-                  }}
-                >
-                  {num}
-                </Button>
-              </Grid>
-            ))}
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => press("Ans")}
+          {/* Model Designation & Quick Switch */}
+          <Box sx={{ textAlign: "right" }}>
+            <Box sx={{ display: "flex", gap: 0.5, alignItems: "center", justifyContent: "flex-end" }}>
+              <Typography
                 sx={{
-                  py: 0.9,
-                  minWidth: 0,
-                  fontSize: "0.82rem",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  bgcolor: "#f8fafc",
-                  color: "#475569",
-                  borderColor: "#cbd5e1",
+                  fontWeight: 900,
+                  fontSize: { xs: "0.82rem", sm: "0.95rem" },
+                  color: "#0f172a",
+                  letterSpacing: "0.3px",
+                  lineHeight: 1.1,
                 }}
               >
-                Ans
-              </Button>
-            </Grid>
-            <Grid size={{ xs: 2.4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="secondary"
-                onClick={() => press("+")}
-                sx={{ py: 0.9, minWidth: 0, fontSize: "1.1rem", fontWeight: 800, borderRadius: 2 }}
-              >
-                +
-              </Button>
-            </Grid>
-          </Grid>
-
-          {/* Row 7: 1, 2, 3, 0, . */}
-          <Grid container spacing={0.8}>
-            {["1", "2", "3", "0", "."].map((num) => (
-              <Grid key={num} size={{ xs: 2.4 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  onClick={() => press(num)}
-                  sx={{
-                    py: 0.9,
-                    minWidth: 0,
-                    fontSize: "1.1rem",
-                    fontWeight: 700,
-                    borderRadius: 2,
-                    bgcolor: "#ffffff",
-                    color: "#0f172a",
-                    borderColor: "#e2e8f0",
-                    "&:hover": { bgcolor: "#f1f5f9" },
-                  }}
-                >
-                  {num}
-                </Button>
-              </Grid>
-            ))}
-          </Grid>
-
-          {/* Row 8: Decisive Equal Button */}
-          <Grid container spacing={0.8} sx={{ mt: 0.2 }}>
-            <Grid size={{ xs: 12 }}>
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={() => press("=")}
+                fx-991ES PLUS
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", gap: 0.8, alignItems: "center", justifyContent: "flex-end", mt: "2px" }}>
+              <Typography sx={{ fontSize: "0.6rem", fontWeight: 700, color: "#64748b" }}>
+                2nd EDITION
+              </Typography>
+              <Chip
+                label="NATURAL-V.P.A.M."
+                size="small"
                 sx={{
-                  py: 1.1,
-                  fontSize: "1.3rem",
+                  height: 16,
+                  fontSize: "0.55rem",
                   fontWeight: 800,
-                  borderRadius: 2.5,
-                  boxShadow: "0 4px 14px rgba(79, 70, 229, 0.35)",
-                  "&:hover": {
-                    bgcolor: "#4338ca",
-                    boxShadow: "0 6px 18px rgba(79, 70, 229, 0.45)",
-                  },
+                  bgcolor: "#ffffff",
+                  color: "#be123c",
+                  border: "1px solid #fbcfe8",
+                  "& .MuiChip-label": { px: 0.5 },
                 }}
-              >
-                =
-              </Button>
-            </Grid>
-          </Grid>
+              />
+            </Box>
+          </Box>
         </Box>
-      )}
 
-      {/* Footer helper note */}
+        {/* Mode Switcher Return Bar */}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1.2 }}>
+          <Chip
+            label="Pink Edition · Non-Programmable"
+            size="small"
+            sx={{
+              bgcolor: "rgba(255, 255, 255, 0.7)",
+              color: "#be185d",
+              fontSize: "0.65rem",
+              fontWeight: 700,
+              height: 20,
+            }}
+          />
+          <Button
+            size="small"
+            onClick={() => setMode("basic")}
+            startIcon={<CalculateIcon sx={{ fontSize: "14px !important" }} />}
+            sx={{
+              py: 0.2,
+              px: 1,
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              borderRadius: "12px",
+              color: "#475569",
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              textTransform: "none",
+              "&:hover": { bgcolor: "#f8fafc", color: "#0f172a" },
+            }}
+          >
+            Quick View
+          </Button>
+        </Box>
+      </Box>
+
+      {/* ====================================================================== */}
+      {/*           AUTHENTIC CASIO NATURAL-V.P.A.M. DOT MATRIX LCD              */}
+      {/* ====================================================================== */}
+      <Box
+        sx={{
+          mb: 2.2,
+          p: 1.5,
+          borderRadius: "14px",
+          // The exact olive-greenish STN LCD matrix tone of genuine Casio calculators
+          background: "linear-gradient(180deg, #cdd7bf 0%, #c4cfb4 100%)",
+          border: "3px solid #334155",
+          boxShadow:
+            "inset 0 4px 10px rgba(0,0,0,0.35), 0 2px 6px rgba(255,255,255,0.8)",
+          minHeight: 104,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          position: "relative",
+          userSelect: "none",
+        }}
+      >
+        {/* LCD Status Indicators Bar */}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pb: 0.5 }}>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            {/* [S] Shift */}
+            <Typography
+              sx={{
+                fontSize: "0.68rem",
+                fontWeight: 900,
+                fontFamily: "monospace",
+                color: isShift ? "#142014" : "rgba(20, 32, 20, 0.18)",
+                bgcolor: isShift ? "rgba(20, 32, 20, 0.15)" : "transparent",
+                px: "3px",
+                borderRadius: "2px",
+              }}
+            >
+              [S]
+            </Typography>
+
+            {/* [A] Alpha */}
+            <Typography
+              sx={{
+                fontSize: "0.68rem",
+                fontWeight: 900,
+                fontFamily: "monospace",
+                color: isAlpha ? "#142014" : "rgba(20, 32, 20, 0.18)",
+                bgcolor: isAlpha ? "rgba(20, 32, 20, 0.15)" : "transparent",
+                px: "3px",
+                borderRadius: "2px",
+              }}
+            >
+              [A]
+            </Typography>
+
+            {/* [M] Memory */}
+            <Typography
+              sx={{
+                fontSize: "0.68rem",
+                fontWeight: 900,
+                fontFamily: "monospace",
+                color: hasMemory ? "#142014" : "rgba(20, 32, 20, 0.18)",
+              }}
+            >
+              [M]
+            </Typography>
+
+            {/* [D] DEG / [R] RAD */}
+            <Typography
+              onClick={cycleAngleMode}
+              sx={{
+                fontSize: "0.68rem",
+                fontWeight: 900,
+                fontFamily: "monospace",
+                color: "#142014",
+                cursor: "pointer",
+                borderBottom: "1px dashed #142014",
+                "&:hover": { opacity: 0.7 },
+              }}
+            >
+              [{angleMode === "deg" ? "D" : "R"}]
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            {isFractionView && (
+              <Typography
+                sx={{
+                  fontSize: "0.65rem",
+                  fontWeight: 900,
+                  fontFamily: "monospace",
+                  color: "#142014",
+                }}
+              >
+                [Frac]
+              </Typography>
+            )}
+            <Typography
+              sx={{
+                fontSize: "0.65rem",
+                fontWeight: 900,
+                fontFamily: "monospace",
+                color: "#142014",
+              }}
+            >
+              Math ▲▼
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Upper Formula / Equation Input Line with Blinking Cursor */}
+        <Box
+          sx={{
+            minHeight: 26,
+            overflowX: "auto",
+            overflowY: "hidden",
+            whiteSpace: "nowrap",
+            py: 0.3,
+            "&::-webkit-scrollbar": { display: "none" },
+          }}
+        >
+          <Typography
+            component="div"
+            sx={{
+              fontFamily: "'Courier New', Courier, monospace",
+              fontSize: { xs: "0.95rem", sm: "1.1rem" },
+              fontWeight: 700,
+              color: "#142014",
+              letterSpacing: "0.5px",
+            }}
+          >
+            {formula || "\u00A0"}
+            {!hasEvaluated && (
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-block",
+                  width: "2px",
+                  height: "1em",
+                  bgcolor: cursorVisible ? "#142014" : "transparent",
+                  ml: "2px",
+                  verticalAlign: "middle",
+                }}
+              />
+            )}
+          </Typography>
+        </Box>
+
+        {/* Lower Main Calculation Result Output Line */}
+        <Box sx={{ textAlign: "right", minHeight: 34, overflowX: "auto" }}>
+          <Typography
+            sx={{
+              fontFamily: "'Courier New', Courier, monospace",
+              fontSize: { xs: "1.6rem", sm: "1.9rem" },
+              fontWeight: 900,
+              color: "#0a120a",
+              letterSpacing: "1px",
+              lineHeight: 1.1,
+            }}
+          >
+            {resultDisplay}
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* ====================================================================== */}
+      {/*              CASIO CONTROL ROW: SHIFT, ALPHA, REPLAY D-PAD, MODE, ON   */}
+      {/* ====================================================================== */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 2,
+          px: { xs: 0.5, sm: 1 },
+        }}
+      >
+        {/* Left Controls: SHIFT & ALPHA */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.8, width: { xs: 62, sm: 72 } }}>
+          <Button
+            size="small"
+            onClick={() => setIsShift((v) => !v)}
+            sx={{
+              py: 0.5,
+              borderRadius: "8px",
+              bgcolor: isShift ? "#fef3c7" : "#fffbeb",
+              color: "#b45309",
+              border: isShift ? "2px solid #f59e0b" : "1px solid #fde68a",
+              boxShadow: isShift ? "0 1px 0 #d97706, inset 0 2px 4px rgba(0,0,0,0.1)" : "0 2px 0 #d97706",
+              fontWeight: 900,
+              fontSize: "0.78rem",
+              textTransform: "none",
+            }}
+          >
+            SHIFT
+          </Button>
+          <Button
+            size="small"
+            onClick={() => setIsAlpha((v) => !v)}
+            sx={{
+              py: 0.5,
+              borderRadius: "8px",
+              bgcolor: isAlpha ? "#fce7f3" : "#fff1f2",
+              color: "#be185d",
+              border: isAlpha ? "2px solid #ec4899" : "1px solid #fbcfe8",
+              boxShadow: isAlpha ? "0 1px 0 #db2777, inset 0 2px 4px rgba(0,0,0,0.1)" : "0 2px 0 #db2777",
+              fontWeight: 900,
+              fontSize: "0.78rem",
+              textTransform: "none",
+            }}
+          >
+            ALPHA
+          </Button>
+        </Box>
+
+        {/* Center: Iconic Oval REPLAY 4-Way D-Pad */}
+        <Box
+          sx={{
+            width: { xs: 96, sm: 110 },
+            height: { xs: 68, sm: 76 },
+            borderRadius: "38px",
+            // Silver metallic / light pink Casio REPLAY pad
+            background: "linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%)",
+            border: "2px solid #cbd5e1",
+            boxShadow:
+              "0 4px 10px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.9)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "space-between",
+            p: 0.5,
+            position: "relative",
+          }}
+        >
+          {/* Up arrow (History prev) */}
+          <IconButton
+            size="small"
+            onClick={historyUp}
+            sx={{ p: 0, color: "#475569", "&:hover": { color: "#0f172a" } }}
+          >
+            <ArrowDropUpIcon sx={{ fontSize: 24 }} />
+          </IconButton>
+
+          {/* Left / REPLAY text / Right */}
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", px: 0.8 }}>
+            <IconButton
+              size="small"
+              onClick={() => {
+                /* cursor left */
+              }}
+              sx={{ p: 0, color: "#475569" }}
+            >
+              <ArrowLeftIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+
+            <Typography
+              sx={{
+                fontSize: "0.62rem",
+                fontWeight: 900,
+                color: "#64748b",
+                letterSpacing: "1px",
+                userSelect: "none",
+              }}
+            >
+              REPLAY
+            </Typography>
+
+            <IconButton
+              size="small"
+              onClick={() => {
+                /* cursor right */
+              }}
+              sx={{ p: 0, color: "#475569" }}
+            >
+              <ArrowRightIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+          </Box>
+
+          {/* Down arrow (History next) */}
+          <IconButton
+            size="small"
+            onClick={historyDown}
+            sx={{ p: 0, color: "#475569", "&:hover": { color: "#0f172a" } }}
+          >
+            <ArrowDropDownIcon sx={{ fontSize: 24 }} />
+          </IconButton>
+        </Box>
+
+        {/* Right Controls: MODE/SETUP & ON */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.8, width: { xs: 62, sm: 72 } }}>
+          <Button
+            size="small"
+            onClick={cycleAngleMode}
+            sx={{
+              py: 0.5,
+              borderRadius: "8px",
+              bgcolor: "#ffffff",
+              color: "#1e293b",
+              border: "1px solid #cbd5e1",
+              boxShadow: "0 2px 0 #94a3b8",
+              fontWeight: 800,
+              fontSize: "0.72rem",
+              textTransform: "none",
+            }}
+          >
+            MODE
+          </Button>
+          <Button
+            size="small"
+            onClick={allClearCasio}
+            sx={{
+              py: 0.5,
+              borderRadius: "8px",
+              bgcolor: "#ffffff",
+              color: "#0f172a",
+              border: "1px solid #cbd5e1",
+              boxShadow: "0 2px 0 #94a3b8",
+              fontWeight: 900,
+              fontSize: "0.78rem",
+              textTransform: "none",
+            }}
+          >
+            ON
+          </Button>
+        </Box>
+      </Box>
+
+      {/* ====================================================================== */}
+      {/*               SCIENTIFIC FUNCTION KEYS GRID (6 COLUMNS)                */}
+      {/* ====================================================================== */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(6, 1fr)",
+          gap: { xs: "6px 4px", sm: "8px 6px" },
+          mb: 2,
+        }}
+      >
+        {/* ROW 1 */}
+        {renderCasioKey({
+          label: "x⁻¹",
+          shiftLabel: "x!",
+          onClick: () => {
+            if (isShift) insertToken("!")
+            else insertToken("^(-1)")
+          },
+        })}
+        {renderCasioKey({
+          label: "log■□",
+          shiftLabel: "d/dx",
+          onClick: () => insertToken("log("),
+        })}
+        {renderCasioKey({
+          label: "믐",
+          shiftLabel: "■/□",
+          onClick: () => insertToken("/"),
+        })}
+        {renderCasioKey({
+          label: "√■",
+          shiftLabel: "³√■",
+          onClick: () => {
+            if (isShift) insertToken("cbrt(")
+            else insertToken("sqrt(")
+          },
+        })}
+        {renderCasioKey({
+          label: "x²",
+          shiftLabel: "x³",
+          onClick: () => {
+            if (isShift) insertToken("^3")
+            else insertToken("^2")
+          },
+        })}
+        {renderCasioKey({
+          label: "xʸ",
+          shiftLabel: "x√",
+          onClick: () => insertToken("^"),
+        })}
+
+        {/* ROW 2 */}
+        {renderCasioKey({
+          label: "log",
+          shiftLabel: "10■",
+          onClick: () => {
+            if (isShift) insertToken("10^(")
+            else insertToken("log(")
+          },
+        })}
+        {renderCasioKey({
+          label: "ln",
+          shiftLabel: "e■",
+          alphaLabel: "e",
+          onClick: () => {
+            if (isAlpha) insertToken("e")
+            else if (isShift) insertToken("exp(")
+            else insertToken("ln(")
+          },
+        })}
+        {renderCasioKey({
+          label: "(-)",
+          shiftLabel: "←",
+          alphaLabel: "A",
+          onClick: () => insertToken("−"),
+        })}
+        {renderCasioKey({
+          label: "°' \"",
+          shiftLabel: "←",
+          alphaLabel: "B",
+          onClick: () => insertToken("°"),
+        })}
+        {renderCasioKey({
+          label: "hyp",
+          shiftLabel: "Abs",
+          alphaLabel: "C",
+          onClick: () => {
+            if (isShift) insertToken("abs(")
+            else insertToken("sinh(")
+          },
+        })}
+        {renderCasioKey({
+          label: "sin",
+          shiftLabel: "sin⁻¹",
+          alphaLabel: "D",
+          onClick: () => {
+            if (isShift) insertToken("asin(")
+            else insertToken("sin(")
+          },
+        })}
+
+        {/* ROW 3 */}
+        {renderCasioKey({
+          label: "cos",
+          shiftLabel: "cos⁻¹",
+          alphaLabel: "E",
+          onClick: () => {
+            if (isShift) insertToken("acos(")
+            else insertToken("cos(")
+          },
+        })}
+        {renderCasioKey({
+          label: "tan",
+          shiftLabel: "tan⁻¹",
+          alphaLabel: "F",
+          onClick: () => {
+            if (isShift) insertToken("atan(")
+            else insertToken("tan(")
+          },
+        })}
+        {renderCasioKey({
+          label: "RCL",
+          shiftLabel: "STO",
+          alphaLabel: "X",
+          onClick: () => {
+            if (isAlpha) insertToken("X")
+            else insertToken("Ans")
+          },
+        })}
+        {renderCasioKey({
+          label: "ENG",
+          shiftLabel: "←",
+          alphaLabel: "Y",
+          onClick: () => {
+            if (isAlpha) insertToken("Y")
+            else insertToken("*10^3")
+          },
+        })}
+        {renderCasioKey({
+          label: "(",
+          shiftLabel: "%",
+          onClick: () => {
+            if (isShift) insertToken("%")
+            else insertToken("(")
+          },
+        })}
+        {renderCasioKey({
+          label: ")",
+          shiftLabel: ",",
+          onClick: () => insertToken(")"),
+        })}
+
+        {/* ROW 4 */}
+        {renderCasioKey({
+          label: "S<=>D",
+          shiftLabel: "a b/c",
+          span: 3,
+          fontSize: { xs: "0.85rem", sm: "0.95rem" },
+          onClick: toggleFractionView,
+        })}
+        {renderCasioKey({
+          label: "M+",
+          shiftLabel: "M-",
+          alphaLabel: "M",
+          span: 3,
+          onClick: () => {
+            setHasMemory(true)
+            setMemoryValue((prev) => prev + lastNumericResult)
+          },
+        })}
+      </Box>
+
+      {/* ====================================================================== */}
+      {/*             BOTTOM NUMBER & ARITHMETIC KEYPAD (5 COLUMNS)              */}
+      {/* ====================================================================== */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(5, 1fr)",
+          gap: { xs: "7px 5px", sm: "9px 7px" },
+        }}
+      >
+        {/* ROW 1: 7, 8, 9, DEL, AC */}
+        {renderCasioKey({
+          label: "7",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("7"),
+        })}
+        {renderCasioKey({
+          label: "8",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("8"),
+        })}
+        {renderCasioKey({
+          label: "9",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("9"),
+        })}
+        {renderCasioKey({
+          label: "DEL",
+          variant: "del",
+          fontSize: { xs: "0.82rem", sm: "0.95rem" },
+          onClick: deleteCasio,
+        })}
+        {renderCasioKey({
+          label: "AC",
+          variant: "ac",
+          fontSize: { xs: "0.85rem", sm: "1rem" },
+          onClick: allClearCasio,
+        })}
+
+        {/* ROW 2: 4, 5, 6, ×, ÷ */}
+        {renderCasioKey({
+          label: "4",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("4"),
+        })}
+        {renderCasioKey({
+          label: "5",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("5"),
+        })}
+        {renderCasioKey({
+          label: "6",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("6"),
+        })}
+        {renderCasioKey({
+          label: "×",
+          variant: "op",
+          fontSize: { xs: "1.2rem", sm: "1.35rem" },
+          onClick: () => insertToken("×"),
+        })}
+        {renderCasioKey({
+          label: "÷",
+          variant: "op",
+          fontSize: { xs: "1.2rem", sm: "1.35rem" },
+          onClick: () => insertToken("÷"),
+        })}
+
+        {/* ROW 3: 1, 2, 3, +, − */}
+        {renderCasioKey({
+          label: "1",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("1"),
+        })}
+        {renderCasioKey({
+          label: "2",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("2"),
+        })}
+        {renderCasioKey({
+          label: "3",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("3"),
+        })}
+        {renderCasioKey({
+          label: "+",
+          variant: "op",
+          fontSize: { xs: "1.2rem", sm: "1.35rem" },
+          onClick: () => insertToken("+"),
+        })}
+        {renderCasioKey({
+          label: "−",
+          variant: "op",
+          fontSize: { xs: "1.2rem", sm: "1.35rem" },
+          onClick: () => insertToken("−"),
+        })}
+
+        {/* ROW 4: 0, ., ×10ˣ, Ans, = */}
+        {renderCasioKey({
+          label: "0",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("0"),
+        })}
+        {renderCasioKey({
+          label: "•",
+          variant: "num",
+          fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          onClick: () => insertToken("."),
+        })}
+        {renderCasioKey({
+          label: "×10ˣ",
+          shiftLabel: "π",
+          alphaLabel: "e",
+          variant: "fn",
+          fontSize: { xs: "0.78rem", sm: "0.88rem" },
+          onClick: () => {
+            if (isAlpha) insertToken("e")
+            else if (isShift) insertToken("π")
+            else insertToken("*10^")
+          },
+        })}
+        {renderCasioKey({
+          label: "Ans",
+          shiftLabel: "%",
+          variant: "fn",
+          fontSize: { xs: "0.82rem", sm: "0.95rem" },
+          onClick: () => {
+            if (isShift) insertToken("%")
+            else insertToken("Ans")
+          },
+        })}
+        {renderCasioKey({
+          label: "=",
+          variant: "equals",
+          fontSize: { xs: "1.3rem", sm: "1.5rem" },
+          onClick: evaluateCasio,
+        })}
+      </Box>
+
+      {/* Casio Footer Casing Inscription */}
       <Typography
         variant="caption"
-        color="text.secondary"
-        sx={{ display: "block", mt: 1.5, textAlign: "center", fontWeight: 500, fontSize: "0.75rem" }}
+        sx={{
+          display: "block",
+          mt: 2,
+          textAlign: "center",
+          color: "#9d174d",
+          fontSize: "0.72rem",
+          fontWeight: 700,
+          letterSpacing: "0.3px",
+        }}
       >
-        {mode === "basic"
-          ? "Instant math · Click Scientific for trigonometry, powers & logarithms"
-          : "Full scientific engine · Trigonometry · Logarithms · Powers · Factorials"}
+        CASIO COMPUTER CO., LTD. · fx-991ES PLUS Pink 2nd Edition · Natural-V.P.A.M.
       </Typography>
     </Paper>
   )
