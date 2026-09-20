@@ -55,6 +55,8 @@ class Calculator:
                     raw = ""
             if f.type in ("number",):
                 try:
+                    if isinstance(raw, str):
+                        raw = raw.replace(",", "").replace("$", "").replace("€", "").replace("৳", "").strip()
                     cleaned[f.name] = float(raw)
                 except (TypeError, ValueError):
                     errors.append(f"'{f.name}' must be numeric")

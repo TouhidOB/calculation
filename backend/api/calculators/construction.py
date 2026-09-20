@@ -32,6 +32,8 @@ register_calculator(
 
 def _rebar(data):
     import math
+    if data["spacing"] <= 0:
+        return {"error": "Bar spacing must be greater than zero"}
     spacing_m = data["spacing"] / 100
     length_m = data["length"]
     bars = math.floor(length_m / spacing_m) + 1
@@ -95,6 +97,8 @@ register_calculator(
 
 def _flooring(data):
     import math
+    if data["board_length"] <= 0 or data["board_width"] <= 0:
+        return {"error": "Board dimensions must be greater than zero"}
     room_area = data["length"] * data["width"]
     board_area = (data["board_length"] / 100) * (data["board_width"] / 100)
     boards = math.ceil(room_area / board_area * 1.1)  # +10% waste
@@ -146,7 +150,13 @@ register_calculator(
 
 def _roofing(data):
     import math
-    slope_area = data["length"] * data["width"] / math.cos(math.radians(data["pitch"]))
+    if data["sheet_length"] <= 0 or data["sheet_width"] <= 0:
+        return {"error": "Sheet dimensions must be greater than zero"}
+    rad = math.radians(data["pitch"])
+    cos_val = math.cos(rad)
+    if cos_val <= 0.001:
+        return {"error": "Roof pitch angle is too steep"}
+    slope_area = data["length"] * data["width"] / cos_val
     sheets = math.ceil(slope_area / (data["sheet_length"] * data["sheet_width"]))
     return {
         "roof_area_m2": round(slope_area, 2),

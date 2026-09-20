@@ -53,6 +53,8 @@ def _yarn_count(data):
     """
     Cotton count conversion: Ne = L/(840×W)
     """
+    if data["value"] <= 0:
+        return {"error": "Value must be greater than zero"}
     if data["direction"] == "to_metric":
         # English (Ne) → Tex
         ne = data["value"]

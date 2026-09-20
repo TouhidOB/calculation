@@ -115,6 +115,8 @@ register_calculator(
 
 
 def _bmi_prime(data):
+    if data["height"] <= 0 or data["weight"] <= 0:
+        return {"error": "Height and weight must be greater than zero"}
     height_m = data["height"] / 100
     bmi = data["weight"] / (height_m ** 2)
     return {"bmi": round(bmi, 2), "bmi_prime": round(bmi / 25, 3)}

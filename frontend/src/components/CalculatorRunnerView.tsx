@@ -15,6 +15,14 @@ import GlobalFooter from "@/components/GlobalFooter"
 import ModernDatePicker from "@/components/ModernDatePicker"
 import { seoHowToFor, seoFaqFor, seoIntroFor, seoFormulaFor } from "@/lib/seo-helpers"
 import DOMPurify from "dompurify"
+import {
+  InstrumentChassis,
+  DigitalReadoutScreen,
+  AuditLedgerSlip,
+  PrecisionArcGauge,
+  SpecificationSheet,
+  TactileButton,
+} from "@/components/instrument"
 
 // MUI components
 import Box from "@mui/material/Box"
@@ -212,6 +220,80 @@ function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, 
   return ex
 }
 
+function extractPrimaryResult(result: Record<string, unknown> | null): {
+  primaryKey: string
+  primaryLabel: string
+  primaryValue: string
+  unit?: string
+  statusBadge?: string
+  numericValue?: number
+} {
+  if (!result) {
+    return { primaryKey: "", primaryLabel: "AWAITING TELEMETRY", primaryValue: "STANDBY" }
+  }
+
+  const entries = Object.entries(result).filter(([k]) => k !== "note" && k !== "js_required" && k !== "error")
+  if (entries.length === 0) {
+    return { primaryKey: "", primaryLabel: "CALCULATION COMPLETE", primaryValue: "OK" }
+  }
+
+  const priorityKeys = [
+    "monthly_payment", "total_payment", "bmi", "bmi_prime", "tdee", "bmr",
+    "volume_m3", "volume_yd3", "roi_pct", "gain", "net_worth", "surplus",
+    "efficiency_pct", "consumption_per_pcs_kg", "litres", "total_cost",
+    "area_m2", "final_amount", "interest_earned", "difference_days",
+    "years", "tex", "ne", "converted", "cost_per_minute"
+  ]
+
+  let chosenEntry = entries.find(([k]) => priorityKeys.includes(k.toLowerCase()))
+  if (!chosenEntry) {
+    chosenEntry = entries.find(([, v]) => typeof v === "number") || entries[0]
+  }
+
+  const [key, val] = chosenEntry
+  const label = key.replaceAll("_", " ").toUpperCase()
+
+  let unit = ""
+  let statusBadge = ""
+  let numericVal: number | undefined = undefined
+
+  if (typeof val === "number") {
+    numericVal = val
+    const k = key.toLowerCase()
+    if (k.includes("payment") || k.includes("cost") || k.includes("amount") || k.includes("price") || k.includes("worth") || k.includes("salary") || k.includes("gain")) {
+      unit = "$"
+    } else if (k.includes("pct") || k.includes("rate") || k.includes("ratio") || k.includes("margin") || k.includes("efficiency")) {
+      unit = "%"
+    } else if (k.includes("m3") || k.includes("volume")) {
+      unit = "m³"
+    } else if (k.includes("m2") || k.includes("area")) {
+      unit = "m²"
+    } else if (k.includes("kg") || k.includes("weight")) {
+      unit = "kg"
+    }
+  }
+
+  if (result.category && typeof result.category === "string") {
+    statusBadge = result.category
+  } else if (result.status && typeof result.status === "string") {
+    statusBadge = result.status
+  }
+
+  const formattedVal =
+    typeof val === "number"
+      ? val.toLocaleString(undefined, { maximumFractionDigits: 3 })
+      : String(val)
+
+  return {
+    primaryKey: key,
+    primaryLabel: label,
+    primaryValue: formattedVal,
+    unit,
+    statusBadge,
+    numericValue: numericVal,
+  }
+}
+
 interface CalculatorRunnerViewProps {
   calc: CalculatorDef
   embedded?: boolean
@@ -249,6 +331,7 @@ export default function CalculatorRunnerView({
     return init
   })
   const [result, setResult] = useState<Record<string, unknown> | null>(null)
+  const primary = useMemo(() => extractPrimaryResult(result), [result])
   const [jsHtml, setJsHtml] = useState<string | null>(null)
   const [jsTrigger, setJsTrigger] = useState(0)
   const [busy, setBusy] = useState(false)
@@ -666,7 +749,15 @@ export default function CalculatorRunnerView({
             </Box>
           )}
 
-          <Grid container spacing={3.5}>
+          <InstrumentChassis
+            title={calc.name}
+            categoryName={catMeta?.label || calc.category}
+            categoryEmoji={catMeta?.emoji || "⚡"}
+            isCalculating={busy}
+            onReset={handleReset}
+            onFillExample={handleFillExample}
+          >
+            <Grid container spacing={3.5}>
             {/* Form section */}
             <Grid size={{ xs: 12, md: 6 }}>
               <Paper
@@ -830,26 +921,21 @@ export default function CalculatorRunnerView({
                       )
                     })}
 
-                    <Button
+                    <TactileButton
                       type="submit"
-                      variant="contained"
+                      buttonColor="primary"
                       size="large"
                       disabled={busy}
                       className="no-print"
                       startIcon={<PlayArrowIcon />}
                       sx={{
                         py: 1.6,
-                        borderRadius: 3,
-                        fontWeight: 800,
-                        textTransform: "none",
                         fontSize: 16,
-                        bgcolor: "#4f46e5",
-                        "&:hover": { bgcolor: "#4338ca" },
-                        boxShadow: "0 4px 14px rgba(79, 70, 229, 0.4)",
+                        width: "100%",
                       }}
                     >
-                      {busy ? "Calculating..." : "⚡ Calculate"}
-                    </Button>
+                      {busy ? "CALCULATING TELEMETRY..." : "⚡ CALCULATE NOW"}
+                    </TactileButton>
                   </Stack>
                 </form>
               </Paper>
@@ -881,7 +967,7 @@ export default function CalculatorRunnerView({
                   elevation={0}
                   sx={{
                     p: { xs: 2.5, sm: 3.5 },
-                    border: "1px solid #e2e8f0",
+                    border: "1.5px solid #cbd5e1",
                     borderRadius: 3.5,
                     bgcolor: "#ffffff",
                   }}
@@ -907,139 +993,179 @@ export default function CalculatorRunnerView({
                   </Box>
                 </Paper>
               ) : result || jsHtml ? (
-                <Paper
-                  elevation={0}
-                  className="print-card"
-                  sx={{
-                    p: { xs: 2.5, sm: 3.5 },
-                    border: "1px solid #e2e8f0",
-                    borderRadius: 3.5,
-                    bgcolor: "#ffffff",
-                  }}
-                >
-                  <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2.5 }}>
-                    <CheckCircleIcon sx={{ color: "#10b981" }} />
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                      Results
-                    </Typography>
-                    <Chip label="Ready" size="small" sx={{ ml: "auto", bgcolor: "#ecfdf5", color: "#059669", fontWeight: 700, border: "1px solid #a7f3d0" }} />
-                  </Stack>
+                <Stack spacing={2.5} className="print-card">
+                  {/* Digital Hero Readout Window */}
+                  <DigitalReadoutScreen
+                    label={primary.primaryLabel}
+                    value={primary.primaryValue}
+                    unit={primary.unit}
+                    statusBadge={primary.statusBadge || "VERIFIED"}
+                    subText="TryCalc Precision Core · Calibrated Result"
+                  />
+
+                  {/* Category-Specific Realistic Instrument Output */}
+                  {calc.category.includes("finance") || calc.category.includes("business") || calc.category.includes("budget") ? (
+                    <AuditLedgerSlip
+                      title={`${calc.name} Audit Slip`}
+                      items={Object.entries(result || {})
+                        .filter(([k]) => k !== "note" && k !== "js_required" && k !== "error")
+                        .map(([k, v]) => ({
+                          label: k.replaceAll("_", " ").toUpperCase(),
+                          value: typeof v === "number" ? v.toLocaleString(undefined, { maximumFractionDigits: 3 }) : String(v),
+                          highlight: k === primary.primaryKey,
+                          isTotal: k.toLowerCase().includes("total") || k.toLowerCase().includes("final") || k === primary.primaryKey,
+                        }))}
+                    />
+                  ) : calc.category.includes("health") && (primary.primaryKey.includes("bmi") || (primary.numericValue !== undefined && primary.numericValue > 5 && primary.numericValue < 100)) ? (
+                    <PrecisionArcGauge
+                      value={typeof primary.numericValue === "number" ? primary.numericValue : 22.4}
+                      min={10}
+                      max={45}
+                      unit="kg/m²"
+                      title={calc.name}
+                      statusText={primary.statusBadge || (typeof primary.numericValue === "number" && primary.numericValue < 18.5 ? "Underweight" : typeof primary.numericValue === "number" && primary.numericValue < 25 ? "Normal Weight" : typeof primary.numericValue === "number" && primary.numericValue < 30 ? "Overweight" : "Alert / High")}
+                      zones={[
+                        { min: 10, max: 18.5, color: "#38bdf8", label: "Under" },
+                        { min: 18.5, max: 25, color: "#10b981", label: "Normal" },
+                        { min: 25, max: 30, color: "#f59e0b", label: "Over" },
+                        { min: 30, max: 45, color: "#ef4444", label: "High" },
+                      ]}
+                    />
+                  ) : calc.category.includes("construction") || calc.category.includes("garment") || calc.category.includes("conversion") ? (
+                    <SpecificationSheet
+                      title={`${calc.name} Bill of Materials`}
+                      items={Object.entries(result || {})
+                        .filter(([k]) => k !== "note" && k !== "js_required" && k !== "error")
+                        .map(([k, v]) => ({
+                          name: k.replaceAll("_", " ").toUpperCase(),
+                          quantity: typeof v === "number" ? v.toLocaleString(undefined, { maximumFractionDigits: 3 }) : String(v),
+                          highlight: k === primary.primaryKey,
+                        }))}
+                    />
+                  ) : (
+                    /* Default High-Contrast Precision Table */
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2.5,
+                        bgcolor: "#ffffff",
+                        border: "1.5px solid #cbd5e1",
+                        borderRadius: 3,
+                        boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
+                      }}
+                    >
+                      <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2, pb: 1, borderBottom: "1.5px solid #e2e8f0" }}>
+                        <CheckCircleIcon sx={{ color: "#10b981", fontSize: 20 }} />
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                          Itemized Telemetry
+                        </Typography>
+                      </Stack>
+                      <Stack spacing={1.5}>
+                        {Object.entries(result || {}).filter(([k]) => k !== "note" && k !== "js_required" && k !== "error").map(([key, val]) => (
+                          <Box
+                            key={key}
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "baseline",
+                              gap: 2,
+                              pb: 1,
+                              borderBottom: "1px dashed #f1f5f9",
+                            }}
+                          >
+                            <Typography variant="body2" sx={{ color: "#475569", textTransform: "uppercase", fontWeight: 700, fontSize: 12 }}>
+                              {String(key).replaceAll("_", " ")}
+                            </Typography>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a", fontFamily: "monospace" }}>
+                              {typeof val === "number" ? val.toLocaleString(undefined, { maximumFractionDigits: 3 }) : String(val)}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Paper>
+                  )}
 
                   {/* Render JS runner HTML output with DOMPurify sanitization */}
-                  {jsHtml ? (
+                  {jsHtml && (
                     <Box
-                      component="div"
+                      sx={{
+                        p: 2,
+                        bgcolor: "#ffffff",
+                        border: "1.5px solid #cbd5e1",
+                        borderRadius: 2.5,
+                        fontFamily: "monospace",
+                        "& table": { width: "100%", borderCollapse: "collapse", my: 1 },
+                        "& th": { bgcolor: "#f1f5f9", p: 1, border: "1px solid #cbd5e1", textAlign: "left", fontSize: "0.85rem", fontWeight: 700 },
+                        "& td": { p: 1, border: "1px solid #e2e8f0", fontSize: "0.85rem" },
+                      }}
                       dangerouslySetInnerHTML={{
                         __html: typeof window !== "undefined" ? DOMPurify.sanitize(jsHtml) : jsHtml,
                       }}
                     />
-                  ) : result ? (
-                    <Stack spacing={2}>
-                      {Object.entries(result).map(([key, val]) => (
-                        <Box
-                          key={key}
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "baseline",
-                            gap: 2,
-                            pb: 1.5,
-                            borderBottom: "1px solid #f1f5f9",
-                          }}
-                        >
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#475569", textTransform: "capitalize", fontWeight: 600 }}
-                          >
-                            {String(key).replaceAll("_", " ")}
-                          </Typography>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a", fontFamily: "monospace" }}>
-                            {String(val)}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                  ) : null}
+                  )}
 
                   {result && <ResultBreakdownChart result={result} />}
 
-                  {/* Result Actions */}
-                  <Stack direction="row" spacing={1.5} className="no-print" sx={{ mt: 3, pt: 2, borderTop: "1px solid #e2e8f0", flexWrap: "wrap", gap: 1 }}>
-                    <Button
+                  {/* Tactile Result Actions */}
+                  <Stack direction="row" spacing={1.5} className="no-print" sx={{ mt: 2, pt: 2, borderTop: "1.5px dashed #cbd5e1", flexWrap: "wrap", gap: 1 }}>
+                    <TactileButton
                       size="small"
-                      variant="contained"
+                      buttonColor="primary"
                       startIcon={<ContentCopyIcon />}
                       onClick={handleCopyResult}
-                      sx={{
-                        borderRadius: 2,
-                        textTransform: "none",
-                        fontWeight: 700,
-                        fontSize: 13,
-                        bgcolor: "#4f46e5",
-                        "&:hover": { bgcolor: "#4338ca" },
-                      }}
                     >
                       Copy Results
-                    </Button>
-                    <Button
+                    </TactileButton>
+                    <TactileButton
                       size="small"
-                      variant="outlined"
+                      buttonColor="secondary"
                       startIcon={<ShareIcon />}
                       onClick={handleShare}
-                      sx={{
-                        borderRadius: 2,
-                        textTransform: "none",
-                        fontWeight: 600,
-                        fontSize: 13,
-                        color: "#475569",
-                        borderColor: "#e2e8f0",
-                        "&:hover": { bgcolor: "#f8fafc", borderColor: "#cbd5e1" },
-                      }}
                     >
                       Share Link
-                    </Button>
-                    <Button
+                    </TactileButton>
+                    <TactileButton
                       size="small"
-                      variant="outlined"
+                      buttonColor="secondary"
                       startIcon={<PrintIcon />}
                       onClick={() => typeof window !== "undefined" && window.print()}
-                      sx={{
-                        borderRadius: 2,
-                        textTransform: "none",
-                        fontWeight: 600,
-                        fontSize: 13,
-                        color: "#475569",
-                        borderColor: "#e2e8f0",
-                        "&:hover": { bgcolor: "#f8fafc", borderColor: "#cbd5e1" },
-                      }}
                     >
-                      Print Report
-                    </Button>
+                      Print Audit Report
+                    </TactileButton>
                   </Stack>
-                </Paper>
+                </Stack>
               ) : (
-                <Paper
-                  elevation={0}
-                  className="no-print"
-                  sx={{
-                    p: 5,
-                    border: "1px dashed #cbd5e1",
-                    borderRadius: 3.5,
-                    textAlign: "center",
-                    bgcolor: "#ffffff",
-                  }}
-                >
-                  <CalculateIcon sx={{ fontSize: 48, color: "#94a3b8", mb: 1 }} />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0f172a", mb: 0.5 }}>
-                    Ready to Calculate
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#64748b", maxWidth: 360, mx: "auto" }}>
-                    Fill the form on the left or click <strong>⚡ Fill Example</strong> to see instant results.
-                  </Typography>
-                </Paper>
+                <Stack spacing={2.5} className="no-print">
+                  <DigitalReadoutScreen
+                    label="TRYCALC COMPUTATION ENGINE"
+                    value="READY"
+                    unit="TC-689"
+                    statusBadge="STANDBY"
+                    subText="Hardware calibrated. Enter variables on the left panel or click 'Fill Example' to execute."
+                  />
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 4,
+                      border: "1.5px dashed #cbd5e1",
+                      borderRadius: 3.5,
+                      textAlign: "center",
+                      bgcolor: "#ffffff",
+                    }}
+                  >
+                    <CalculateIcon sx={{ fontSize: 44, color: "#94a3b8", mb: 1 }} />
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a", mb: 0.5 }}>
+                      Awaiting Calculation Parameters
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#64748b", maxWidth: 360, mx: "auto", fontSize: 13 }}>
+                      Fill parameters in the control deck on the left or tap <strong>⚡ Fill Example</strong> for instant precision telemetry.
+                    </Typography>
+                  </Paper>
+                </Stack>
               )}
             </Grid>
           </Grid>
+        </InstrumentChassis>
 
           {/* Detailed Overview, Methodology & Guides — Below-the-Fold Content */}
           {!embedded && (

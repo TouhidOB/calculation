@@ -69,6 +69,8 @@ register_calculator(
 
 
 def _dti(data):
+    if data["gross_income"] <= 0:
+        return {"error": "Gross monthly income must be greater than zero"}
     ratio = data["monthly_debt"] / data["gross_income"] * 100
     if ratio <= 36:
         category, color = "Healthy", "#10b981"
@@ -129,6 +131,8 @@ register_calculator(
 
 def _loan_payment(data):
     p, r, n = data["principal"], data["rate"] / 100 / 12, int(data["months"])
+    if n <= 0:
+        return {"error": "Term must be at least 1 month"}
     if r == 0:
         payment = p / n
     else:
@@ -157,6 +161,8 @@ register_calculator(
 def _mortgage(data):
     p, annual_rate, years = data["principal"], data["rate"], data["years"]
     n = int(years * 12)
+    if n <= 0:
+        return {"error": "Term must be at least 1 year"}
     r = annual_rate / 100 / 12
     if r == 0:
         payment = p / n
@@ -208,6 +214,8 @@ def _savings_goal(data):
     remaining = data["target"] - data["current"]
     if remaining <= 0:
         return {"months_remaining": 0, "message": "Goal already achieved!"}
+    if data["monthly"] <= 0:
+        return {"error": "Monthly contribution must be greater than zero"}
     months = remaining / data["monthly"]
     return {
         "months_remaining": round(months, 1),
@@ -287,6 +295,8 @@ register_calculator(
 
 
 def _roi(data):
+    if data["initial"] <= 0:
+        return {"error": "Initial investment must be greater than zero"}
     gain = data["final_value"] - data["initial"]
     roi = gain / data["initial"] * 100
     return {

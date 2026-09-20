@@ -5,6 +5,8 @@ from .engine import CalcField, register_calculator
 
 
 def _bmi(data):
+    if data["height"] <= 0 or data["weight"] <= 0:
+        return {"error": "Height and weight must be greater than zero"}
     height_m = data["height"] / 100
     bmi = data["weight"] / (height_m ** 2)
     if bmi < 18.5:
