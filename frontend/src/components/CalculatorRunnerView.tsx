@@ -787,7 +787,7 @@ export default function CalculatorRunnerView({
                       "&:hover": { bgcolor: "#f1f5f9", borderColor: "#cbd5e1" },
                     }}
                   >
-                    ⚡ Fill Example
+                    Fill Example
                   </Button>
                   <Button
                     size="small"
@@ -803,7 +803,7 @@ export default function CalculatorRunnerView({
                       "&:hover": { bgcolor: "#f8fafc", color: "#0f172a" },
                     }}
                   >
-                    ↺ Reset
+                    Reset
                   </Button>
                   <Button
                     size="small"
@@ -904,15 +904,42 @@ export default function CalculatorRunnerView({
                           key={f.name}
                           type={f.type === "number" ? "number" : "text"}
                           label={f.label}
+                          placeholder={f.help || f.label}
                           value={values[f.name] ?? ""}
                           onChange={(e) =>
                             setValues({ ...values, [f.name]: e.target.value })
                           }
                           fullWidth
                           slotProps={{
+                            inputLabel: {
+                              shrink: true,
+                              sx: { fontWeight: 700, color: "#475569" },
+                            },
                             input: {
+                              sx: {
+                                borderRadius: 2,
+                                bgcolor: "#f8fafc",
+                                "&:hover": { bgcolor: "#ffffff" },
+                                "&.Mui-focused": { bgcolor: "#ffffff" },
+                              },
                               endAdornment: f.unit ? (
-                                <InputAdornment position="end">{f.unit}</InputAdornment>
+                                <InputAdornment position="end">
+                                  <Box
+                                    sx={{
+                                      px: 1,
+                                      py: 0.3,
+                                      bgcolor: "#e2e8f0",
+                                      borderRadius: 1,
+                                      fontSize: "0.78rem",
+                                      fontWeight: 800,
+                                      color: "#334155",
+                                      fontFamily: "monospace",
+                                      letterSpacing: "0.5px",
+                                    }}
+                                  >
+                                    {f.unit}
+                                  </Box>
+                                </InputAdornment>
                               ) : null,
                             },
                           }}
