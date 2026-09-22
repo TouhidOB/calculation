@@ -60,7 +60,6 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   health: <FavoriteIcon />,
   construction: <ConstructionIcon />,
   basic: <FunctionsIcon />,
-  garments: <CheckroomIcon />,
   conversion: <SwapHorizIcon />,
   date_time: <ScheduleIcon />,
   education: <SchoolIcon />,

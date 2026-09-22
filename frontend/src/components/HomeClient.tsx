@@ -77,7 +77,6 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   health: <FavoriteIcon />,
   construction: <ConstructionIcon />,
   basic: <FunctionsIcon />,
-  garments: <CheckroomIcon />,
   conversion: <SwapHorizIcon />,
   date_time: <ScheduleIcon />,
   education: <SchoolIcon />,
@@ -106,7 +105,6 @@ function seoIntroFor(calc: CalculatorDef): string {
     basic: `Solve everyday math instantly with this free online ${fname}. Enter ${fieldList} for percentage, discount, tip, and ratio results you can trust.`,
     education: `Compute grades and academic scores with this free online ${fname}. Enter ${fieldList} to get GPA, percentages, test scores, and grade point averages.`,
     math: `Solve math problems step-by-step with this free online ${fname}. Enter ${fieldList} for fractions, statistics, algebra, and geometry answers.`,
-    garments: `Calculate textile and apparel metrics with this free online ${fname}. Enter ${fieldList} for fabric consumption, costing, and production planning.`,
     event_budget: `Budget your events perfectly with this free online ${fname}. Enter ${fieldList} to estimate costs, split expenses, and track spending.`,
     business_investment: `Project returns and business metrics with this free online ${fname}. Enter ${fieldList} for ROI, growth, margin, and investment analysis.`,
   }

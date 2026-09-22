@@ -227,7 +227,6 @@ export const CATEGORY_FALLBACK_ICONS: Record<string, React.ComponentType<SvgIcon
   health: Favorite,
   construction: Construction,
   basic: Functions,
-  garments: Checkroom,
   conversion: SwapHoriz,
   date_time: Schedule,
   education: School,

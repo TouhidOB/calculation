@@ -100,17 +100,6 @@ const CATEGORY_EDITORIAL: Record<
     ],
     bestFor: "Academic homework, retail discounts, markups, and daily mathematics",
   },
-  garments: {
-    tagline: "RMG, Textile & Apparel Manufacturing Calculators",
-    intro:
-      "Purpose-built for textile merchandisers, apparel pattern makers, and industrial garment factories. Calculate yarn counts, fabric GSM consumption, sewing thread consumption, and production efficiency rates.",
-    keyFeatures: [
-      "Direct and indirect yarn numbering system conversions (Ne, Nm, Denier, Tex)",
-      "Knitted and woven fabric consumption formulas",
-      "Factory standard costing and production SMV calculators",
-    ],
-    bestFor: "Garment manufacturing, textile merchandising, and factory line balancing",
-  },
   conversion: {
     tagline: "Scientific & Universal Unit Conversion Engine",
     intro:

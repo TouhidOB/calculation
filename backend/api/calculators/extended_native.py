@@ -548,13 +548,7 @@ def get_all_solvers() -> Dict[str, Callable[[dict], dict]]:
         "wind_speed_mph": v
     })(_fnum(d, 'temperature', 30), max(0.0, _fnum(d, 'wind-speed', 15)))
 
-    # ==================== 9. GARMENTS & SIZING (2) ====================
-    solvers['bra-size-calculator'] = lambda d: (lambda band, bust: {
-        "band_size_inches": int(round(band)),
-        "cup_size": ["AA", "A", "B", "C", "D", "DD/E", "DDD/F", "G", "H"][max(0, min(8, int(round(bust - band))))] if bust >= band else "AA",
-        "recommended_bra_size": f"{int(round(band))}{['AA', 'A', 'B', 'C', 'D', 'DD/E', 'DDD/F', 'G', 'H'][max(0, min(8, int(round(bust - band))))] if bust >= band else 'AA'}"
-    })(_fnum(d, 'band-size', 34), _fnum(d, 'bust-size', 37))
-
+    # ==================== 9. AUTOMOTIVE & SIZING ====================
     solvers['tire-size-calculator'] = lambda d: (lambda w, ar, rim: {
         "sidewall_height_mm": round(w * (ar / 100.0), 1),
         "total_diameter_inches": round(rim + 2 * (w * (ar / 100.0) / 25.4), 2),

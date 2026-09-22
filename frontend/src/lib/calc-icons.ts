@@ -517,22 +517,6 @@ export const CALC_ICONS: Record<string, string> = {
   "event-breakout-session-scheduler-capacity-calculator": "Groups",
   "event-speaker-fee-budget-calculator": "RecordVoiceOver",
 
-  // ─── Garments (11) ──────
-  "fabric-consumption": "Checkroom",
-  "yarn-count": "LinearScale",
-  "sewing-efficiency": "Speed",
-  "fabric-gsm": "Scale",
-  "cino-long-1": "Checkroom",
-  "cino-long-2": "Checkroom",
-  "cino-long-3": "Checkroom",
-  "cino-long-4": "Checkroom",
-  "cino-long-5": "Checkroom",
-  "cino-long-6": "Checkroom",
-  "cino-long-7": "Checkroom",
-  "cino-long-8": "Checkroom",
-  "cino-long-9": "Checkroom",
-  "cino-long-10": "Checkroom",
-
   "401k-calculator": "Savings",
 
   "amortization-calculator": "TableChart",
@@ -568,8 +552,6 @@ export const CALC_ICONS: Record<string, string> = {
   "body-type-calculator": "Accessibility",
 
   "bond-calculator": "Receipt",
-
-  "bra-size-calculator": "Checkroom",
 
   "btu-calculator": "AcUnit",
 

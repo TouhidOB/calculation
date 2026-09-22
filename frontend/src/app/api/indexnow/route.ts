@@ -17,7 +17,6 @@ export async function POST(req: Request) {
       `${SITE_URL}/category/basic`,
       `${SITE_URL}/category/conversion`,
       `${SITE_URL}/category/date_time`,
-      `${SITE_URL}/category/garments`,
       `${SITE_URL}/category/education`,
       `${SITE_URL}/category/real_estate`,
       `${SITE_URL}/category/event_budget`,

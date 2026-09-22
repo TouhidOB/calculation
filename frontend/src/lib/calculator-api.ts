@@ -108,7 +108,6 @@ export const CATEGORY_META: Record<string, { label: string; emoji: string; color
   health: { label: "Health & Fitness", emoji: "❤️", color: "#10b981" },
   construction: { label: "Construction", emoji: "🏗️", color: "#f59e0b" },
   basic: { label: "Basic & Math", emoji: "🧮", color: "#6b7280" },
-  garments: { label: "Garments (RMG)", emoji: "👕", color: "#ec4899" },
   conversion: { label: "Unit Conversion", emoji: "🔄", color: "#06b6d4" },
   date_time: { label: "Date & Time", emoji: "📅", color: "#0ea5e9" },
   education: { label: "Education", emoji: "🎓", color: "#a855f7" },

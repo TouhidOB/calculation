@@ -14,7 +14,6 @@ const CATEGORY_KEYS = [
   "health",
   "construction",
   "basic",
-  "garments",
   "conversion",
   "date_time",
   "education",
