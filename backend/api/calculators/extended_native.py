@@ -3,6 +3,8 @@ Extended native Python calculation solvers for remaining calculators.
 Provides deterministic, high-accuracy mathematical formulas for 82 utility calculators.
 """
 
+import ast
+import operator
 import math
 import re
 from datetime import datetime, date
@@ -23,17 +25,75 @@ def _fstr(d: dict, k: str, default: str = "") -> str:
     return str(d.get(k, default) or default).strip()
 
 
+_MATH_OPS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.FloorDiv: operator.floordiv,
+    ast.Mod: operator.mod,
+    ast.Pow: operator.pow,
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
+
+_MATH_FUNCS = {
+    'sqrt': math.sqrt,
+    'sin': math.sin,
+    'cos': math.cos,
+    'tan': math.tan,
+    'log': math.log10,
+    'ln': math.log,
+    'abs': abs,
+    'round': round,
+}
+
+_MATH_CONSTS = {
+    'pi': math.pi,
+    'e': math.e,
+}
+
+
+def _eval_ast_node(node):
+    if isinstance(node, ast.Expression):
+        return _eval_ast_node(node.body)
+    elif isinstance(node, ast.Constant):
+        if isinstance(node.value, (int, float)):
+            return float(node.value)
+        raise ValueError("Non-numeric constant")
+    elif isinstance(node, ast.Name):
+        lower = node.id.lower()
+        if lower in _MATH_CONSTS:
+            return _MATH_CONSTS[lower]
+        raise ValueError(f"Disallowed identifier: {node.id}")
+    elif isinstance(node, ast.UnaryOp):
+        op_type = type(node.op)
+        if op_type in _MATH_OPS:
+            return _MATH_OPS[op_type](_eval_ast_node(node.operand))
+        raise ValueError(f"Disallowed unary op: {op_type}")
+    elif isinstance(node, ast.BinOp):
+        op_type = type(node.op)
+        if op_type in _MATH_OPS:
+            left = _eval_ast_node(node.left)
+            right = _eval_ast_node(node.right)
+            if op_type in (ast.Div, ast.FloorDiv, ast.Mod) and right == 0:
+                return 0.0
+            return _MATH_OPS[op_type](left, right)
+        raise ValueError(f"Disallowed binary op: {op_type}")
+    elif isinstance(node, ast.Call):
+        if isinstance(node.func, ast.Name) and node.func.id.lower() in _MATH_FUNCS:
+            fn = _MATH_FUNCS[node.func.id.lower()]
+            args = [_eval_ast_node(a) for a in node.args]
+            return float(fn(*args))
+        raise ValueError("Disallowed function call")
+    raise ValueError(f"Disallowed node type: {type(node)}")
+
+
 def _safe_math(expr: str) -> float:
-    clean = re.sub(r'[^0-9+\-*/().%^eEpiPIsqrtcotaCosSintglnabs\s,]', '', str(expr or "0"))
-    clean = clean.replace('^', '**')
-    clean = re.sub(r'\bpi\b', str(math.pi), clean, flags=re.I)
-    clean = re.sub(r'\be\b', str(math.e), clean, flags=re.I)
-    names = {
-        'sqrt': math.sqrt, 'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
-        'log': math.log10, 'ln': math.log, 'abs': abs, 'round': round
-    }
     try:
-        return float(eval(clean, {"__builtins__": None}, names))
+        clean = str(expr or "0").strip().replace('^', '**')
+        tree = ast.parse(clean, mode='eval')
+        return float(_eval_ast_node(tree))
     except Exception:
         return 0.0
 
