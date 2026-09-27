@@ -13,7 +13,8 @@ services:
       CORS_ALLOWED_ORIGINS: "https://trycalc.net,https://www.trycalc.net,http://localhost:3002"
       CSRF_TRUSTED_ORIGINS: "https://trycalc.net,https://www.trycalc.net"
     ports:
-      - "8088:8000"
+      - "127.0.0.1:8088:8000"
+      - "172.17.0.1:8088:8000"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8000/api/health/')\" || exit 1"]
       interval: 15s
@@ -31,7 +32,8 @@ services:
       BACKEND_URL: "http://backend:8000"
       NEXT_PUBLIC_API_URL: "/api"
     ports:
-      - "3002:3000"
+      - "127.0.0.1:3002:3000"
+      - "172.17.0.1:3002:3000"
     depends_on:
       backend:
         condition: service_healthy
