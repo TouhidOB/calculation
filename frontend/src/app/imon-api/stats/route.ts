@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Unauthorized access" }, { status: 401 })
   }
 
-  const stats = analyticsStore.getStats()
+  const timeframe = req.nextUrl.searchParams.get("timeframe") || "all"
+  const stats = analyticsStore.getStats(timeframe)
   return NextResponse.json({ ok: true, stats })
 }
