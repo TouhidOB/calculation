@@ -216,16 +216,40 @@ function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, 
         ex[f.name] = "15"
       } else if (name.includes("month")) {
         ex[f.name] = "12"
-      } else if (name.includes("age")) {
-        ex[f.name] = "28"
+      } else if (name.includes("thickness") || name.includes("depth")) {
+        ex[f.name] = "4"
+      } else if (name.includes("length")) {
+        ex[f.name] = "20"
+      } else if (name.includes("width")) {
+        ex[f.name] = "10"
+      } else if (name.includes("radius") || name.includes("diameter")) {
+        ex[f.name] = "5"
       } else if (name.includes("height")) {
         ex[f.name] = "175"
       } else if (name.includes("weight")) {
         ex[f.name] = "70"
+      } else if (name.includes("age")) {
+        ex[f.name] = "28"
+      } else if (name.includes("activity")) {
+        ex[f.name] = "1.55"
       } else if (name.includes("income") || name.includes("salary")) {
         ex[f.name] = "65000"
       } else if (name.includes("down")) {
         ex[f.name] = "10000"
+      } else if (name.includes("mpg") || name.includes("mileage")) {
+        ex[f.name] = "28"
+      } else if (name.includes("fuel") || name.includes("gas")) {
+        ex[f.name] = "3.50"
+      } else if (name.includes("kwh") || name.includes("watt")) {
+        ex[f.name] = "100"
+      } else if (name.includes("temp")) {
+        ex[f.name] = "72"
+      } else if (name.includes("tip")) {
+        ex[f.name] = "18"
+      } else if (name.includes("discount")) {
+        ex[f.name] = "20"
+      } else if (name.includes("calories")) {
+        ex[f.name] = "2000"
       } else if (f.type === "number") {
         ex[f.name] = "100"
       } else {

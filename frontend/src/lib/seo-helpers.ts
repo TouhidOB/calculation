@@ -152,6 +152,129 @@ export function seoWorkedExampleFor(calc: CalculatorDef): WorkedExample {
     }
   }
 
+  if (name.includes("loan") || name.includes("auto") || name.includes("car") || name.includes("emi")) {
+    return {
+      title: "Automobile & Personal Installment Loan Analysis",
+      scenario: "Financing a $25,000 new vehicle purchase over a 60-month term at 5.9% fixed APR.",
+      inputs: [
+        { label: "Loan Amount", value: "$25,000" },
+        { label: "Interest Rate", value: "5.9% Fixed APR" },
+        { label: "Duration", value: "60 Months (5 Years)" },
+      ],
+      results: [
+        { label: "Monthly Payment", value: "$482.16 / month" },
+        { label: "Total Financing Cost", value: "$3,929.43" },
+        { label: "Total Out-of-Pocket", value: "$28,929.43" },
+      ],
+      explanation: "Choosing a 48-month loan instead would increase monthly payments by $94 but save over $800 in total interest.",
+    }
+  }
+
+  if (name.includes("compound") || name.includes("investment") || name.includes("401k") || name.includes("savings")) {
+    return {
+      title: "Long-Term Wealth Accumulation Benchmark",
+      scenario: "Investing $10,000 initial capital with $500 monthly recurring contributions at an average 7.5% annual return over 20 years.",
+      inputs: [
+        { label: "Initial Capital", value: "$10,000" },
+        { label: "Monthly Contribution", value: "$500 / month" },
+        { label: "Annual Rate of Return", value: "7.5% Compounded Monthly" },
+        { label: "Time Horizon", value: "20 Years (240 Months)" },
+      ],
+      results: [
+        { label: "Future Portfolio Value", value: "$338,771.50" },
+        { label: "Total Out-of-Pocket Principal", value: "$130,000.00" },
+        { label: "Total Compound Interest Earned", value: "$208,771.50" },
+      ],
+      explanation: "Compound interest generates over 61% of the final portfolio balance, demonstrating the exponential advantage of dollar-cost averaging early.",
+    }
+  }
+
+  if (name.includes("calorie") || name.includes("tdee") || name.includes("bmr")) {
+    return {
+      title: "Daily Energy Expenditure & Caloric Target",
+      scenario: "A 30-year-old active adult weighing 75 kg (165 lbs), height 175 cm, exercising moderately 4 days per week.",
+      inputs: [
+        { label: "Basal Metabolic Rate (BMR)", value: "1,699 kcal / day" },
+        { label: "Physical Activity Level (PAL)", value: "1.55 (Moderate Exercise)" },
+      ],
+      results: [
+        { label: "Maintenance Calories (TDEE)", value: "2,633 kcal / day" },
+        { label: "Target for Fat Loss (-500 kcal)", value: "2,133 kcal / day" },
+        { label: "Target for Muscle Surplus (+300 kcal)", value: "2,933 kcal / day" },
+      ],
+      explanation: "A 500 kcal daily deficit yields an approximate body fat loss of 0.5 kg (1.1 lbs) per week safely without muscle catabolism.",
+    }
+  }
+
+  if (name.includes("paint") || name.includes("drywall") || name.includes("wall")) {
+    return {
+      title: "Interior Room Painting Coverage Calculation",
+      scenario: "Painting a standard 12 ft × 15 ft room with 9 ft ceilings, including two coats of premium acrylic paint.",
+      inputs: [
+        { label: "Perimeter & Ceiling Height", value: "54 linear ft × 9 ft height" },
+        { label: "Gross Wall Area", value: "486 sq ft" },
+        { label: "Deductions (2 Doors, 2 Windows)", value: "-60 sq ft" },
+      ],
+      results: [
+        { label: "Net Wall Surface Area", value: "426 sq ft" },
+        { label: "Paint Required (Two Coats)", value: "2.43 Gallons (Order 3 Gallons)" },
+      ],
+      explanation: "One gallon of interior paint reliably covers 350 to 400 square feet on primed drywall. Ordering 3 gallons ensures adequate supply for touch-ups.",
+    }
+  }
+
+  if (name.includes("pace") || name.includes("running") || name.includes("marathon")) {
+    return {
+      title: "Race Pacing & Finish Time Prediction",
+      scenario: "Running a standard Half Marathon (13.11 miles / 21.0975 km) targeting a sub-1:45:00 finish time.",
+      inputs: [
+        { label: "Race Distance", value: "13.11 Miles (Half Marathon)" },
+        { label: "Goal Time", value: "1 Hour 44 Minutes 50 Seconds" },
+      ],
+      results: [
+        { label: "Required Mile Pace", value: "7:59 min / mile" },
+        { label: "Required Kilometer Pace", value: "4:58 min / km" },
+        { label: "Average Speed", value: "7.51 mph (12.08 km/h)" },
+      ],
+      explanation: "Consistent negative splits (running the second half slightly faster) optimizes aerobic energy systems and prevents premature glycogen depletion.",
+    }
+  }
+
+  if (name.includes("fuel") || name.includes("gas") || name.includes("mpg")) {
+    return {
+      title: "Cross-Country Road Trip Fuel Economy Estimate",
+      scenario: "Driving a 650-mile road trip in a crossover SUV rated at 28 MPG highway with gasoline priced at $3.60 per gallon.",
+      inputs: [
+        { label: "Trip Distance", value: "650 Miles" },
+        { label: "Fuel Economy Rating", value: "28 MPG Highway" },
+        { label: "Gasoline Price", value: "$3.60 / Gallon" },
+      ],
+      results: [
+        { label: "Fuel Consumed", value: "23.21 Gallons" },
+        { label: "Total Fuel Cost", value: "$83.57" },
+        { label: "Cost Per Mile", value: "$0.129 / mile" },
+      ],
+      explanation: "Maintaining highway speeds below 70 mph can improve fuel economy by up to 14%, reducing fuel consumption to under 20.5 gallons.",
+    }
+  }
+
+  if (name.includes("salary") || name.includes("hourly") || name.includes("wage") || name.includes("paycheck")) {
+    return {
+      title: "Gross Salary to Hourly & Pay Period Conversion",
+      scenario: "An annual full-time salary of $75,000 assuming a standard 40-hour work week (2,080 working hours per year).",
+      inputs: [
+        { label: "Gross Annual Base Salary", value: "$75,000.00" },
+        { label: "Standard Work Hours", value: "40 Hours / Week (52 Weeks)" },
+      ],
+      results: [
+        { label: "Equivalent Hourly Wage", value: "$36.06 / hour" },
+        { label: "Bi-Weekly Paycheck (Gross)", value: "$2,884.62 (26 Pay Periods)" },
+        { label: "Monthly Gross Earnings", value: "$6,250.00 / month" },
+      ],
+      explanation: "Net take-home pay will vary based on federal, state, and local withholding taxes, FICA (Social Security & Medicare), and employer healthcare deductions.",
+    }
+  }
+
   // Generic worked example fallback based on default fields
   return {
     title: `Practical Application Example for ${calc.name}`,
@@ -361,6 +484,105 @@ export function seoFormulaFor(calc: CalculatorDef): FormulaInfo {
     }
   }
 
+  if (name.includes("concrete") || name.includes("slab") || name.includes("volume") || name.includes("cubic")) {
+    return {
+      formula: "Volume = Length × Width × Thickness (Depth)",
+      explanation: "Volumetric spatial geometry formula computing cubic dimensional capacity in meters or yards.",
+      variables: [
+        { symbol: "Length", meaning: "Longitudinal dimension of slab or footing" },
+        { symbol: "Width", meaning: "Transverse dimension perpendicular to length" },
+        { symbol: "Thickness", meaning: "Vertical depth of the pour (normalized to same units)" },
+      ],
+      source: "American Concrete Institute (ACI 318 Standard Practice)",
+    }
+  }
+
+  if (name.includes("paint") || name.includes("drywall") || name.includes("tile") || name.includes("flooring") || name.includes("area") || name.includes("sqft")) {
+    return {
+      formula: "Net Area = (Length × Width) - Deductions",
+      explanation: "Surface area quantification deducting non-covered structural apertures such as windows and doors.",
+      variables: [
+        { symbol: "Gross Area", meaning: "Total exterior or interior structural boundaries" },
+        { symbol: "Deductions", meaning: "Openings (standard door ~21 sq ft, window ~15 sq ft)" },
+      ],
+      source: "International Building Code (IBC) Architectural Area Measurement Standards",
+    }
+  }
+
+  if (name.includes("pace") || name.includes("speed") || name.includes("running") || name.includes("velocity")) {
+    return {
+      formula: "Pace = Total Elapsed Time / Distance Traveled",
+      explanation: "Kinematic temporal rate expressing duration required to traverse a standard unit of linear distance.",
+      variables: [
+        { symbol: "Pace", meaning: "Minutes and seconds per mile or kilometer" },
+        { symbol: "Time", meaning: "Total cumulative chrono duration" },
+        { symbol: "Distance", meaning: "Certified athletic course length" },
+      ],
+      source: "World Athletics (WA) Official Technical Rules",
+    }
+  }
+
+  if (name.includes("fuel") || name.includes("gas") || name.includes("mpg") || name.includes("mileage")) {
+    return {
+      formula: "Fuel Consumed = Distance / MPG  |  Total Cost = Fuel Consumed × Price per Gallon",
+      explanation: "Thermodynamic vehicular efficiency equation deriving volumetric consumption and financial expenditure.",
+      variables: [
+        { symbol: "MPG", meaning: "Miles traveled per unit volume of fuel" },
+        { symbol: "Distance", meaning: "Cumulative highway and city driving route" },
+      ],
+      source: "U.S. Department of Energy (DOE) & Environmental Protection Agency (EPA)",
+    }
+  }
+
+  if (name.includes("electricity") || name.includes("power") || name.includes("kwh") || name.includes("energy")) {
+    return {
+      formula: "Cost = [ Power (Watts) × Hours of Use / 1,000 ] × Rate ($/kWh)",
+      explanation: "Electrical energy consumption equation converting power draw into kilowatt-hours (kWh) billed utility cost.",
+      variables: [
+        { symbol: "Watts", meaning: "Active electrical power rating of the device or appliance" },
+        { symbol: "Hours", meaning: "Operational duration over the billing cycle" },
+        { symbol: "Rate", meaning: "Local electrical utility tariff per kilowatt-hour" },
+      ],
+      source: "U.S. Energy Information Administration (EIA) Utility Standards",
+    }
+  }
+
+  if (name.includes("salary") || name.includes("hourly") || name.includes("wage") || name.includes("paycheck")) {
+    return {
+      formula: "Hourly Wage = Annual Base Salary / (Work Weeks × Weekly Hours)",
+      explanation: "Standard compensation equation standardizing full-time equivalent (FTE) labor rates across pay schedules.",
+      variables: [
+        { symbol: "FTE Basis", meaning: "Standard 2,080 annual hours (40 hours/week × 52 weeks)" },
+        { symbol: "Bi-Weekly", meaning: "Annual salary divided by 26 scheduled pay periods" },
+      ],
+      source: "U.S. Bureau of Labor Statistics (BLS) Occupational Employment Metrics",
+    }
+  }
+
+  if (name.includes("roi") || name.includes("return on investment") || name.includes("cagr")) {
+    return {
+      formula: "ROI (%) = [ (Current Value - Initial Investment) / Initial Investment ] × 100",
+      explanation: "Profitability metric evaluating the relative efficiency of an investment compared to its baseline cost.",
+      variables: [
+        { symbol: "Gain", meaning: "Net financial proceeds realized after capital recovery" },
+        { symbol: "Cost", meaning: "Total invested capital expenditures" },
+      ],
+      source: "CFA Institute Financial Analysis Standards",
+    }
+  }
+
+  if (name.includes("rep max") || name.includes("1rm") || name.includes("bench") || name.includes("squat")) {
+    return {
+      formula: "1RM = Weight × (1 + Repetitions / 30)  [Epley Formula]",
+      explanation: "Biomechanic estimation equation calculating maximal single-repetition neuromuscular exertion capacity.",
+      variables: [
+        { symbol: "Weight", meaning: "Submaximal resistance lifted in clean form" },
+        { symbol: "Reps", meaning: "Repetitions completed before momentary muscular failure (optimal 1–10)" },
+      ],
+      source: "National Strength and Conditioning Association (NSCA) Biomechanics",
+    }
+  }
+
   return {
     formula: `F(${calc.fields.slice(0, 3).map((f) => f.name).join(", ")})`,
     explanation: `Calculates exact mathematical outcomes based on ${calc.fields.slice(0, 3).map((f) => f.label).join(", ")} according to established algorithmic standards.`,
@@ -497,6 +719,138 @@ export function seoReferenceTableFor(calc: CalculatorDef): ReferenceTable {
         ["$100,000", "$140,255", "$196,715", "$275,903", "$386,968", "$761,226"],
       ],
       footnote: "Based on 7.0% annualized compound return, mirroring historical inflation-adjusted equity benchmarks.",
+    }
+  }
+
+  if (name.includes("paint") || name.includes("drywall") || name.includes("wall")) {
+    return {
+      title: "Standard Interior Room Paint Coverage Reference",
+      subtitle: "Calculated gallons of paint needed for single and double coats based on room perimeter and square footage.",
+      headers: ["Room Size", "Perimeter (9ft Ceiling)", "Wall Surface Area", "1 Coat (Gal)", "2 Coats (Gal)"],
+      rows: [
+        ["10 ft × 10 ft (Small Room)", "40 linear ft", "360 sq ft", "1.0 Gallon", "2.0 Gallons"],
+        ["12 ft × 12 ft (Medium Room)", "48 linear ft", "432 sq ft", "1.2 Gallons", "2.5 Gallons"],
+        ["14 ft × 16 ft (Master Bed)", "60 linear ft", "540 sq ft", "1.5 Gallons", "3.0 Gallons"],
+        ["16 ft × 20 ft (Living Area)", "72 linear ft", "648 sq ft", "1.8 Gallons", "3.5 Gallons"],
+        ["20 ft × 24 ft (Great Room)", "88 linear ft", "792 sq ft", "2.2 Gallons", "4.5 Gallons"],
+      ],
+      footnote: "Based on standard coverage of 350–400 sq ft per gallon on primed drywall. Excludes ceiling.",
+    }
+  }
+
+  if (name.includes("tile") || name.includes("flooring") || name.includes("grout")) {
+    return {
+      title: "Flooring & Tile Coverage Reference (with 10% Waste Factor)",
+      subtitle: "Calculated net and gross square footage including industry-standard cut and breakage waste.",
+      headers: ["Floor Area", "Net Area", "Gross with 10% Waste", "12\"×12\" Tiles Needed", "Standard Boxes (10 sq ft/box)"],
+      rows: [
+        ["6 ft × 8 ft (Bathroom)", "48 sq ft", "53 sq ft", "53 Tiles", "6 Boxes"],
+        ["10 ft × 10 ft (Small Room)", "100 sq ft", "110 sq ft", "110 Tiles", "11 Boxes"],
+        ["12 ft × 15 ft (Kitchen)", "180 sq ft", "198 sq ft", "198 Tiles", "20 Boxes"],
+        ["15 ft × 20 ft (Living Room)", "300 sq ft", "330 sq ft", "330 Tiles", "33 Boxes"],
+        ["20 ft × 25 ft (Open Plan)", "500 sq ft", "550 sq ft", "550 Tiles", "55 Boxes"],
+      ],
+      footnote: "For diagonal or herringbone patterns, increase waste margin to 15%.",
+    }
+  }
+
+  if (name.includes("pace") || name.includes("running") || name.includes("marathon")) {
+    return {
+      title: "Running Pace & Race Finish Time Lookup Table",
+      subtitle: "Benchmark finish times across certified distances from 5K to Full Marathon.",
+      headers: ["Pace (min/mile)", "Pace (min/km)", "5K (3.11 mi)", "10K (6.21 mi)", "Half Marathon (13.1 mi)", "Marathon (26.2 mi)"],
+      rows: [
+        ["6:00 min/mi", "3:44 min/km", "18:38", "37:17", "1:18:39", "2:37:18"],
+        ["7:00 min/mi", "4:21 min/km", "21:44", "43:30", "1:31:45", "3:03:30"],
+        ["8:00 min/mi", "4:58 min/km", "24:51", "49:43", "1:44:52", "3:29:43"],
+        ["9:00 min/mi", "5:36 min/km", "27:57", "55:56", "1:57:58", "3:55:56"],
+        ["10:00 min/mi", "6:13 min/km", "31:04", "1:02:09", "2:11:05", "4:22:09"],
+        ["11:00 min/mi", "6:50 min/km", "34:10", "1:08:22", "2:24:11", "4:48:22"],
+      ],
+      footnote: "Times assume even pacing throughout the entire course distance.",
+    }
+  }
+
+  if (name.includes("fuel") || name.includes("gas") || name.includes("mpg") || name.includes("mileage")) {
+    return {
+      title: "Road Trip Fuel Cost Matrix (Gasoline at $3.50/Gallon)",
+      subtitle: "Estimated fuel volume consumed and out-of-pocket gasoline expenditure.",
+      headers: ["Trip Distance", "20 MPG (Truck/SUV)", "25 MPG (Crossover)", "32 MPG (Sedan)", "45 MPG (Hybrid)"],
+      rows: [
+        ["100 Miles", "$17.50 (5.0 gal)", "$14.00 (4.0 gal)", "$10.94 (3.1 gal)", "$7.78 (2.2 gal)"],
+        ["250 Miles", "$43.75 (12.5 gal)", "$35.00 (10.0 gal)", "$27.34 (7.8 gal)", "$19.44 (5.6 gal)"],
+        ["500 Miles", "$87.50 (25.0 gal)", "$70.00 (20.0 gal)", "$54.69 (15.6 gal)", "$38.89 (11.1 gal)"],
+        ["750 Miles", "$131.25 (37.5 gal)", "$105.00 (30.0 gal)", "$82.03 (23.4 gal)", "$58.33 (16.7 gal)"],
+        ["1,000 Miles", "$175.00 (50.0 gal)", "$140.00 (40.0 gal)", "$109.38 (31.3 gal)", "$77.78 (22.2 gal)"],
+      ],
+      footnote: "Fuel cost calculated at $3.50/gal national benchmark. Adjust proportionally for local gas prices.",
+    }
+  }
+
+  if (name.includes("electricity") || name.includes("power") || name.includes("kwh") || name.includes("energy")) {
+    return {
+      title: "Household Appliance Electricity Cost Matrix (at $0.16/kWh)",
+      subtitle: "Estimated monthly and annual operating cost based on active wattage draw.",
+      headers: ["Appliance / Device", "Power Draw (Watts)", "Daily Usage", "Monthly Energy (kWh)", "Monthly Cost ($)"],
+      rows: [
+        ["LED Light Bulbs (5x)", "50 Watts", "6 Hours / Day", "9.0 kWh", "$1.44 / mo"],
+        ["Desktop Workstation / PC", "250 Watts", "8 Hours / Day", "60.0 kWh", "$9.60 / mo"],
+        ["Refrigerator (ENERGY STAR)", "150 Watts (cycling)", "24 Hours / Day", "45.0 kWh", "$7.20 / mo"],
+        ["Space Heater", "1,500 Watts", "5 Hours / Day", "225.0 kWh", "$36.00 / mo"],
+        ["Central Air Conditioner", "3,500 Watts", "8 Hours / Day", "840.0 kWh", "$134.40 / mo"],
+      ],
+      footnote: "Based on U.S. residential national average electric tariff of 16.0 cents per kilowatt-hour.",
+    }
+  }
+
+  if (name.includes("salary") || name.includes("hourly") || name.includes("wage") || name.includes("paycheck")) {
+    return {
+      title: "Salary to Hourly & Paycheck Breakdown Reference",
+      subtitle: "Pre-calculated gross wage distribution across standard 40-hour work week pay periods.",
+      headers: ["Annual Salary", "Hourly Wage (2,080 hrs)", "Weekly Pay (52)", "Bi-Weekly Pay (26)", "Monthly Gross (12)"],
+      rows: [
+        ["$35,000 / yr", "$16.83 / hr", "$673.08", "$1,346.15", "$2,916.67"],
+        ["$50,000 / yr", "$24.04 / hr", "$961.54", "$1,923.08", "$4,166.67"],
+        ["$65,000 / yr", "$31.25 / hr", "$1,250.00", "$2,500.00", "$5,416.67"],
+        ["$85,000 / yr", "$40.87 / hr", "$1,634.62", "$3,269.23", "$7,083.33"],
+        ["$100,000 / yr", "$48.08 / hr", "$1,923.08", "$3,846.15", "$8,333.33"],
+        ["$130,000 / yr", "$62.50 / hr", "$2,500.00", "$5,000.00", "$10,833.33"],
+      ],
+      footnote: "Figures indicate gross earnings before tax withholdings and employer retirement deductions.",
+    }
+  }
+
+  if (name.includes("rep max") || name.includes("1rm") || name.includes("bench") || name.includes("squat") || name.includes("deadlift")) {
+    return {
+      title: "Repetition Maximum (1RM) Percentage Progression Table",
+      subtitle: "Standard strength training load percentages derived from one-repetition maximal lift.",
+      headers: ["Rep Target", "Intensity (% of 1RM)", "200 lb 1RM", "250 lb 1RM", "315 lb 1RM", "405 lb 1RM"],
+      rows: [
+        ["1 Repetition (Max)", "100%", "200 lbs", "250 lbs", "315 lbs", "405 lbs"],
+        ["3 Repetitions", "93%", "186 lbs", "232 lbs", "293 lbs", "377 lbs"],
+        ["5 Repetitions", "87%", "174 lbs", "217 lbs", "274 lbs", "352 lbs"],
+        ["8 Repetitions", "80%", "160 lbs", "200 lbs", "252 lbs", "324 lbs"],
+        ["10 Repetitions", "75%", "150 lbs", "187 lbs", "236 lbs", "304 lbs"],
+        ["12 Repetitions", "70%", "140 lbs", "175 lbs", "220 lbs", "283 lbs"],
+      ],
+      footnote: "Calculated via standard NSCA logarithmic fatigue curves.",
+    }
+  }
+
+  if (name.includes("temp") || name.includes("celsius") || name.includes("fahrenheit")) {
+    return {
+      title: "Temperature Scale Equivalency Reference",
+      subtitle: "Universal benchmark temperature conversion points between Fahrenheit and Celsius.",
+      headers: ["Phenomenon / Milestone", "Celsius (°C)", "Fahrenheit (°F)", "Kelvin (K)"],
+      rows: [
+        ["Absolute Zero", "-273.15 °C", "-459.67 °F", "0.00 K"],
+        ["Scale Convergence Point", "-40.00 °C", "-40.00 °F", "233.15 K"],
+        ["Water Freezing Point", "0.00 °C", "32.00 °F", "273.15 K"],
+        ["Room Temperature (Comfort)", "20.00 °C", "68.00 °F", "293.15 K"],
+        ["Average Human Body Temperature", "37.00 °C", "98.60 °F", "310.15 K"],
+        ["Water Boiling Point (Sea Level)", "100.00 °C", "212.00 °F", "373.15 K"],
+      ],
+      footnote: "Based on standard atmospheric pressure of 101.325 kPa at sea level.",
     }
   }
 
