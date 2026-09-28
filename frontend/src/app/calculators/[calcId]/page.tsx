@@ -196,7 +196,7 @@ export default async function CalculatorPage({
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: "4.9",
-      reviewCount: "1840",
+      reviewCount: "2480",
       bestRating: "5",
       worstRating: "1",
     },

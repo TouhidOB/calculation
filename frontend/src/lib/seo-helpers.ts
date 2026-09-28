@@ -8,7 +8,7 @@ import { CATEGORY_META } from "@/lib/calculator-api"
 
 export function seoTitleFor(calc: CalculatorDef): string {
   const cat = CATEGORY_META[calc.category]?.label || calc.category
-  return `${calc.name} — Free Online ${cat.replace(" Calculators", " Calculator")} | TryCalc`
+  return `${calc.name} (2026) — Free Online ${cat.replace(" Calculators", " Calculator")} & Breakdown | TryCalc`
 }
 
 export function seoMetaDescriptionFor(calc: CalculatorDef): string {

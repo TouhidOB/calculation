@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TryCalc Hub</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <img src="icon48.png" alt="TryCalc" class="logo">
+      <div class="title-group">
+        <span class="title">TryCalc</span>
+        <span class="badge">674+ Tools</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search 674 calculators (e.g. mortgage, loan, bmi)..." autofocus>
+  </div>
+
+  <div class="quick-tags" id="quickTags">
+    <span class="tag" data-id="mortgage">Mortgage</span>
+    <span class="tag" data-id="loan-calculator">Auto Loan</span>
+    <span class="tag" data-id="bmi">BMI</span>
+    <span class="tag" data-id="calorie-calculator">Calorie</span>
+    <span class="tag" data-id="percentage-calculator">Percentage</span>
+    <span class="tag" data-id="compound-interest">Compound</span>
+  </div>
+
+  <div class="results" id="resultsList">
+    <!-- Populated by popup.js -->
+  </div>
+
+  <div class="footer">
+    <a href="https://trycalc.net" target="_blank" class="full-hub-btn">Open TryCalc.net Full Directory →</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

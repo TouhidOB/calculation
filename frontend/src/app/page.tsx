@@ -9,10 +9,10 @@ export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: {
-    absolute: "TryCalc — 690 Free Online Calculators | Finance, Health, Math & More",
+    absolute: "TryCalc (2026) — 674 Free Online Calculators | Fast, Accurate & Modern",
   },
   description:
-    "Free online calculators for finance, health, fitness, construction, date & time, conversions, real estate, and everyday math. Fast, accurate, and responsive.",
+    "Free online calculators (2026) for finance, mortgage, health, fitness, construction, math, and conversions. Fast, accurate, instant results with zero signup.",
   alternates: {
     canonical: "https://trycalc.net",
   },

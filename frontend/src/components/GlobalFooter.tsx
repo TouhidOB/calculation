@@ -142,6 +142,11 @@ export default function GlobalFooter() {
                   About TryCalc
                 </Typography>
               </Link>
+              <Link href="/widgets" style={{ textDecoration: "none" }}>
+                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
+                  Embed Widgets
+                </Typography>
+              </Link>
               <Link href="/contact" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Contact Us
