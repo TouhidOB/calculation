@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { verifyToken } from "@/app/api/imon/auth/route"
+import { verifyToken } from "@/app/imon-api/auth/route"
 import { analyticsStore } from "@/lib/analytics-store"
 
 export async function GET(req: NextRequest) {

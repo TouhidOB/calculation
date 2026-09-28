@@ -88,7 +88,7 @@ export default function ImonAdminView() {
   // 1. Initial check for existing authenticated session
   const fetchStats = async () => {
     try {
-      const res = await fetch("/api/imon/stats")
+      const res = await fetch("/imon-api/stats")
       if (res.ok) {
         const data = await res.json()
         if (data.ok && data.stats) {
@@ -124,7 +124,7 @@ export default function ImonAdminView() {
     setIsSubmitting(true)
     setAuthError("")
     try {
-      const res = await fetch("/api/imon/auth", {
+      const res = await fetch("/imon-api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -145,7 +145,7 @@ export default function ImonAdminView() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/imon/auth", { method: "DELETE" })
+      await fetch("/imon-api/auth", { method: "DELETE" })
     } catch {}
     setIsAuthenticated(false)
     setStats(null)

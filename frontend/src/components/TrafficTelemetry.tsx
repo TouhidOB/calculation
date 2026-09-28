@@ -35,9 +35,9 @@ export default function TrafficTelemetry() {
       })
 
       if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-        navigator.sendBeacon("/api/imon/track", new Blob([payload], { type: "application/json" }))
+        navigator.sendBeacon("/imon-api/track", new Blob([payload], { type: "application/json" }))
       } else {
-        fetch("/api/imon/track", {
+        fetch("/imon-api/track", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: payload,
