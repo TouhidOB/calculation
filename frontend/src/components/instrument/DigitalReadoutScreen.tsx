@@ -27,30 +27,27 @@ export const DigitalReadoutScreen: React.FC<DigitalReadoutScreenProps> = ({
     <Box
       sx={{
         position: "relative",
-        background: "linear-gradient(180deg, #090d16 0%, #111827 100%)",
+        background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
         borderRadius: "16px",
-        border: "2px solid #1f2937",
-        boxShadow:
-          "inset 0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(16, 185, 129, 0.05)",
-        p: { xs: 2, sm: 2.5 },
+        border: "1.5px solid #cbd5e1",
+        boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04)",
+        p: { xs: 2.5, sm: 3 },
         overflow: "hidden",
       }}
     >
-      {/* Acrylic Glass Surface Highlight Glare */}
+      {/* Top Accent Indicator Line */}
       <Box
         sx={{
           position: "absolute",
           top: 0,
           left: 0,
           right: 0,
-          height: "40%",
-          background:
-            "linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 100%)",
-          pointerEvents: "none",
+          height: "3px",
+          background: "linear-gradient(90deg, #4f46e5 0%, #06b6d4 100%)",
         }}
       />
 
-      {/* Top Annunciator & Label Bar */}
+      {/* Top Label & Badges Bar */}
       <Box
         sx={{
           display: "flex",
@@ -58,41 +55,40 @@ export const DigitalReadoutScreen: React.FC<DigitalReadoutScreenProps> = ({
           justifyContent: "space-between",
           flexWrap: "wrap",
           gap: 1,
-          mb: 1,
+          mb: 1.5,
           position: "relative",
           zIndex: 2,
         }}
       >
         <Typography
           sx={{
-            fontFamily:
-              "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            fontSize: "0.72rem",
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            color: "#9ca3af",
+            fontFamily: "var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            fontSize: "0.78rem",
+            fontWeight: 800,
+            letterSpacing: "0.08em",
+            color: "#475569",
             textTransform: "uppercase",
           }}
         >
           {label}
         </Typography>
 
-        {/* Annunciator Flags */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+        {/* Annunciator & Status Badges */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, flexWrap: "wrap" }}>
           {annunciators.map((ann, idx) => (
             <Box
               key={idx}
               sx={{
-                px: 0.6,
-                py: 0.15,
-                borderRadius: "3px",
-                background: "rgba(16, 185, 129, 0.12)",
-                border: "1px solid rgba(16, 185, 129, 0.3)",
-                color: "#6ee7b7",
-                fontSize: "0.6rem",
+                px: 0.8,
+                py: 0.25,
+                borderRadius: "4px",
+                background: "#f1f5f9",
+                border: "1px solid #e2e8f0",
+                color: "#475569",
+                fontSize: "0.68rem",
                 fontFamily: "monospace",
                 fontWeight: 700,
-                letterSpacing: "0.06em",
+                letterSpacing: "0.05em",
               }}
             >
               {ann}
@@ -101,25 +97,26 @@ export const DigitalReadoutScreen: React.FC<DigitalReadoutScreenProps> = ({
           {statusBadge && (
             <Box
               sx={{
-                px: 1,
-                py: 0.2,
-                borderRadius: "4px",
+                px: 1.2,
+                py: 0.3,
+                borderRadius: "9999px",
                 background:
                   typeof statusBadge === "object" && statusBadge.color
-                    ? `${statusBadge.color}22`
-                    : "rgba(99, 102, 241, 0.2)",
-                border: `1px solid ${
+                    ? `${statusBadge.color}15`
+                    : "#ecfdf5",
+                border: `1.5px solid ${
                   typeof statusBadge === "object" && statusBadge.color
                     ? statusBadge.color
-                    : "#818cf8"
+                    : "#10b981"
                 }`,
                 color:
                   typeof statusBadge === "object" && statusBadge.color
                     ? statusBadge.color
-                    : "#c7d2fe",
-                fontSize: "0.68rem",
-                fontWeight: 700,
+                    : "#047857",
+                fontSize: "0.72rem",
+                fontWeight: 800,
                 letterSpacing: "0.04em",
+                textTransform: "uppercase",
               }}
             >
               {typeof statusBadge === "string" ? statusBadge : statusBadge.text}
@@ -128,7 +125,7 @@ export const DigitalReadoutScreen: React.FC<DigitalReadoutScreenProps> = ({
         </Box>
       </Box>
 
-      {/* Main Large Digital Metric */}
+      {/* Main Large Metric Output */}
       <Box
         sx={{
           display: "flex",
@@ -138,20 +135,17 @@ export const DigitalReadoutScreen: React.FC<DigitalReadoutScreenProps> = ({
           gap: 1.2,
           position: "relative",
           zIndex: 2,
-          my: 0.5,
+          my: 1,
         }}
       >
         <Typography
           sx={{
-            fontFamily:
-              "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            fontSize: { xs: "2rem", sm: "2.6rem" },
-            fontWeight: 800,
-            color: "#34d399",
-            letterSpacing: "0.02em",
+            fontFamily: "var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            fontSize: { xs: "2.4rem", sm: "3.2rem" },
+            fontWeight: 900,
+            color: "#0f172a",
+            letterSpacing: "-0.03em",
             lineHeight: 1.1,
-            textShadow:
-              "0 0 16px rgba(52, 211, 153, 0.4), 0 0 2px rgba(52, 211, 153, 0.8)",
           }}
         >
           {value}
@@ -159,12 +153,11 @@ export const DigitalReadoutScreen: React.FC<DigitalReadoutScreenProps> = ({
         {unit && (
           <Typography
             sx={{
-              fontFamily:
-                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: { xs: "0.9rem", sm: "1.1rem" },
+              fontFamily: "var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              fontSize: { xs: "1.1rem", sm: "1.4rem" },
               fontWeight: 700,
-              color: "#94a3b8",
-              letterSpacing: "0.04em",
+              color: "#475569",
+              letterSpacing: "-0.01em",
             }}
           >
             {unit}
@@ -172,14 +165,13 @@ export const DigitalReadoutScreen: React.FC<DigitalReadoutScreenProps> = ({
         )}
       </Box>
 
-      {/* Sub-text / Formula Note */}
+      {/* Sub-text / Footnote */}
       {subText && (
         <Typography
           sx={{
-            fontFamily:
-              "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            fontSize: "0.72rem",
+            fontSize: "0.8rem",
             color: "#64748b",
+            fontWeight: 500,
             mt: 0.5,
             position: "relative",
             zIndex: 2,

@@ -145,7 +145,7 @@ export const SpecificationSheet: React.FC<SpecificationSheetProps> = ({
                   textAlign: "right",
                 }}
               >
-                {item.quantity}
+                {item.quantity === null || item.quantity === undefined || item.quantity === "" ? "—" : item.quantity}
               </Typography>
 
               <Typography

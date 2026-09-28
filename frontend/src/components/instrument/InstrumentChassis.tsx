@@ -161,7 +161,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
               textTransform: "uppercase",
             }}
           >
-            TRYCALC INSTRUMENTS · MODEL TC-689
+            TRYCALC INSTRUMENTS · MODEL TC-674
           </Typography>
         </Box>
 

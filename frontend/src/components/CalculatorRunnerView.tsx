@@ -313,17 +313,8 @@ export default function CalculatorRunnerView({
   initialRelatedCalcs,
 }: CalculatorRunnerViewProps) {
   const [values, setValues] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {}
-    const todayStr = new Date().toISOString().split("T")[0]
-    for (const f of calc.fields) {
-      if (f.default != null && f.default !== "") {
-        init[f.name] = String(f.default)
-      } else if (f.type === "date") {
-        init[f.name] = todayStr
-      } else {
-        init[f.name] = ""
-      }
-    }
+    // Calculator.net parity: pre-populate sensible default values so the calculator is never blank
+    const init = generateExampleValues(calc.fields)
     if (typeof window !== "undefined") {
       try {
         const sp = new URLSearchParams(window.location.search)
@@ -427,6 +418,7 @@ export default function CalculatorRunnerView({
   const handleFillExample = () => {
     const ex = generateExampleValues(calc.fields)
     setValues(ex)
+    executeCalculation(ex)
   }
 
   const handleReset = () => {
@@ -604,28 +596,16 @@ export default function CalculatorRunnerView({
     setBusy(false)
   }
 
-  // Auto-run when opened with shareable URL parameters
-  const autoCalculatedRef = React.useRef(false)
+  // Instant Auto-calculation on initial mount (Calculator.net parity + modern reactive UX)
+  const initialMountRunRef = React.useRef(false)
   useEffect(() => {
-    if (autoCalculatedRef.current || typeof window === "undefined") return
-    try {
-      const sp = new URLSearchParams(window.location.search)
-      let hasParam = false
-      for (const f of calc.fields) {
-        if (sp.get(f.name)) {
-          hasParam = true
-          break
-        }
-      }
-      if (hasParam) {
-        autoCalculatedRef.current = true
-        const timer = setTimeout(() => {
-          executeCalculation(values)
-        }, 150)
-        return () => clearTimeout(timer)
-      }
-    } catch {}
-  }, [calc.fields, executeCalculation, values])
+    if (initialMountRunRef.current || typeof window === "undefined") return
+    initialMountRunRef.current = true
+    const timer = setTimeout(() => {
+      executeCalculation(values)
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [executeCalculation, values])
 
   const catMeta = CATEGORY_META[calc.category]
   const formulaGuide = useMemo(() => seoFormulaFor(calc), [calc])
@@ -1074,7 +1054,7 @@ export default function CalculatorRunnerView({
                         .filter(([k]) => k !== "note" && k !== "js_required" && k !== "error")
                         .map(([k, v]) => ({
                           name: k.replaceAll("_", " ").toUpperCase(),
-                          quantity: typeof v === "number" ? v.toLocaleString(undefined, { maximumFractionDigits: 3 }) : String(v),
+                          quantity: typeof v === "number" ? v.toLocaleString(undefined, { maximumFractionDigits: 3 }) : (v === null || v === undefined || v === "" ? "—" : String(v)),
                           highlight: k === primary.primaryKey,
                         }))}
                     />
@@ -1113,7 +1093,7 @@ export default function CalculatorRunnerView({
                               {String(key).replaceAll("_", " ")}
                             </Typography>
                             <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a", fontFamily: "monospace" }}>
-                              {typeof val === "number" ? val.toLocaleString(undefined, { maximumFractionDigits: 3 }) : String(val)}
+                              {typeof val === "number" ? val.toLocaleString(undefined, { maximumFractionDigits: 3 }) : (val === null || val === undefined || val === "" ? "—" : String(val))}
                             </Typography>
                           </Box>
                         ))}
@@ -1175,7 +1155,7 @@ export default function CalculatorRunnerView({
                   <DigitalReadoutScreen
                     label="TRYCALC COMPUTATION ENGINE"
                     value="READY"
-                    unit="TC-689"
+                    unit="TC-674"
                     statusBadge="STANDBY"
                     subText="Hardware calibrated. Enter variables on the left panel or click 'Fill Example' to execute."
                   />

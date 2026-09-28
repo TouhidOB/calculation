@@ -149,7 +149,7 @@ export const AuditLedgerSlip: React.FC<AuditLedgerSlipProps> = ({
                   color: row.highlight ? "#1e1b4b" : "#0f172a",
                 }}
               >
-                {row.value}
+                {row.value === null || row.value === undefined || row.value === "" ? "—" : row.value}
               </Typography>
             </Box>
           )
