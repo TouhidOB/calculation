@@ -43,7 +43,7 @@ export default function GlobalFooter() {
                 TryCalc<span style={{ color: "#4f46e5" }}>.net</span>
               </Typography>
               <Chip
-                label="689+ Tools"
+                label="674+ Tools"
                 size="small"
                 sx={{
                   bgcolor: "rgba(79, 70, 229, 0.08)",
@@ -64,7 +64,7 @@ export default function GlobalFooter() {
                 maxWidth: 420,
               }}
             >
-              TryCalc is an independent computational platform offering 689+ deterministic, free online calculators across finance, mortgages, health, fitness, construction, and engineering. Built for speed, clarity, and instant decision-making.
+              TryCalc is an independent computational platform offering 674+ deterministic, free online calculators across finance, mortgages, health, fitness, construction, and engineering. Built for speed, clarity, and instant decision-making.
             </Typography>
 
             <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
@@ -115,7 +115,7 @@ export default function GlobalFooter() {
               </Link>
               <Link href="/" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#4f46e5", fontWeight: 700, mt: 0.5 }}>
-                  Browse All 689 Calculators →
+                  Browse All 674 Calculators →
                 </Typography>
               </Link>
             </Stack>

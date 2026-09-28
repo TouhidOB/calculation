@@ -82,7 +82,7 @@ export default function GlobalNavbar({
   const router = useRouter()
 
   const [categories, setCategories] = useState<CategoryMap>({})
-  const [total, setTotal] = useState(689)
+  const [total, setTotal] = useState(674)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchAnchor, setSearchAnchor] = useState<null | HTMLElement>(null)
@@ -102,7 +102,7 @@ export default function GlobalNavbar({
       .then((data) => {
         if (data && data.categories) {
           setCategories(data.categories)
-          setTotal(data.total || 689)
+          setTotal(data.total || 674)
         }
       })
       .catch(() => {
@@ -621,7 +621,7 @@ export default function GlobalNavbar({
                   href="/"
                   clickable
                   icon={<HomeIcon sx={{ fontSize: "16px !important", color: !currentCategory ? "#fff !important" : "#475569 !important" }} />}
-                  label="All (689+)"
+                  label="All (674+)"
                   size="small"
                   sx={{
                     fontWeight: 700,

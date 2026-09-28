@@ -277,7 +277,7 @@ export function seoFaqFor(calc: CalculatorDef): { q: string; a: string }[] {
     },
     {
       q: `Is the ${calc.name} completely free to use?`,
-      a: `Yes — TryCalc provides 100% free access to all 689+ calculators with unlimited runs, zero account registration requirements, and no paywalls.`,
+      a: `Yes — TryCalc provides 100% free access to all 674+ calculators with unlimited runs, zero account registration requirements, and no paywalls.`,
     },
     {
       q: "Can I use this calculator on mobile devices?",

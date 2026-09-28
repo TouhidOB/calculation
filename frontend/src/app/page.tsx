@@ -39,7 +39,7 @@ async function getCalculators(): Promise<{ categories: CategoryMap; total: numbe
 
   return {
     categories: (fallbackData.categories as unknown as CategoryMap) || {},
-    total: fallbackData.total || 689,
+    total: fallbackData.total || 674,
   }
 }
 
