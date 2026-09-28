@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       return res
     }
 
-    return NextResponse.json({ ok: false, error: "Invalid User ID or Password" }, { status: 401 })
+    return NextResponse.json({ ok: false, error: "Invalid credentials" }, { status: 401 })
   } catch {
     return NextResponse.json({ ok: false, error: "Server error" }, { status: 500 })
   }

@@ -255,7 +255,7 @@ export default function ImonAdminView() {
                   <TextField
                     fullWidth
                     variant="outlined"
-                    placeholder="Enter User ID (e.g. IT)"
+                    placeholder="Enter User ID"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
