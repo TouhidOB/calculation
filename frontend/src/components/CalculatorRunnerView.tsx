@@ -392,9 +392,37 @@ export default function CalculatorRunnerView({
     open: false,
     message: "",
   })
+  const [isScenarioFromUrl, setIsScenarioFromUrl] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const sp = new URLSearchParams(window.location.search)
+        if (sp.toString().length > 0) {
+          setIsScenarioFromUrl(true)
+        }
+      } catch {}
+    }
+  }, [])
   const [relatedCalcs, setRelatedCalcs] = useState<{ id: string; name: string; description: string }[]>(
     () => initialRelatedCalcs || []
   )
+
+  // Sync state values to URL search params in real-time (without full page reloads)
+  // This enables instant shareability, social signal citation, and bookmarking exact calculations
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.history?.replaceState) return
+    const sp = new URLSearchParams()
+    for (const f of calc.fields) {
+      const val = values[f.name]
+      if (val !== undefined && val !== null && val !== "") {
+        sp.set(f.name, String(val))
+      }
+    }
+    const qs = sp.toString()
+    const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ""}`
+    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, "", newUrl)
+  }, [values, calc.fields])
 
   useEffect(() => {
     if (relatedCalcs.length > 0) return
@@ -447,6 +475,134 @@ export default function CalculatorRunnerView({
       },
     ],
   }
+
+  // Goal-Seek / Reverse Calculation Mode (Multi-Directional Calculating Engine)
+  const isGoalSeekSupported = useMemo(() => {
+    const id = calc.id.toLowerCase()
+    const n = calc.name.toLowerCase()
+    return (
+      id.includes("mortgage") ||
+      n.includes("mortgage") ||
+      id.includes("loan-calculator") ||
+      n.includes("loan payment") ||
+      id === "bmi" ||
+      n.includes("body mass index")
+    )
+  }, [calc.id, calc.name])
+
+  const [calcMode, setCalcMode] = useState<"standard" | "goalseek">("standard")
+
+  const [goalInputs, setGoalInputs] = useState<Record<string, string>>(() => {
+    const res: Record<string, string> = {}
+    const id = calc.id.toLowerCase()
+    if (id.includes("mortgage")) {
+      res.monthly_budget = "2500"
+      res.rate = "6.5"
+      res.years = "30"
+      res.down_payment_pct = "20"
+    } else if (id.includes("loan")) {
+      res.target_payment = "500"
+      res.rate = "6.5"
+      res.months = "48"
+    } else if (id.includes("bmi")) {
+      res.height_cm = "175"
+      res.target_bmi = "22.0"
+    } else {
+      res.monthly_budget = "2500"
+      res.rate = "6.5"
+      res.years = "30"
+    }
+    return res
+  })
+
+  const goalSeekResult = useMemo(() => {
+    if (!isGoalSeekSupported || calcMode !== "goalseek") return null
+    const id = calc.id.toLowerCase()
+
+    if (id.includes("mortgage")) {
+      const budget = parseFloat(goalInputs.monthly_budget) || 2500
+      const rate = (parseFloat(goalInputs.rate) || 6.5) / 100 / 12
+      const n = (parseFloat(goalInputs.years) || 30) * 12
+      const downPct = (parseFloat(goalInputs.down_payment_pct) || 20) / 100
+
+      if (rate <= 0 || n <= 0) return null
+      const compound = Math.pow(1 + rate, n)
+      const loanAmount = budget * ((compound - 1) / (rate * compound))
+      const maxHomePrice = downPct < 1 ? loanAmount / (1 - downPct) : loanAmount
+      const downPayment = maxHomePrice * downPct
+      const totalPaid = budget * n
+      const totalInterest = totalPaid - loanAmount
+
+      return {
+        type: "mortgage_affordability",
+        title: "Home Affordability (Purchasing Power)",
+        primaryLabel: "MAXIMUM AFFORDABLE HOME PRICE",
+        primaryValue: `$${Math.round(maxHomePrice).toLocaleString()}`,
+        badge: "Goal-Seek Mode",
+        details: [
+          { label: "Target Monthly Budget (P&I)", value: `$${budget.toLocaleString()}` },
+          { label: "Maximum Loan Borrowable", value: `$${Math.round(loanAmount).toLocaleString()}` },
+          { label: "Down Payment Required", value: `$${Math.round(downPayment).toLocaleString()} (${(downPct * 100).toFixed(0)}%)` },
+          { label: "Total Lifetime Interest", value: `$${Math.round(totalInterest).toLocaleString()}` },
+          { label: "Total Lifetime Payments", value: `$${Math.round(totalPaid).toLocaleString()}` },
+        ],
+      }
+    }
+
+    if (id.includes("loan")) {
+      const payment = parseFloat(goalInputs.target_payment) || 500
+      const rate = (parseFloat(goalInputs.rate) || 6.5) / 100 / 12
+      const n = parseFloat(goalInputs.months) || 48
+
+      if (rate <= 0 || n <= 0) return null
+      const compound = Math.pow(1 + rate, n)
+      const maxLoan = payment * ((compound - 1) / (rate * compound))
+      const totalPaid = payment * n
+      const totalInterest = totalPaid - maxLoan
+
+      return {
+        type: "loan_borrowing_power",
+        title: "Borrowing Capacity Assessment",
+        primaryLabel: "MAXIMUM PRINCIPAL BORROWABLE",
+        primaryValue: `$${Math.round(maxLoan).toLocaleString()}`,
+        badge: "Goal-Seek Mode",
+        details: [
+          { label: "Target Monthly Payment", value: `$${payment.toLocaleString()}` },
+          { label: "Repayment Duration", value: `${n} Months (${(n / 12).toFixed(1)} Years)` },
+          { label: "Estimated Total Interest", value: `$${Math.round(totalInterest).toLocaleString()}` },
+          { label: "Total Loan Repayment", value: `$${Math.round(totalPaid).toLocaleString()}` },
+        ],
+      }
+    }
+
+    if (id.includes("bmi")) {
+      const heightCm = parseFloat(goalInputs.height_cm) || 175
+      const targetBmi = parseFloat(goalInputs.target_bmi) || 22.0
+      const hM = heightCm / 100
+
+      if (hM <= 0) return null
+      const targetKg = targetBmi * (hM * hM)
+      const targetLbs = targetKg * 2.20462
+      const minNormalKg = 18.5 * (hM * hM)
+      const maxNormalKg = 24.9 * (hM * hM)
+
+      return {
+        type: "bmi_ideal_weight",
+        title: "Ideal Target Weight Calculation",
+        primaryLabel: `TARGET BODY WEIGHT (AT ${targetBmi} BMI)`,
+        primaryValue: `${targetKg.toFixed(1)} kg (${targetLbs.toFixed(1)} lbs)`,
+        badge: "WHO Optimal Range",
+        details: [
+          { label: "Input Stature (Height)", value: `${heightCm} cm (${Math.floor(heightCm / 2.54 / 12)}' ${Math.round((heightCm / 2.54) % 12)}")` },
+          { label: "Target BMI Metric", value: `${targetBmi.toFixed(1)} kg/m²` },
+          { label: "Healthy Weight Range (18.5 – 24.9)", value: `${minNormalKg.toFixed(1)} kg – ${maxNormalKg.toFixed(1)} kg` },
+          { label: "Healthy Range in Pounds", value: `${(minNormalKg * 2.20462).toFixed(1)} lbs – ${(maxNormalKg * 2.20462).toFixed(1)} lbs` },
+        ],
+      }
+    }
+
+    return null
+  }, [isGoalSeekSupported, calcMode, calc.id, goalInputs])
 
   const handleFillExample = () => {
     const ex = generateExampleValues(calc.fields)
@@ -712,7 +868,7 @@ export default function CalculatorRunnerView({
               </MuiLink>
               <MuiLink
                 component={Link}
-                href={`/?cat=${calc.category}`}
+                href={`/category/${calc.category}`}
                 sx={{
                   textDecoration: "none",
                   color: "#64748b",
@@ -727,6 +883,105 @@ export default function CalculatorRunnerView({
                 {calc.name}
               </Typography>
             </Breadcrumbs>
+          )}
+
+          {/* Dedicated Print-Only Executive Header */}
+          <Box className="print-only" sx={{ display: "none", mb: 3 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2.5px solid #0f172a", pb: 2 }}>
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 900, color: "#0f172a", letterSpacing: -0.5 }}>
+                  TryCalc.net — Official Computation Report
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#334155", fontWeight: 600, mt: 0.5 }}>
+                  Instrument: {calc.name} ({catMeta?.label || calc.category})
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#64748b" }}>
+                  Verified Deterministic Computation &amp; Analytical Audit
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: "right" }}>
+                <Typography variant="caption" sx={{ color: "#0f172a", fontWeight: 700, display: "block" }}>
+                  Generated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#475569", fontFamily: "monospace", display: "block" }}>
+                  https://trycalc.net/calculators/{calc.id}
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#16a34a", fontWeight: 800, textTransform: "uppercase" }}>
+                  ● Verified Deterministic Logic
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Shared Scenario Alert Banner */}
+          {isScenarioFromUrl && (
+            <Paper
+              elevation={0}
+              className="no-print"
+              sx={{
+                mb: 2.5,
+                p: 1.5,
+                px: 2,
+                borderRadius: 2.5,
+                bgcolor: "#eff6ff",
+                border: "1px solid #bfdbfe",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 1.5,
+                flexWrap: "wrap",
+              }}
+            >
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                <Box
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    bgcolor: "#3b82f6",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                  }}
+                >
+                  🔗
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#1e3a8a", lineHeight: 1.2 }}>
+                    Shared Scenario Active
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#1d4ed8" }}>
+                    Values were populated from your shared URL link. Tweak any input or reset to standard defaults.
+                  </Typography>
+                </Box>
+              </Stack>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => {
+                  const def = generateExampleValues(calc.fields)
+                  setValues(def)
+                  executeCalculation(def)
+                  setIsScenarioFromUrl(false)
+                  if (typeof window !== "undefined") {
+                    window.history.replaceState({}, "", window.location.pathname)
+                  }
+                  setToast({ open: true, message: "Standard example defaults restored." })
+                }}
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 700,
+                  fontSize: 12,
+                  borderColor: "#93c5fd",
+                  color: "#1d4ed8",
+                  "&:hover": { borderColor: "#3b82f6", bgcolor: "#dbeafe" },
+                }}
+              >
+                Reset to Standard Defaults
+              </Button>
+            </Paper>
           )}
 
           {embedded && (
@@ -916,6 +1171,205 @@ export default function CalculatorRunnerView({
                   )}
                 </Stack>
 
+                {isGoalSeekSupported && (
+                  <Box
+                    className="no-print"
+                    sx={{
+                      mb: 2.5,
+                      p: 0.6,
+                      bgcolor: "#f1f5f9",
+                      borderRadius: 2.5,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.6,
+                      border: "1px solid #e2e8f0",
+                    }}
+                  >
+                    <Button
+                      fullWidth
+                      size="small"
+                      onClick={() => setCalcMode("standard")}
+                      sx={{
+                        py: 0.8,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontWeight: calcMode === "standard" ? 800 : 600,
+                        fontSize: 12.5,
+                        bgcolor: calcMode === "standard" ? "#ffffff" : "transparent",
+                        color: calcMode === "standard" ? "#0f172a" : "#64748b",
+                        boxShadow: calcMode === "standard" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                        "&:hover": {
+                          bgcolor: calcMode === "standard" ? "#ffffff" : "#e2e8f0",
+                        },
+                      }}
+                    >
+                      🎯 Standard Calculation
+                    </Button>
+                    <Button
+                      fullWidth
+                      size="small"
+                      onClick={() => setCalcMode("goalseek")}
+                      sx={{
+                        py: 0.8,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontWeight: calcMode === "goalseek" ? 800 : 600,
+                        fontSize: 12.5,
+                        bgcolor: calcMode === "goalseek" ? "#ffffff" : "transparent",
+                        color: calcMode === "goalseek" ? "#4f46e5" : "#64748b",
+                        boxShadow: calcMode === "goalseek" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                        "&:hover": {
+                          bgcolor: calcMode === "goalseek" ? "#ffffff" : "#e2e8f0",
+                        },
+                      }}
+                    >
+                      🔄 Reverse / Goal-Seek Mode
+                    </Button>
+                  </Box>
+                )}
+
+                {calcMode === "goalseek" ? (
+                  <Box sx={{ mt: 1 }}>
+                    <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: 2.5, border: "1px solid #e2e8f0", mb: 2.5 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a", mb: 0.5 }}>
+                        {goalSeekResult?.title || "Goal-Seek / Target Parameter Calculation"}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "#64748b" }}>
+                        Enter your desired outcome target to solve backwards for required principal, maximum purchase price, or body weight.
+                      </Typography>
+                    </Box>
+
+                    <Stack spacing={2.5}>
+                      {calc.id.toLowerCase().includes("mortgage") ? (
+                        <>
+                          <TextField
+                            fullWidth
+                            label="Target Monthly Budget (P&amp;I)"
+                            type="number"
+                            value={goalInputs.monthly_budget || ""}
+                            onChange={(e) => setGoalInputs((prev) => ({ ...prev, monthly_budget: e.target.value }))}
+                            slotProps={{
+                              input: {
+                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                              },
+                            }}
+                            helperText="Maximum monthly payment you are willing or able to spend"
+                          />
+                          <TextField
+                            fullWidth
+                            label="Expected Interest Rate (%)"
+                            type="number"
+                            value={goalInputs.rate || ""}
+                            onChange={(e) => setGoalInputs((prev) => ({ ...prev, rate: e.target.value }))}
+                            slotProps={{
+                              input: {
+                                endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                              },
+                            }}
+                            helperText="Annual percentage rate (e.g. 6.5)"
+                          />
+                          <TextField
+                            fullWidth
+                            label="Mortgage Term (Years)"
+                            type="number"
+                            value={goalInputs.years || ""}
+                            onChange={(e) => setGoalInputs((prev) => ({ ...prev, years: e.target.value }))}
+                            slotProps={{
+                              input: {
+                                endAdornment: <InputAdornment position="end">Years</InputAdornment>,
+                              },
+                            }}
+                            helperText="Standard term: 15, 20, or 30 years"
+                          />
+                          <TextField
+                            fullWidth
+                            label="Down Payment Available (%)"
+                            type="number"
+                            value={goalInputs.down_payment_pct || ""}
+                            onChange={(e) => setGoalInputs((prev) => ({ ...prev, down_payment_pct: e.target.value }))}
+                            slotProps={{
+                              input: {
+                                endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                              },
+                            }}
+                            helperText="Typical down payment: 5%, 10%, or 20%"
+                          />
+                        </>
+                      ) : calc.id.toLowerCase().includes("loan") ? (
+                        <>
+                          <TextField
+                            fullWidth
+                            label="Target Monthly Payment Budget"
+                            type="number"
+                            value={goalInputs.target_payment || ""}
+                            onChange={(e) => setGoalInputs((prev) => ({ ...prev, target_payment: e.target.value }))}
+                            slotProps={{
+                              input: {
+                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                              },
+                            }}
+                            helperText="Desired comfortable monthly installment"
+                          />
+                          <TextField
+                            fullWidth
+                            label="Annual Percentage Rate (APR)"
+                            type="number"
+                            value={goalInputs.rate || ""}
+                            onChange={(e) => setGoalInputs((prev) => ({ ...prev, rate: e.target.value }))}
+                            slotProps={{
+                              input: {
+                                endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                              },
+                            }}
+                            helperText="Annual interest rate offered by the lender"
+                          />
+                          <TextField
+                            fullWidth
+                            label="Loan Duration (Months)"
+                            type="number"
+                            value={goalInputs.months || ""}
+                            onChange={(e) => setGoalInputs((prev) => ({ ...prev, months: e.target.value }))}
+                            slotProps={{
+                              input: {
+                                endAdornment: <InputAdornment position="end">Months</InputAdornment>,
+                              },
+                            }}
+                            helperText="Common loan terms: 36, 48, 60, or 72 months"
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <TextField
+                            fullWidth
+                            label="Your Stature / Height (cm)"
+                            type="number"
+                            value={goalInputs.height_cm || ""}
+                            onChange={(e) => setGoalInputs((prev) => ({ ...prev, height_cm: e.target.value }))}
+                            slotProps={{
+                              input: {
+                                endAdornment: <InputAdornment position="end">cm</InputAdornment>,
+                              },
+                            }}
+                            helperText="Height in centimeters (e.g. 175 cm)"
+                          />
+                          <TextField
+                            fullWidth
+                            label="Target Body Mass Index (BMI)"
+                            type="number"
+                            value={goalInputs.target_bmi || ""}
+                            onChange={(e) => setGoalInputs((prev) => ({ ...prev, target_bmi: e.target.value }))}
+                            slotProps={{
+                              input: {
+                                endAdornment: <InputAdornment position="end">kg/m²</InputAdornment>,
+                              },
+                            }}
+                            helperText="Standard healthy target: 22.0 kg/m² (normal range: 18.5 – 24.9)"
+                          />
+                        </>
+                      )}
+                    </Stack>
+                  </Box>
+                ) : (
                 <form onSubmit={submit}>
                   <Stack spacing={2.5}>
                     {calc.fields.map((f) => {
@@ -1016,6 +1470,7 @@ export default function CalculatorRunnerView({
                     </TactileButton>
                   </Stack>
                 </form>
+                )}
               </Paper>
             </Grid>
 
@@ -1070,6 +1525,53 @@ export default function CalculatorRunnerView({
                     <Skeleton variant="rounded" width={80} height={36} sx={{ borderRadius: 2 }} />
                   </Box>
                 </Paper>
+              ) : calcMode === "goalseek" && goalSeekResult ? (
+                <Stack spacing={2.5} className="print-card">
+                  <DigitalReadoutScreen
+                    label={goalSeekResult.primaryLabel}
+                    value={goalSeekResult.primaryValue}
+                    statusBadge={goalSeekResult.badge}
+                    subText="TryCalc Goal-Seek Solver · Target Solution"
+                  />
+                  <AuditLedgerSlip
+                    title={`${goalSeekResult.title} Breakdown`}
+                    items={goalSeekResult.details.map((d, idx) => ({
+                      label: d.label,
+                      value: d.value,
+                      highlight: idx === 0,
+                      isTotal: idx === 0 || idx === goalSeekResult.details.length - 1,
+                    }))}
+                  />
+                  <Stack direction="row" spacing={1.5} className="no-print" sx={{ mt: 2, pt: 2, borderTop: "1.5px dashed #cbd5e1", flexWrap: "wrap", gap: 1 }}>
+                    <TactileButton
+                      size="small"
+                      buttonColor="primary"
+                      startIcon={<ContentCopyIcon />}
+                      onClick={() => {
+                        let text = `${goalSeekResult.title} Results:\n`
+                        for (const d of goalSeekResult.details) {
+                          text += `${d.label}: ${d.value}\n`
+                        }
+                        text += `\nCalculated on TryCalc.net`
+                        if (navigator.clipboard) {
+                          navigator.clipboard.writeText(text).then(() => {
+                            setToast({ open: true, message: "📋 Goal-Seek results copied to clipboard!" })
+                          })
+                        }
+                      }}
+                    >
+                      Copy Results
+                    </TactileButton>
+                    <TactileButton
+                      size="small"
+                      buttonColor="secondary"
+                      startIcon={<PrintIcon />}
+                      onClick={() => window.print()}
+                    >
+                      Print Report
+                    </TactileButton>
+                  </Stack>
+                </Stack>
               ) : result || jsHtml ? (
                 <Stack spacing={2.5} className="print-card">
                   {/* Digital Hero Readout Window */}
