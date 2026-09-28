@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Script from "next/script"
 import ThemeRegistry from "@/theme/ThemeRegistry"
 import OrganizationJsonLd from "@/components/OrganizationJsonLd"
+import TrafficTelemetry from "@/components/TrafficTelemetry"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-KXFZGDCLVQ"
@@ -126,6 +127,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </>
         )}
         <OrganizationJsonLd />
+        <TrafficTelemetry />
         <ThemeRegistry>{children}</ThemeRegistry>
       </body>
     </html>

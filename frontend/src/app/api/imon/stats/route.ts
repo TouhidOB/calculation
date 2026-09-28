@@ -1,0 +1,14 @@
+import { NextRequest, NextResponse } from "next/server"
+import { verifyToken } from "@/app/api/imon/auth/route"
+import { analyticsStore } from "@/lib/analytics-store"
+
+export async function GET(req: NextRequest) {
+  const token = req.cookies.get("imon_token")?.value || req.headers.get("authorization")?.replace("Bearer ", "")
+
+  if (!token || !verifyToken(token)) {
+    return NextResponse.json({ ok: false, error: "Unauthorized access" }, { status: 401 })
+  }
+
+  const stats = analyticsStore.getStats()
+  return NextResponse.json({ ok: true, stats })
+}
