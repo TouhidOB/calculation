@@ -1,42 +1,61 @@
 import { NextResponse } from "next/server"
-import type { CalculatorDef } from "@/lib/calculator-api"
+import fallbackData from "@/lib/calculators-fallback.json"
+import { CATEGORY_META, type CalculatorDef } from "@/lib/calculator-api"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
-const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
 
-export const dynamic = "force-dynamic"
 export const revalidate = 86400
 
 export async function GET() {
-  let listText = ""
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/calculators/`, {
-      headers: { Accept: "application/json" },
-      next: { revalidate: 86400 },
-    })
-    if (res.ok) {
-      const data = await res.json()
-      if (data && data.categories) {
-        const categories = (data.categories as Record<string, CalculatorDef[]>) || {}
-        for (const [catName, list] of Object.entries(categories)) {
-          listText += `\n### Category: ${catName.toUpperCase()}\n`
-          if (Array.isArray(list)) {
-            for (const item of list) {
-              listText += `- [${item.name}](${SITE_URL}/calculators/${item.id}): ${item.description || "Instant online calculation"}\n`
-            }
-          }
-        }
-      }
-    }
-  } catch {
-    listText = "\nCould not fetch complete list dynamically.\n"
+  const categories = fallbackData.categories as Record<string, CalculatorDef[]>
+
+  let lines: string[] = [
+    `# TryCalc Complete Tool Catalog (https://trycalc.net)`,
+    `> Comprehensive machine-readable directory of 674 deterministic calculators across 10 categories.`,
+    `> Built for AI agents, LLMs, researchers, and automated assistants. Instant free calculations with zero registration.`,
+    "",
+    `## Table of Contents`,
+  ]
+
+  for (const catKey of Object.keys(categories)) {
+    const meta = CATEGORY_META[catKey]
+    const label = meta?.label || catKey
+    lines.push(`- [${label}](#${catKey}) (${categories[catKey]?.length || 0} tools)`)
   }
 
-  const content = `# TryCalc Full Calculators Index (Machine-Readable Directory)
-> Complete listing of 690 free online calculators on TryCalc (${SITE_URL}) for AI assistants, LLMs, and automated agents.
+  lines.push("", "---", "")
 
-${listText}
-`
+  for (const catKey of Object.keys(categories)) {
+    const meta = CATEGORY_META[catKey]
+    const label = meta?.label || catKey
+    const calcs = categories[catKey] || []
+
+    lines.push(`## ${label} {#${catKey}}`)
+    lines.push(`Category Hub: ${SITE_URL}/category/${catKey}`)
+    lines.push("")
+
+    for (const calc of calcs) {
+      if (!calc?.id) continue
+      const url = `${SITE_URL}/calculators/${calc.id}`
+      const desc = calc.description || `Online calculation tool for ${calc.name}.`
+      const paramList = (calc.fields || [])
+        .slice(0, 5)
+        .map((f) => f.label || f.name)
+        .join(", ")
+
+      lines.push(`### [${calc.name}](${url})`)
+      lines.push(`- **URL**: ${url}`)
+      lines.push(`- **Description**: ${desc}`)
+      if (paramList) {
+        lines.push(`- **Parameters**: ${paramList}`)
+      }
+      lines.push("")
+    }
+
+    lines.push("---", "")
+  }
+
+  const content = lines.join("\n")
 
   return new NextResponse(content, {
     status: 200,

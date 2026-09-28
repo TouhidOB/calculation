@@ -14,6 +14,9 @@ import Stack from "@mui/material/Stack"
 import Paper from "@mui/material/Paper"
 import Button from "@mui/material/Button"
 import Divider from "@mui/material/Divider"
+import Accordion from "@mui/material/Accordion"
+import AccordionSummary from "@mui/material/AccordionSummary"
+import AccordionDetails from "@mui/material/AccordionDetails"
 
 // Icons
 import HomeIcon from "@mui/icons-material/Home"
@@ -21,6 +24,7 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import CalculateIcon from "@mui/icons-material/Calculate"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 
 import GlobalNavbar from "@/components/GlobalNavbar"
 import GlobalFooter from "@/components/GlobalFooter"
@@ -262,6 +266,34 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     },
   }
 
+  const categoryFaqs = [
+    {
+      q: `What kinds of ${catMeta.label} calculators are available on TryCalc?`,
+      a: `TryCalc features ${calcs.length} verified ${catMeta.label.toLowerCase()} calculators covering everything from basic estimates to advanced mathematical and statutory simulations.`,
+    },
+    {
+      q: `Are the calculations performed on TryCalc accurate and deterministic?`,
+      a: `Yes. Every ${catMeta.label.toLowerCase()} tool executes deterministic mathematical algorithms using 64-bit precision arithmetic calibrated to recognized industry and statutory standards.`,
+    },
+    {
+      q: `Do I need to create an account or install anything to use these tools?`,
+      a: `No account or software installation is required. All ${catMeta.label} tools run instantly in any modern web browser on desktop and mobile devices with zero tracking of your numerical inputs.`,
+    },
+  ]
+
+  const categoryFaqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: categoryFaqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: f.a,
+      },
+    })),
+  }
+
   const otherCategories = Object.entries(CATEGORY_META).filter(([k]) => k !== slug)
 
   return (
@@ -273,6 +305,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(categoryFaqLd) }}
       />
 
       <GlobalNavbar currentCategory={slug} />
@@ -477,6 +513,52 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                 </Grid>
               ))}
             </Grid>
+          </Paper>
+
+          {/* Frequently Asked Questions (FAQ) Section */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 3, md: 4 },
+              mb: 4,
+              borderRadius: 3,
+              border: "1px solid #e2e8f0",
+              bgcolor: "#ffffff",
+            }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a", mb: 2 }}>
+              Frequently Asked Questions
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              {categoryFaqs.map((faq, idx) => (
+                <Accordion
+                  key={idx}
+                  defaultExpanded={idx === 0}
+                  disableGutters
+                  elevation={0}
+                  sx={{
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "12px !important",
+                    "&:before": { display: "none" },
+                    overflow: "hidden",
+                  }}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon sx={{ color: "#64748b" }} />}
+                    sx={{ bgcolor: "#f8fafc", px: 2.5, py: 1 }}
+                  >
+                    <Typography sx={{ fontWeight: 700, color: "#1e293b", fontSize: 16 }}>
+                      {faq.q}
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ px: 2.5, py: 2, bgcolor: "#ffffff" }}>
+                    <Typography sx={{ color: "#475569", fontSize: 15, lineHeight: 1.6 }}>
+                      {faq.a}
+                    </Typography>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+            </Box>
           </Paper>
 
           {/* Related Category Topic Clusters */}

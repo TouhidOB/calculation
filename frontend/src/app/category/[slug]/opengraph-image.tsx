@@ -1,29 +1,21 @@
 import { ImageResponse } from "next/og"
-import { getCalculator, CATEGORY_META, type CalcFieldDef } from "@/lib/calculator-api"
+import { CATEGORY_META } from "@/lib/calculator-api"
+import fallbackData from "@/lib/calculators-fallback.json"
 
 export const runtime = "nodejs"
 
-export const alt = "TryCalc Calculator Workstation"
+export const alt = "TryCalc Category Hub Workstation"
 export const size = {
   width: 1200,
   height: 630,
 }
 export const contentType = "image/png"
 
-export default async function Image({ params }: { params: Promise<{ calcId: string }> }) {
-  const { calcId } = await params
-  let title = "Free Online Calculator"
-  let catLabel = "Universal Precision"
-  let fieldNames = "Instant Deterministic Results"
-
-  try {
-    const calc = await getCalculator(calcId)
-    if (calc) {
-      title = calc.name
-      catLabel = CATEGORY_META[calc.category]?.label || calc.category
-      fieldNames = calc.fields.slice(0, 4).map((f: CalcFieldDef) => f.label).join(" • ")
-    }
-  } catch {}
+export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const catMeta = CATEGORY_META[slug] || { label: "Calculators", emoji: "🧮", color: "#6366f1" }
+  const categories = fallbackData.categories as Record<string, unknown[]>
+  const toolCount = categories[slug]?.length || 50
 
   return new ImageResponse(
     (
@@ -43,7 +35,7 @@ export default async function Image({ params }: { params: Promise<{ calcId: stri
       >
         {/* Top telemetry bar */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
             <div
               style={{
                 width: "16px",
@@ -62,48 +54,53 @@ export default async function Image({ params }: { params: Promise<{ calcId: stri
                 textTransform: "uppercase",
               }}
             >
-              TRYCALC INSTRUMENTS · MODEL TC-674
+              TRYCALC CLUSTER · TOPIC HUB
             </span>
           </div>
           <div
             style={{
               display: "flex",
-              padding: "8px 20px",
+              alignItems: "center",
+              gap: "8px",
+              padding: "8px 22px",
               background: "rgba(56, 189, 248, 0.15)",
               borderRadius: "20px",
               border: "1px solid #38bdf8",
             }}
           >
-            <span style={{ fontSize: "18px", fontWeight: "700", color: "#38bdf8" }}>{catLabel}</span>
+            <span style={{ fontSize: "20px" }}>{catMeta.emoji}</span>
+            <span style={{ fontSize: "18px", fontWeight: "700", color: "#38bdf8" }}>
+              {toolCount} Verified Tools
+            </span>
           </div>
         </div>
 
-        {/* Central Display Chassis */}
+        {/* Central Chassis */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
-            padding: "40px 48px",
+            gap: "18px",
+            padding: "44px 50px",
             background: "rgba(15, 23, 42, 0.85)",
             borderRadius: "24px",
             border: "2px solid #334155",
           }}
         >
-          <div style={{ fontSize: "52px", fontWeight: "900", color: "#f8fafc", lineHeight: "1.15" }}>
-            {title}
+          <div style={{ fontSize: "56px", fontWeight: "900", color: "#f8fafc", lineHeight: "1.15" }}>
+            {catMeta.label} Calculators
           </div>
           <div style={{ fontSize: "24px", fontWeight: "600", color: "#94a3b8" }}>
-            Parameters: {fieldNames}
+            Calibrated deterministic algorithms • Free instant results • Zero tracking
           </div>
         </div>
 
         {/* Bottom Footer Bar */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", gap: "28px", fontSize: "20px", fontWeight: "600", color: "#cbd5e1" }}>
-            <span>⚡ Instant Computation</span>
-            <span>✓ 64-Bit Precision</span>
-            <span>🔒 100% Free &amp; Deterministic</span>
+            <span>⚡ Real-time Execution</span>
+            <span>✓ 64-Bit Arithmetic</span>
+            <span>🌐 674 Total Online Tools</span>
           </div>
           <div style={{ fontSize: "26px", fontWeight: "900", color: "#38bdf8", letterSpacing: "1px" }}>
             trycalc.net

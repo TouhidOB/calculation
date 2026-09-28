@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Ping IndexNow (Bing / Yandex) with updated TryCalc.net URLs.
+Ping IndexNow (Bing / Yandex) with all TryCalc.net URLs (Core, Categories, 674 Calculators).
 Key: 4f89d31b26a849769e55728be26c117d
 """
 
 import json
+import os
 import urllib.request
 import urllib.error
 
@@ -18,7 +19,6 @@ CATEGORIES = [
     "health",
     "construction",
     "basic",
-    "garments",
     "conversion",
     "date_time",
     "education",
@@ -29,6 +29,7 @@ CATEGORIES = [
 CORE_URLS = [
     f"https://{HOST}/",
     f"https://{HOST}/sitemap.xml",
+    f"https://{HOST}/calculators",
     f"https://{HOST}/about",
     f"https://{HOST}/contact",
     f"https://{HOST}/privacy",
@@ -36,10 +37,36 @@ CORE_URLS = [
     f"https://{HOST}/disclaimer",
 ] + [f"https://{HOST}/category/{c}" for c in CATEGORIES]
 
+def get_all_calculator_urls():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(script_dir, "../frontend/src/lib/calculators-fallback.json"),
+        os.path.join(script_dir, "../frontend/src/calculators-fallback.json"),
+        "/root/trycalc/app/frontend/src/lib/calculators-fallback.json",
+    ]
+    json_path = None
+    for p in candidates:
+        if os.path.exists(p):
+            json_path = p
+            break
+    
+    calc_urls = []
+    if json_path:
+        with open(json_path) as f:
+            data = json.load(f)
+        for cat, items in data.get("categories", {}).items():
+            for item in items:
+                cid = item.get("id")
+                if cid and cid != "fabric-consumption":
+                    calc_urls.append(f"https://{HOST}/calculators/{cid}")
+    return calc_urls
+
 def ping_indexnow(urls=None):
     if urls is None:
-        urls = CORE_URLS
+        calc_urls = get_all_calculator_urls()
+        urls = list(dict.fromkeys(CORE_URLS + calc_urls))
 
+    print(f"[IndexNow] Preparing submission of {len(urls)} URLs...")
     payload = {
         "host": HOST,
         "key": KEY,
@@ -55,8 +82,8 @@ def ping_indexnow(urls=None):
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            print(f"[IndexNow] HTTP {resp.status} - Submitted {len(urls)} URLs successfully.")
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            print(f"[IndexNow] HTTP {resp.status} - Submitted {len(urls)} URLs successfully to Bing/Yandex.")
             return True
     except urllib.error.HTTPError as e:
         print(f"[IndexNow] HTTP {e.code}: {e.read().decode('utf-8')}")
