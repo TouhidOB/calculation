@@ -61,9 +61,16 @@ register_calculator(
 
 def _statistics(data):
     import statistics as st
-    nums = [float(x) for x in str(data["numbers"]).replace(",", " ").split() if x.strip()]
+    raw_nums = str(data.get("numbers", "")).replace(",", " ").split()
+    nums = []
+    for x in raw_nums:
+        if x.strip():
+            try:
+                nums.append(float(x))
+            except (ValueError, TypeError):
+                continue
     if not nums:
-        return {"error": "No numbers provided"}
+        return {"error": "Please provide valid numbers separated by spaces or commas"}
     return {
         "count": len(nums),
         "sum": round(sum(nums), 4),

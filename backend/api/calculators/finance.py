@@ -322,7 +322,15 @@ def _npv(data):
     rate = data["rate"] / 100
     initial = data["initial"]
     flows = data.get("cash_flows", "")
-    numbers = [float(x) for x in str(flows).replace(",", " ").split() if x.strip()]
+    numbers = []
+    for x in str(flows).replace(",", " ").split():
+        if x.strip():
+            try:
+                numbers.append(float(x))
+            except (ValueError, TypeError):
+                continue
+    if not numbers:
+        return {"error": "Please provide valid numeric cash flows separated by space or commas"}
     npv = -initial + sum(cf / (1 + rate) ** (i + 1) for i, cf in enumerate(numbers))
     return {
         "npv": round(npv, 2),
@@ -347,9 +355,15 @@ register_calculator(
 def _irr(data):
     initial = data["initial"]
     flows_str = data.get("cash_flows", "")
-    flows = [float(x) for x in str(flows_str).replace(",", " ").split() if x.strip()]
+    flows = []
+    for x in str(flows_str).replace(",", " ").split():
+        if x.strip():
+            try:
+                flows.append(float(x))
+            except (ValueError, TypeError):
+                continue
     if not flows:
-        return {"error": "Provide at least one cash flow"}
+        return {"error": "Please provide valid numeric cash flows separated by space or commas"}
     cashflows = [-initial] + flows
 
     def npv_at(rate):
