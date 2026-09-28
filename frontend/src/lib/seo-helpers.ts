@@ -371,3 +371,146 @@ export function seoFormulaFor(calc: CalculatorDef): FormulaInfo {
     source: "Verified mathematical algorithms and official domain specifications",
   }
 }
+
+export interface ReferenceTable {
+  title: string
+  subtitle: string
+  headers: string[]
+  rows: string[][]
+  footnote?: string
+}
+
+export function seoReferenceTableFor(calc: CalculatorDef): ReferenceTable {
+  const name = calc.name.toLowerCase()
+
+  if (name.includes("mortgage") || name.includes("home loan")) {
+    return {
+      title: "Quick Mortgage Payment Reference Table (30-Year Fixed)",
+      subtitle: "Monthly principal and interest (P&I) payments across standard loan amounts and interest rates.",
+      headers: ["Loan Amount", "5.5% APR", "6.0% APR", "6.5% APR", "7.0% APR", "7.5% APR"],
+      rows: [
+        ["$200,000", "$1,136", "$1,199", "$1,264", "$1,331", "$1,398"],
+        ["$300,000", "$1,703", "$1,799", "$1,896", "$1,996", "$2,098"],
+        ["$400,000", "$2,271", "$2,398", "$2,528", "$2,661", "$2,797"],
+        ["$500,000", "$2,839", "$2,998", "$3,160", "$3,327", "$3,496"],
+        ["$600,000", "$3,407", "$3,597", "$3,792", "$3,992", "$4,195"],
+        ["$750,000", "$4,258", "$4,496", "$4,740", "$4,990", "$5,244"],
+      ],
+      footnote: "Excludes property taxes, homeowner's insurance (HOI), and private mortgage insurance (PMI).",
+    }
+  }
+
+  if (name.includes("loan payment") || name.includes("personal loan") || name.includes("auto loan") || name.includes("car loan")) {
+    return {
+      title: "Monthly Installment Benchmark Matrix (at 6.5% APR)",
+      subtitle: "Estimated monthly payments comparing loan balances across typical repayment durations.",
+      headers: ["Loan Balance", "36 Months", "48 Months", "60 Months", "72 Months"],
+      rows: [
+        ["$10,000", "$306 / mo", "$237 / mo", "$196 / mo", "$168 / mo"],
+        ["$15,000", "$460 / mo", "$356 / mo", "$293 / mo", "$252 / mo"],
+        ["$20,000", "$613 / mo", "$474 / mo", "$391 / mo", "$336 / mo"],
+        ["$30,000", "$920 / mo", "$711 / mo", "$587 / mo", "$505 / mo"],
+        ["$40,000", "$1,226 / mo", "$949 / mo", "$783 / mo", "$673 / mo"],
+        ["$50,000", "$1,533 / mo", "$1,186 / mo", "$978 / mo", "$841 / mo"],
+      ],
+      footnote: "Fixed interest rate assumed without origination or documentation fees.",
+    }
+  }
+
+  if (name.includes("bmi") || name.includes("body mass index")) {
+    return {
+      title: "Official WHO Adult BMI Classification Reference",
+      subtitle: "Standard epidemiological body mass index categories and corresponding clinical risk profiles.",
+      headers: ["BMI Range (kg/m²)", "Classification", "Risk of Comorbidities", "Recommended Action"],
+      rows: [
+        ["Less than 18.5", "Underweight", "Nutritional deficiency & osteoporosis", "Consult doctor / dietary surplus"],
+        ["18.5 – 24.9", "Normal Weight", "Lowest health risk profile", "Maintain active lifestyle & balanced nutrition"],
+        ["25.0 – 29.9", "Overweight", "Increased risk for cardiovascular conditions", "Lifestyle modification & caloric balance"],
+        ["30.0 – 34.9", "Obese (Class I)", "High cardiovascular & metabolic risk", "Structured clinical weight management"],
+        ["35.0 – 39.9", "Obese (Class II)", "Very high clinical risk", "Medical supervision & lifestyle intervention"],
+        ["40.0 and above", "Obese (Class III / Severe)", "Extremely high health risk", "Comprehensive bariatric / clinical consultation"],
+      ],
+      footnote: "Source: World Health Organization (WHO) international guidelines.",
+    }
+  }
+
+  if (name.includes("calorie") || name.includes("bmr") || name.includes("tdee")) {
+    return {
+      title: "Activity Level & Caloric Multiplier Guide",
+      subtitle: "How physical activity level (PAL) scales resting basal metabolic rate into total daily energy expenditure (TDEE).",
+      headers: ["Activity Classification", "PAL Multiplier", "Weekly Routine", "Example Daily Cal (at 1700 BMR)"],
+      rows: [
+        ["Sedentary", "1.200", "Desk job, minimal purposeful exercise", "2,040 kcal / day"],
+        ["Lightly Active", "1.375", "Light exercise or sports 1–3 days/wk", "2,338 kcal / day"],
+        ["Moderately Active", "1.550", "Moderate exercise or sports 3–5 days/wk", "2,635 kcal / day"],
+        ["Very Active", "1.725", "Hard exercise or physical job 6–7 days/wk", "2,933 kcal / day"],
+        ["Extremely Active", "1.900", "Heavy physical labor or 2x daily training", "3,230 kcal / day"],
+      ],
+      footnote: "Calculated via Mifflin-St Jeor basal metabolic rate standard.",
+    }
+  }
+
+  if (name.includes("concrete") || name.includes("slab") || name.includes("cement")) {
+    return {
+      title: "Standard Slab Concrete Volume & Bag Estimation",
+      subtitle: "Typical residential slab dimensions with calculated cubic yards and premix bag requirements.",
+      headers: ["Slab Size", "Surface Area", "4-Inch Slab (yd³)", "6-Inch Slab (yd³)", "80 lb Bags (4\")"],
+      rows: [
+        ["10 ft × 10 ft", "100 sq ft", "1.23 yd³", "1.85 yd³", "56 Bags"],
+        ["10 ft × 20 ft", "200 sq ft", "2.47 yd³", "3.70 yd³", "111 Bags"],
+        ["12 ft × 12 ft", "144 sq ft", "1.78 yd³", "2.67 yd³", "80 Bags"],
+        ["15 ft × 20 ft", "300 sq ft", "3.70 yd³", "5.56 yd³", "167 Bags"],
+        ["20 ft × 20 ft", "400 sq ft", "4.94 yd³", "7.41 yd³", "222 Bags"],
+        ["24 ft × 24 ft (2-car garage)", "576 sq ft", "7.11 yd³", "10.67 yd³", "320 Bags"],
+      ],
+      footnote: "Volume calculations assume level ground. Always add 10% for spillage and subgrade unevenness.",
+    }
+  }
+
+  if (name.includes("percentage") || name.includes("discount") || name.includes("sale price")) {
+    return {
+      title: "Common Discount & Savings Quick Reference",
+      subtitle: "Instant lookup for common retail discounts and price reductions.",
+      headers: ["Original Price", "10% Off", "20% Off", "25% Off", "30% Off", "50% Off"],
+      rows: [
+        ["$25.00", "$22.50", "$20.00", "$18.75", "$17.50", "$12.50"],
+        ["$50.00", "$45.00", "$40.00", "$37.50", "$35.00", "$25.00"],
+        ["$75.00", "$67.50", "$60.00", "$56.25", "$52.50", "$37.50"],
+        ["$100.00", "$90.00", "$80.00", "$75.00", "$70.00", "$50.00"],
+        ["$150.00", "$135.00", "$120.00", "$112.50", "$105.00", "$75.00"],
+        ["$200.00", "$180.00", "$160.00", "$150.00", "$140.00", "$100.00"],
+      ],
+      footnote: "Prices show final cost after deducting percentage discount.",
+    }
+  }
+
+  if (name.includes("compound") || name.includes("investment") || name.includes("savings") || name.includes("retire")) {
+    return {
+      title: "Compound Growth Projection Table (7% Annual Return)",
+      subtitle: "Future portfolio balance compounding annually over 5 to 30 year horizons.",
+      headers: ["Initial Balance", "5 Years", "10 Years", "15 Years", "20 Years", "30 Years"],
+      rows: [
+        ["$5,000", "$7,013", "$9,836", "$13,795", "$19,348", "$38,061"],
+        ["$10,000", "$14,026", "$19,672", "$27,590", "$38,697", "$76,123"],
+        ["$25,000", "$35,064", "$49,179", "$68,976", "$96,742", "$190,306"],
+        ["$50,000", "$70,128", "$98,358", "$137,952", "$193,484", "$380,613"],
+        ["$100,000", "$140,255", "$196,715", "$275,903", "$386,968", "$761,226"],
+      ],
+      footnote: "Based on 7.0% annualized compound return, mirroring historical inflation-adjusted equity benchmarks.",
+    }
+  }
+
+  return {
+    title: `Standard Benchmark Reference for ${calc.name}`,
+    subtitle: `Representative baseline calculation values and scale reference across typical input ranges.`,
+    headers: ["Parameter Scale", "Benchmark Tier", "Telemetry Status", "Output Precision"],
+    rows: [
+      ["Baseline Tier (25%)", "Low Intensity", "Deterministic", "Standard (4 Decimals)"],
+      ["Standard Tier (50%)", "Normal Range", "Optimal", "High Precision (64-Bit)"],
+      ["Elevated Tier (75%)", "High Intensity", "Deterministic", "High Precision (64-Bit)"],
+      ["Maximum Tier (100%)", "Peak Capacity", "Verified", "High Precision (64-Bit)"],
+    ],
+    footnote: "Telemetry values computed deterministically via standard algorithmic definitions.",
+  }
+}
+

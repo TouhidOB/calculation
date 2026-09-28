@@ -20,6 +20,7 @@ import {
   seoFormulaFor,
   seoDirectAnswerFor,
   seoWorkedExampleFor,
+  seoReferenceTableFor,
 } from "@/lib/seo-helpers"
 import DOMPurify from "dompurify"
 import {
@@ -63,6 +64,12 @@ import Dialog from "@mui/material/Dialog"
 import DialogTitle from "@mui/material/DialogTitle"
 import DialogContent from "@mui/material/DialogContent"
 import DialogActions from "@mui/material/DialogActions"
+import Table from "@mui/material/Table"
+import TableBody from "@mui/material/TableBody"
+import TableCell from "@mui/material/TableCell"
+import TableContainer from "@mui/material/TableContainer"
+import TableHead from "@mui/material/TableHead"
+import TableRow from "@mui/material/TableRow"
 
 // Icons
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
@@ -78,6 +85,8 @@ import FlashOnIcon from "@mui/icons-material/FlashOn"
 import RestartAltIcon from "@mui/icons-material/RestartAlt"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import PrintIcon from "@mui/icons-material/Print"
+import DownloadIcon from "@mui/icons-material/Download"
+import TableChartIcon from "@mui/icons-material/TableChart"
 import FunctionsIcon from "@mui/icons-material/Functions"
 import ShareIcon from "@mui/icons-material/Share"
 import HistoryIcon from "@mui/icons-material/History"
@@ -544,6 +553,34 @@ export default function CalculatorRunnerView({
     }
   }
 
+  const handleExportCsv = () => {
+    if (!result || typeof window === "undefined") return
+    try {
+      const rows: string[][] = [
+        ["Parameter / Field", "Value"],
+        ...calc.fields.map((f) => [f.label, String(values[f.name] ?? "—")]),
+        ["---", "---"],
+        ["Computation Metric", "Output Result"],
+        ...Object.entries(result)
+          .filter(([k]) => k !== "note" && k !== "js_required")
+          .map(([k, v]) => [k.replaceAll("_", " ").toUpperCase(), String(v)]),
+      ]
+      const csvContent =
+        "data:text/csv;charset=utf-8," +
+        rows.map((e) => e.map((val) => `"${val.replace(/"/g, '""')}"`).join(",")).join("\n")
+      const encodedUri = encodeURI(csvContent)
+      const link = document.createElement("a")
+      link.setAttribute("href", encodedUri)
+      link.setAttribute("download", `${calc.id}_calculation_report.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      setToast({ open: true, message: "📥 Calculation report exported as CSV!" })
+    } catch {
+      setToast({ open: true, message: "Export failed." })
+    }
+  }
+
   const handleShare = () => {
     if (typeof window === "undefined") return
     const sp = new URLSearchParams()
@@ -611,6 +648,7 @@ export default function CalculatorRunnerView({
   const formulaGuide = useMemo(() => seoFormulaFor(calc), [calc])
   const directAnswer = useMemo(() => seoDirectAnswerFor(calc), [calc])
   const workedExample = useMemo(() => seoWorkedExampleFor(calc), [calc])
+  const referenceTable = useMemo(() => seoReferenceTableFor(calc), [calc])
 
   return (
     <>
@@ -1143,6 +1181,14 @@ export default function CalculatorRunnerView({
                     <TactileButton
                       size="small"
                       buttonColor="secondary"
+                      startIcon={<DownloadIcon />}
+                      onClick={handleExportCsv}
+                    >
+                      Export CSV
+                    </TactileButton>
+                    <TactileButton
+                      size="small"
+                      buttonColor="secondary"
                       startIcon={<PrintIcon />}
                       onClick={() => typeof window !== "undefined" && window.print()}
                     >
@@ -1633,6 +1679,99 @@ export default function CalculatorRunnerView({
                     </Typography>
                   </Paper>
                 </Grid>
+
+                {/* High-Intent Benchmark Reference Table (Calculator.net Parity / Rich Snippet Magnet) */}
+                <Grid size={{ xs: 12 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 3.5,
+                      borderRadius: 3.5,
+                      border: "1px solid #e2e8f0",
+                      bgcolor: "#ffffff",
+                    }}
+                  >
+                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2 }}>
+                      <Box
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "10px",
+                          bgcolor: "#eef2ff",
+                          color: "#4f46e5",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <TableChartIcon fontSize="small" />
+                      </Box>
+                      <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                          {referenceTable.title}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#64748b" }}>
+                          {referenceTable.subtitle}
+                        </Typography>
+                      </Box>
+                    </Stack>
+
+                    <TableContainer sx={{ borderRadius: 2, border: "1px solid #e2e8f0", overflowX: "auto" }}>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow sx={{ bgcolor: "#f1f5f9" }}>
+                            {referenceTable.headers.map((h, i) => (
+                              <TableCell
+                                key={i}
+                                sx={{
+                                  fontWeight: 800,
+                                  color: "#0f172a",
+                                  fontSize: "0.82rem",
+                                  py: 1.2,
+                                  borderBottom: "1.5px solid #cbd5e1",
+                                }}
+                              >
+                                {h}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {referenceTable.rows.map((row, rIdx) => (
+                            <TableRow
+                              key={rIdx}
+                              sx={{
+                                bgcolor: rIdx % 2 === 0 ? "#ffffff" : "#f8fafc",
+                                "&:hover": { bgcolor: "#f1f5f9" },
+                              }}
+                            >
+                              {row.map((cell, cIdx) => (
+                                <TableCell
+                                  key={cIdx}
+                                  sx={{
+                                    fontWeight: cIdx === 0 ? 700 : 500,
+                                    color: cIdx === 0 ? "#0f172a" : "#334155",
+                                    fontSize: "0.82rem",
+                                    py: 1,
+                                    fontFamily: cIdx > 0 ? "monospace" : "inherit",
+                                  }}
+                                >
+                                  {cell}
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+
+                    {referenceTable.footnote && (
+                      <Typography variant="caption" sx={{ color: "#94a3b8", display: "block", mt: 1.5, fontStyle: "italic" }}>
+                        📌 {referenceTable.footnote}
+                      </Typography>
+                    )}
+                  </Paper>
+                </Grid>
               </Grid>
             </Box>
           )}
@@ -1915,10 +2054,10 @@ export default function CalculatorRunnerView({
                 border: "1px solid #334155",
               }}
             >
-              {`<iframe src="https://trycalc.net/embed/${calc.id}" width="100%" height="700" frameborder="0" style="border:1px solid #e2e8f0;border-radius:12px;max-width:900px;" title="${calc.name} — TryCalc"></iframe>`}
+              {`<iframe src="https://trycalc.net/embed/${calc.id}" width="100%" height="700" frameborder="0" style="border:1px solid #e2e8f0;border-radius:12px;max-width:900px;" title="${calc.name} — TryCalc"></iframe>\n<p style="font-size:12px;color:#64748b;margin-top:6px;font-family:sans-serif;">Powered by <a href="https://trycalc.net/calculators/${calc.id}" target="_blank" rel="noopener" style="color:#4f46e5;text-decoration:none;font-weight:600;">TryCalc — Free Online Calculators</a></p>`}
             </Box>
             <Typography variant="caption" sx={{ color: "#64748b", mt: 1.5, display: "block" }}>
-              💡 Responsive design: The widget automatically adapts to desktop, tablet, and mobile layouts.
+              💡 Responsive design: The widget automatically adapts to desktop, tablet, and mobile layouts. Includes an authoritative TryCalc attribution link.
             </Typography>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2.5 }}>
@@ -1932,7 +2071,7 @@ export default function CalculatorRunnerView({
               variant="contained"
               startIcon={<ContentCopyIcon />}
               onClick={() => {
-                const code = `<iframe src="https://trycalc.net/embed/${calc.id}" width="100%" height="700" frameborder="0" style="border:1px solid #e2e8f0;border-radius:12px;max-width:900px;" title="${calc.name} — TryCalc"></iframe>`
+                const code = `<iframe src="https://trycalc.net/embed/${calc.id}" width="100%" height="700" frameborder="0" style="border:1px solid #e2e8f0;border-radius:12px;max-width:900px;" title="${calc.name} — TryCalc"></iframe>\n<p style="font-size:12px;color:#64748b;margin-top:6px;font-family:sans-serif;">Powered by <a href="https://trycalc.net/calculators/${calc.id}" target="_blank" rel="noopener" style="color:#4f46e5;text-decoration:none;font-weight:600;">TryCalc — Free Online Calculators</a></p>`
                 navigator.clipboard.writeText(code).then(() => {
                   setToast({ open: true, message: "Embed code copied to clipboard!" })
                   setEmbedOpen(false)
