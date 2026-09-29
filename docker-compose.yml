@@ -31,6 +31,9 @@ services:
       NEXT_PUBLIC_SITE_URL: "https://trycalc.net"
       BACKEND_URL: "http://backend:8000"
       NEXT_PUBLIC_API_URL: "/api"
+      CADDY_LOG_PATH: "/caddy_data/trycalc_access.log"
+    volumes:
+      - /var/lib/docker/volumes/stockwhisk_updated_caddy_data/_data:/caddy_data:ro
     ports:
       - "127.0.0.1:3002:3000"
       - "172.17.0.1:3002:3000"
