@@ -7,8 +7,8 @@ import TrafficTelemetry from "@/components/TrafficTelemetry"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-KXFZGDCLVQ"
 const siteName = "TryCalc"
-const defaultTitle = "TryCalc — 674 Free Online Calculators | Finance, Health, Math & More"
-const defaultDescription = "TryCalc offers 674 free online calculators for finance, mortgages, loans, health, fitness, construction, math, conversion, date/time, and engineering. Instant deterministic results, no signup required."
+const defaultTitle = "TryCalc — 674 Free Online Calculators | Finance, Health & More"
+const defaultDescription = "674 free online calculators for finance, health, construction, math & unit conversion. Instant accurate results — no signup required."
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "TryCalc - 690 Free Online Calculators",
+        alt: "TryCalc - 674 Free Online Calculators",
       },
     ],
   },

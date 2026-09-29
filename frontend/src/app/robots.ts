@@ -8,8 +8,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/"],
+        disallow: ["/api/", "/_next/static/", "/_next/image/"],
       },
+      // AI crawlers — allow full content indexing (GEO/AEO benefit)
       {
         userAgent: "GPTBot",
         allow: "/",
@@ -29,6 +30,20 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "Google-Extended",
         allow: "/",
         disallow: ["/api/"],
+      },
+      {
+        userAgent: "OAI-SearchBot",
+        allow: "/",
+        disallow: ["/api/"],
+      },
+      // Block AI training scrapers (not search/citation bots)
+      {
+        userAgent: "CCBot",
+        disallow: ["/"],
+      },
+      {
+        userAgent: "Bytespider",
+        disallow: ["/"],
       },
     ],
     sitemap: [`${SITE_URL}/sitemap.xml`],
