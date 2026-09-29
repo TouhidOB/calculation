@@ -109,13 +109,31 @@ export async function generateMetadata({
   return {
     title,
     description: metaDesc,
-    alternates: { canonical: url },
+    alternates: {
+      canonical: url,
+      languages: {
+        "x-default": url,
+        "en": url,
+        "en-US": url,
+        "en-GB": url,
+        "en-CA": url,
+        "en-AU": url,
+        "en-IN": url,
+        "en-BD": url,
+        "en-SG": url,
+        "en-IE": url,
+        "en-NZ": url,
+        "en-ZA": url,
+      },
+    },
     openGraph: {
       title,
       description: metaDesc,
       url,
       type: "website",
       siteName: "TryCalc",
+      locale: "en_US",
+      alternateLocale: ["en_GB", "en_CA", "en_AU", "en_IN"],
       images: [{ url: "/og-image.png", width: 1200, height: 630, alt: `${calc.name} - Free Online Calculator` }],
     },
     twitter: {
@@ -131,6 +149,8 @@ export async function generateMetadata({
       `${catLabel.toLowerCase()} calculator`,
       "online calculator",
       "free calculator tool",
+      "international currency calculator",
+      "worldwide unit conversion",
       "trycalc",
     ],
   }

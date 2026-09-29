@@ -95,6 +95,7 @@ import CloseIcon from "@mui/icons-material/Close"
 import CodeIcon from "@mui/icons-material/Code"
 import MenuBookIcon from "@mui/icons-material/MenuBook"
 import PieChartIcon from "@mui/icons-material/PieChart"
+import LanguageIcon from "@mui/icons-material/Language"
 
 interface HistoryEntry {
   id: string
@@ -340,6 +341,17 @@ interface CalculatorRunnerViewProps {
   initialRelatedCalcs?: { id: string; name: string; description: string }[]
 }
 
+const WORLD_CURRENCIES = [
+  { code: "USD", symbol: "$", label: "USD ($)" },
+  { code: "EUR", symbol: "€", label: "EUR (€)" },
+  { code: "GBP", symbol: "£", label: "GBP (£)" },
+  { code: "BDT", symbol: "৳", label: "BDT (৳)" },
+  { code: "INR", symbol: "₹", label: "INR (₹)" },
+  { code: "CAD", symbol: "CA$", label: "CAD ($)" },
+  { code: "AUD", symbol: "AU$", label: "AUD ($)" },
+  { code: "JPY", symbol: "¥", label: "JPY (¥)" },
+]
+
 export default function CalculatorRunnerView({
   calc,
   embedded = false,
@@ -379,6 +391,7 @@ export default function CalculatorRunnerView({
   }, [busy])
   const [historyOpen, setHistoryOpen] = useState(false)
   const [embedOpen, setEmbedOpen] = useState(false)
+  const [globalCurrency, setGlobalCurrency] = useState("$")
   const [history, setHistory] = useState<HistoryEntry[]>(() => {
     if (typeof window === "undefined") return []
     try {
@@ -1055,6 +1068,116 @@ export default function CalculatorRunnerView({
             </Box>
           )}
 
+          {/* Worldwide Currency & Quick Actions Toolbar */}
+          {!embedded && (
+            <Paper
+              elevation={0}
+              className="no-print"
+              sx={{
+                mb: 2.5,
+                p: 1.5,
+                px: 2,
+                borderRadius: 3,
+                bgcolor: "#ffffff",
+                border: "1px solid #e2e8f0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 1.5,
+                boxShadow: "0 2px 6px -2px rgba(15,23,42,0.04)",
+              }}
+            >
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", gap: 0.75 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mr: 0.5 }}>
+                  <LanguageIcon sx={{ fontSize: 18, color: "#2563eb" }} />
+                  <Typography variant="caption" sx={{ fontWeight: 800, color: "#334155", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                    Currency:
+                  </Typography>
+                </Box>
+                {WORLD_CURRENCIES.map((c) => (
+                  <Chip
+                    key={c.code}
+                    size="small"
+                    label={`${c.code} (${c.symbol})`}
+                    onClick={() => {
+                      setGlobalCurrency(c.symbol)
+                      setToast({ open: true, message: `Active currency switched to ${c.code} (${c.symbol})` })
+                    }}
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: 11,
+                      cursor: "pointer",
+                      bgcolor: globalCurrency === c.symbol ? "#dbeafe" : "#f8fafc",
+                      color: globalCurrency === c.symbol ? "#1d4ed8" : "#475569",
+                      border: globalCurrency === c.symbol ? "1.5px solid #3b82f6" : "1px solid #e2e8f0",
+                      "&:hover": { bgcolor: "#eff6ff" },
+                    }}
+                  />
+                ))}
+              </Stack>
+
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      navigator.clipboard.writeText(window.location.href)
+                      setToast({ open: true, message: "Shareable calculation link copied to clipboard!" })
+                    }
+                  }}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: 12,
+                    borderRadius: 2,
+                    borderColor: "#cbd5e1",
+                    color: "#334155",
+                    "&:hover": { borderColor: "#2563eb", color: "#2563eb", bgcolor: "#eff6ff" },
+                  }}
+                >
+                  🔗 Share Link
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => {
+                    if (typeof window !== "undefined") window.print()
+                  }}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: 12,
+                    borderRadius: 2,
+                    borderColor: "#cbd5e1",
+                    color: "#334155",
+                    "&:hover": { borderColor: "#2563eb", color: "#2563eb", bgcolor: "#eff6ff" },
+                  }}
+                >
+                  🖨️ Print / PDF
+                </Button>
+                <Button
+                  size="small"
+                  variant="contained"
+                  onClick={() => setEmbedOpen(true)}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: 12,
+                    borderRadius: 2,
+                    bgcolor: "#2563eb",
+                    color: "#ffffff",
+                    boxShadow: "none",
+                    "&:hover": { bgcolor: "#1d4ed8", boxShadow: "none" },
+                  }}
+                >
+                  {"</>"} Embed Widget
+                </Button>
+              </Stack>
+            </Paper>
+          )}
+
           <InstrumentChassis
             title={calc.name}
             categoryName={catMeta?.label || calc.category}
@@ -1442,7 +1565,7 @@ export default function CalculatorRunnerView({
                                       letterSpacing: "0.5px",
                                     }}
                                   >
-                                    {f.unit}
+                                    {f.unit === "$" || f.unit?.toLowerCase().includes("usd") ? globalCurrency : f.unit}
                                   </Box>
                                 </InputAdornment>
                               ) : null,
