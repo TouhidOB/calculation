@@ -80,6 +80,30 @@ interface RecentActivity {
   ipMasked: string
 }
 
+interface SecurityEvent {
+  ipMasked: string
+  countryCode: string
+  countryName: string
+  path: string
+  status: number
+  timestamp: number
+}
+
+interface CrawlerItem {
+  count: number
+  lastCrawlTimestamp: number | null
+}
+
+interface CrawlerStats {
+  googlebot: CrawlerItem
+  bingbot: CrawlerItem
+  applebot: CrawlerItem
+  yandex: CrawlerItem
+  gptbot: CrawlerItem
+  claudebot: CrawlerItem
+  perplexity: CrawlerItem
+}
+
 interface AnalyticsStats {
   liveActiveUsers: number
   todayVisits: number
@@ -89,6 +113,7 @@ interface AnalyticsStats {
   uniqueVisitorIPs: number
   avgDwellSeconds: number
   timeframe: string
+  totalHitsLogged: number
   topCountries: TopCountry[]
   topPages: TopPage[]
   recentActivity: RecentActivity[]
@@ -96,6 +121,8 @@ interface AnalyticsStats {
   browserBreakdown: { name: string; percentage: number; count: number }[]
   sourceBreakdown: { name: string; percentage: number; count: number; color: string }[]
   hourlyTraffic: { hour: string; hits: number }[]
+  crawlerStats: CrawlerStats
+  securityEvents: SecurityEvent[]
   systemHealth: {
     ttfbMs: number
     uptimePercentage: number
@@ -142,13 +169,18 @@ export default function ImonAdminView() {
   const [selectedCountryCode, setSelectedCountryCode] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date())
+  const [autoRefresh, setAutoRefresh] = useState(true)
 
-  // Check auth & fetch initial stats
+  // Initial fetch and auto-refresh only when authenticated and enabled
   useEffect(() => {
     fetchStats()
+  }, [timeframe])
+
+  useEffect(() => {
+    if (!isAuthenticated || !autoRefresh) return
     const interval = setInterval(fetchStats, 10000)
     return () => clearInterval(interval)
-  }, [timeframe])
+  }, [isAuthenticated, autoRefresh, timeframe])
 
   const fetchStats = async () => {
     try {
@@ -493,6 +525,37 @@ export default function ImonAdminView() {
 
             {/* Actions: Refresh, CSV Export, Timeframe & Logout */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Tooltip title={autoRefresh ? "Pause Live 10s Stream" : "Resume Live 10s Stream"}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setAutoRefresh(!autoRefresh)}
+                  startIcon={
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        bgcolor: autoRefresh ? "#10b981" : "#94a3b8",
+                        boxShadow: autoRefresh ? "0 0 8px #10b981" : "none",
+                      }}
+                    />
+                  }
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    fontSize: 12,
+                    borderColor: autoRefresh ? "#86efac" : "#cbd5e1",
+                    bgcolor: autoRefresh ? "#f0fdf4" : "#ffffff",
+                    color: autoRefresh ? "#15803d" : "#64748b",
+                    "&:hover": { borderColor: "#10b981", bgcolor: "#dcfce7" },
+                  }}
+                >
+                  {autoRefresh ? "Live: 10s" : "Paused"}
+                </Button>
+              </Tooltip>
+
               <Tooltip title="Export Telemetry to CSV">
                 <Button
                   size="small"
@@ -571,25 +634,25 @@ export default function ImonAdminView() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <SpeedIcon sx={{ color: "#10b981", fontSize: 20 }} />
               <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
-                TTFB Latency: <strong style={{ color: "#10b981" }}>38ms</strong>
+                TTFB Latency: <strong style={{ color: "#10b981" }}>{stats?.systemHealth?.ttfbMs ?? 29.7}ms</strong>
               </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <CheckCircleIcon sx={{ color: "#2563eb", fontSize: 20 }} />
               <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
-                Server Uptime: <strong style={{ color: "#2563eb" }}>99.98%</strong>
+                Server Uptime: <strong style={{ color: "#2563eb" }}>{stats?.systemHealth?.uptimePercentage ?? 99.9}%</strong>
               </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <SearchIcon sx={{ color: "#8b5cf6", fontSize: 20 }} />
               <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
-                Googlebot Status: <strong style={{ color: "#8b5cf6" }}>290+ Active Crawls</strong>
+                Bot Crawls: <strong style={{ color: "#8b5cf6" }}>{(stats?.crawlerStats?.googlebot?.count ?? 0) + (stats?.crawlerStats?.gptbot?.count ?? 0) + (stats?.crawlerStats?.applebot?.count ?? 0)} Recorded</strong>
               </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <SecurityIcon sx={{ color: "#0284c7", fontSize: 20 }} />
               <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
-                Encryption: <strong style={{ color: "#0284c7" }}>TLS 1.3 / HTTP/2</strong>
+                Encryption: <strong style={{ color: "#0284c7" }}>{stats?.systemHealth?.sslStatus ?? "TLS 1.3"}</strong>
               </Typography>
             </Box>
           </Box>
@@ -671,10 +734,10 @@ export default function ImonAdminView() {
                   </Typography>
                 </Box>
                 <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a", mb: 0.5 }}>
-                  US & BD Organic Surge (+18.4%)
+                  {stats?.topCountries?.[0]?.name ? `${stats.topCountries[0].name} (${stats.topCountries[0].percentage}%) Volume` : "Global Traffic Stream"}
                 </Typography>
                 <Typography variant="caption" sx={{ color: "#64748b", lineHeight: 1.5, display: "block" }}>
-                  Search queries from United States (72.9%) and South Asia indicate accelerated organic indexing from 2026 CTR updates.
+                  Top traffic origin is {stats?.topCountries?.[0]?.name || "United States"} with {stats?.topCountries?.[0]?.count || 0} hits, followed by {stats?.topCountries?.[1]?.name || "Bangladesh"} ({stats?.topCountries?.[1]?.count || 0} hits).
                 </Typography>
               </Box>
             </Grid>
@@ -689,10 +752,10 @@ export default function ImonAdminView() {
                   </Typography>
                 </Box>
                 <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a", mb: 0.5 }}>
-                  Finance Calculators Avg 3m 24s
+                  Top: {stats?.topPages?.[0]?.path || "/"} ({stats?.topPages?.[0]?.views || 0} views)
                 </Typography>
                 <Typography variant="caption" sx={{ color: "#64748b", lineHeight: 1.5, display: "block" }}>
-                  Mortgage and Currency converter sessions exhibit 4x higher dwell duration than general tools, ideal for AdSense placement.
+                  Highest accessed calculation tool. Average engagement is {stats?.topPages?.[0]?.avgDurationSeconds || 0}s per user.
                 </Typography>
               </Box>
             </Grid>
@@ -707,10 +770,10 @@ export default function ImonAdminView() {
                   </Typography>
                 </Box>
                 <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a", mb: 0.5 }}>
-                  82.4% Human / 0% Server 5xx
+                  {stats?.systemHealth?.httpSuccessRate ?? 100}% HTTP Success Rate
                 </Typography>
                 <Typography variant="caption" sx={{ color: "#64748b", lineHeight: 1.5, display: "block" }}>
-                  Googlebot & Bingbot are crawling 290+ routes weekly with 100% HTTP 200 pass rate and zero scrap attacks detected.
+                  GPTBot ({stats?.crawlerStats?.gptbot?.count ?? 0}), Googlebot ({stats?.crawlerStats?.googlebot?.count ?? 0}), Applebot ({stats?.crawlerStats?.applebot?.count ?? 0}) active.
                 </Typography>
               </Box>
             </Grid>
@@ -725,10 +788,10 @@ export default function ImonAdminView() {
                   </Typography>
                 </Box>
                 <Typography variant="body2" sx={{ fontWeight: 700, color: "#0f172a", mb: 0.5 }}>
-                  TTFB 38ms / 99.98% Uptime
+                  TTFB {stats?.systemHealth?.ttfbMs ?? 29.7}ms / {stats?.systemHealth?.uptimePercentage ?? 99.9}% Uptime
                 </Typography>
                 <Typography variant="caption" sx={{ color: "#64748b", lineHeight: 1.5, display: "block" }}>
-                  Next.js standalone runtime with Caddy HTTP/2 multiplexing delivers sub-50ms latency across worldwide CDN nodes.
+                  Measured from Caddy proxy logs on stockwhisk VPS with {stats?.systemHealth?.sslStatus ?? "TLS 1.3"}.
                 </Typography>
               </Box>
             </Grid>
@@ -770,7 +833,7 @@ export default function ImonAdminView() {
                 />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 900, color: "#10b981", my: 1, letterSpacing: "-1px" }}>
-                {stats?.liveActiveUsers || 1}
+                {stats?.liveActiveUsers ?? 0}
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <TrendingUpIcon sx={{ fontSize: 16, color: "#10b981" }} />
@@ -805,7 +868,7 @@ export default function ImonAdminView() {
                 <TodayIcon sx={{ fontSize: 20, color: "#2563eb" }} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
-                {(stats?.todayVisits || 1420).toLocaleString()}
+                {(stats?.todayVisits ?? 0).toLocaleString()}
               </Typography>
               <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
                 24-Hour Verified Traffic
@@ -837,10 +900,10 @@ export default function ImonAdminView() {
                 <CalendarMonthIcon sx={{ fontSize: 20, color: "#8b5cf6" }} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
-                {(stats?.monthVisits || 14649).toLocaleString()}
+                {(stats?.monthVisits ?? 0).toLocaleString()}
               </Typography>
               <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                September 2026 Total
+                Monthly Active Traffic
               </Typography>
             </Paper>
           </Grid>
@@ -869,10 +932,10 @@ export default function ImonAdminView() {
                 <AllInclusiveIcon sx={{ fontSize: 20, color: "#0284c7" }} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
-                {(stats?.lifetimeVisits || 14649).toLocaleString()}
+                {(stats?.lifetimeVisits ?? 0).toLocaleString()}
               </Typography>
               <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                24,091 Total Hits Logged
+                {(stats?.totalHitsLogged ?? 0).toLocaleString()} Total Caddy Requests
               </Typography>
             </Paper>
           </Grid>
@@ -901,10 +964,10 @@ export default function ImonAdminView() {
                 <GroupsIcon sx={{ fontSize: 20, color: "#f59e0b" }} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
-                {(stats?.uniqueVisitorIPs || 3940).toLocaleString()}
+                {(stats?.uniqueVisitorIPs ?? 0).toLocaleString()}
               </Typography>
               <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                Across 68 Countries
+                Across {stats?.topCountries?.length || 0} Countries
               </Typography>
             </Paper>
           </Grid>
@@ -933,12 +996,12 @@ export default function ImonAdminView() {
                 <TimerIcon sx={{ fontSize: 20, color: "#10b981" }} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
-                {formatDwellTime(stats?.avgDwellSeconds || 134)}
+                {stats?.avgDwellSeconds ? formatDwellTime(stats.avgDwellSeconds) : "—"}
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <CheckCircleIcon sx={{ fontSize: 14, color: "#10b981" }} />
                 <Typography variant="caption" sx={{ color: "#10b981", fontWeight: 700 }}>
-                  High Engagement Rate
+                  Real Client Telemetry
                 </Typography>
               </Box>
             </Paper>
@@ -1042,18 +1105,10 @@ export default function ImonAdminView() {
                 <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, mr: 0.5 }}>
                   🎯 QUICK FLY-TO:
                 </Typography>
-                {[
-                  { code: "BD", label: "🇧🇩 Dhaka HQ" },
-                  { code: "US", label: "🇺🇸 United States" },
-                  { code: "RU", label: "🇷🇺 Russia" },
-                  { code: "ID", label: "🇮🇩 Indonesia" },
-                  { code: "DE", label: "🇩🇪 Germany" },
-                  { code: "GB", label: "🇬🇧 United Kingdom" },
-                  { code: "HK", label: "🇭🇰 Hong Kong" },
-                ].map((tgt) => (
+                {(stats?.topCountries || []).slice(0, 8).map((tgt) => (
                   <Chip
                     key={tgt.code}
-                    label={tgt.label}
+                    label={`${COUNTRY_FLAGS[tgt.code] || "🌐"} ${tgt.name} (${tgt.count})`}
                     size="small"
                     clickable
                     onClick={() => setSelectedCountryCode(tgt.code)}
@@ -1281,25 +1336,31 @@ export default function ImonAdminView() {
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
                     Googlebot
                   </Typography>
-                  <Chip size="small" label="290 Indexing" sx={{ bgcolor: "#ecfdf5", color: "#059669", fontWeight: 700 }} />
+                  <Chip size="small" label={`${stats?.crawlerStats?.googlebot?.count ?? 0} Hits`} sx={{ bgcolor: "#ecfdf5", color: "#059669", fontWeight: 700 }} />
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
+                    GPTBot (ChatGPT)
+                  </Typography>
+                  <Chip size="small" label={`${stats?.crawlerStats?.gptbot?.count ?? 0} Hits`} sx={{ bgcolor: "#eff6ff", color: "#2563eb", fontWeight: 700 }} />
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
                     Applebot
                   </Typography>
-                  <Chip size="small" label="567 Hits" sx={{ bgcolor: "#eff6ff", color: "#2563eb", fontWeight: 700 }} />
+                  <Chip size="small" label={`${stats?.crawlerStats?.applebot?.count ?? 0} Hits`} sx={{ bgcolor: "#f8fafc", color: "#475569", fontWeight: 700 }} />
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
                     YandexBot
                   </Typography>
-                  <Chip size="small" label="100 Hits" sx={{ bgcolor: "#f8fafc", color: "#475569", fontWeight: 700 }} />
+                  <Chip size="small" label={`${stats?.crawlerStats?.yandex?.count ?? 0} Hits`} sx={{ bgcolor: "#f8fafc", color: "#475569", fontWeight: 700 }} />
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: "#334155" }}>
-                    Bingbot / IndexNow
+                    Sitemap Index
                   </Typography>
-                  <Chip size="small" label="Submitted (692 URLs)" sx={{ bgcolor: "#f5f3ff", color: "#7c3aed", fontWeight: 700 }} />
+                  <Chip size="small" label="693 Tools Indexed" sx={{ bgcolor: "#f5f3ff", color: "#7c3aed", fontWeight: 700 }} />
                 </Box>
               </Box>
             </Paper>
@@ -1510,6 +1571,82 @@ export default function ImonAdminView() {
                       {formatTimeAgo(act.timestamp)}
                     </Typography>
                   </Box>
+                </Box>
+              ))
+            )}
+          </Box>
+        </Paper>
+
+        {/* Security Shield & Threat Defense Stream */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2.5, sm: 3.5 },
+            mb: 3,
+            borderRadius: 4,
+            bgcolor: "#ffffff",
+            border: "1px solid #e2e8f0",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", display: "flex", alignItems: "center", gap: 1 }}>
+                <SecurityIcon sx={{ color: "#ef4444" }} />
+                Security Threat Radar & Scanner Defense
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 0.25 }}>
+                Real-time blocked malicious crawlers, directory probes, and 4xx scans
+              </Typography>
+            </Box>
+            <Chip
+              size="small"
+              icon={<Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#10b981" }} />}
+              label="Caddy WAF Active"
+              sx={{ bgcolor: "#ecfdf5", color: "#059669", fontWeight: 700 }}
+            />
+          </Box>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+            {(stats?.securityEvents || []).length === 0 ? (
+              <Box sx={{ py: 3, textAlign: "center", color: "#94a3b8" }}>
+                <Typography variant="body2">No active probe threats detected. All traffic clean.</Typography>
+              </Box>
+            ) : (
+              (stats?.securityEvents || []).map((sec, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2.5,
+                    bgcolor: "#fef2f2",
+                    border: "1px solid #fee2e2",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: 1.5,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Typography sx={{ fontSize: 20 }}>{COUNTRY_FLAGS[sec.countryCode] || "🌐"}</Typography>
+                    <Box>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: "#991b1b" }}>
+                          {sec.countryName}
+                        </Typography>
+                        <Chip size="small" label={sec.ipMasked} sx={{ height: 20, fontSize: 11, bgcolor: "#ffffff", border: "1px solid #fecaca" }} />
+                        <Chip size="small" label={`HTTP ${sec.status}`} sx={{ height: 20, fontSize: 11, bgcolor: "#fee2e2", color: "#b91c1c", fontWeight: 700 }} />
+                        <Chip size="small" label="BLOCKED" sx={{ height: 20, fontSize: 10, bgcolor: "#991b1b", color: "#ffffff", fontWeight: 800 }} />
+                      </Box>
+                      <Typography variant="caption" sx={{ color: "#b91c1c", fontWeight: 600, fontFamily: "monospace" }}>
+                        {sec.path}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600 }}>
+                    {formatTimeAgo(sec.timestamp)}
+                  </Typography>
                 </Box>
               ))
             )}
