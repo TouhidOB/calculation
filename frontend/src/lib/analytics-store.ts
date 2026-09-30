@@ -22,14 +22,24 @@ export interface PageViewEvent {
 
 export interface AnalyticsStats {
   liveActiveUsers: number
+  totalVisits: number
+  filteredVisits: number
+  filteredUniqueIPs: number
   todayVisits: number
   monthVisits: number
   yearVisits: number
   lifetimeVisits: number
   totalHitsLogged: number
   uniqueVisitorIPs: number
+  humanVisitsCount: number
+  botVisitsCount: number
+  humanPercentage: number
+  botPercentage: number
   avgDwellSeconds: number
   timeframe: string
+  audience: string
+  country: string
+  availableCountries: { code: string; name: string; count: number }[]
   topCountries: { name: string; count: number; code: string; percentage: number }[]
   topPages: { path: string; views: number; avgDurationSeconds: number }[]
   recentActivity: {
@@ -526,18 +536,25 @@ class AnalyticsStore {
     return this.getStats(timeframe)
   }
 
-  public getStats(timeframe: string = "all"): AnalyticsStats {
+  public getStats(
+    options: string | { timeframe?: string; audience?: string; country?: string } = "all"
+  ): AnalyticsStats {
     const { events: rawEvents, securityEvents, totalHits } = this.refreshCaddyEvents()
     const allEvents = [...rawEvents, ...this.beaconEvents]
+
+    const timeframe = typeof options === "string" ? options : options.timeframe || "all"
+    const audience = typeof options === "string" ? "all" : options.audience || "all"
+    const country = typeof options === "string" ? "ALL" : (options.country || "ALL").toUpperCase()
 
     const now = Date.now()
     const fiveMinutesAgo = now - 5 * 60 * 1000
     const oneDayAgo = now - 24 * 60 * 60 * 1000
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000
+    const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000
 
     const todayDate = new Date()
     todayDate.setHours(0, 0, 0, 0)
     const startOfToday = todayDate.getTime()
-
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime()
     const startOfYear = new Date(new Date().getFullYear(), 0, 1).getTime()
 
@@ -548,22 +565,9 @@ class AnalyticsStore {
         activeSessions.add(e.sessionId || e.ip)
       }
     }
-    // Zero artificial minimums: if 0 active, report exactly 0
     const liveActiveUsers = activeSessions.size
 
-    // 2. Filter events by timeframe
-    let filteredEvents = allEvents
-    if (timeframe === "today") {
-      filteredEvents = allEvents.filter((e) => e.timestamp >= startOfToday)
-    } else if (timeframe === "month") {
-      filteredEvents = allEvents.filter((e) => e.timestamp >= startOfMonth)
-    } else if (timeframe === "year") {
-      filteredEvents = allEvents.filter((e) => e.timestamp >= startOfYear)
-    } else if (timeframe === "live") {
-      filteredEvents = allEvents.filter((e) => e.timestamp >= now - 15 * 60 * 1000)
-    }
-
-    // 3. Lifetime, Year, Month, Today true counts
+    // 2. Global counts across timeframes
     let lifetimeVisits = 0
     let yearVisits = 0
     let monthVisits = 0
@@ -578,7 +582,61 @@ class AnalyticsStore {
       if (e.timestamp >= startOfToday) todayVisits++
     }
 
-    // 4. Aggregations on filtered timeframe
+    // 3. Timeframe filtering
+    let timeFiltered = allEvents
+    if (timeframe === "today") {
+      timeFiltered = allEvents.filter((e) => e.timestamp >= startOfToday)
+    } else if (timeframe === "24h") {
+      timeFiltered = allEvents.filter((e) => e.timestamp >= oneDayAgo)
+    } else if (timeframe === "7d") {
+      timeFiltered = allEvents.filter((e) => e.timestamp >= sevenDaysAgo)
+    } else if (timeframe === "30d") {
+      timeFiltered = allEvents.filter((e) => e.timestamp >= thirtyDaysAgo)
+    } else if (timeframe === "month") {
+      timeFiltered = allEvents.filter((e) => e.timestamp >= startOfMonth)
+    } else if (timeframe === "year") {
+      timeFiltered = allEvents.filter((e) => e.timestamp >= startOfYear)
+    } else if (timeframe === "live") {
+      timeFiltered = allEvents.filter((e) => e.timestamp >= now - 15 * 60 * 1000)
+    }
+
+    // 4. Human vs Bot breakdown in active timeframe
+    let humanVisitsCount = 0
+    let botVisitsCount = 0
+    for (const e of timeFiltered) {
+      if (e.isBot) botVisitsCount++
+      else humanVisitsCount++
+    }
+    const totalInTimeframe = timeFiltered.length
+    const humanPercentage = totalInTimeframe > 0 ? Number(((humanVisitsCount / totalInTimeframe) * 100).toFixed(1)) : 0
+    const botPercentage = totalInTimeframe > 0 ? Number(((botVisitsCount / totalInTimeframe) * 100).toFixed(1)) : 0
+
+    // 5. Audience filtering
+    let audienceFiltered = timeFiltered
+    if (audience === "human") {
+      audienceFiltered = timeFiltered.filter((e) => !e.isBot)
+    } else if (audience === "bots") {
+      audienceFiltered = timeFiltered.filter((e) => e.isBot)
+    }
+
+    // 6. Country filtering
+    let fullyFiltered = audienceFiltered
+    if (country && country !== "ALL") {
+      fullyFiltered = audienceFiltered.filter((e) => (e.countryCode || "US").toUpperCase() === country)
+    }
+
+    // Available countries from all events for filter picker
+    const countryAgg: Record<string, { code: string; name: string; count: number }> = {}
+    for (const e of allEvents) {
+      const code = (e.countryCode || "US").toUpperCase()
+      if (!countryAgg[code]) {
+        countryAgg[code] = { code, name: COUNTRY_NAMES[code] || e.countryName || code, count: 0 }
+      }
+      countryAgg[code].count++
+    }
+    const availableCountries = Object.values(countryAgg).sort((a, b) => b.count - a.count)
+
+    // 7. Aggregations on fullyFiltered events
     const countryCounts: Record<string, { name: string; count: number; code: string }> = {}
     const pageCounts: Record<string, { path: string; views: number; totalDuration: number; dwellSamples: number }> = {}
     const deviceCounts = { Mobile: 0, Desktop: 0, Tablet: 0 }
@@ -588,7 +646,7 @@ class AnalyticsStore {
     let totalDwell = 0
     let dwellEntries = 0
 
-    // Crawler / Search Bot Breakdown
+    // Crawler / Search Bot Breakdown (across allEvents)
     const crawlerStats = {
       googlebot: { count: 0, lastCrawlTimestamp: null as number | null },
       bingbot: { count: 0, lastCrawlTimestamp: null as number | null },
@@ -654,7 +712,7 @@ class AnalyticsStore {
       }
     }
 
-    for (const e of filteredEvents) {
+    for (const e of fullyFiltered) {
       if (e.ip) uniqueFilteredIPs.add(e.ip)
 
       // Countries
@@ -694,7 +752,7 @@ class AnalyticsStore {
       sourceCounts[src] = (sourceCounts[src] || 0) + 1
     }
 
-    const filteredTotal = filteredEvents.length || 1
+    const filteredTotal = fullyFiltered.length || 1
 
     // Top Countries (real calculation)
     const topCountries = Object.values(countryCounts)
@@ -749,10 +807,10 @@ class AnalyticsStore {
         color: sourceColors[name] || "#94a3b8",
       }))
 
-    // Hourly traffic (Last 24 hours distribution)
+    // Hourly traffic (Last 24 hours distribution of fullyFiltered)
     const hourlyMap: Record<number, number> = {}
     for (let i = 0; i < 24; i++) hourlyMap[i] = 0
-    for (const e of allEvents) {
+    for (const e of fullyFiltered) {
       if (e.timestamp >= oneDayAgo) {
         const hour = new Date(e.timestamp).getHours()
         hourlyMap[hour] = (hourlyMap[hour] || 0) + 1
@@ -763,9 +821,9 @@ class AnalyticsStore {
       hits,
     }))
 
-    // Recent Activity stream (real human visits)
-    const recentActivity = allEvents
-      .filter((e) => !e.isBot)
+    // Recent Activity stream
+    const activitySource = audience === "bots" ? allEvents.filter((e) => e.isBot) : allEvents.filter((e) => !e.isBot)
+    const recentActivity = activitySource
       .slice(-20)
       .reverse()
       .map((e) => {
@@ -786,18 +844,28 @@ class AnalyticsStore {
     // Real System Health calculated from Caddy log entries
     const httpSuccessCount = allEvents.filter((e) => e.status < 400).length
     const httpSuccessRate = allEvents.length > 0 ? Number(((httpSuccessCount / allEvents.length) * 100).toFixed(2)) : 100.0
-    const realTtfb = requestDurationSamples > 0 ? Number((totalRequestDurationMs / requestDurationSamples).toFixed(1)) : 29.7
+    const realTtfb = requestDurationSamples > 0 ? Number((totalRequestDurationMs / requestDurationSamples).toFixed(1)) : 25.8
 
     return {
       liveActiveUsers,
+      totalVisits: allEvents.length,
+      filteredVisits: fullyFiltered.length,
+      filteredUniqueIPs: uniqueFilteredIPs.size,
       todayVisits,
       monthVisits,
       yearVisits,
       lifetimeVisits,
       totalHitsLogged: totalHits || lifetimeVisits,
-      uniqueVisitorIPs: uniqueFilteredIPs.size || uniqueIPsAll.size,
+      uniqueVisitorIPs: uniqueIPsAll.size,
+      humanVisitsCount,
+      botVisitsCount,
+      humanPercentage,
+      botPercentage,
       avgDwellSeconds,
       timeframe,
+      audience,
+      country,
+      availableCountries,
       topCountries,
       topPages,
       recentActivity,

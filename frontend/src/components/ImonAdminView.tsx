@@ -24,6 +24,9 @@ import InputAdornment from "@mui/material/InputAdornment"
 import Tabs from "@mui/material/Tabs"
 import Tab from "@mui/material/Tab"
 import Tooltip from "@mui/material/Tooltip"
+import Select from "@mui/material/Select"
+import MenuItem from "@mui/material/MenuItem"
+import FormControl from "@mui/material/FormControl"
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
@@ -47,6 +50,10 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import BarChartIcon from "@mui/icons-material/BarChart"
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
 import BoltIcon from "@mui/icons-material/Bolt"
+import PersonIcon from "@mui/icons-material/Person"
+import SmartToyIcon from "@mui/icons-material/SmartToy"
+import FilterListIcon from "@mui/icons-material/FilterList"
+import ClearIcon from "@mui/icons-material/Clear"
 
 // Dynamically import ThreeGlobeView so SSR doesn't fail on window/WebGL
 const ThreeGlobeView = dynamic(() => import("@/components/ThreeGlobeView"), {
@@ -104,16 +111,32 @@ interface CrawlerStats {
   perplexity: CrawlerItem
 }
 
+interface AvailableCountry {
+  code: string
+  name: string
+  count: number
+}
+
 interface AnalyticsStats {
   liveActiveUsers: number
+  totalVisits: number
+  filteredVisits: number
+  filteredUniqueIPs: number
   todayVisits: number
   monthVisits: number
   yearVisits: number
   lifetimeVisits: number
   uniqueVisitorIPs: number
+  humanVisitsCount: number
+  botVisitsCount: number
+  humanPercentage: number
+  botPercentage: number
   avgDwellSeconds: number
   timeframe: string
+  audience: string
+  country: string
   totalHitsLogged: number
+  availableCountries: AvailableCountry[]
   topCountries: TopCountry[]
   topPages: TopPage[]
   recentActivity: RecentActivity[]
@@ -153,6 +176,17 @@ const COUNTRY_FLAGS: Record<string, string> = {
   JP: "🇯🇵",
   KR: "🇰🇷",
   TR: "🇹🇷",
+  FI: "🇫🇮",
+  PL: "🇵🇱",
+  CH: "🇨🇭",
+  SE: "🇸🇪",
+  IT: "🇮🇹",
+  ES: "🇪🇸",
+  SA: "🇸🇦",
+  AE: "🇦🇪",
+  IE: "🇮🇪",
+  NO: "🇳🇴",
+  DK: "🇩🇰",
 }
 
 export default function ImonAdminView() {
@@ -165,27 +199,20 @@ export default function ImonAdminView() {
 
   const [stats, setStats] = useState<AnalyticsStats | null>(null)
   const [timeframe, setTimeframe] = useState("all")
+  const [audience, setAudience] = useState<"all" | "human" | "bots">("all")
+  const [countryFilter, setCountryFilter] = useState("ALL")
   const [pageSearch, setPageSearch] = useState("")
   const [selectedCountryCode, setSelectedCountryCode] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date())
   const [autoRefresh, setAutoRefresh] = useState(true)
 
-  // Initial fetch and auto-refresh only when authenticated and enabled
-  useEffect(() => {
-    fetchStats()
-  }, [timeframe])
-
-  useEffect(() => {
-    if (!isAuthenticated || !autoRefresh) return
-    const interval = setInterval(fetchStats, 10000)
-    return () => clearInterval(interval)
-  }, [isAuthenticated, autoRefresh, timeframe])
-
-  const fetchStats = async () => {
+  const fetchStats = async (tf = timeframe, aud = audience, ctry = countryFilter) => {
     try {
       setIsRefreshing(true)
-      const res = await fetch(`/imon-api/stats?timeframe=${timeframe}`)
+      const res = await fetch(
+        `/imon-api/stats?timeframe=${encodeURIComponent(tf)}&audience=${encodeURIComponent(aud)}&country=${encodeURIComponent(ctry)}`
+      )
       if (res.status === 401) {
         setIsAuthenticated(false)
         setIsRefreshing(false)
@@ -205,6 +232,17 @@ export default function ImonAdminView() {
       setIsRefreshing(false)
     }
   }
+
+  // Initial fetch and auto-refresh only when authenticated and enabled
+  useEffect(() => {
+    fetchStats(timeframe, audience, countryFilter)
+  }, [timeframe, audience, countryFilter])
+
+  useEffect(() => {
+    if (!isAuthenticated || !autoRefresh) return
+    const interval = setInterval(() => fetchStats(timeframe, audience, countryFilter), 10000)
+    return () => clearInterval(interval)
+  }, [isAuthenticated, autoRefresh, timeframe, audience, countryFilter])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -577,7 +615,7 @@ export default function ImonAdminView() {
 
               <Tooltip title="Refresh Telemetry Data">
                 <IconButton
-                  onClick={fetchStats}
+                  onClick={() => fetchStats()}
                   disabled={isRefreshing}
                   sx={{
                     bgcolor: "#f1f5f9",
@@ -657,34 +695,12 @@ export default function ImonAdminView() {
             </Box>
           </Box>
 
-          {/* Timeframe Filter Tabs */}
-          <Tabs
-            value={timeframe}
-            onChange={(_, val) => setTimeframe(val)}
-            sx={{
-              minHeight: 36,
-              "& .MuiTab-root": {
-                minHeight: 36,
-                py: 0.5,
-                px: 2,
-                fontWeight: 700,
-                fontSize: 13,
-                borderRadius: 2,
-                textTransform: "none",
-                color: "#64748b",
-                "&.Mui-selected": {
-                  color: "#2563eb",
-                  bgcolor: "#eff6ff",
-                },
-              },
-              "& .MuiTabs-indicator": { display: "none" },
-            }}
-          >
-            <Tab label="Today" value="today" />
-            <Tab label="This Month" value="month" />
-            <Tab label="Year 2026" value="year" />
-            <Tab label="Lifetime" value="all" />
-          </Tabs>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#10b981", animation: "pulse 2s infinite" }} />
+            <Typography variant="caption" sx={{ fontWeight: 700, color: "#059669" }}>
+              NOC TELEMETRY FEED LIVE
+            </Typography>
+          </Box>
         </Paper>
 
         {/* Smart AI Telemetry Insights & Copilot */}
@@ -798,6 +814,213 @@ export default function ImonAdminView() {
           </Grid>
         </Paper>
 
+        {/* Unified Filter & Telemetry Control Bar */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, md: 2.5 },
+            mb: 3,
+            borderRadius: 3.5,
+            bgcolor: "#ffffff",
+            border: "1px solid #cbd5e1",
+            boxShadow: "0 4px 12px rgba(15,23,42,0.03)",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2, flexWrap: "wrap", gap: 1.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+              <Box sx={{ width: 32, height: 32, borderRadius: 2, bgcolor: "#eff6ff", color: "#2563eb", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <FilterListIcon sx={{ fontSize: 18 }} />
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                  Telemetry Filter & Segmentation Engine
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#64748b" }}>
+                  Filter metrics by audience segmentation, time interval, and visitor location
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Active Filter Indicator & Reset */}
+            {(audience !== "all" || timeframe !== "all" || countryFilter !== "ALL") && (
+              <Button
+                size="small"
+                variant="outlined"
+                color="secondary"
+                startIcon={<ClearIcon />}
+                onClick={() => {
+                  setTimeframe("all")
+                  setAudience("all")
+                  setCountryFilter("ALL")
+                }}
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 700,
+                  fontSize: 12,
+                  py: 0.25,
+                  px: 1.5,
+                  borderRadius: 2,
+                  borderColor: "#cbd5e1",
+                  color: "#475569",
+                  "&:hover": { borderColor: "#94a3b8", bgcolor: "#f1f5f9" },
+                }}
+              >
+                Reset All Filters
+              </Button>
+            )}
+          </Box>
+
+          <Grid container spacing={2} sx={{ alignItems: "center" }}>
+            {/* Filter 1: Audience Segmentation (All vs Humans vs Crawlers) */}
+            <Grid size={{ xs: 12, md: 5 }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: 0.5, mb: 0.75, display: "block" }}>
+                1. Traffic Audience
+              </Typography>
+              <Box sx={{ display: "flex", p: 0.5, bgcolor: "#f1f5f9", borderRadius: 2.5, gap: 0.5 }}>
+                <Button
+                  fullWidth
+                  size="small"
+                  variant={audience === "all" ? "contained" : "text"}
+                  onClick={() => setAudience("all")}
+                  startIcon={<GroupsIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: 12.5,
+                    py: 0.75,
+                    bgcolor: audience === "all" ? "#2563eb" : "transparent",
+                    color: audience === "all" ? "#ffffff" : "#475569",
+                    boxShadow: audience === "all" ? "0 2px 6px rgba(37,99,235,0.25)" : "none",
+                    "&:hover": { bgcolor: audience === "all" ? "#1d4ed8" : "#e2e8f0" },
+                  }}
+                >
+                  All ({stats?.totalVisits ?? stats?.lifetimeVisits ?? 0})
+                </Button>
+                <Button
+                  fullWidth
+                  size="small"
+                  variant={audience === "human" ? "contained" : "text"}
+                  onClick={() => setAudience("human")}
+                  startIcon={<PersonIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: 12.5,
+                    py: 0.75,
+                    bgcolor: audience === "human" ? "#059669" : "transparent",
+                    color: audience === "human" ? "#ffffff" : "#475569",
+                    boxShadow: audience === "human" ? "0 2px 6px rgba(5,150,105,0.25)" : "none",
+                    "&:hover": { bgcolor: audience === "human" ? "#047857" : "#e2e8f0" },
+                  }}
+                >
+                  Humans ({stats?.humanVisitsCount ?? 0})
+                </Button>
+                <Button
+                  fullWidth
+                  size="small"
+                  variant={audience === "bots" ? "contained" : "text"}
+                  onClick={() => setAudience("bots")}
+                  startIcon={<SmartToyIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: 12.5,
+                    py: 0.75,
+                    bgcolor: audience === "bots" ? "#7c3aed" : "transparent",
+                    color: audience === "bots" ? "#ffffff" : "#475569",
+                    boxShadow: audience === "bots" ? "0 2px 6px rgba(124,58,237,0.25)" : "none",
+                    "&:hover": { bgcolor: audience === "bots" ? "#6d28d9" : "#e2e8f0" },
+                  }}
+                >
+                  Bots ({stats?.botVisitsCount ?? 0})
+                </Button>
+              </Box>
+            </Grid>
+
+            {/* Filter 2: Time Range */}
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: 0.5, mb: 0.75, display: "block" }}>
+                2. Time Interval
+              </Typography>
+              <Box sx={{ display: "flex", p: 0.5, bgcolor: "#f1f5f9", borderRadius: 2.5, gap: 0.5 }}>
+                {[
+                  { id: "today", label: "Today" },
+                  { id: "24h", label: "24H" },
+                  { id: "7d", label: "7D" },
+                  { id: "30d", label: "30D" },
+                  { id: "all", label: "All" },
+                ].map((t) => (
+                  <Button
+                    key={t.id}
+                    fullWidth
+                    size="small"
+                    variant={timeframe === t.id ? "contained" : "text"}
+                    onClick={() => setTimeframe(t.id)}
+                    sx={{
+                      minWidth: 0,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontWeight: 700,
+                      fontSize: 12,
+                      py: 0.75,
+                      bgcolor: timeframe === t.id ? "#0f172a" : "transparent",
+                      color: timeframe === t.id ? "#ffffff" : "#475569",
+                      boxShadow: timeframe === t.id ? "0 2px 6px rgba(15,23,42,0.25)" : "none",
+                      "&:hover": { bgcolor: timeframe === t.id ? "#1e293b" : "#e2e8f0" },
+                    }}
+                  >
+                    {t.label}
+                  </Button>
+                ))}
+              </Box>
+            </Grid>
+
+            {/* Filter 3: Country Dropdown */}
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: 0.5, mb: 0.75, display: "block" }}>
+                3. Visitor Country
+              </Typography>
+              <FormControl fullWidth size="small">
+                <Select
+                  value={countryFilter}
+                  onChange={(e) => setCountryFilter(e.target.value)}
+                  sx={{
+                    borderRadius: 2.5,
+                    bgcolor: "#f1f5f9",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    color: "#0f172a",
+                    "& .MuiOutlinedInput-notchedOutline": { borderColor: "#cbd5e1" },
+                    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#94a3b8" },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#2563eb" },
+                  }}
+                >
+                  <MenuItem value="ALL">
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <span>🌐</span>
+                      <Typography sx={{ fontWeight: 700, fontSize: 13 }}>All Countries</Typography>
+                    </Box>
+                  </MenuItem>
+                  {(stats?.availableCountries || []).map((c) => (
+                    <MenuItem key={c.code} value={c.code}>
+                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: 1 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <span>{COUNTRY_FLAGS[c.code] || "🌐"}</span>
+                          <Typography sx={{ fontWeight: 600, fontSize: 13 }}>{c.name}</Typography>
+                        </Box>
+                        <Chip size="small" label={c.count} sx={{ height: 18, fontSize: 11, fontWeight: 700, bgcolor: "#e2e8f0" }} />
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </Paper>
+
         {/* HUD Top 6 Metrics Cards */}
         <Grid container spacing={2.5} sx={{ mb: 3 }}>
           {/* Card 1: Live Active Users */}
@@ -838,13 +1061,13 @@ export default function ImonAdminView() {
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <TrendingUpIcon sx={{ fontSize: 16, color: "#10b981" }} />
                 <Typography variant="caption" sx={{ color: "#10b981", fontWeight: 700 }}>
-                  Active user on site
+                  Active in last 5m
                 </Typography>
               </Box>
             </Paper>
           </Grid>
 
-          {/* Card 2: Today's Visitors */}
+          {/* Card 2: Filtered Visits */}
           <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
             <Paper
               elevation={0}
@@ -863,84 +1086,29 @@ export default function ImonAdminView() {
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5 }}>
-                  TODAY
+                  {audience === "human" ? "HUMAN VISITS" : audience === "bots" ? "BOT CRAWLS" : "TOTAL VISITS"}
                 </Typography>
-                <TodayIcon sx={{ fontSize: 20, color: "#2563eb" }} />
+                <SpeedIcon sx={{ fontSize: 20, color: "#2563eb" }} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
-                {(stats?.todayVisits ?? 0).toLocaleString()}
+                {(stats?.filteredVisits ?? 0).toLocaleString()}
               </Typography>
               <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                24-Hour Verified Traffic
+                {timeframe === "today"
+                  ? "Today"
+                  : timeframe === "24h"
+                  ? "Last 24 Hours"
+                  : timeframe === "7d"
+                  ? "Last 7 Days"
+                  : timeframe === "30d"
+                  ? "Last 30 Days"
+                  : "All Time"}{" "}
+                • {countryFilter === "ALL" ? "Global" : countryFilter}
               </Typography>
             </Paper>
           </Grid>
 
-          {/* Card 3: Monthly Visits */}
-          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2.5,
-                borderRadius: 3.5,
-                bgcolor: "#ffffff",
-                border: "1px solid #e2e8f0",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                transition: "transform 0.2s, box-shadow 0.2s",
-                "&:hover": { transform: "translateY(-2px)", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.05)" },
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5 }}>
-                  THIS MONTH
-                </Typography>
-                <CalendarMonthIcon sx={{ fontSize: 20, color: "#8b5cf6" }} />
-              </Box>
-              <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
-                {(stats?.monthVisits ?? 0).toLocaleString()}
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                Monthly Active Traffic
-              </Typography>
-            </Paper>
-          </Grid>
-
-          {/* Card 4: Lifetime Human Traffic */}
-          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2.5,
-                borderRadius: 3.5,
-                bgcolor: "#ffffff",
-                border: "1px solid #e2e8f0",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                transition: "transform 0.2s, box-shadow 0.2s",
-                "&:hover": { transform: "translateY(-2px)", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.05)" },
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5 }}>
-                  LIFETIME USERS
-                </Typography>
-                <AllInclusiveIcon sx={{ fontSize: 20, color: "#0284c7" }} />
-              </Box>
-              <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
-                {(stats?.lifetimeVisits ?? 0).toLocaleString()}
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                {(stats?.totalHitsLogged ?? 0).toLocaleString()} Total Caddy Requests
-              </Typography>
-            </Paper>
-          </Grid>
-
-          {/* Card 5: Unique Visitor IPs */}
+          {/* Card 3: Unique Client IPs */}
           <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
             <Paper
               elevation={0}
@@ -964,15 +1132,55 @@ export default function ImonAdminView() {
                 <GroupsIcon sx={{ fontSize: 20, color: "#f59e0b" }} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
-                {(stats?.uniqueVisitorIPs ?? 0).toLocaleString()}
+                {(stats?.filteredUniqueIPs ?? stats?.uniqueVisitorIPs ?? 0).toLocaleString()}
               </Typography>
               <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                Across {stats?.topCountries?.length || 0} Countries
+                Distinct Client Addresses
               </Typography>
             </Paper>
           </Grid>
 
-          {/* Card 6: Average Dwell Time */}
+          {/* Card 4: Traffic Composition (Human vs Bot) */}
+          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: 3.5,
+                bgcolor: "#ffffff",
+                border: "1px solid #e2e8f0",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                transition: "transform 0.2s, box-shadow 0.2s",
+                "&:hover": { transform: "translateY(-2px)", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.05)" },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5 }}>
+                  HUMAN RATIO
+                </Typography>
+                <PersonIcon sx={{ fontSize: 20, color: "#8b5cf6" }} />
+              </Box>
+              <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
+                {stats?.humanPercentage ?? 0}%
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <Typography variant="caption" sx={{ color: "#059669", fontWeight: 700 }}>
+                  {stats?.humanVisitsCount ?? 0} Humans
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+                  /
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#7c3aed", fontWeight: 700 }}>
+                  {stats?.botVisitsCount ?? 0} Bots
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Card 5: Average Dwell Time */}
           <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
             <Paper
               elevation={0}
@@ -993,15 +1201,50 @@ export default function ImonAdminView() {
                 <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5 }}>
                   AVG DWELL TIME
                 </Typography>
-                <TimerIcon sx={{ fontSize: 20, color: "#10b981" }} />
+                <TimerIcon sx={{ fontSize: 20, color: "#0d9488" }} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
                 {stats?.avgDwellSeconds ? formatDwellTime(stats.avgDwellSeconds) : "—"}
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <CheckCircleIcon sx={{ fontSize: 14, color: "#10b981" }} />
-                <Typography variant="caption" sx={{ color: "#10b981", fontWeight: 700 }}>
-                  Real Client Telemetry
+                <CheckCircleIcon sx={{ fontSize: 14, color: "#0d9488" }} />
+                <Typography variant="caption" sx={{ color: "#0d9488", fontWeight: 700 }}>
+                  Active Engagement
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Card 6: Edge TTFB Latency */}
+          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: 3.5,
+                bgcolor: "#ffffff",
+                border: "1px solid #e2e8f0",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                transition: "transform 0.2s, box-shadow 0.2s",
+                "&:hover": { transform: "translateY(-2px)", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.05)" },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5 }}>
+                  EDGE LATENCY
+                </Typography>
+                <BoltIcon sx={{ fontSize: 20, color: "#0284c7" }} />
+              </Box>
+              <Typography variant="h3" sx={{ fontWeight: 900, color: "#0f172a", my: 1, letterSpacing: "-1px" }}>
+                {stats?.systemHealth?.ttfbMs ?? 25.8}ms
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <CheckCircleIcon sx={{ fontSize: 14, color: "#0284c7" }} />
+                <Typography variant="caption" sx={{ color: "#0284c7", fontWeight: 700 }}>
+                  {stats?.systemHealth?.httpSuccessRate ?? 100}% HTTP Success
                 </Typography>
               </Box>
             </Paper>

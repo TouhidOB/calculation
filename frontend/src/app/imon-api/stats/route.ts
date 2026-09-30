@@ -10,6 +10,8 @@ export async function GET(req: NextRequest) {
   }
 
   const timeframe = req.nextUrl.searchParams.get("timeframe") || "all"
-  const stats = analyticsStore.getStats(timeframe)
+  const audience = req.nextUrl.searchParams.get("audience") || "all"
+  const country = req.nextUrl.searchParams.get("country") || "ALL"
+  const stats = analyticsStore.getStats({ timeframe, audience, country })
   return NextResponse.json({ ok: true, stats })
 }
