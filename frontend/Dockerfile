@@ -11,6 +11,7 @@ RUN mkdir .next && chown nextjs:nodejs .next
 COPY .next/standalone ./
 COPY .next/static ./.next/static
 COPY public ./public
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 EXPOSE 3000
