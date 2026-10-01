@@ -319,6 +319,7 @@ export default function GlobalNavbar({
       <AppBar
         position="sticky"
         elevation={0}
+        className="no-print"
         sx={{
           bgcolor: "rgba(255, 255, 255, 0.96)",
           backdropFilter: "blur(12px)",

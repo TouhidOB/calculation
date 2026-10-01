@@ -24,6 +24,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
 }) => {
   return (
     <Box
+      className="print-chassis-clean"
       sx={{
         position: "relative",
         background: "linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%)",
@@ -37,6 +38,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
     >
       {/* 4 Corner Screw Rivets */}
       <Box
+        className="no-print"
         sx={{
           position: "absolute",
           top: 10,
@@ -50,6 +52,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
         }}
       />
       <Box
+        className="no-print"
         sx={{
           position: "absolute",
           top: 10,
@@ -63,6 +66,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
         }}
       />
       <Box
+        className="no-print"
         sx={{
           position: "absolute",
           bottom: 10,
@@ -76,6 +80,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
         }}
       />
       <Box
+        className="no-print"
         sx={{
           position: "absolute",
           bottom: 10,
@@ -91,6 +96,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
 
       {/* Top Precision Hardware Bar */}
       <Box
+        className="no-print"
         sx={{
           display: "flex",
           alignItems: "center",
@@ -211,6 +217,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
 
       {/* Bottom Trim Bar */}
       <Box
+        className="no-print"
         sx={{
           px: { xs: 2.5, sm: 3.5 },
           py: 1,
