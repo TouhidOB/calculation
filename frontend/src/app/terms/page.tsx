@@ -56,7 +56,7 @@ export default function TermsOfServicePage() {
                 1. Acceptance of Terms
               </Typography>
               <Typography variant="body1">
-                By accessing or using TryCalc (accessible via <strong>https://trycalc.net</strong>) and any of its 674+ online calculators, web tools, or APIs, you agree to be legally bound by these Terms of Service. If you disagree with any part of these terms, you may not access the service.
+                By accessing or using TryCalc (accessible via <strong>https://trycalc.net</strong>) and any of its 675+ online calculators, web tools, or APIs, you agree to be legally bound by these Terms of Service. If you disagree with any part of these terms, you may not access the service.
               </Typography>
             </Box>
 

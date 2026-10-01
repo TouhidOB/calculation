@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
                 2. Calculation Inputs &amp; Zero Data Storage
               </Typography>
               <Typography variant="body1">
-                When you enter numbers, formulas, or parameters into any of our 674+ online calculators (e.g. loan figures, health metrics, dimensions, mathematical expressions), <strong>your calculations are computed dynamically in your browser or through ephemeral, stateless memory execution</strong>. We do NOT save, log, store, or profile your personal calculation figures, financial numbers, or health parameters on our persistent databases.
+                When you enter numbers, formulas, or parameters into any of our 675+ online calculators (e.g. loan figures, health metrics, dimensions, mathematical expressions, or AI prompt tokens), <strong>your calculations are computed dynamically in your browser or through ephemeral, stateless memory execution</strong>. We do NOT save, log, store, or profile your personal calculation figures, financial numbers, or health parameters on our persistent databases.
               </Typography>
             </Box>
 

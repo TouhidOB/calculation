@@ -17,9 +17,9 @@ import DevicesIcon from "@mui/icons-material/Devices"
 import LockOpenIcon from "@mui/icons-material/LockOpen"
 
 export const metadata: Metadata = {
-  title: "About Us & Editorial Methodology — TryCalc.net",
+  title: "About Us & Computational Methodology — TryCalc (2026)",
   description:
-    "Learn about TryCalc's mission to provide 674+ deterministic, free, fast online calculators. Our editorial standards, mathematical formula verification, and team methodology.",
+    "Learn about TryCalc's mission to provide 675+ deterministic, free, fast online calculators. Our editorial standards, mathematical formula verification, and team methodology.",
   alternates: {
     canonical: "https://trycalc.net/about",
   },
@@ -54,7 +54,7 @@ export default function AboutUsPage() {
           </Typography>
 
           <Typography variant="h6" sx={{ color: "#475569", fontWeight: 400, lineHeight: 1.6, maxWidth: 900, mb: 3 }}>
-            TryCalc was created with a straightforward mission: eliminate clunky, paywalled, ad-choked calculator websites and provide instant, deterministic, and scientifically accurate calculations across 674+ specialized domains.
+            TryCalc was created with a straightforward mission: eliminate clunky, paywalled, ad-choked calculator websites and provide instant, deterministic, and scientifically accurate calculations across 675+ specialized domains.
           </Typography>
 
           <Divider sx={{ my: 3, borderColor: "#e2e8f0" }} />

@@ -10,7 +10,7 @@ export default function OrganizationJsonLd() {
         url: siteUrl,
         name: "TryCalc",
         description:
-          "674 free online calculators for finance, health, construction, conversion, math, date & time, real estate, and more.",
+          "675 free online calculators for finance, health, construction, conversion, math, date & time, real estate, AI helper, and more.",
         publisher: {
           "@id": `${siteUrl}/#organization`,
         },

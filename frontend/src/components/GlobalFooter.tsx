@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Box from "@mui/material/Box"
 import Container from "@mui/material/Container"
@@ -10,8 +11,21 @@ import Stack from "@mui/material/Stack"
 import Divider from "@mui/material/Divider"
 import Chip from "@mui/material/Chip"
 import CalculatorLogoIcon from "@/components/CalculatorLogoIcon"
+import { listCalculators } from "@/lib/calculator-api"
 
 export default function GlobalFooter() {
+  const [total, setTotal] = useState(675)
+
+  useEffect(() => {
+    listCalculators()
+      .then((data) => {
+        if (data && data.total) {
+          setTotal(data.total)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <Box
       component="footer"
@@ -46,7 +60,7 @@ export default function GlobalFooter() {
                 TryCalc<span style={{ color: "#4f46e5" }}>.net</span>
               </Typography>
               <Chip
-                label="674+ Tools"
+                label={`${total}+ Tools`}
                 size="small"
                 sx={{
                   bgcolor: "rgba(79, 70, 229, 0.08)",
@@ -67,7 +81,7 @@ export default function GlobalFooter() {
                 maxWidth: 420,
               }}
             >
-              TryCalc is an independent computational platform offering 674+ deterministic, free online calculators across finance, mortgages, health, fitness, construction, and engineering. Built for speed, clarity, and instant decision-making.
+              TryCalc is an independent computational platform offering {total}+ deterministic, free online calculators across finance, mortgages, health, fitness, construction, engineering, and AI. Built for speed, clarity, and instant decision-making.
             </Typography>
 
             <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
@@ -118,7 +132,7 @@ export default function GlobalFooter() {
               </Link>
               <Link href="/" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#4f46e5", fontWeight: 700, mt: 0.5 }}>
-                  Browse All 674 Calculators →
+                  Browse All {total} Calculators →
                 </Typography>
               </Link>
             </Stack>
