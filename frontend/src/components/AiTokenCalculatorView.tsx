@@ -295,16 +295,13 @@ export function AiTokenCalculatorView({
                     {filteredDropdownModels.length} models
                   </Typography>
                 </Stack>
-                {/* Horizontal scrollable provider filter chips */}
-                <Stack
-                  direction="row"
-                  spacing={0.75}
+                {/* Provider filter chips with flex wrap so all 12 providers are instantly accessible */}
+                <Box
                   sx={{
-                    overflowX: "auto",
-                    pb: 1,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 0.75,
                     mb: 1.5,
-                    scrollbarWidth: "none",
-                    "&::-webkit-scrollbar": { display: "none" },
                   }}
                 >
                   {PROVIDER_LIST.map((prov) => (
@@ -328,7 +325,7 @@ export function AiTokenCalculatorView({
                       }}
                     />
                   ))}
-                </Stack>
+                </Box>
 
                 <FormControl fullWidth size="medium">
                   <InputLabel sx={{ fontWeight: 700, color: "#475569" }}>Target AI Model</InputLabel>
@@ -727,16 +724,13 @@ export function AiTokenCalculatorView({
                 </Box>
               </Stack>
 
-              {/* Provider filter bar */}
-              <Stack
-                direction="row"
-                spacing={0.75}
+              {/* Provider filter bar with flex-wrap */}
+              <Box
                 sx={{
-                  overflowX: "auto",
-                  pb: 1,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.75,
                   mb: 2,
-                  scrollbarWidth: "none",
-                  "&::-webkit-scrollbar": { display: "none" },
                 }}
               >
                 {PROVIDER_LIST.map((prov) => (
@@ -760,7 +754,7 @@ export function AiTokenCalculatorView({
                     }}
                   />
                 ))}
-              </Stack>
+              </Box>
 
               <Box component="table" sx={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
                 <Box component="thead">
