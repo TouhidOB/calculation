@@ -26,6 +26,8 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 
 import {
   AI_MODELS,
+  PROVIDER_LIST,
+  AIProvider,
   tokenizeText,
   calculateMultiModelPricing,
   formatUsd,
@@ -84,9 +86,29 @@ export function AiTokenCalculatorView({
 }: AiTokenCalculatorViewProps) {
   const [prompt, setPrompt] = useState(initialPrompt)
   const [selectedModel, setSelectedModel] = useState(initialModel)
+  const [modelFilterProvider, setModelFilterProvider] = useState<AIProvider>("All")
+  const [tableFilterProvider, setTableFilterProvider] = useState<AIProvider>("All")
   const [outputTokens, setOutputTokens] = useState(initialOutputTokens)
   const [requestsCount, setRequestsCount] = useState(initialRequests)
   const [showTokensView, setShowTokensView] = useState(true)
+
+  // Filter models for dropdown
+  const filteredDropdownModels = useMemo(() => {
+    const list = Object.values(AI_MODELS)
+    if (modelFilterProvider === "All") return list
+    return list.filter((m) => m.provider === modelFilterProvider)
+  }, [modelFilterProvider])
+
+  // Handle provider filter click for dropdown
+  const handleDropdownProviderChange = (prov: AIProvider) => {
+    setModelFilterProvider(prov)
+    if (prov !== "All") {
+      const providerModels = Object.values(AI_MODELS).filter((m) => m.provider === prov)
+      if (providerModels.length > 0 && !providerModels.some((m) => m.id === selectedModel)) {
+        setSelectedModel(providerModels[0].id)
+      }
+    }
+  }
 
   // Live Token Analysis
   const tokenAnalysis = useMemo(() => tokenizeText(prompt), [prompt])
@@ -102,6 +124,12 @@ export function AiTokenCalculatorView({
       ),
     [tokenAnalysis.tokens, outputTokens, requestsCount, selectedModel]
   )
+
+  // Filter models for comparison table
+  const filteredComparison = useMemo(() => {
+    if (tableFilterProvider === "All") return pricing.comparison
+    return pricing.comparison.filter((item) => item.provider === tableFilterProvider)
+  }, [pricing.comparison, tableFilterProvider])
 
   const copyToClipboard = (text: string, label: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -158,26 +186,46 @@ export function AiTokenCalculatorView({
               </Button>
               <Button
                 size="small"
-                variant="text"
+                variant="outlined"
                 startIcon={<RestartAltIcon />}
                 onClick={handleReset}
                 sx={{
                   borderRadius: 2,
                   textTransform: "none",
-                  fontWeight: 600,
+                  fontWeight: 700,
                   fontSize: 12.5,
                   color: "#64748b",
-                  "&:hover": { bgcolor: "#f8fafc", color: "#0f172a" },
+                  borderColor: "#e2e8f0",
+                  bgcolor: "#ffffff",
+                  "&:hover": { bgcolor: "#f8fafc" },
                 }}
               >
-                Clear Text
+                Clear
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<ContentCopyIcon />}
+                onClick={() => copyToClipboard(prompt, "Prompt text")}
+                disabled={!prompt}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 700,
+                  fontSize: 12.5,
+                  color: "#64748b",
+                  borderColor: "#e2e8f0",
+                  "&:hover": { bgcolor: "#f8fafc" },
+                }}
+              >
+                Copy
               </Button>
             </Stack>
 
             {/* Presets Chips */}
             <Box sx={{ mb: 2.5 }}>
-              <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, display: "block", mb: 1 }}>
-                Quick Persona Presets:
+              <Typography variant="caption" sx={{ fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.8, display: "block", mb: 1 }}>
+                Quick Templates
               </Typography>
               <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
                 {PROMPT_PRESETS.map((p) => (
@@ -185,18 +233,19 @@ export function AiTokenCalculatorView({
                     key={p.label}
                     label={p.label}
                     size="small"
+                    clickable
                     onClick={() => {
                       setPrompt(p.prompt)
-                      onToast?.(`⚡ Loaded "${p.label}"`)
+                      onToast?.(`Loaded "${p.label}"`)
                     }}
                     sx={{
-                      cursor: "pointer",
+                      borderRadius: 1.5,
                       fontWeight: 600,
-                      fontSize: 11.5,
-                      bgcolor: prompt === p.prompt ? "#ede9fe" : "#f1f5f9",
-                      color: prompt === p.prompt ? "#6d28d9" : "#475569",
-                      border: prompt === p.prompt ? "1px solid #c4b5fd" : "1px solid #e2e8f0",
-                      "&:hover": { bgcolor: "#e2e8f0" },
+                      fontSize: 12,
+                      bgcolor: "#f1f5f9",
+                      color: "#334155",
+                      border: "1px solid #e2e8f0",
+                      "&:hover": { bgcolor: "#e2e8f0", color: "#0f172a" },
                     }}
                   />
                 ))}
@@ -237,28 +286,86 @@ export function AiTokenCalculatorView({
 
             {/* Controls Row */}
             <Stack spacing={2.5}>
-              <FormControl fullWidth size="medium">
-                <InputLabel sx={{ fontWeight: 700, color: "#475569" }}>Target AI Model</InputLabel>
-                <Select
-                  value={selectedModel}
-                  label="Target AI Model"
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  sx={{ borderRadius: 2 }}
+              <Box>
+                <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: "#475569" }}>
+                    Filter Provider:
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700 }}>
+                    {filteredDropdownModels.length} models
+                  </Typography>
+                </Stack>
+                {/* Horizontal scrollable provider filter chips */}
+                <Stack
+                  direction="row"
+                  spacing={0.75}
+                  sx={{
+                    overflowX: "auto",
+                    pb: 1,
+                    mb: 1.5,
+                    scrollbarWidth: "none",
+                    "&::-webkit-scrollbar": { display: "none" },
+                  }}
                 >
-                  {Object.values(AI_MODELS).map((m) => (
-                    <MenuItem key={m.id} value={m.id}>
-                      <Stack direction="row" spacing={1.5} sx={{ width: "100%", justifyContent: "space-between", alignItems: "center" }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: 13.5, color: "#0f172a" }}>
-                          {m.name}
-                        </Typography>
-                        <Typography sx={{ fontSize: 12, color: "#64748b" }}>
-                          ${m.inputPerM.toFixed(2)} / ${m.outputPerM.toFixed(2)} per 1M
-                        </Typography>
-                      </Stack>
-                    </MenuItem>
+                  {PROVIDER_LIST.map((prov) => (
+                    <Chip
+                      key={prov}
+                      label={prov}
+                      size="small"
+                      clickable
+                      onClick={() => handleDropdownProviderChange(prov)}
+                      variant={modelFilterProvider === prov ? "filled" : "outlined"}
+                      sx={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        borderRadius: "16px",
+                        bgcolor: modelFilterProvider === prov ? "#8b5cf6" : "#f8fafc",
+                        color: modelFilterProvider === prov ? "#ffffff" : "#475569",
+                        borderColor: modelFilterProvider === prov ? "#8b5cf6" : "#e2e8f0",
+                        "&:hover": {
+                          bgcolor: modelFilterProvider === prov ? "#7c3aed" : "#f1f5f9",
+                        },
+                      }}
+                    />
                   ))}
-                </Select>
-              </FormControl>
+                </Stack>
+
+                <FormControl fullWidth size="medium">
+                  <InputLabel sx={{ fontWeight: 700, color: "#475569" }}>Target AI Model</InputLabel>
+                  <Select
+                    value={selectedModel}
+                    label="Target AI Model"
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    sx={{ borderRadius: 2 }}
+                  >
+                    {filteredDropdownModels.map((m) => (
+                      <MenuItem key={m.id} value={m.id}>
+                        <Stack direction="row" spacing={1.5} sx={{ width: "100%", justifyContent: "space-between", alignItems: "center" }}>
+                          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                            <Chip
+                              size="small"
+                              label={m.provider}
+                              sx={{
+                                height: 18,
+                                fontSize: 10,
+                                fontWeight: 800,
+                                bgcolor: `${m.providerColor}15`,
+                                color: m.providerColor,
+                              }}
+                            />
+                            <Typography sx={{ fontWeight: 700, fontSize: 13.5, color: "#0f172a" }}>
+                              {m.name}
+                            </Typography>
+                          </Stack>
+                          <Typography sx={{ fontSize: 12, color: "#64748b" }}>
+                            ${m.inputPerM.toFixed(2)} / ${m.outputPerM.toFixed(2)} per 1M
+                          </Typography>
+                        </Stack>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
 
               {/* Output Tokens Slider */}
               <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: 2.5, border: "1px solid #e2e8f0" }}>
@@ -321,11 +428,17 @@ export function AiTokenCalculatorView({
                 boxShadow: "0 10px 25px -5px rgba(49, 46, 129, 0.3)",
                 position: "relative",
                 overflow: "hidden",
+                "@media print": {
+                  background: "#f8fafc !important",
+                  color: "#0f172a !important",
+                  border: "2px solid #4338ca !important",
+                  boxShadow: "none !important",
+                },
               }}
             >
               <Box sx={{ position: "relative", zIndex: 2 }}>
                 <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
-                  <Typography variant="caption" sx={{ textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 800, color: "#a5b4fc" }}>
+                  <Typography variant="caption" sx={{ textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 800, color: "#a5b4fc", "@media print": { color: "#64748b !important" } }}>
                     PROMPT TOKEN COMPUTATION · BPE ENGINE
                   </Typography>
                   <Chip
@@ -337,43 +450,184 @@ export function AiTokenCalculatorView({
                       fontWeight: 700,
                       fontSize: 11,
                       backdropFilter: "blur(6px)",
+                      "@media print": {
+                        bgcolor: "#e2e8f0 !important",
+                        color: "#0f172a !important",
+                      },
                     }}
                   />
                 </Stack>
 
-                {/* Big Metric Readout */}
-                <Stack direction="row" spacing={1.5} sx={{ alignItems: "baseline", my: 1.5 }}>
-                  <Typography variant="h2" sx={{ fontWeight: 900, letterSpacing: -1, color: "#ffffff", fontSize: { xs: "2.75rem", sm: "3.5rem" } }}>
-                    {tokenAnalysis.tokens.toLocaleString()}
-                  </Typography>
-                  <Typography variant="h6" sx={{ color: "#c7d2fe", fontWeight: 700 }}>
-                    Tokens
-                  </Typography>
-                </Stack>
+                {/* Primary Metric Displays */}
+                <Grid container spacing={2} sx={{ my: 1.5, alignItems: "baseline" }}>
+                  <Grid size={{ xs: 6, sm: 4 }}>
+                    <Typography variant="h2" sx={{ fontWeight: 900, lineHeight: 1, letterSpacing: -1, color: "#ffffff", "@media print": { color: "#0f172a !important" } }}>
+                      {tokenAnalysis.tokens.toLocaleString()}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#c7d2fe", mt: 0.5, fontWeight: 600, "@media print": { color: "#475569 !important" } }}>
+                      Prompt Tokens
+                    </Typography>
+                  </Grid>
 
-                {/* Key Sub-metrics grid */}
-                <Grid container spacing={2} sx={{ mt: 1, pt: 2, borderTop: "1px solid rgba(255, 255, 255, 0.15)" }}>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Typography variant="caption" sx={{ color: "#a5b4fc", display: "block" }}>Words</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 800 }}>{tokenAnalysis.words.toLocaleString()}</Typography>
+                  <Grid size={{ xs: 6, sm: 4 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 800, lineHeight: 1.1, color: "#38bdf8", "@media print": { color: "#0284c7 !important" } }}>
+                      {formatUsd(pricing.singleTotalCost)}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#c7d2fe", mt: 0.5, fontWeight: 600, "@media print": { color: "#475569 !important" } }}>
+                      Single Call Cost
+                    </Typography>
                   </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Typography variant="caption" sx={{ color: "#a5b4fc", display: "block" }}>Characters</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 800 }}>{tokenAnalysis.characters.toLocaleString()}</Typography>
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Typography variant="caption" sx={{ color: "#a5b4fc", display: "block" }}>Token/Word Ratio</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 800 }}>{tokenAnalysis.tokensPerWord}x</Typography>
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Typography variant="caption" sx={{ color: "#a5b4fc", display: "block" }}>Payload Size</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 800 }}>{tokenAnalysis.bytesFormatted}</Typography>
+
+                  <Grid size={{ xs: 12, sm: 4 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 800, lineHeight: 1.1, color: "#a7f3d0", "@media print": { color: "#059669 !important" } }}>
+                      {pricing.batchCostFormatted}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#c7d2fe", mt: 0.5, fontWeight: 600, "@media print": { color: "#475569 !important" } }}>
+                      Batch ({requestsCount.toLocaleString()} {requestsCount === 1 ? "run" : "runs"})
+                    </Typography>
                   </Grid>
                 </Grid>
+
+                {/* Context Window Utilization Gauge */}
+                <Box sx={{ mt: 2.5, pt: 2, borderTop: "1px solid rgba(255, 255, 255, 0.15)", "@media print": { borderTop: "1px solid #cbd5e1 !important" } }}>
+                  <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.75 }}>
+                    <Typography variant="caption" sx={{ color: "#c7d2fe", fontWeight: 700, "@media print": { color: "#475569 !important" } }}>
+                      Context Window Saturation ({pricing.selectedModel.contextWindow >= 1000000 ? `${(pricing.selectedModel.contextWindow / 1000000).toFixed(0)}M` : `${(pricing.selectedModel.contextWindow / 1000).toFixed(0)}k`} tokens max)
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: "#ffffff", "@media print": { color: "#0f172a !important" } }}>
+                      {pricing.contextPct}% used
+                    </Typography>
+                  </Stack>
+                  <LinearProgress
+                    variant="determinate"
+                    value={Math.min(100, pricing.contextPct)}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "rgba(255, 255, 255, 0.2)",
+                      "& .MuiLinearProgress-bar": {
+                        borderRadius: 4,
+                        bgcolor:
+                          pricing.contextStatus === "exceeded"
+                            ? "#ef4444"
+                            : pricing.contextStatus === "heavy"
+                            ? "#f59e0b"
+                            : "#10b981",
+                      },
+                    }}
+                  />
+                  {pricing.contextStatus === "exceeded" && (
+                    <Stack direction="row" spacing={0.5} sx={{ alignItems: "center", mt: 1, color: "#fca5a5" }}>
+                      <WarningAmberIcon fontSize="small" />
+                      <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                        Prompt + Output tokens exceed this model's context capacity!
+                      </Typography>
+                    </Stack>
+                  )}
+                </Box>
               </Box>
             </Paper>
 
-            {/* Inference Cost Ledger Card */}
+            {/* Secondary Metrics Cards */}
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 6, sm: 3 }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2.5,
+                    border: "1px solid #e2e8f0",
+                    bgcolor: "#ffffff",
+                    textAlign: "center",
+                    "@media print": {
+                      bgcolor: "#ffffff !important",
+                      borderColor: "#cbd5e1 !important",
+                    },
+                  }}
+                >
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a !important" }}>
+                    {tokenAnalysis.words.toLocaleString()}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#475569 !important", fontWeight: 700 }}>
+                    Total Words
+                  </Typography>
+                </Paper>
+              </Grid>
+
+              <Grid size={{ xs: 6, sm: 3 }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2.5,
+                    border: "1px solid #e2e8f0",
+                    bgcolor: "#ffffff",
+                    textAlign: "center",
+                    "@media print": {
+                      bgcolor: "#ffffff !important",
+                      borderColor: "#cbd5e1 !important",
+                    },
+                  }}
+                >
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a !important" }}>
+                    {tokenAnalysis.characters.toLocaleString()}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#475569 !important", fontWeight: 700 }}>
+                    Characters
+                  </Typography>
+                </Paper>
+              </Grid>
+
+              <Grid size={{ xs: 6, sm: 3 }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2.5,
+                    border: "1px solid #e2e8f0",
+                    bgcolor: "#ffffff",
+                    textAlign: "center",
+                    "@media print": {
+                      bgcolor: "#ffffff !important",
+                      borderColor: "#cbd5e1 !important",
+                    },
+                  }}
+                >
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a !important" }}>
+                    {tokenAnalysis.tokensPerWord}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#475569 !important", fontWeight: 700 }}>
+                    Tokens / Word
+                  </Typography>
+                </Paper>
+              </Grid>
+
+              <Grid size={{ xs: 6, sm: 3 }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2.5,
+                    border: "1px solid #e2e8f0",
+                    bgcolor: "#ffffff",
+                    textAlign: "center",
+                    "@media print": {
+                      bgcolor: "#ffffff !important",
+                      borderColor: "#cbd5e1 !important",
+                    },
+                  }}
+                >
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a !important" }}>
+                    {tokenAnalysis.bytesFormatted}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#475569 !important", fontWeight: 700 }}>
+                    Payload Size
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+
+            {/* Token Chunks Highlighter (Tiktokenizer style) */}
             <Paper
               elevation={0}
               sx={{
@@ -384,90 +638,20 @@ export function AiTokenCalculatorView({
               }}
             >
               <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                  Estimated Inference Cost ({pricing.selectedModel.name})
-                </Typography>
-                <Chip
-                  size="small"
-                  icon={pricing.contextStatus === "safe" ? <CheckCircleIcon sx={{ fontSize: "14px !important" }} /> : <WarningAmberIcon sx={{ fontSize: "14px !important" }} />}
-                  label={`${pricing.contextPct}% of ${pricing.selectedModel.contextWindow >= 1000000 ? `${(pricing.selectedModel.contextWindow / 1000000).toFixed(0)}M` : `${(pricing.selectedModel.contextWindow / 1000).toFixed(0)}k`} Context`}
-                  sx={{
-                    bgcolor: pricing.contextStatus === "safe" ? "#dcfce7" : "#fef9c3",
-                    color: pricing.contextStatus === "safe" ? "#166534" : "#854d0e",
-                    fontWeight: 700,
-                    fontSize: 11,
-                  }}
-                />
-              </Stack>
-
-              {/* Context Limit Progress Bar */}
-              <Box sx={{ mb: 2.5 }}>
-                <LinearProgress
-                  variant="determinate"
-                  value={Math.min(100, Math.max(1, pricing.contextPct))}
-                  sx={{
-                    height: 8,
-                    borderRadius: 4,
-                    bgcolor: "#f1f5f9",
-                    "& .MuiLinearProgress-bar": {
-                      bgcolor: pricing.contextStatus === "safe" ? "#10b981" : "#f59e0b",
-                      borderRadius: 4,
-                    },
-                  }}
-                />
-              </Box>
-
-              {/* Cost Breakdown Items */}
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: 2.5, border: "1px solid #e2e8f0" }}>
-                    <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block" }}>
-                      SINGLE EXECUTION COST
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 900, color: "#0f172a", my: 0.5 }}>
-                      {formatUsd(pricing.singleTotalCost)}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: "#64748b", fontSize: 11 }}>
-                      Input: {formatUsd(pricing.singleInputCost)} · Output: {formatUsd(pricing.singleOutputCost)}
-                    </Typography>
-                  </Box>
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: 2.5, border: "1px solid #e2e8f0" }}>
-                    <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block" }}>
-                      BATCH ({requestsCount.toLocaleString()} RUNS)
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 900, color: "#8b5cf6", my: 0.5 }}>
-                      {pricing.batchCostFormatted}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: "#64748b", fontSize: 11 }}>
-                      1k runs: {pricing.costPer1kFormatted} · 1M: {pricing.costPer1mFormatted}
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Paper>
-
-            {/* Interactive Token Chunk Visualizer */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 2.5, sm: 3 },
-                borderRadius: 3.5,
-                border: "1px solid #e2e8f0",
-                bgcolor: "#ffffff",
-              }}
-            >
-              <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                  Color-Coded Token Highlighting
-                </Typography>
+                <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                    Token Chunk Visualizer
+                  </Typography>
+                  <Chip
+                    size="small"
+                    label={`${tokenAnalysis.chunks.length} chunks`}
+                    sx={{ height: 20, fontSize: 11, fontWeight: 700, bgcolor: "#f1f5f9" }}
+                  />
+                </Stack>
                 <Button
                   size="small"
-                  variant="text"
                   onClick={() => setShowTokensView(!showTokensView)}
-                  sx={{ textTransform: "none", fontWeight: 700, fontSize: 12, color: "#8b5cf6" }}
+                  sx={{ textTransform: "none", fontSize: 12, fontWeight: 700, color: "#8b5cf6" }}
                 >
                   {showTokensView ? "Hide Tokens" : "Show Tokens"}
                 </Button>
@@ -480,10 +664,9 @@ export function AiTokenCalculatorView({
                     bgcolor: "#f8fafc",
                     borderRadius: 2.5,
                     border: "1px solid #e2e8f0",
-                    maxHeight: 240,
+                    maxHeight: 280,
                     overflowY: "auto",
-                    lineHeight: 2,
-                    wordBreak: "break-word",
+                    lineHeight: 1.8,
                   }}
                 >
                   {tokenAnalysis.chunks.length === 0 ? (
@@ -533,9 +716,52 @@ export function AiTokenCalculatorView({
                 overflowX: "auto",
               }}
             >
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a", mb: 2 }}>
-                Cross-Model Pricing Comparison
-              </Typography>
+              <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1.5, flexWrap: "wrap", gap: 1 }}>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                    Global AI Model Pricing Matrix ({filteredComparison.length} Models)
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#64748b" }}>
+                    Click any row to test on that model · Sorted by execution expense
+                  </Typography>
+                </Box>
+              </Stack>
+
+              {/* Provider filter bar */}
+              <Stack
+                direction="row"
+                spacing={0.75}
+                sx={{
+                  overflowX: "auto",
+                  pb: 1,
+                  mb: 2,
+                  scrollbarWidth: "none",
+                  "&::-webkit-scrollbar": { display: "none" },
+                }}
+              >
+                {PROVIDER_LIST.map((prov) => (
+                  <Chip
+                    key={prov}
+                    label={prov}
+                    size="small"
+                    clickable
+                    onClick={() => setTableFilterProvider(prov)}
+                    variant={tableFilterProvider === prov ? "filled" : "outlined"}
+                    sx={{
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      borderRadius: "16px",
+                      bgcolor: tableFilterProvider === prov ? "#0f172a" : "#ffffff",
+                      color: tableFilterProvider === prov ? "#ffffff" : "#475569",
+                      borderColor: tableFilterProvider === prov ? "#0f172a" : "#e2e8f0",
+                      "&:hover": {
+                        bgcolor: tableFilterProvider === prov ? "#1e293b" : "#f1f5f9",
+                      },
+                    }}
+                  />
+                ))}
+              </Stack>
+
               <Box component="table" sx={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
                 <Box component="thead">
                   <Box component="tr" sx={{ borderBottom: "2px solid #e2e8f0", textAlign: "left" }}>
@@ -546,14 +772,20 @@ export function AiTokenCalculatorView({
                   </Box>
                 </Box>
                 <Box component="tbody">
-                  {pricing.comparison.map((item) => (
+                  {filteredComparison.map((item) => (
                     <Box
                       component="tr"
                       key={item.modelId}
+                      onClick={() => {
+                        setSelectedModel(item.modelId)
+                        onToast?.(`⚡ Switched target model to ${item.modelName}`)
+                      }}
                       sx={{
                         borderBottom: "1px solid #f1f5f9",
                         bgcolor: item.isCurrent ? "#f5f3ff" : "transparent",
-                        "&:hover": { bgcolor: "#f8fafc" },
+                        cursor: "pointer",
+                        transition: "background-color 0.15s ease",
+                        "&:hover": { bgcolor: item.isCurrent ? "#ede9fe" : "#f8fafc" },
                       }}
                     >
                       <Box component="td" sx={{ py: 1.2 }}>
@@ -572,6 +804,19 @@ export function AiTokenCalculatorView({
                           <Typography sx={{ fontWeight: item.isCurrent ? 800 : 600, fontSize: 12.5, color: item.isCurrent ? "#6d28d9" : "#1e293b" }}>
                             {item.modelName}
                           </Typography>
+                          {item.isCurrent && (
+                            <Chip
+                              size="small"
+                              label="Active"
+                              sx={{
+                                height: 16,
+                                fontSize: 9,
+                                fontWeight: 800,
+                                bgcolor: "#8b5cf6",
+                                color: "#ffffff",
+                              }}
+                            />
+                          )}
                         </Stack>
                       </Box>
                       <Box component="td" sx={{ py: 1.2, fontWeight: 700, color: "#0f172a" }}>
