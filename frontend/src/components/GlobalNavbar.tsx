@@ -326,6 +326,9 @@ export default function GlobalNavbar({
           borderBottom: "1px solid #e2e8f0",
           color: "#0f172a",
           zIndex: (t) => t.zIndex.drawer + 1,
+          "@media print": {
+            display: "none !important",
+          },
         }}
       >
         <Container maxWidth="xl" disableGutters sx={{ px: { xs: 1.5, sm: 2.5, md: 4 } }}>

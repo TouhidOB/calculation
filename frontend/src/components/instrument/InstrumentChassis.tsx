@@ -34,6 +34,14 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
           "0 24px 48px -12px rgba(15, 23, 42, 0.14), 0 8px 16px -4px rgba(15, 23, 42, 0.06), inset 0 1px 2px #ffffff",
         overflow: "hidden",
         mb: 4,
+        "@media print": {
+          background: "#ffffff !important",
+          border: "none !important",
+          boxShadow: "none !important",
+          p: "0 !important",
+          m: "0 !important",
+          borderRadius: "0 !important",
+        },
       }}
     >
       {/* 4 Corner Screw Rivets */}
@@ -49,6 +57,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
           background: "radial-gradient(circle, #cbd5e1 30%, #94a3b8 100%)",
           boxShadow: "inset 0 1px 1px #fff, 0 1px 2px rgba(0,0,0,0.25)",
           zIndex: 3,
+          "@media print": { display: "none !important" },
         }}
       />
       <Box
@@ -63,6 +72,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
           background: "radial-gradient(circle, #cbd5e1 30%, #94a3b8 100%)",
           boxShadow: "inset 0 1px 1px #fff, 0 1px 2px rgba(0,0,0,0.25)",
           zIndex: 3,
+          "@media print": { display: "none !important" },
         }}
       />
       <Box
@@ -77,6 +87,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
           background: "radial-gradient(circle, #cbd5e1 30%, #94a3b8 100%)",
           boxShadow: "inset 0 1px 1px #fff, 0 1px 2px rgba(0,0,0,0.25)",
           zIndex: 3,
+          "@media print": { display: "none !important" },
         }}
       />
       <Box
@@ -91,6 +102,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
           background: "radial-gradient(circle, #cbd5e1 30%, #94a3b8 100%)",
           boxShadow: "inset 0 1px 1px #fff, 0 1px 2px rgba(0,0,0,0.25)",
           zIndex: 3,
+          "@media print": { display: "none !important" },
         }}
       />
 
@@ -108,6 +120,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
           background: "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)",
           borderBottom: "1.5px solid #334155",
           color: "#f8fafc",
+          "@media print": { display: "none !important" },
         }}
       >
         {/* Left: Status LED Indicator */}
@@ -211,7 +224,7 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
       </Box>
 
       {/* Main Console Interior Deck */}
-      <Box sx={{ p: { xs: 2, sm: 3.5 }, position: "relative", zIndex: 2 }}>
+      <Box sx={{ p: { xs: 2, sm: 3.5 }, position: "relative", zIndex: 2, "@media print": { p: "0 !important" } }}>
         {children}
       </Box>
 
@@ -229,7 +242,8 @@ export const InstrumentChassis: React.FC<InstrumentChassisProps> = ({
           color: "#475569",
           fontSize: "0.7rem",
           fontWeight: 600,
-          letterSpacing: "0.04em",
+          letterSpacing: "0.06em",
+          "@media print": { display: "none !important" },
         }}
       >
         <Typography sx={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 600 }}>

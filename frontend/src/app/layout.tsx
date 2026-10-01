@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Script from "next/script"
+import "./globals.css"
 import ThemeRegistry from "@/theme/ThemeRegistry"
 import OrganizationJsonLd from "@/components/OrganizationJsonLd"
 import TrafficTelemetry from "@/components/TrafficTelemetry"

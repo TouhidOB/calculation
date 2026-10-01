@@ -22,6 +22,9 @@ export default function GlobalFooter() {
         borderTop: "1px solid #e2e8f0",
         pt: { xs: 5, md: 7 },
         pb: { xs: 4, md: 5 },
+        "@media print": {
+          display: "none !important",
+        },
       }}
     >
       <Container maxWidth="xl">

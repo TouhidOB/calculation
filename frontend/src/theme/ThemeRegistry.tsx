@@ -63,6 +63,32 @@ const lightTheme = createTheme({
           backgroundColor: '#f8fafc',
           color: '#0f172a',
         },
+        '@media print': {
+          '.no-print, nav, header, footer, .MuiAppBar-root, .MuiBreadcrumbs-root, .MuiDrawer-root, .MuiModal-root, .MuiSnackbar-root, .MuiTabs-root, .MuiTab-root, .MuiButton-root, .MuiIconButton-root, .MuiButtonGroup-root, .MuiChip-root, .MuiTextField-root, .MuiSlider-root, .MuiSwitch-root, .MuiRadio-root, .MuiCheckbox-root, .MuiFormControl-root, .MuiFormGroup-root, .MuiInputBase-root, .MuiOutlinedInput-root, .MuiInputLabel-root, .MuiFormHelperText-root, .MuiAccordion-root, .MuiBottomNavigation-root': {
+            display: 'none !important',
+            visibility: 'hidden !important',
+          },
+          '.print-only': {
+            display: 'block !important',
+            visibility: 'visible !important',
+          },
+          '.print-full-width': {
+            width: '100% !important',
+            maxWidth: '100% !important',
+            flexBasis: '100% !important',
+          },
+          '.print-chassis-clean': {
+            background: '#ffffff !important',
+            border: 'none !important',
+            boxShadow: 'none !important',
+            padding: '0 !important',
+            margin: '0 !important',
+          },
+          'body, html': {
+            background: '#ffffff !important',
+            color: '#0f172a !important',
+          },
+        },
       },
     },
     MuiCard: {

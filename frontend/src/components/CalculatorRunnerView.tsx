@@ -853,14 +853,21 @@ export default function CalculatorRunnerView({
       {/* Global Universal Header */}
       {!embedded && <GlobalNavbar currentCategory={calc.category} currentCalcId={calc.id} />}
 
-      <Box sx={{ minHeight: embedded ? "auto" : "100vh", bgcolor: "#f8fafc", py: embedded ? 1.5 : { xs: 2.5, md: 4 } }}>
-        <Container maxWidth="xl" sx={{ px: embedded ? 1.5 : undefined }}>
+      <Box
+        sx={{
+          minHeight: embedded ? "auto" : "100vh",
+          bgcolor: "#f8fafc",
+          py: embedded ? 1.5 : { xs: 2.5, md: 4 },
+          "@media print": { bgcolor: "#ffffff !important", py: "0 !important", minHeight: "auto !important" },
+        }}
+      >
+        <Container maxWidth="xl" sx={{ px: embedded ? 1.5 : undefined, "@media print": { maxWidth: "100% !important", px: "0 !important" } }}>
           {/* Breadcrumbs */}
           {!embedded && (
             <Breadcrumbs
               className="no-print"
               separator={<NavigateNextIcon fontSize="small" sx={{ color: "#94a3b8" }} />}
-              sx={{ mb: 2.5 }}
+              sx={{ mb: 2.5, "@media print": { display: "none !important" } }}
             >
               <MuiLink
                 component={Link}
@@ -899,7 +906,7 @@ export default function CalculatorRunnerView({
           )}
 
           {/* Dedicated Print-Only Executive Header & Input Summary */}
-          <Box className="print-only" sx={{ display: "none", mb: 3 }}>
+          <Box className="print-only" sx={{ display: "none", "@media print": { display: "block !important" }, mb: 3 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2.5px solid #0f172a", pb: 2 }}>
               <Box>
                 <Typography variant="h5" sx={{ fontWeight: 900, color: "#0f172a", letterSpacing: -0.5 }}>
@@ -1056,7 +1063,7 @@ export default function CalculatorRunnerView({
 
           {/* Sleek Tool-First Header */}
           {!embedded && (
-            <Box className="no-print" sx={{ mb: 2 }}>
+            <Box className="no-print" sx={{ mb: 2, "@media print": { display: "none !important" } }}>
               <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
                 <Typography
                   variant="h4"
@@ -1105,6 +1112,7 @@ export default function CalculatorRunnerView({
                 flexWrap: "wrap",
                 gap: 1.5,
                 boxShadow: "0 2px 6px -2px rgba(15,23,42,0.04)",
+                "@media print": { display: "none !important" },
               }}
             >
               <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", gap: 0.75 }}>
@@ -1207,7 +1215,7 @@ export default function CalculatorRunnerView({
           >
             <Grid container spacing={3.5}>
             {/* Form section */}
-            <Grid size={{ xs: 12, md: 6 }} className="no-print">
+            <Grid size={{ xs: 12, md: 6 }} className="no-print" sx={{ "@media print": { display: "none !important" } }}>
               <Paper
                 elevation={0}
                 sx={{
@@ -1218,7 +1226,7 @@ export default function CalculatorRunnerView({
                 }}
               >
                 {/* Quick actions toolbar */}
-                <Stack direction="row" spacing={1} className="no-print" sx={{ mb: 2.5, flexWrap: "wrap", gap: 1 }}>
+                <Stack direction="row" spacing={1} className="no-print" sx={{ mb: 2.5, flexWrap: "wrap", gap: 1, "@media print": { display: "none !important" } }}>
                   <Button
                     size="small"
                     variant="outlined"
@@ -1617,7 +1625,7 @@ export default function CalculatorRunnerView({
             </Grid>
 
             {/* Results section */}
-            <Grid size={{ xs: 12, md: 6 }} className="print-full-width">
+            <Grid size={{ xs: 12, md: 6 }} className="print-full-width" sx={{ "@media print": { width: "100% !important", maxWidth: "100% !important", flexBasis: "100% !important" } }}>
               {/* Hidden JS sandboxed executor */}
               <JsExecutor
                 calcId={calc.id}
@@ -1684,7 +1692,7 @@ export default function CalculatorRunnerView({
                       isTotal: idx === 0 || idx === goalSeekResult.details.length - 1,
                     }))}
                   />
-                  <Stack direction="row" spacing={1.5} className="no-print" sx={{ mt: 2, pt: 2, borderTop: "1.5px dashed #cbd5e1", flexWrap: "wrap", gap: 1 }}>
+                  <Stack direction="row" spacing={1.5} className="no-print" sx={{ mt: 2, pt: 2, borderTop: "1.5px dashed #cbd5e1", flexWrap: "wrap", gap: 1, "@media print": { display: "none !important" } }}>
                     <TactileButton
                       size="small"
                       buttonColor="primary"
@@ -1715,7 +1723,7 @@ export default function CalculatorRunnerView({
                   </Stack>
 
                   {/* Print-Only Official Footer Sign-off */}
-                  <Box className="print-only" sx={{ display: "none", mt: 3, pt: 1.5, borderTop: "1px solid #cbd5e1", textAlign: "center" }}>
+                  <Box className="print-only" sx={{ display: "none", "@media print": { display: "block !important" }, mt: 3, pt: 1.5, borderTop: "1px solid #cbd5e1", textAlign: "center" }}>
                     <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
                       Official calculation audit certificate generated by TryCalc.net Universal Engine · 64-bit precision calibrated
                     </Typography>
@@ -1836,7 +1844,7 @@ export default function CalculatorRunnerView({
                   {result && <ResultBreakdownChart result={result} />}
 
                   {/* Tactile Result Actions */}
-                  <Stack direction="row" spacing={1.5} className="no-print" sx={{ mt: 2, pt: 2, borderTop: "1.5px dashed #cbd5e1", flexWrap: "wrap", gap: 1 }}>
+                  <Stack direction="row" spacing={1.5} className="no-print" sx={{ mt: 2, pt: 2, borderTop: "1.5px dashed #cbd5e1", flexWrap: "wrap", gap: 1, "@media print": { display: "none !important" } }}>
                     <TactileButton
                       size="small"
                       buttonColor="primary"
@@ -1872,7 +1880,7 @@ export default function CalculatorRunnerView({
                   </Stack>
 
                   {/* Print-Only Official Footer Sign-off */}
-                  <Box className="print-only" sx={{ display: "none", mt: 3, pt: 1.5, borderTop: "1px solid #cbd5e1", textAlign: "center" }}>
+                  <Box className="print-only" sx={{ display: "none", "@media print": { display: "block !important" }, mt: 3, pt: 1.5, borderTop: "1px solid #cbd5e1", textAlign: "center" }}>
                     <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
                       Official calculation audit certificate generated by TryCalc.net Universal Engine · 64-bit precision calibrated
                     </Typography>
@@ -1913,7 +1921,7 @@ export default function CalculatorRunnerView({
 
           {/* Detailed Overview, Methodology & Guides — Below-the-Fold Content */}
           {!embedded && (
-            <Box className="no-print" sx={{ mt: 5 }}>
+            <Box className="no-print" sx={{ mt: 5, "@media print": { display: "none !important" } }}>
               {/* Direct Calculation Overview & SEO Intro Card */}
               <Box
                 sx={{
@@ -2460,7 +2468,7 @@ export default function CalculatorRunnerView({
 
           {/* Related / Category Calculators Internal Linking */}
           {relatedCalcs.length > 0 && (
-            <Box className="no-print" sx={{ mt: 5, mb: 2 }}>
+            <Box className="no-print" sx={{ mt: 5, mb: 2, "@media print": { display: "none !important" } }}>
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5 }}>
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
