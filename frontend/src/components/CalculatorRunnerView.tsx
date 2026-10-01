@@ -31,6 +31,7 @@ import {
   SpecificationSheet,
   TactileButton,
 } from "@/components/instrument"
+import { AiTokenCalculatorView } from "@/components/AiTokenCalculatorView"
 
 // MUI components
 import Box from "@mui/material/Box"
@@ -1213,6 +1214,15 @@ export default function CalculatorRunnerView({
             onReset={handleReset}
             onFillExample={handleFillExample}
           >
+            {calc.id === "ai-token-calculator" ? (
+              <AiTokenCalculatorView
+                initialPrompt={values.prompt}
+                initialModel={values.model}
+                initialOutputTokens={Number(values.output_tokens) || 500}
+                initialRequests={Number(values.requests_count) || 1}
+                onToast={(msg) => setToast({ open: true, message: msg })}
+              />
+            ) : (
             <Grid container spacing={3.5}>
             {/* Form section */}
             <Grid size={{ xs: 12, md: 6 }} className="no-print" sx={{ "@media print": { display: "none !important" } }}>
@@ -1917,6 +1927,7 @@ export default function CalculatorRunnerView({
               )}
             </Grid>
           </Grid>
+          )}
         </InstrumentChassis>
 
           {/* Detailed Overview, Methodology & Guides — Below-the-Fold Content */}

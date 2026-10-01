@@ -852,6 +852,9 @@ export const CALC_ICONS: Record<string, string> = {
   "wind-chill-calculator": "AcUnit",
 
   "z-score-calculator": "Insights",
+
+  // ─── AI Helper ──────
+  "ai-token-calculator": "SmartToy",
 }
 
 export function getCalcIcon(calcId: string): string {
