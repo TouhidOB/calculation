@@ -152,6 +152,22 @@ export async function generateMetadata({
       "international currency calculator",
       "worldwide unit conversion",
       "trycalc",
+      ...(canonicalId === "ai-token-calculator"
+        ? [
+            "ai token calculator",
+            "prompt token calculator",
+            "llm cost calculator",
+            "ai api pricing comparison",
+            "token counter online",
+            "tiktokenizer",
+            "gpt-4o token calculator",
+            "claude 3.7 cost estimator",
+            "deepseek r1 token price",
+            "token to word converter",
+            "token visualizer online",
+            "bpe tokenizer online",
+          ]
+        : []),
     ],
   }
 }
