@@ -5,8 +5,7 @@ export const dynamic = "force-static"
 export async function GET() {
   const content = `# TryCalc.net ads.txt
 # Google AdSense Publisher verification
-# Replace placeholder upon AdSense approval:
-# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+google.com, pub-2861472312283458, DIRECT, f08c47fec0942fa0
 `
   return new NextResponse(content, {
     status: 200,
