@@ -79,6 +79,15 @@ export interface AnalyticsStats {
     lastGooglebotCrawl: string
     sslStatus: string
   }
+  databaseDailyBreakdown?: {
+    date: string
+    totalRequests: number
+    uniqueIps: number
+    realHumanVisitors: number
+    botRequests: number
+    topPages: { path: string; views: number }[]
+    topCountries: { code: string; count: number }[]
+  }[]
 }
 
 export const COUNTRY_NAMES: Record<string, string> = {

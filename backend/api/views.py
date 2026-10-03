@@ -89,3 +89,76 @@ class HealthCheckView(APIView):
 
     def get(self, request):
         return Response({"status": "ok", "calculators": len(registry.all())})
+
+
+class AnalyticsStatsView(APIView):
+    """GET /api/analytics/stats/ — real visitor telemetry and date-by-date database records."""
+
+    def get(self, request):
+        import sqlite3
+        import json
+        from django.conf import settings
+        db_path = str(settings.DATABASES['default']['NAME'])
+        
+        daily_breakdown = []
+        lifetime_requests = 0
+        lifetime_visitors = 0
+        today_requests = 0
+        today_visitors = 0
+        
+        try:
+            conn = sqlite3.connect(db_path)
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT date, total_requests, total_unique_ips, real_human_visitors, bot_crawler_requests, top_pages_json, top_countries_json 
+                FROM visitor_daily_analytics 
+                ORDER BY date DESC;
+            """)
+            rows = cur.fetchall()
+            for r in rows:
+                date_str, reqs, u_ips, h_vis, bots, pages_json, countries_json = r
+                lifetime_requests += reqs
+                lifetime_visitors += h_vis
+                
+                try:
+                    pages = json.loads(pages_json) if pages_json else []
+                except Exception:
+                    pages = []
+                    
+                try:
+                    countries = json.loads(countries_json) if countries_json else []
+                except Exception:
+                    countries = []
+                    
+                daily_breakdown.append({
+                    "date": date_str,
+                    "totalRequests": reqs,
+                    "uniqueIps": u_ips,
+                    "realHumanVisitors": h_vis,
+                    "botRequests": bots,
+                    "topPages": pages,
+                    "topCountries": countries,
+                })
+                
+            conn.close()
+            
+            if daily_breakdown:
+                today_requests = daily_breakdown[0]["totalRequests"]
+                today_visitors = daily_breakdown[0]["realHumanVisitors"]
+                
+        except Exception as e:
+            pass
+
+        return Response({
+            "ok": True,
+            "today": {
+                "visitors": today_visitors,
+                "requests": today_requests,
+            },
+            "lifetime": {
+                "visitors": lifetime_visitors,
+                "requests": lifetime_requests,
+                "daysLogged": len(daily_breakdown),
+            },
+            "dailyBreakdown": daily_breakdown,
+        })

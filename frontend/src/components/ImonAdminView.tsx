@@ -154,6 +154,15 @@ interface AnalyticsStats {
     lastGooglebotCrawl: string
     sslStatus: string
   }
+  databaseDailyBreakdown?: {
+    date: string
+    totalRequests: number
+    uniqueIps: number
+    realHumanVisitors: number
+    botRequests: number
+    topPages: { path: string; views: number }[]
+    topCountries: { code: string; count: number }[]
+  }[]
 }
 
 // Country flag emojis helper
@@ -1735,7 +1744,114 @@ export default function ImonAdminView() {
           </TableContainer>
         </Paper>
 
-        {/* Live Real-Time Activity Feed */}
+        {/* Database Permanent Date-by-Date Visitor Records */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2.5, sm: 3.5 },
+            mb: 3,
+            borderRadius: 4,
+            bgcolor: "#ffffff",
+            border: "1px solid #e2e8f0",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5, flexWrap: "wrap", gap: 1.5 }}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", display: "flex", alignItems: "center", gap: 1.25 }}>
+                <SpeedIcon sx={{ color: "#2563eb" }} />
+                Permanent Database Daily Visitor Records (SQLite Store)
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b", mt: 0.25 }}>
+                100% verified historical date-by-date traffic saved permanently in database — never lost on log rotation
+              </Typography>
+            </Box>
+            <Chip
+              size="small"
+              icon={<Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#2563eb" }} />}
+              label="SQLite Persistent Store"
+              sx={{ bgcolor: "#eff6ff", color: "#1d4ed8", fontWeight: 700 }}
+            />
+          </Box>
+
+          {(!stats?.databaseDailyBreakdown || stats.databaseDailyBreakdown.length === 0) ? (
+            <Box sx={{ py: 3, textAlign: "center", color: "#94a3b8" }}>
+              <Typography variant="body2">Database sync active. Real records updating...</Typography>
+            </Box>
+          ) : (
+            <TableContainer sx={{ borderRadius: 3, border: "1px solid #f1f5f9" }}>
+              <Table size="small">
+                <TableHead sx={{ bgcolor: "#f8fafc" }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Date (UTC)</TableCell>
+                    <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Real Human Visitors</TableCell>
+                    <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Total Unique IPs</TableCell>
+                    <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Total Requests</TableCell>
+                    <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Bot & Crawler Hits</TableCell>
+                    <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Top Pages</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {stats.databaseDailyBreakdown.map((row) => (
+                    <TableRow
+                      key={row.date}
+                      sx={{
+                        "&:hover": { bgcolor: "#f8fafc" },
+                        transition: "background-color 0.15s",
+                      }}
+                    >
+                      <TableCell sx={{ fontWeight: 800, color: "#0f172a" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <span>📅</span>
+                          <span>{row.date}</span>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          size="small"
+                          label={`${row.realHumanVisitors.toLocaleString()} Visitors`}
+                          sx={{
+                            bgcolor: "#ecfdf5",
+                            color: "#059669",
+                            fontWeight: 800,
+                            borderRadius: 2,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: "#334155" }}>
+                        {row.uniqueIps.toLocaleString()} IPs
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: "#2563eb" }}>
+                        {row.totalRequests.toLocaleString()} reqs
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: "#64748b" }}>
+                        {row.botRequests.toLocaleString()}
+                      </TableCell>
+                      <TableCell sx={{ maxWidth: 300 }}>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                          {(row.topPages || []).slice(0, 3).map((p, pIdx) => (
+                            <Chip
+                              key={pIdx}
+                              size="small"
+                              label={`${p.path} (${p.views})`}
+                              sx={{
+                                fontSize: 10,
+                                height: 20,
+                                bgcolor: "#f1f5f9",
+                                color: "#334155",
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Paper>
+
+        {/* Live Real-Time Activity Stream */}
         <Paper
           elevation={0}
           sx={{

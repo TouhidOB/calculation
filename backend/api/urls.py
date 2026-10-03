@@ -14,4 +14,5 @@ urlpatterns = [
     path('calculators/<str:calc_id>/run/', views.CalculatorRunView.as_view(), name='calculator_run'),
     path('calculators/<str:calc_id>/script/', js_views.CalcScriptView.as_view(), name='calculator_script'),
     path('scripts/', js_views.CalcScriptListView.as_view(), name='calculator_scripts'),
+    path('analytics/stats/', views.AnalyticsStatsView.as_view(), name='analytics_stats'),
 ]
