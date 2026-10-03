@@ -15,4 +15,6 @@ urlpatterns = [
     path('calculators/<str:calc_id>/script/', js_views.CalcScriptView.as_view(), name='calculator_script'),
     path('scripts/', js_views.CalcScriptListView.as_view(), name='calculator_scripts'),
     path('analytics/stats/', views.AnalyticsStatsView.as_view(), name='analytics_stats'),
+    path('seo/rankings/', views.SEORankingsView.as_view(), name='seo_rankings'),
+    path('seo/refresh/', views.SEORefreshView.as_view(), name='seo_refresh'),
 ]

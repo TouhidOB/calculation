@@ -162,3 +162,28 @@ class AnalyticsStatsView(APIView):
             },
             "dailyBreakdown": daily_breakdown,
         })
+
+
+class SEORankingsView(APIView):
+    """GET /api/seo/rankings/ — fetch tracked page rankings, keywords and SERP movements."""
+
+    def get(self, request):
+        from . import seo_engine
+        data = seo_engine.get_seo_summary()
+        return Response({"ok": True, **data})
+
+
+class SEORefreshView(APIView):
+    """POST /api/seo/refresh/ — trigger live SERP check and update rankings."""
+
+    def post(self, request):
+        from . import seo_engine
+        limit = int(request.data.get("limit", 20))
+        updated = seo_engine.refresh_rankings_batch(limit=limit)
+        data = seo_engine.get_seo_summary()
+        return Response({
+            "ok": True,
+            "updatedCount": len(updated),
+            "updatedSample": updated[:5],
+            **data
+        })

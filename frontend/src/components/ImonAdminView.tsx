@@ -54,6 +54,7 @@ import PersonIcon from "@mui/icons-material/Person"
 import SmartToyIcon from "@mui/icons-material/SmartToy"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import ClearIcon from "@mui/icons-material/Clear"
+import SEORankRadarDrawer from "@/components/SEORankRadarDrawer"
 
 // Dynamically import ThreeGlobeView so SSR doesn't fail on window/WebGL
 const ThreeGlobeView = dynamic(() => import("@/components/ThreeGlobeView"), {
@@ -215,6 +216,7 @@ export default function ImonAdminView() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date())
   const [autoRefresh, setAutoRefresh] = useState(true)
+  const [seoRadarOpen, setSeoRadarOpen] = useState(false)
 
   const fetchStats = async (tf = timeframe, aud = audience, ctry = countryFilter) => {
     try {
@@ -571,7 +573,28 @@ export default function ImonAdminView() {
             </Box>
 
             {/* Actions: Refresh, CSV Export, Timeframe & Logout */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+              <Tooltip title="Track Google & Bing Page Rankings in real time">
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<LanguageIcon />}
+                  onClick={() => setSeoRadarOpen(true)}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 800,
+                    borderRadius: 2,
+                    fontSize: 12,
+                    bgcolor: "#4f46e5",
+                    color: "#ffffff",
+                    boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
+                    "&:hover": { bgcolor: "#4338ca" },
+                  }}
+                >
+                  Search Engine Rank Radar
+                </Button>
+              </Tooltip>
+
               <Tooltip title={autoRefresh ? "Pause Live 10s Stream" : "Resume Live 10s Stream"}>
                 <Button
                   size="small"
@@ -2012,6 +2035,12 @@ export default function ImonAdminView() {
           </Box>
         </Paper>
       </Container>
+
+      {/* Slideout Search Engine Rank Radar & SERP Tracker */}
+      <SEORankRadarDrawer
+        open={seoRadarOpen}
+        onClose={() => setSeoRadarOpen(false)}
+      />
     </Box>
   )
 }
