@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "@/app/imon-api/auth/route"
 
-const DJANGO_API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.INTERNAL_API_URL || "http://127.0.0.1:8000"
+const BACKEND_INTERNAL_URL = process.env.BACKEND_URL || "http://backend:8000"
 
 export async function GET(req: NextRequest) {
   const token = req.cookies.get("imon_token")?.value || req.headers.get("authorization")?.replace("Bearer ", "")
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${DJANGO_API_BASE}/api/seo/rankings/`, {
+    const res = await fetch(`${BACKEND_INTERNAL_URL}/api/seo/rankings/`, {
       cache: "no-store",
     })
     if (!res.ok) {
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const res = await fetch(`${DJANGO_API_BASE}/api/seo/refresh/`, {
+    const res = await fetch(`${BACKEND_INTERNAL_URL}/api/seo/refresh/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
