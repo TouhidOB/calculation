@@ -189,6 +189,27 @@ function ResultBreakdownChart({ result }: { result: Record<string, unknown> }) {
   )
 }
 
+function getFieldPlaceholder(f: CalculatorDef["fields"][0]): string {
+  if (f.help) return f.help
+  const name = f.name.toLowerCase()
+  const label = (f.label || "").toLowerCase()
+  if (name.includes("price") || name.includes("loan") || name.includes("principal")) return "e.g. 50000"
+  if (name.includes("rate") || name.includes("interest") || name.includes("percent") || name.includes("tax")) return "e.g. 6.5"
+  if (name.includes("term") || name.includes("year") || name.includes("period") || name.includes("tenure")) return "e.g. 15"
+  if (name.includes("month")) return "e.g. 12"
+  if (name.includes("income") || name.includes("salary")) return "e.g. 65000"
+  if (name.includes("down")) return "e.g. 10000"
+  if (name.includes("age")) return "e.g. 28"
+  if (name.includes("height")) return "e.g. 175"
+  if (name.includes("weight")) return "e.g. 70"
+  if (name.includes("length") || name.includes("width") || name.includes("depth") || name.includes("thickness")) return "e.g. 10"
+  if (name.includes("kwh") || name.includes("watt")) return "e.g. 100"
+  if (name.includes("fuel") || name.includes("gas") || name.includes("cost")) return "e.g. 25"
+  if (name.includes("count") || name.includes("quantity")) return "e.g. 5"
+  if (f.type === "number") return "0.00"
+  return f.label
+}
+
 function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, string> {
   const ex: Record<string, string> = {}
   for (const f of fields) {
@@ -359,8 +380,15 @@ export default function CalculatorRunnerView({
   initialRelatedCalcs,
 }: CalculatorRunnerViewProps) {
   const [values, setValues] = useState<Record<string, string>>(() => {
-    // Calculator.net parity: pre-populate sensible default values so the calculator is never blank
-    const init = generateExampleValues(calc.fields)
+    // Clean initial state: fields start empty by default with informative placeholders
+    const init: Record<string, string> = {}
+    for (const f of calc.fields) {
+      if (f.default != null && f.default !== "") {
+        init[f.name] = String(f.default)
+      } else {
+        init[f.name] = ""
+      }
+    }
     if (typeof window !== "undefined") {
       try {
         const sp = new URLSearchParams(window.location.search)
@@ -720,8 +748,27 @@ export default function CalculatorRunnerView({
             return
           }
         }
+        // If Python returned an error or empty result and calc is purely python, show error directly
+        const resAny = res as unknown as { error?: string; errors?: string[] }
+        if (resAny.error) {
+          setErr(String(resAny.error))
+          setBusy(false)
+          return
+        }
+        if (resAny.errors && resAny.errors.length > 0) {
+          setErr(resAny.errors.join(", "))
+          setBusy(false)
+          return
+        }
         setJsTrigger((prev) => prev + 1)
-      } catch {
+      } catch (err: unknown) {
+        // Only trigger JS executor if backend failed and it is not a known rate-limit / network error
+        const errMsg = err instanceof Error ? err.message : String(err)
+        if (errMsg.includes("429")) {
+          setErr("Calculation rate limit reached. Please wait a few seconds and try again.")
+          setBusy(false)
+          return
+        }
         setJsTrigger((prev) => prev + 1)
       }
     },
@@ -827,16 +874,25 @@ export default function CalculatorRunnerView({
     setBusy(false)
   }
 
-  // Instant Auto-calculation on initial mount (Calculator.net parity + modern reactive UX)
+  // Calculation trigger on initial mount ONLY if user arrived via shared URL scenario parameters
   const initialMountRunRef = React.useRef(false)
   useEffect(() => {
     if (initialMountRunRef.current || typeof window === "undefined") return
     initialMountRunRef.current = true
-    const timer = setTimeout(() => {
-      executeCalculation(values)
-    }, 150)
-    return () => clearTimeout(timer)
-  }, [executeCalculation, values])
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      const hasUrlParams = calc.fields.some((f) => {
+        const v = sp.get(f.name)
+        return v !== null && v !== ""
+      })
+      if (hasUrlParams) {
+        const timer = setTimeout(() => {
+          executeCalculation(values)
+        }, 150)
+        return () => clearTimeout(timer)
+      }
+    } catch {}
+  }, [executeCalculation, values, calc.fields])
 
   const catMeta = CATEGORY_META[calc.category]
   const formulaGuide = useMemo(() => seoFormulaFor(calc), [calc])
@@ -1001,14 +1057,12 @@ export default function CalculatorRunnerView({
                 size="small"
                 variant="outlined"
                 onClick={() => {
-                  const def = generateExampleValues(calc.fields)
-                  setValues(def)
-                  executeCalculation(def)
+                  handleReset()
                   setIsScenarioFromUrl(false)
                   if (typeof window !== "undefined") {
                     window.history.replaceState({}, "", window.location.pathname)
                   }
-                  setToast({ open: true, message: "Standard example defaults restored." })
+                  setToast({ open: true, message: "Inputs cleared to default blank state." })
                 }}
                 sx={{
                   textTransform: "none",
@@ -1019,7 +1073,7 @@ export default function CalculatorRunnerView({
                   "&:hover": { borderColor: "#3b82f6", bgcolor: "#dbeafe" },
                 }}
               >
-                Reset to Standard Defaults
+                Clear Inputs
               </Button>
             </Paper>
           )}
@@ -1569,7 +1623,7 @@ export default function CalculatorRunnerView({
                           key={f.name}
                           type={f.type === "number" ? "number" : "text"}
                           label={f.label}
-                          placeholder={f.help || f.label}
+                          placeholder={getFieldPlaceholder(f)}
                           value={values[f.name] ?? ""}
                           onChange={(e) =>
                             setValues({ ...values, [f.name]: e.target.value })

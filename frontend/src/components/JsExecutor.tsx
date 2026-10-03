@@ -372,7 +372,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
       ref={iframeRef}
       style={{ position: "absolute", width: 0, height: 0, border: "none", overflow: "hidden" }}
       title="Calculator Sandbox"
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts allow-same-origin allow-forms"
     />
   )
 }

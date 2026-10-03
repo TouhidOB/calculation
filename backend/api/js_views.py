@@ -36,7 +36,7 @@ _ALIASES = {
     'break-even': 'business_investment__break_even_analysis_calculator',
     'brick': 'construction_calculator__brick_block_calculator',
     'calorie-calculator': 'health__calorie_burn_calculator',
-    'canadian-mortgage-calculator': 'finance__mortgage_affordability_calculator',
+    'canadian-mortgage-calculator': 'real_estate_calculator__mortgage_payment_calculator',
     'commission-calculator': 'real_estate_calculator__real_estate_agent_commission_calculator',
     'common-factor-calculator': 'basic_calculator__factor_calculator',
     'concrete': 'construction_calculator__concrete_delivery_time_calculator',
@@ -63,7 +63,7 @@ _ALIASES = {
     'healthy-weight-calculator': 'health__ideal_weight_calculator',
     'heart-rate': 'health__heart_rate_recovery_calculator',
     'hours-calculator': 'date_time__overtime_hours_pay_calculator',
-    'house-affordability-calculator': 'finance__car_affordability_calculator',
+    'house-affordability-calculator': 'finance__mortgage_affordability_calculator',
     'interest-calculator': 'business_investment__compound_interest_calculator',
     'interest-rate-calculator': 'finance__personal_inflation_rate_calculator',
     'investment-calculator': 'real_estate_calculator__total_return_on_investment_calculator',
@@ -75,11 +75,11 @@ _ALIASES = {
     'margin-calculator': 'business_investment__gross_profit_margin_calculator',
     'mass-calculator': 'conversion_calculator__weight_mass_converter',
     'molecular-weight-calculator': 'health__ideal_weight_calculator',
-    'mortgage': 'finance__mortgage_affordability_calculator',
+    'mortgage': 'real_estate_calculator__mortgage_payment_calculator',
     'mortgage-amortization-calculator': 'real_estate_calculator__mortgage_amortization_schedule_generator',
-    'mortgage-calculator': 'finance__mortgage_affordability_calculator',
-    'mortgage-calculator-uk': 'finance__mortgage_affordability_calculator',
-    'mortgage-payoff-calculator': 'finance__mortgage_affordability_calculator',
+    'mortgage-calculator': 'real_estate_calculator__mortgage_payment_calculator',
+    'mortgage-calculator-uk': 'real_estate_calculator__mortgage_payment_calculator',
+    'mortgage-payoff-calculator': 'real_estate_calculator__mortgage_payment_calculator',
     'mulch-calculator': 'construction_calculator__mulch_and_soil_calculator',
     'mutual-fund-calculator': 'finance__emergency_fund',
     'ovulation-calculator': 'health__fertility_ovulation_calculator',
@@ -118,7 +118,7 @@ _ALIASES = {
     'time-calculator': 'date_time__airport_time_zone_finder',
     'time-card-calculator': 'date_time__airport_time_zone_finder',
     'time-zone-calculator': 'conversion_calculator__time_zone_converter',
-    'va-mortgage-calculator': 'finance__mortgage_affordability_calculator',
+    'va-mortgage-calculator': 'real_estate_calculator__mortgage_payment_calculator',
     'voltage-drop-calculator': 'construction_calculator__electrical_voltage_drop_calculator',
     'weight-calculator': 'health__ideal_weight_calculator',
     'weight-watchers-points-calculator': 'health__ideal_weight_calculator',
@@ -152,6 +152,7 @@ def _load_data() -> dict:
 
 class CalcScriptView(APIView):
     """GET /api/calculators/<id>/script/ — inline JS and DOM runtime for one calculator."""
+    throttle_classes = []
 
     def get(self, request, calc_id):
         mapping = _load_data()
@@ -178,6 +179,7 @@ class CalcScriptView(APIView):
 
 class CalcScriptListView(APIView):
     """GET /api/scripts/ — all JS scripts keyed by calc id (for offline bundling)."""
+    throttle_classes = []
 
     def get(self, request):
         mapping = _load_data()
