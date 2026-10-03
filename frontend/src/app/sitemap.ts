@@ -90,7 +90,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }))
 
-  // 3. All 675 Calculators
+  // 3. All 724 Calculators
   const calcRoutes: MetadataRoute.Sitemap = []
   const seenIds = new Set<string>()
 
@@ -122,7 +122,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("Sitemap: Backend unreachable during build, using fallback registry:", err)
   }
 
-  // Ensure all 675 calculators are present via fallback if backend was unavailable
+  // Ensure all 724 calculators are present via fallback if backend was unavailable
   if (calcRoutes.length === 0) {
     const fallbackCats = (fallbackData.categories as unknown) as Record<string, CalculatorDef[] | { calculators: CalculatorDef[] }>
     for (const catKey of Object.keys(fallbackCats)) {

@@ -1,4 +1,5 @@
 {
+  "total": 724,
   "categories": {
     "finance": [
       {
@@ -27004,7 +27005,7 @@
             "type": "date",
             "unit": "",
             "required": true,
-            "default": "2026-09-22",
+            "default": "2026-10-03",
             "options": null,
             "min": null,
             "max": null,
@@ -39091,11 +39092,11 @@
         "id": "ai-token-calculator",
         "name": "AI Prompt Token & Cost Calculator",
         "category": "ai_helper",
-        "description": "Calculate precise token counts, character breakdown, and API inference costs across OpenAI, Anthropic, Google Gemini, DeepSeek, and Meta Llama models.",
+        "description": "AI Prompt Token & Cost Calculator",
         "fields": [
           {
             "name": "prompt",
-            "label": "Prompt / Text Content",
+            "label": "Prompt / Text Payload",
             "type": "text",
             "unit": "",
             "required": true,
@@ -39116,47 +39117,139 @@
             "options": [
               {
                 "value": "gpt-4o",
-                "label": "OpenAI GPT-4o ($2.50 / $10.00)"
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 / $10.00)"
               },
               {
                 "value": "gpt-4o-mini",
-                "label": "OpenAI GPT-4o-mini ($0.15 / $0.60)"
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 / $0.60)"
               },
               {
                 "value": "o1",
-                "label": "OpenAI o1 Reasoning ($15.00 / $60.00)"
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 / $60.00)"
+              },
+              {
+                "value": "o1-mini",
+                "label": "OpenAI: OpenAI o1-mini ($1.10 / $4.40)"
               },
               {
                 "value": "o3-mini",
-                "label": "OpenAI o3-mini ($1.10 / $4.40)"
+                "label": "OpenAI: OpenAI o3-mini ($1.10 / $4.40)"
+              },
+              {
+                "value": "gpt-4-turbo",
+                "label": "OpenAI: OpenAI GPT-4 Turbo ($10.00 / $30.00)"
+              },
+              {
+                "value": "gpt-3-5-turbo",
+                "label": "OpenAI: OpenAI GPT-3.5 Turbo ($0.50 / $1.50)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 / $15.00)"
               },
               {
                 "value": "claude-3-5-sonnet",
-                "label": "Anthropic Claude 3.5 Sonnet ($3.00 / $15.00)"
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 / $15.00)"
               },
               {
                 "value": "claude-3-5-haiku",
-                "label": "Anthropic Claude 3.5 Haiku ($0.80 / $4.00)"
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 / $4.00)"
+              },
+              {
+                "value": "claude-3-opus",
+                "label": "Anthropic: Anthropic Claude 3 Opus ($15.00 / $75.00)"
               },
               {
                 "value": "gemini-2-flash",
-                "label": "Google Gemini 2.0 Flash ($0.10 / $0.40)"
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 / $0.40)"
+              },
+              {
+                "value": "gemini-2-flash-lite",
+                "label": "Google: Google Gemini 2.0 Flash-Lite ($0.07 / $0.30)"
               },
               {
                 "value": "gemini-1-5-pro",
-                "label": "Google Gemini 1.5 Pro ($1.25 / $5.00)"
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 / $5.00)"
+              },
+              {
+                "value": "gemini-1-5-flash",
+                "label": "Google: Google Gemini 1.5 Flash ($0.07 / $0.30)"
               },
               {
                 "value": "deepseek-v3",
-                "label": "DeepSeek-V3 ($0.14 / $0.28)"
+                "label": "DeepSeek: DeepSeek-V3 ($0.14 / $0.28)"
               },
               {
                 "value": "deepseek-r1",
-                "label": "DeepSeek-R1 ($0.55 / $2.19)"
+                "label": "DeepSeek: DeepSeek-R1 (Reasoning) ($0.55 / $2.19)"
+              },
+              {
+                "value": "grok-2",
+                "label": "xAI: xAI Grok 2 ($2.00 / $10.00)"
+              },
+              {
+                "value": "grok-2-mini",
+                "label": "xAI: xAI Grok 2 mini ($0.20 / $1.00)"
               },
               {
                 "value": "llama-3-3-70b",
-                "label": "Meta Llama 3.3 70B ($0.40 / $0.40)"
+                "label": "Meta: Meta Llama 3.3 (70B) ($0.40 / $0.40)"
+              },
+              {
+                "value": "llama-3-1-405b",
+                "label": "Meta: Meta Llama 3.1 (405B) ($2.00 / $2.00)"
+              },
+              {
+                "value": "llama-3-1-8b",
+                "label": "Meta: Meta Llama 3.1 (8B) ($0.05 / $0.05)"
+              },
+              {
+                "value": "mistral-large",
+                "label": "Mistral: Mistral Large 2 ($2.00 / $6.00)"
+              },
+              {
+                "value": "mistral-small",
+                "label": "Mistral: Mistral Small 3 ($0.20 / $0.60)"
+              },
+              {
+                "value": "codestral",
+                "label": "Mistral: Mistral Codestral ($0.30 / $0.90)"
+              },
+              {
+                "value": "qwen-2-5-72b",
+                "label": "Qwen: Qwen 2.5 (72B) ($0.35 / $0.40)"
+              },
+              {
+                "value": "qwen-2-5-coder-32b",
+                "label": "Qwen: Qwen 2.5 Coder (32B) ($0.15 / $0.15)"
+              },
+              {
+                "value": "qwq-32b-preview",
+                "label": "Qwen: QwQ 32B (Reasoning) ($0.15 / $0.15)"
+              },
+              {
+                "value": "command-r-plus",
+                "label": "Cohere: Cohere Command R+ ($2.50 / $10.00)"
+              },
+              {
+                "value": "command-r",
+                "label": "Cohere: Cohere Command R ($0.15 / $0.60)"
+              },
+              {
+                "value": "amazon-nova-pro",
+                "label": "Amazon: Amazon Nova Pro ($0.80 / $3.20)"
+              },
+              {
+                "value": "amazon-nova-lite",
+                "label": "Amazon: Amazon Nova Lite ($0.06 / $0.24)"
+              },
+              {
+                "value": "amazon-nova-micro",
+                "label": "Amazon: Amazon Nova Micro ($0.04 / $0.14)"
+              },
+              {
+                "value": "phi-4",
+                "label": "Microsoft: Microsoft Phi-4 ($0.07 / $0.14)"
               }
             ],
             "min": null,
@@ -39173,7 +39266,7 @@
             "default": 500,
             "options": null,
             "min": 0,
-            "max": 64000,
+            "max": 128000,
             "step": null,
             "help": "Estimated completion tokens generated by the model in response."
           },
@@ -39191,8 +39284,4902 @@
             "help": "Number of times this prompt runs (e.g. 1 for single test, 1000 for batch)."
           }
         ]
+      },
+      {
+        "id": "multi-model-token-counter",
+        "name": "Multi-Model Token Counter & Cost Comparison",
+        "category": "ai_helper",
+        "description": "Compare prompt token counts and API invocation costs side-by-side across OpenAI, Claude, Gemini, DeepSeek, and Meta Llama.",
+        "fields": [
+          {
+            "name": "prompt",
+            "label": "Prompt / Text Payload",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "Analyze financial risks in Q3 portfolio expansion.",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "output_tokens",
+            "label": "Expected Output Tokens",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 500,
+            "options": null,
+            "min": 10,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_queries",
+            "label": "Monthly Query Volume",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1000,
+            "options": null,
+            "min": 1,
+            "max": 10000000,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "context-window-budget-calculator",
+        "name": "Context-Window Budget & Headroom Calculator",
+        "category": "ai_helper",
+        "description": "Allocate context window quotas across system prompts, conversation history, RAG chunks, and output headroom to avoid context overflow.",
+        "fields": [
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "system_tokens",
+            "label": "System Instructions (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1500,
+            "options": null,
+            "min": 0,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "history_tokens",
+            "label": "Chat History / Memory (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 12000,
+            "options": null,
+            "min": 0,
+            "max": 500000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "rag_tokens",
+            "label": "RAG Document Retrieval (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8000,
+            "options": null,
+            "min": 0,
+            "max": 1000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "user_tokens",
+            "label": "User Prompt (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 450,
+            "options": null,
+            "min": 1,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "max_output",
+            "label": "Reserved Output (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4096,
+            "options": null,
+            "min": 128,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "system-prompt-token-calculator",
+        "name": "System Prompt Token & Cache Savings Calculator",
+        "category": "ai_helper",
+        "description": "Calculate the recurring token overhead of system instructions and few-shot examples, plus prompt caching cost reductions.",
+        "fields": [
+          {
+            "name": "system_text",
+            "label": "System Instructions / Persona",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "You are an enterprise AI data assistant. Always format responses in Markdown tables with cited sources.",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "few_shot_examples",
+            "label": "Number of Few-Shot Examples",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3,
+            "options": null,
+            "min": 0,
+            "max": 50,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "avg_example_tokens",
+            "label": "Average Tokens Per Example",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 250,
+            "options": null,
+            "min": 0,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "daily_runs",
+            "label": "Daily Request Invocations",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 5000,
+            "options": null,
+            "min": 1,
+            "max": 10000000,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "conversation-history-token-calculator",
+        "name": "Conversation History & Multi-Turn Chat Compactor",
+        "category": "ai_helper",
+        "description": "Model the quadratic token expansion across multi-turn chats and calculate token savings from sliding-window or summary compaction.",
+        "fields": [
+          {
+            "name": "turns",
+            "label": "Total Conversation Turns",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 10,
+            "options": null,
+            "min": 1,
+            "max": 100,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "avg_user_words",
+            "label": "Avg User Query (Words)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 45,
+            "options": null,
+            "min": 5,
+            "max": 1000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "avg_assistant_words",
+            "label": "Avg AI Response (Words)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 220,
+            "options": null,
+            "min": 10,
+            "max": 5000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "strategy",
+            "label": "History Retention Strategy",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "full",
+            "options": [
+              {
+                "value": "full",
+                "label": "Full Retained History (Quadratic Growth)"
+              },
+              {
+                "value": "sliding_5",
+                "label": "Sliding Window (Last 5 Turns Only)"
+              },
+              {
+                "value": "summarize",
+                "label": "Compacted Memory Summary + Last 2 Turns"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "rag-document-token-calculator",
+        "name": "RAG Document Chunking & Token Cost Calculator",
+        "category": "ai_helper",
+        "description": "Model document chunking, chunk overlap, vector embedding creation costs, and per-query RAG context injection overhead.",
+        "fields": [
+          {
+            "name": "doc_words",
+            "label": "Total Document Corpus (Words)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 25000,
+            "options": null,
+            "min": 100,
+            "max": 10000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "chunk_size",
+            "label": "Chunk Size (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 512,
+            "options": null,
+            "min": 128,
+            "max": 4096,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "chunk_overlap",
+            "label": "Chunk Overlap (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 64,
+            "options": null,
+            "min": 0,
+            "max": 1024,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "top_k",
+            "label": "Retrieved Chunks Per Query (Top-K)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 5,
+            "options": null,
+            "min": 1,
+            "max": 50,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "embedding_model",
+            "label": "Vector Embedding Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "text-embedding-3-small",
+            "options": [
+              {
+                "value": "text-embedding-3-small",
+                "label": "OpenAI text-embedding-3-small ($0.02 / 1M)"
+              },
+              {
+                "value": "text-embedding-3-large",
+                "label": "OpenAI text-embedding-3-large ($0.13 / 1M)"
+              },
+              {
+                "value": "cohere-embed-v3",
+                "label": "Cohere Embed v3 English ($0.10 / 1M)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "llm_model",
+            "label": "RAG Generation LLM",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o-mini",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "daily_rag_queries",
+            "label": "Daily User RAG Queries",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1000,
+            "options": null,
+            "min": 1,
+            "max": 1000000,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "pdf-token-estimator",
+        "name": "PDF Document Token & Processing Cost Estimator",
+        "category": "ai_helper",
+        "description": "Estimate token counts and API reading costs for PDF files based on page volume, formatting density, and document types.",
+        "fields": [
+          {
+            "name": "pages",
+            "label": "Page Count",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 25,
+            "options": null,
+            "min": 1,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "density",
+            "label": "Page Content Density",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "standard",
+            "options": [
+              {
+                "value": "sparse",
+                "label": "Sparse / Presentation Slides (~250 words/pg)"
+              },
+              {
+                "value": "standard",
+                "label": "Standard Report / Book (~500 words/pg)"
+              },
+              {
+                "value": "dense",
+                "label": "Dense Legal Contract / Financials (~800 words/pg)"
+              },
+              {
+                "value": "academic",
+                "label": "Academic 2-Column Paper (~1,100 words/pg)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "has_tables",
+            "label": "Contains Tables or Code Snippets",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "true",
+            "options": [
+              {
+                "value": "true",
+                "label": "Yes (+25% token density)"
+              },
+              {
+                "value": "false",
+                "label": "No (Plain prose only)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "code-token-estimator",
+        "name": "Codebase & Repository Token Estimator",
+        "category": "ai_helper",
+        "description": "Convert Lines of Code (LOC) and GitHub repositories into LLM token counts across Python, TypeScript, Rust, Go, and C++.",
+        "fields": [
+          {
+            "name": "loc",
+            "label": "Lines of Code (LOC)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1200,
+            "options": null,
+            "min": 10,
+            "max": 5000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "language",
+            "label": "Primary Language",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "python",
+            "options": [
+              {
+                "value": "python",
+                "label": "Python (8.5 tokens/line)"
+              },
+              {
+                "value": "typescript",
+                "label": "TypeScript / React (10.4 tokens/line)"
+              },
+              {
+                "value": "javascript",
+                "label": "JavaScript (9.2 tokens/line)"
+              },
+              {
+                "value": "rust",
+                "label": "Rust (11.8 tokens/line)"
+              },
+              {
+                "value": "go",
+                "label": "Go / Golang (9.0 tokens/line)"
+              },
+              {
+                "value": "java",
+                "label": "Java (12.5 tokens/line)"
+              },
+              {
+                "value": "c_cpp",
+                "label": "C / C++ (11.2 tokens/line)"
+              },
+              {
+                "value": "html_css",
+                "label": "HTML / CSS / Templates (13.0 tokens/line)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "include_comments",
+            "label": "Include Comments & Docstrings",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "true",
+            "options": [
+              {
+                "value": "true",
+                "label": "Yes (Full file contents)"
+              },
+              {
+                "value": "false",
+                "label": "No (Stripped comments)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "claude-3-7-sonnet",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "json-token-calculator",
+        "name": "JSON Data Payload & Structured Output Token Calculator",
+        "category": "ai_helper",
+        "description": "Calculate token overhead for JSON API payloads, database rows, and function call schemas with minification savings.",
+        "fields": [
+          {
+            "name": "objects_count",
+            "label": "Number of JSON Objects / Rows",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 50,
+            "options": null,
+            "min": 1,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "keys_per_object",
+            "label": "Keys / Fields Per Object",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 6,
+            "options": null,
+            "min": 1,
+            "max": 100,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "avg_val_words",
+            "label": "Average Words Per Value",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 500,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "format_style",
+            "label": "JSON Formatting",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "compact",
+            "options": [
+              {
+                "value": "compact",
+                "label": "Minified (No whitespace/indentation)"
+              },
+              {
+                "value": "pretty",
+                "label": "Pretty-Printed (2-space indent & newlines)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "csv-to-prompt-token-estimator",
+        "name": "CSV Dataset to Prompt Token & Density Estimator",
+        "category": "ai_helper",
+        "description": "Compare token consumption when injecting tabular datasets into prompts as CSV, Markdown tables, or JSON arrays.",
+        "fields": [
+          {
+            "name": "rows",
+            "label": "Number of Data Rows",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 500,
+            "options": null,
+            "min": 1,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "columns",
+            "label": "Number of Columns",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8,
+            "options": null,
+            "min": 1,
+            "max": 100,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "avg_cell_chars",
+            "label": "Average Characters Per Cell",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 12,
+            "options": null,
+            "min": 1,
+            "max": 500,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "format_type",
+            "label": "Injection Format",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "csv",
+            "options": [
+              {
+                "value": "csv",
+                "label": "Comma Separated Values (CSV) \u2014 Recommended"
+              },
+              {
+                "value": "markdown_table",
+                "label": "Markdown Pipe Table (| col | col |)"
+              },
+              {
+                "value": "json_array",
+                "label": "JSON Array of Records"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o-mini",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "output-token-reserve-calculator",
+        "name": "Output-Token Reserve & Max Token Safety Calculator",
+        "category": "ai_helper",
+        "description": "Calculate the safe max_tokens setting to prevent truncation and finish_reason='length' errors on large prompt payloads.",
+        "fields": [
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "input_tokens",
+            "label": "Input Context Tokens",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 115000,
+            "options": null,
+            "min": 1,
+            "max": 2000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "desired_output_tokens",
+            "label": "Desired Output Completion Tokens",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4096,
+            "options": null,
+            "min": 16,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "token-per-word-estimator",
+        "name": "Token-per-Word & Multi-Language Ratio Estimator",
+        "category": "ai_helper",
+        "description": "Convert word counts to tokens across English, Bengali, Spanish, German, Chinese, and Arabic with language-specific tokenizer multipliers.",
+        "fields": [
+          {
+            "name": "word_count",
+            "label": "Total Word Count",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2500,
+            "options": null,
+            "min": 1,
+            "max": 10000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "language",
+            "label": "Text Language",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "english",
+            "options": [
+              {
+                "value": "english",
+                "label": "English (1.33 tokens/word)"
+              },
+              {
+                "value": "spanish",
+                "label": "Spanish (1.45 tokens/word)"
+              },
+              {
+                "value": "french",
+                "label": "French (1.50 tokens/word)"
+              },
+              {
+                "value": "german",
+                "label": "German (1.65 tokens/word)"
+              },
+              {
+                "value": "bengali",
+                "label": "Bengali / \u09ac\u09be\u0982\u09b2\u09be (3.10 tokens/word)"
+              },
+              {
+                "value": "hindi",
+                "label": "Hindi / \u0939\u093f\u0928\u094d\u0926\u0940 (2.95 tokens/word)"
+              },
+              {
+                "value": "chinese",
+                "label": "Chinese / \u4e2d\u6587 (2.20 tokens/word)"
+              },
+              {
+                "value": "japanese",
+                "label": "Japanese / \u65e5\u672c\u8a9e (2.35 tokens/word)"
+              },
+              {
+                "value": "arabic",
+                "label": "Arabic / \u0627\u0644\u0639\u0631\u0628\u064a\u0629 (2.80 tokens/word)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "prompt-compression-savings-calculator",
+        "name": "Prompt Compression & LLMLingua ROI Calculator",
+        "category": "ai_helper",
+        "description": "Calculate monthly API cost savings from compressing prompts using LLMLingua, extractive pruning, or semantic summarization.",
+        "fields": [
+          {
+            "name": "original_tokens",
+            "label": "Original Prompt Tokens",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8500,
+            "options": null,
+            "min": 100,
+            "max": 500000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "compression_rate",
+            "label": "Compression Rate (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 45.0,
+            "options": null,
+            "min": 5.0,
+            "max": 80.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "daily_volume",
+            "label": "Daily Query Volume",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 10000,
+            "options": null,
+            "min": 1,
+            "max": 10000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "prompt-length-vs-model-limit-checker",
+        "name": "Prompt Length vs. Context Limit Compatibility Checker",
+        "category": "ai_helper",
+        "description": "Test your prompt length and output headroom across 12 frontier models simultaneously to verify context window compliance.",
+        "fields": [
+          {
+            "name": "prompt_text",
+            "label": "Prompt / Text Payload",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "Analyze this quarterly corporate financial report...",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "output_budget",
+            "label": "Reserved Output Completion Tokens",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2048,
+            "options": null,
+            "min": 64,
+            "max": 64000,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "multi-turn-chat-context-calculator",
+        "name": "Multi-Turn Chat Cumulative Context Calculator",
+        "category": "ai_helper",
+        "description": "Calculate cumulative token expansion and session billing across extended chatbot interactions with turn-by-turn progression.",
+        "fields": [
+          {
+            "name": "conversation_length",
+            "label": "Number of Chat Turns",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 15,
+            "options": null,
+            "min": 2,
+            "max": 100,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "user_words",
+            "label": "Average User Words / Turn",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 35,
+            "options": null,
+            "min": 5,
+            "max": 1000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "asst_words",
+            "label": "Average Assistant Words / Turn",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 180,
+            "options": null,
+            "min": 10,
+            "max": 5000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "system_tokens",
+            "label": "System Prompt Tokens",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 800,
+            "options": null,
+            "min": 0,
+            "max": 50000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "tool-function-call-token-calculator",
+        "name": "Tool & Function Calling Token Overhead Calculator",
+        "category": "ai_helper",
+        "description": "Quantify the hidden token overhead of OpenAPI schemas, function definitions, tool arguments, and tool outputs.",
+        "fields": [
+          {
+            "name": "tools_count",
+            "label": "Number of Registered Tools",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8,
+            "options": null,
+            "min": 1,
+            "max": 100,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "params_per_tool",
+            "label": "Average Parameters per Tool",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 30,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "desc_words",
+            "label": "Average Description Length (Words)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 25,
+            "options": null,
+            "min": 5,
+            "max": 200,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "calls_per_turn",
+            "label": "Tool Invocations per Turn",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2,
+            "options": null,
+            "min": 1,
+            "max": 20,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "image-vision-prompt-token-estimator",
+        "name": "Multimodal Image & Vision Token Calculator",
+        "category": "ai_helper",
+        "description": "Calculate vision token consumption based on image resolution, 512x512 tile patches, and low/high detail modes in GPT-4o and Claude.",
+        "fields": [
+          {
+            "name": "width",
+            "label": "Image Width (Pixels)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1920,
+            "options": null,
+            "min": 64,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "height",
+            "label": "Image Height (Pixels)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1080,
+            "options": null,
+            "min": 64,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "detail_mode",
+            "label": "Detail Fidelity",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "high",
+            "options": [
+              {
+                "value": "high",
+                "label": "High Fidelity (512px Patch Tiles \u2014 170 tokens/tile + 85 base)"
+              },
+              {
+                "value": "low",
+                "label": "Low Fidelity (Fixed 85 tokens flat)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "image_count",
+            "label": "Number of Images",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1,
+            "options": null,
+            "min": 1,
+            "max": 100,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Vision Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "audio-transcription-token-cost-estimator",
+        "name": "Audio Transcription Token & API Cost Estimator",
+        "category": "ai_helper",
+        "description": "Calculate speech-to-text token output and transcription billing across OpenAI Whisper, Gemini Audio, and Deepgram Nova-2.",
+        "fields": [
+          {
+            "name": "audio_minutes",
+            "label": "Audio Duration (Minutes)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 45.0,
+            "options": null,
+            "min": 0.5,
+            "max": 10000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "service",
+            "label": "Transcription Service",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "whisper",
+            "options": [
+              {
+                "value": "whisper",
+                "label": "OpenAI Whisper ($0.006 / minute)"
+              },
+              {
+                "value": "gemini_audio",
+                "label": "Google Gemini 2.0 Audio ($0.003 / minute)"
+              },
+              {
+                "value": "deepgram",
+                "label": "Deepgram Nova-2 ($0.0043 / minute)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_files",
+            "label": "Monthly Audio Files Processed",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 200,
+            "options": null,
+            "min": 1,
+            "max": 1000000,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "prompt-template-variable-expansion-calculator",
+        "name": "Prompt Template Variable Expansion Calculator",
+        "category": "ai_helper",
+        "description": "Estimate token size and batch execution billing when hydrating Jinja, Mustache, or LangChain prompt templates with dynamic database variables.",
+        "fields": [
+          {
+            "name": "template_tokens",
+            "label": "Static Template Size (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 350,
+            "options": null,
+            "min": 10,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "var_count",
+            "label": "Number of Dynamic Variables",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 50,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "avg_var_words",
+            "label": "Average Words per Variable",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 60,
+            "options": null,
+            "min": 1,
+            "max": 5000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "batch_records",
+            "label": "Batch Records to Process",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1000,
+            "options": null,
+            "min": 1,
+            "max": 1000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o-mini",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "prompt-diff-token-change-calculator",
+        "name": "Prompt Diff & Token Variance Financial Impact Calculator",
+        "category": "ai_helper",
+        "description": "Measure exact token variances between prompt revisions (A/B testing) and project annual cloud expenditure changes.",
+        "fields": [
+          {
+            "name": "original_prompt",
+            "label": "Original Prompt (V1)",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "Please summarize the following article in detail...",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "revised_prompt",
+            "label": "Revised Prompt (V2)",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "Summarize the article into 3 concise bullet points:",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_inferences",
+            "label": "Monthly Inference Runs",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 50000,
+            "options": null,
+            "min": 1,
+            "max": 100000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-agent-cost-calculator",
+        "name": "Autonomous AI Agent Execution Cost Calculator",
+        "category": "ai_helper",
+        "description": "Calculate the end-to-end execution cost of multi-step autonomous AI agents including step context accumulation and tool call responses.",
+        "fields": [
+          {
+            "name": "steps",
+            "label": "Reasoning & Action Steps (Iterations)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 6,
+            "options": null,
+            "min": 1,
+            "max": 50,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "tool_calls",
+            "label": "Tool Calls Per Step",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2,
+            "options": null,
+            "min": 0,
+            "max": 10,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "prompt_tokens",
+            "label": "Base Prompt / System Instructions",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2500,
+            "options": null,
+            "min": 100,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "output_tokens",
+            "label": "Generated Thought / Action Tokens / Step",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 450,
+            "options": null,
+            "min": 50,
+            "max": 4000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_runs",
+            "label": "Monthly Agent Executions",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 5000,
+            "options": null,
+            "min": 1,
+            "max": 10000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Agent Backbone Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "claude-3-7-sonnet",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "multi-agent-pipeline-cost-calculator",
+        "name": "Multi-Agent Crew & Pipeline Orchestration Cost Calculator",
+        "category": "ai_helper",
+        "description": "Model the collaborative token spend of multi-agent networks (CrewAI, LangGraph, AutoGen) with inter-agent handoffs and message passing.",
+        "fields": [
+          {
+            "name": "agents_count",
+            "label": "Number of Specialized Agents in Crew",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 2,
+            "max": 20,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "handoffs",
+            "label": "Handoff Rounds / Deliberation Cycles",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3,
+            "options": null,
+            "min": 1,
+            "max": 15,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "handoff_tokens",
+            "label": "Average Context Tokens Per Handoff",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3200,
+            "options": null,
+            "min": 200,
+            "max": 50000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "daily_runs",
+            "label": "Daily Workflow Executions",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 150,
+            "options": null,
+            "min": 1,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Primary Foundation Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "agent-loop-cost-calculator",
+        "name": "Agent Reasoning Loop & Runaway Budget Calculator",
+        "category": "ai_helper",
+        "description": "Evaluate compounding ReAct loop token burn, worst-case runaway execution expenditure, and circuit-breaker threshold efficiency.",
+        "fields": [
+          {
+            "name": "max_loops",
+            "label": "Loop Limit (Max Iterations)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 12,
+            "options": null,
+            "min": 2,
+            "max": 50,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "context_growth",
+            "label": "Context Growth / Loop (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 650,
+            "options": null,
+            "min": 100,
+            "max": 5000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "base_prompt",
+            "label": "Base Prompt & Schema (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3000,
+            "options": null,
+            "min": 500,
+            "max": 30000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "runaway_risk",
+            "label": "Runaway Loop Incidence (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8.0,
+            "options": null,
+            "min": 0.1,
+            "max": 40.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "tool-call-cost-calculator",
+        "name": "Model Context Protocol (MCP) & Tool-Call Cost Calculator",
+        "category": "ai_helper",
+        "description": "Calculate the API cost of executing external tools, web searches, SQL queries, and MCP servers inside LLM workflows.",
+        "fields": [
+          {
+            "name": "invocations",
+            "label": "Monthly Tool Invocations",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 250000,
+            "options": null,
+            "min": 100,
+            "max": 100000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "args_tokens",
+            "label": "Function Arguments Size (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 85,
+            "options": null,
+            "min": 10,
+            "max": 2000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "result_tokens",
+            "label": "Tool Output Response (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 450,
+            "options": null,
+            "min": 20,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "schema_tokens",
+            "label": "Tool Schema Definition Size",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 950,
+            "options": null,
+            "min": 50,
+            "max": 15000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Calling Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o-mini",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "agent-memory-cost-calculator",
+        "name": "Agent Long-Term Memory (Mem0 / Zep) Cost Calculator",
+        "category": "ai_helper",
+        "description": "Estimate monthly storage, embedding, and vector retrieval costs for maintaining user personalization and long-term agent memory.",
+        "fields": [
+          {
+            "name": "active_users",
+            "label": "Active User Profiles",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2500,
+            "options": null,
+            "min": 10,
+            "max": 1000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "memories_per_user",
+            "label": "Memories / Facts Retained per User",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 40,
+            "options": null,
+            "min": 1,
+            "max": 500,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "avg_memory_tokens",
+            "label": "Average Tokens per Memory Entry",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 85,
+            "options": null,
+            "min": 10,
+            "max": 500,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "vector_db",
+            "label": "Vector Database Hosting Tier",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "serverless",
+            "options": [
+              {
+                "value": "serverless",
+                "label": "Serverless (Pinecone / Qdrant Cloud / Pgvector)"
+              },
+              {
+                "value": "dedicated",
+                "label": "Dedicated Pod / Cluster ($95/mo baseline)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "agent-retry-cost-calculator",
+        "name": "Agent Failure & Retry Loop Cost Waste Calculator",
+        "category": "ai_helper",
+        "description": "Measure financial loss from rate limits, malformed JSON outputs, hallucinated tool calls, and automated retry loops.",
+        "fields": [
+          {
+            "name": "total_calls",
+            "label": "Total Monthly API Calls",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 100000,
+            "options": null,
+            "min": 100,
+            "max": 50000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "failure_rate",
+            "label": "Initial Failure / Validation Error Rate (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 12.0,
+            "options": null,
+            "min": 0.5,
+            "max": 50.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "retries",
+            "label": "Average Retries per Failed Call",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "avg_tokens",
+            "label": "Tokens Consumed per Call",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2200,
+            "options": null,
+            "min": 100,
+            "max": 50000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "orchestration-overhead-calculator",
+        "name": "LangChain & Framework Scaffolding Token Overhead Calculator",
+        "category": "ai_helper",
+        "description": "Expose the hidden framework token tax added by LangChain, LlamaIndex, or CrewAI scaffolding versus native direct API calls.",
+        "fields": [
+          {
+            "name": "framework",
+            "label": "Orchestration Framework",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "langchain",
+            "options": [
+              {
+                "value": "langchain",
+                "label": "LangChain / LCEL (~850 tokens scaffolding/call)"
+              },
+              {
+                "value": "crewai",
+                "label": "CrewAI Agents (~1,400 tokens scaffolding/call)"
+              },
+              {
+                "value": "native",
+                "label": "Native Direct API (~75 tokens scaffolding/call)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_runs",
+            "label": "Monthly Executions",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 50000,
+            "options": null,
+            "min": 100,
+            "max": 10000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "user_prompt",
+            "label": "Net User Prompt Size (Tokens)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 400,
+            "options": null,
+            "min": 20,
+            "max": 5000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Target Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "n8n-workflow-ai-cost-calculator",
+        "name": "n8n Workflow AI Node Cost & Execution Budget Calculator",
+        "category": "ai_helper",
+        "description": "Estimate monthly OpenAI, Anthropic, or Gemini API billing for complex n8n automated workflows and autonomous webhooks.",
+        "fields": [
+          {
+            "name": "daily_executions",
+            "label": "Daily Workflow Executions",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1200,
+            "options": null,
+            "min": 1,
+            "max": 1000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "ai_nodes",
+            "label": "AI Nodes Per Execution",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2,
+            "options": null,
+            "min": 1,
+            "max": 20,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "input_tokens",
+            "label": "Average Input Tokens per Node",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1800,
+            "options": null,
+            "min": 50,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "output_tokens",
+            "label": "Average Output Tokens per Node",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 350,
+            "options": null,
+            "min": 20,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Foundation Model in AI Node",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o-mini",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "zapier-make-automation-cost-calculator",
+        "name": "Zapier & Make.com AI Task vs. API Cost Comparison Calculator",
+        "category": "ai_helper",
+        "description": "Break down total automation expenses combining platform operation/task fees with underlying LLM API token consumption.",
+        "fields": [
+          {
+            "name": "platform",
+            "label": "Automation Platform",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "make",
+            "options": [
+              {
+                "value": "make",
+                "label": "Make.com (Integromat)"
+              },
+              {
+                "value": "zapier",
+                "label": "Zapier AI Actions"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_runs",
+            "label": "Monthly Automated Operations",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 15000,
+            "options": null,
+            "min": 100,
+            "max": 5000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "tokens_per_run",
+            "label": "Total Tokens per Run",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1500,
+            "options": null,
+            "min": 50,
+            "max": 50000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "LLM Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o-mini",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "automation-time-savings-calculator",
+        "name": "Automation Time Savings & FTE Reclaimed Labor Calculator",
+        "category": "ai_helper",
+        "description": "Quantify employee hours saved, labor cost avoidance, and Full-Time Equivalent (FTE) workforce unlocked via AI automation.",
+        "fields": [
+          {
+            "name": "tasks_weekly",
+            "label": "Manual Tasks Completed Weekly",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 250,
+            "options": null,
+            "min": 1,
+            "max": 500000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "manual_minutes",
+            "label": "Manual Minutes Spent per Task",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 15.0,
+            "options": null,
+            "min": 1.0,
+            "max": 480.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "hourly_rate",
+            "label": "Employee Hourly Wage / Fully Loaded Cost ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 45.0,
+            "options": null,
+            "min": 10.0,
+            "max": 500.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "success_rate",
+            "label": "Automation Resolution Rate (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 92.0,
+            "options": null,
+            "min": 10.0,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "automation-roi-calculator",
+        "name": "Enterprise Automation ROI & Payback Period Calculator",
+        "category": "ai_helper",
+        "description": "Calculate Net Present Value (NPV), Payback Months, and Return on Investment (ROI) for enterprise workflow automation implementations.",
+        "fields": [
+          {
+            "name": "setup_cost",
+            "label": "Initial Implementation / Dev Cost ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 15000.0,
+            "options": null,
+            "min": 0.0,
+            "max": 5000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_maintenance",
+            "label": "Monthly Cloud & Maintenance Cost ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1200.0,
+            "options": null,
+            "min": 0.0,
+            "max": 500000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "hours_saved",
+            "label": "Labor Hours Saved per Month",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 160.0,
+            "options": null,
+            "min": 1.0,
+            "max": 100000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "hourly_rate",
+            "label": "Blended Employee Hourly Cost ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 55.0,
+            "options": null,
+            "min": 10.0,
+            "max": 1000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "horizon_months",
+            "label": "Investment Horizon (Months)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 12,
+            "options": null,
+            "min": 3,
+            "max": 60,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "human-vs-ai-cost-comparison-calculator",
+        "name": "Human vs. AI Labor Cost & Unit Economics Comparison",
+        "category": "ai_helper",
+        "description": "Compare fully-loaded human employee salaries with 24/7 AI digital workers on cost-per-task, annual spend, and volume throughput.",
+        "fields": [
+          {
+            "name": "salary",
+            "label": "Human Base Salary ($/yr)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 65000.0,
+            "options": null,
+            "min": 10000.0,
+            "max": 1000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "benefits_pct",
+            "label": "Taxes, Benefits & Overhead (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 25.0,
+            "options": null,
+            "min": 0.0,
+            "max": 60.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "human_tasks",
+            "label": "Human Tasks Resolved Daily",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 45,
+            "options": null,
+            "min": 1,
+            "max": 500,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "ai_api_cost",
+            "label": "AI Monthly LLM Token Cost ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 240.0,
+            "options": null,
+            "min": 0.0,
+            "max": 50000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "ai_subscription",
+            "label": "AI Software / Infra Fee ($/mo)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 150.0,
+            "options": null,
+            "min": 0.0,
+            "max": 50000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "ai_tasks",
+            "label": "AI Tasks Processed Daily",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 350,
+            "options": null,
+            "min": 1,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-employee-cost-calculator",
+        "name": "AI Digital Employee & Synthetic Worker Cost Calculator",
+        "category": "ai_helper",
+        "description": "Calculate the all-in monthly operational cost of deploying autonomous AI digital employees (SDR, Support Agent, Research Analyst).",
+        "fields": [
+          {
+            "name": "role",
+            "label": "Synthetic Employee Role",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "sdr",
+            "options": [
+              {
+                "value": "sdr",
+                "label": "Outbound Sales SDR Agent"
+              },
+              {
+                "value": "support",
+                "label": "Customer Support Specialist"
+              },
+              {
+                "value": "analyst",
+                "label": "Financial / Data Analyst"
+              },
+              {
+                "value": "researcher",
+                "label": "Market Intelligence Researcher"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "coverage",
+            "label": "Operating Coverage",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "24_7",
+            "options": [
+              {
+                "value": "24_7",
+                "label": "24/7/365 Always-On (Continuous)"
+              },
+              {
+                "value": "8_5",
+                "label": "8/5 Business Hours Only"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "volume",
+            "label": "Monthly Tasks / Conversations",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 5000,
+            "options": null,
+            "min": 100,
+            "max": 1000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Foundation Brain Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "customer-support-agent-roi-calculator",
+        "name": "Customer Support AI Deflection & Cost-per-Ticket ROI Calculator",
+        "category": "ai_helper",
+        "description": "Model customer support budget reductions, ticket deflection rates, and agent escalation cost avoidance.",
+        "fields": [
+          {
+            "name": "tickets",
+            "label": "Monthly Support Tickets",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8000,
+            "options": null,
+            "min": 100,
+            "max": 5000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "cost_ticket",
+            "label": "Current Cost per Human Ticket ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8.5,
+            "options": null,
+            "min": 1.0,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "deflection_pct",
+            "label": "Target AI Deflection Rate (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 65.0,
+            "options": null,
+            "min": 10.0,
+            "max": 95.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "ai_resolution_cost",
+            "label": "AI Cost per Ingested Ticket ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 0.35,
+            "options": null,
+            "min": 0.01,
+            "max": 5.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ticket-deflection-savings-calculator",
+        "name": "Helpdesk Ticket Deflection & Handle Time (AHT) Savings Calculator",
+        "category": "ai_helper",
+        "description": "Calculate operational cash saved by reducing Average Handle Time (AHT) and deflecting Tier-1 helpdesk tickets with conversational AI.",
+        "fields": [
+          {
+            "name": "volume",
+            "label": "Monthly Ticket Volume",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 15000,
+            "options": null,
+            "min": 100,
+            "max": 10000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "hourly_wage",
+            "label": "Agent Fully-Loaded Hourly Cost ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 24.0,
+            "options": null,
+            "min": 8.0,
+            "max": 150.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "aht_mins",
+            "label": "Average Handle Time (AHT Minutes)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 14.0,
+            "options": null,
+            "min": 1.0,
+            "max": 120.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "deflection_pct",
+            "label": "Deflection Success Rate (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 55.0,
+            "options": null,
+            "min": 5.0,
+            "max": 95.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "sales-ai-sdr-roi-calculator",
+        "name": "Autonomous Sales AI SDR Outbound ROI & Pipeline Calculator",
+        "category": "ai_helper",
+        "description": "Forecast pipeline creation, meetings booked, Closed-Won ARR, and net ROI for automated outbound AI Sales Development Reps (SDRs).",
+        "fields": [
+          {
+            "name": "leads",
+            "label": "Monthly Outbound Accounts Contacted",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2500,
+            "options": null,
+            "min": 100,
+            "max": 500000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "response_pct",
+            "label": "Positive Response Rate (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4.5,
+            "options": null,
+            "min": 0.5,
+            "max": 30.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "demo_pct",
+            "label": "Response to Qualified Demo Rate (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 22.0,
+            "options": null,
+            "min": 1.0,
+            "max": 80.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "close_pct",
+            "label": "Demo to Closed-Won Win Rate (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 18.0,
+            "options": null,
+            "min": 1.0,
+            "max": 80.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "acv",
+            "label": "Average Contract Value / Deal Size ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 12000.0,
+            "options": null,
+            "min": 500.0,
+            "max": 1000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "tooling_cost",
+            "label": "AI SDR Software & LLM Cost ($/mo)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 800.0,
+            "options": null,
+            "min": 50.0,
+            "max": 25000.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "lead-qualification-automation-roi-calc",
+        "name": "Instant Lead Qualification & Speed-to-Lead ROI Calculator",
+        "category": "ai_helper",
+        "description": "Measure revenue gains from sub-minute speed-to-lead response times and CRM data enrichment automation for inbound sales funnels.",
+        "fields": [
+          {
+            "name": "inbound_leads",
+            "label": "Monthly Inbound Leads",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1800,
+            "options": null,
+            "min": 50,
+            "max": 500000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "enrichment_mins",
+            "label": "Manual Triage & Research (Mins/Lead)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8.0,
+            "options": null,
+            "min": 1.0,
+            "max": 60.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "rep_rate",
+            "label": "Sales Rep Fully Loaded Rate ($/hr)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 45.0,
+            "options": null,
+            "min": 15.0,
+            "max": 250.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "dropoff_reduction",
+            "label": "Conversion Lift from Instant Response (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 15.0,
+            "options": null,
+            "min": 1.0,
+            "max": 50.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "deal_size",
+            "label": "Average Deal Size ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8500.0,
+            "options": null,
+            "min": 100.0,
+            "max": 1000000.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "content-automation-roi-calculator",
+        "name": "AI Content Marketing Production Cost & ROI Calculator",
+        "category": "ai_helper",
+        "description": "Compare traditional freelance writing/agency fees with AI-drafted human-edited content pipelines across scale.",
+        "fields": [
+          {
+            "name": "articles",
+            "label": "Monthly Content Pieces / Articles",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 40,
+            "options": null,
+            "min": 1,
+            "max": 5000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "freelancer_rate",
+            "label": "Traditional Writer Rate per Article ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 250.0,
+            "options": null,
+            "min": 20.0,
+            "max": 2500.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "ai_token_cost",
+            "label": "AI Token Cost per Draft ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 0.85,
+            "options": null,
+            "min": 0.05,
+            "max": 20.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "editor_hours",
+            "label": "Human Editorial Review Time (Hours)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 0.75,
+            "options": null,
+            "min": 0.1,
+            "max": 5.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "editor_rate",
+            "label": "Editor Hourly Rate ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 35.0,
+            "options": null,
+            "min": 15.0,
+            "max": 200.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-workflow-break-even-calculator",
+        "name": "AI Workflow Break-Even Volume & Payback Calculator",
+        "category": "ai_helper",
+        "description": "Determine the exact operational transaction volume required to amortize custom AI development and recurring API fees.",
+        "fields": [
+          {
+            "name": "dev_cost",
+            "label": "One-Time Development & Setup Cost ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8500.0,
+            "options": null,
+            "min": 0.0,
+            "max": 1000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_fixed",
+            "label": "Monthly Fixed Infrastructure Fee ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 350.0,
+            "options": null,
+            "min": 0.0,
+            "max": 50000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "manual_cost_task",
+            "label": "Current Manual Cost per Task ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4.5,
+            "options": null,
+            "min": 0.1,
+            "max": 500.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "ai_cost_task",
+            "label": "Automated AI Cost per Task ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 0.22,
+            "options": null,
+            "min": 0.001,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "agent-reliability-sample-size-calculator",
+        "name": "LLM Evaluation & Agent Benchmark Sample Size Calculator",
+        "category": "ai_helper",
+        "description": "Calculate the statistically rigorous test case sample size and API harness cost needed to validate LLM prompt accuracy and safety.",
+        "fields": [
+          {
+            "name": "target_accuracy",
+            "label": "Target Prompt Accuracy Rate (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 95.0,
+            "options": null,
+            "min": 50.0,
+            "max": 99.9,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "confidence_level",
+            "label": "Statistical Confidence Level (%)",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "95.0",
+            "options": [
+              {
+                "value": "90.0",
+                "label": "90% Confidence (Exploratory / Internal)"
+              },
+              {
+                "value": "95.0",
+                "label": "95% Confidence (Production Standard)"
+              },
+              {
+                "value": "99.0",
+                "label": "99% Confidence (Mission-Critical / Healthcare / Fin)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "margin_of_error",
+            "label": "Acceptable Margin of Error (\u00b1 %)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2.5,
+            "options": null,
+            "min": 0.5,
+            "max": 10.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Evaluated Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-project-roi-calculator",
+        "name": "Enterprise AI Initiative ROI & Capital Payback Calculator",
+        "category": "ai_helper",
+        "description": "Comprehensive enterprise CAPEX/OPEX model calculating Multi-Year Net Value, Internal Rate of Return (IRR), and Capital Payback.",
+        "fields": [
+          {
+            "name": "capex",
+            "label": "Initial Implementation & Consulting (CAPEX $)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 60000.0,
+            "options": null,
+            "min": 0.0,
+            "max": 10000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "opex_annual",
+            "label": "Annual Cloud, API & Maintenance (OPEX $)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 18000.0,
+            "options": null,
+            "min": 0.0,
+            "max": 5000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "rev_expansion",
+            "label": "Annual Top-Line Revenue Expansion ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 75000.0,
+            "options": null,
+            "min": 0.0,
+            "max": 50000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "cost_savings",
+            "label": "Annual Operating Cost Reductions ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 45000.0,
+            "options": null,
+            "min": 0.0,
+            "max": 50000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "lifetime_years",
+            "label": "Project Investment Lifespan (Years)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3,
+            "options": null,
+            "min": 1,
+            "max": 10,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-payback-period-calculator",
+        "name": "AI Investment Payback Period & Cash Flow Velocity Calculator",
+        "category": "ai_helper",
+        "description": "Forecast the exact calendar day and monthly milestone when an AI workflow implementation pays back its upfront development capital.",
+        "fields": [
+          {
+            "name": "upfront_investment",
+            "label": "Total Upfront Implementation ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 35000.0,
+            "options": null,
+            "min": 500.0,
+            "max": 10000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_run_cost",
+            "label": "Monthly Recurring API & Cloud Cost ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2200.0,
+            "options": null,
+            "min": 0.0,
+            "max": 500000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_savings",
+            "label": "Monthly Gross Value / Savings Created ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 6800.0,
+            "options": null,
+            "min": 100.0,
+            "max": 2000000.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-total-cost-of-ownership-calculator",
+        "name": "Enterprise AI Total Cost of Ownership (TCO) Calculator",
+        "category": "ai_helper",
+        "description": "Expose the true fully-loaded cost of production AI applications beyond raw token bills, including engineers, evals, and vector databases.",
+        "fields": [
+          {
+            "name": "api_cost_annual",
+            "label": "Raw Foundation Model API Invoices ($/yr)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 28000.0,
+            "options": null,
+            "min": 100.0,
+            "max": 10000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "cloud_infra",
+            "label": "Vector DB, Caching & Observability ($/yr)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8500.0,
+            "options": null,
+            "min": 0.0,
+            "max": 2000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "dev_maintenance",
+            "label": "Engineering Maintenance & Prompt Tuning ($/yr)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 35000.0,
+            "options": null,
+            "min": 0.0,
+            "max": 5000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "evals_governance",
+            "label": "Safety, Compliance & LLM Evals ($/yr)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 6000.0,
+            "options": null,
+            "min": 0.0,
+            "max": 1000000.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-gross-margin-calculator",
+        "name": "AI SaaS Gross Margin & COGS Unit Economics Calculator",
+        "category": "ai_helper",
+        "description": "Model Gross Margins, Cost of Goods Sold (COGS), and per-subscriber profitability across AI-native subscription SaaS tiers.",
+        "fields": [
+          {
+            "name": "plan_price",
+            "label": "Monthly Subscription Price ($/user)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 79.0,
+            "options": null,
+            "min": 1.0,
+            "max": 5000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "queries_user",
+            "label": "Queries / Prompts per User Monthly",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 250,
+            "options": null,
+            "min": 1,
+            "max": 50000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "tokens_query",
+            "label": "Average Tokens per Query",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1800,
+            "options": null,
+            "min": 50,
+            "max": 50000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "subscribers",
+            "label": "Active Paying Subscribers",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1200,
+            "options": null,
+            "min": 1,
+            "max": 1000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Underlying Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o-mini",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-pricing-calculator-for-saas-founders",
+        "name": "AI SaaS Pricing Strategy & Margin Target Calculator",
+        "category": "ai_helper",
+        "description": "Determine recommended consumer and enterprise B2B subscription price points based on target gross margins and user token consumption quotas.",
+        "fields": [
+          {
+            "name": "target_margin",
+            "label": "Target Gross Margin (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 75.0,
+            "options": null,
+            "min": 20.0,
+            "max": 95.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "expected_tokens",
+            "label": "Expected Tokens / User / Month",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 1500000,
+            "options": null,
+            "min": 10000,
+            "max": 100000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "infra_user",
+            "label": "Fixed Cloud Infra per User ($/mo)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3.5,
+            "options": null,
+            "min": 0.1,
+            "max": 50.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "model",
+            "label": "Powering Model",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "gpt-4o",
+            "options": [
+              {
+                "value": "gpt-4o",
+                "label": "OpenAI: OpenAI GPT-4o ($2.50 in / $10.00 out)"
+              },
+              {
+                "value": "gpt-4o-mini",
+                "label": "OpenAI: OpenAI GPT-4o-mini ($0.15 in / $0.60 out)"
+              },
+              {
+                "value": "o1",
+                "label": "OpenAI: OpenAI o1 Reasoning ($15.00 in / $60.00 out)"
+              },
+              {
+                "value": "o3-mini",
+                "label": "OpenAI: OpenAI o3-mini ($1.10 in / $4.40 out)"
+              },
+              {
+                "value": "claude-3-7-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.7 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-sonnet",
+                "label": "Anthropic: Anthropic Claude 3.5 Sonnet ($3.00 in / $15.00 out)"
+              },
+              {
+                "value": "claude-3-5-haiku",
+                "label": "Anthropic: Anthropic Claude 3.5 Haiku ($0.80 in / $4.00 out)"
+              },
+              {
+                "value": "gemini-2-flash",
+                "label": "Google: Google Gemini 2.0 Flash ($0.10 in / $0.40 out)"
+              },
+              {
+                "value": "gemini-1-5-pro",
+                "label": "Google: Google Gemini 1.5 Pro ($1.25 in / $5.00 out)"
+              },
+              {
+                "value": "deepseek-r1",
+                "label": "DeepSeek: DeepSeek R1 Reasoning ($0.55 in / $2.19 out)"
+              },
+              {
+                "value": "deepseek-v3",
+                "label": "DeepSeek: DeepSeek V3 ($0.14 in / $0.28 out)"
+              },
+              {
+                "value": "llama-3-3-70b",
+                "label": "Meta (Groq/Together): Meta Llama 3.3 70B ($0.59 in / $0.79 out)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-readiness-score-calculator",
+        "name": "Enterprise AI Maturity & Readiness Assessment Score",
+        "category": "ai_helper",
+        "description": "Audit enterprise technical readiness, data hygiene, governance frameworks, and change management posture for AI adoption.",
+        "fields": [
+          {
+            "name": "data_quality",
+            "label": "Data Quality & Centralization (1=Siloed, 5=Clean API-Ready)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "tech_stack",
+            "label": "Cloud & Modern API Architecture (1=Legacy On-Prem, 5=Modern Cloud)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "leadership",
+            "label": "Executive Sponsorship & Budget (1=None, 5=Dedicated C-Suite)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 5,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "governance",
+            "label": "Security, Privacy & Compliance (1=Ad-hoc, 5=Robust Audited)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "change_mgmt",
+            "label": "Team Cultural Willingness (1=Resistant, 5=Highly Enthusiastic)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "build-vs-buy-ai-calculator",
+        "name": "In-House Build vs. Commercial Buy AI Decision Calculator",
+        "category": "ai_helper",
+        "description": "Evaluate 3-Year Total Cost of Ownership between in-house custom LLM fine-tuning/hosting and managed commercial enterprise vendor APIs.",
+        "fields": [
+          {
+            "name": "build_engineers",
+            "label": "Engineers Required to Build In-House",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3,
+            "options": null,
+            "min": 1,
+            "max": 50,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "engineer_salary",
+            "label": "Average Engineer Salary & Burden ($/yr)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 160000.0,
+            "options": null,
+            "min": 40000.0,
+            "max": 500000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "build_months",
+            "label": "Development Time to Production (Months)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 6,
+            "options": null,
+            "min": 1,
+            "max": 36,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "gpu_cost",
+            "label": "Dedicated GPU Cloud Hosting ($/mo)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3500.0,
+            "options": null,
+            "min": 0.0,
+            "max": 100000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "vendor_annual",
+            "label": "Commercial Vendor Subscription ($/yr)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 45000.0,
+            "options": null,
+            "min": 1000.0,
+            "max": 2000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "vendor_setup",
+            "label": "Vendor Setup / Professional Services ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 12000.0,
+            "options": null,
+            "min": 0.0,
+            "max": 500000.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-productivity-savings-calculator",
+        "name": "Workforce AI Productivity & Copilot Seat ROI Calculator",
+        "category": "ai_helper",
+        "description": "Calculate organization-wide productivity gains, reclaimed hours per employee, and ROI on GitHub Copilot / ChatGPT Enterprise seats.",
+        "fields": [
+          {
+            "name": "workers",
+            "label": "Number of Knowledge Workers / Engineers",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 80,
+            "options": null,
+            "min": 1,
+            "max": 100000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "avg_comp",
+            "label": "Average Annual Total Compensation ($)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 95000.0,
+            "options": null,
+            "min": 20000.0,
+            "max": 500000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "gain_pct",
+            "label": "Productivity / Efficiency Improvement (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 18.0,
+            "options": null,
+            "min": 1.0,
+            "max": 60.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "license_cost",
+            "label": "AI Assistant Seat Price ($/seat/month)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 30.0,
+            "options": null,
+            "min": 5.0,
+            "max": 250.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-implementation-risk-score-calculator",
+        "name": "AI Project Risk & Hallucination Exposure Assessment Score",
+        "category": "ai_helper",
+        "description": "Quantify business liability, regulatory exposure (EU AI Act, HIPAA), and hallucination risk across enterprise LLM deployments.",
+        "fields": [
+          {
+            "name": "domain",
+            "label": "Domain Criticality (1=Creative, 5=Legal / Healthcare / Banking)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "tolerance",
+            "label": "Hallucination Tolerance (1=Zero Tolerance, 5=High Creative)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "regulatory",
+            "label": "Regulatory Exposure (1=None, 5=Heavy PII / HIPAA / GDPR)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "data_sens",
+            "label": "Proprietary Data Sensitivity (1=Public, 5=Core IP / Customer PII)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 5,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ai-vendor-lock-in-risk-calculator",
+        "name": "AI Vendor Lock-in Risk & Switching Cost Calculator",
+        "category": "ai_helper",
+        "description": "Evaluate dependency on proprietary model features (OpenAI Assistants, Anthropic Artifacts) and estimate migration engineering capital.",
+        "fields": [
+          {
+            "name": "features",
+            "label": "Proprietary Feature Usage (1=Standard Chat, 5=Deep Assistants API)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "tightness",
+            "label": "SDK Coupling (1=OpenAI-Compatible Proxy, 5=Vendor SDK Hardcoded)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 3,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "portability",
+            "label": "Prompt Portability (1=Universal Standard, 5=Hyper-Tuned to Single Model)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 2,
+            "options": null,
+            "min": 1,
+            "max": 5,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "migration_hours",
+            "label": "Estimated Engineering Hours to Refactor",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 240,
+            "options": null,
+            "min": 20,
+            "max": 5000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "dev_rate",
+            "label": "Senior Developer Rate ($/hr)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 90.0,
+            "options": null,
+            "min": 25.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          }
+        ]
       }
     ]
-  },
-  "total": 675
+  }
 }
