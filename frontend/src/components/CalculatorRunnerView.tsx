@@ -383,11 +383,7 @@ export default function CalculatorRunnerView({
     // Clean initial state: fields start empty by default with informative placeholders
     const init: Record<string, string> = {}
     for (const f of calc.fields) {
-      if (f.default != null && f.default !== "") {
-        init[f.name] = String(f.default)
-      } else {
-        init[f.name] = ""
-      }
+      init[f.name] = ""
     }
     if (typeof window !== "undefined") {
       try {

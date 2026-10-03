@@ -201,6 +201,10 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
             `#inf-${normHyphen}`,
             `#${normHyphen}-input`,
             `#input-${normHyphen}`,
+            // Common aliases (e.g. home-price -> principal-input)
+            ...(normHyphen.includes("price") || normHyphen.includes("amount") ? ['#principal-input', '#principal', '#loan-amount', '#amount-input'] : []),
+            ...(normHyphen.includes("rate") ? ['#rate-input', '#interest-rate-input', '#apr-input', '#rate'] : []),
+            ...(normHyphen.includes("term") || normHyphen.includes("year") ? ['#term-input', '#loan-term-input', '#years-input', '#term'] : []),
             `input[id*="${f.name}"]`,
             `select[id*="${f.name}"]`,
             `input[id*="${normUnder}"]`,
