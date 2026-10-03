@@ -1810,6 +1810,7 @@ export default function ImonAdminView() {
                     <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Total Unique IPs</TableCell>
                     <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Total Requests</TableCell>
                     <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Bot & Crawler Hits</TableCell>
+                    <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Top Countries</TableCell>
                     <TableCell sx={{ fontWeight: 800, color: "#475569", py: 1.5 }}>Top Pages</TableCell>
                   </TableRow>
                 </TableHead>
@@ -1848,6 +1849,24 @@ export default function ImonAdminView() {
                       </TableCell>
                       <TableCell sx={{ fontWeight: 600, color: "#64748b" }}>
                         {row.botRequests.toLocaleString()}
+                      </TableCell>
+                      <TableCell sx={{ maxWidth: 220 }}>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                          {(row.topCountries || []).slice(0, 3).map((c, cIdx) => (
+                            <Chip
+                              key={cIdx}
+                              size="small"
+                              label={`${c.code} (${c.count})`}
+                              sx={{
+                                fontSize: 10,
+                                height: 20,
+                                bgcolor: "#f0fdf4",
+                                color: "#166534",
+                                fontWeight: 700,
+                              }}
+                            />
+                          ))}
+                        </Box>
                       </TableCell>
                       <TableCell sx={{ maxWidth: 300 }}>
                         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
