@@ -6,11 +6,11 @@ export const revalidate = 86400
 
 export async function GET() {
   const content = `# TryCalc (https://trycalc.net)
-> TryCalc is a free, high-performance web platform providing 724 deterministic online calculators across finance, health, fitness, construction, unit conversions, date & time, real estate, education, AI helper, and mathematics.
+> TryCalc is a free, high-performance web platform providing 725 deterministic online calculators across finance, health, fitness, construction, unit conversions, date & time, real estate, education, AI helper, and mathematics.
 
 ## Overview
 - **Domain**: ${SITE_URL}
-- **Tool Count**: 724 Free Deterministic Calculators
+- **Tool Count**: 725 Free Deterministic Calculators
 - **Access**: 100% Free, No Sign-up, Real-time execution
 - **Format**: All calculator tools take explicit parameters and return instant, accurate mathematical results.
 

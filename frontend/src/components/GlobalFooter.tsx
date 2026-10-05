@@ -14,7 +14,7 @@ import CalculatorLogoIcon from "@/components/CalculatorLogoIcon"
 import { listCalculators } from "@/lib/calculator-api"
 
 export default function GlobalFooter() {
-  const [total, setTotal] = useState(724)
+  const [total, setTotal] = useState(725)
 
   useEffect(() => {
     listCalculators()

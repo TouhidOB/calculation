@@ -104,6 +104,7 @@ import TrendingDown from "@mui/icons-material/TrendingDown"
 import TrendingUp from "@mui/icons-material/TrendingUp"
 import Tv from "@mui/icons-material/Tv"
 import VerifiedUser from "@mui/icons-material/VerifiedUser"
+import Videocam from "@mui/icons-material/Videocam"
 import ViewInAr from "@mui/icons-material/ViewInAr"
 import WaterDamage from "@mui/icons-material/WaterDamage"
 import WaterDrop from "@mui/icons-material/WaterDrop"
@@ -214,6 +215,7 @@ export const ICON_REGISTRY: Record<string, React.ComponentType<SvgIconProps>> = 
   TrendingUp,
   Tv,
   VerifiedUser,
+  Videocam,
   ViewInAr,
   WaterDamage,
   WaterDrop,

@@ -9,7 +9,7 @@ export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: {
-    absolute: "TryCalc (2026) — 724 Free Online Calculators | Fast, Accurate & Modern",
+    absolute: "TryCalc (2026) — 725 Free Online Calculators | Fast, Accurate & Modern",
   },
   description:
     "Free online calculators (2026) for finance, mortgage, health, fitness, construction, math, conversions, and AI. Fast, accurate, instant results with zero signup.",
@@ -39,7 +39,7 @@ async function getCalculators(): Promise<{ categories: CategoryMap; total: numbe
 
   return {
     categories: fallbackData.categories as unknown as CategoryMap,
-    total: fallbackData.total || 724,
+    total: fallbackData.total || 725,
   }
 }
 

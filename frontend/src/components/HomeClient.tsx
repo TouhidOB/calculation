@@ -491,7 +491,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
 
             {/* Category Quick Count Badge */}
             <Chip
-              label={`${total || 724} Tools`}
+              label={`${total || 725} Tools`}
               size="small"
               color="primary"
               variant="outlined"
@@ -581,7 +581,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                     TryCalc — Free Calculators for Everyday Decisions
                   </Typography>
                   <Typography variant="body1" sx={{ color: "#475569", fontSize: 16, lineHeight: 1.6, mb: 3 }}>
-                    Access {total || 724}+ high-precision tools across 11 categories: Mortgage, Loans, Health & BMI,
+                    Access {total || 725}+ high-precision tools across 11 categories: Mortgage, Loans, Health & BMI,
                     Construction, Currency, Date & Time, AI Helper, and Unit Converters.
                   </Typography>
 

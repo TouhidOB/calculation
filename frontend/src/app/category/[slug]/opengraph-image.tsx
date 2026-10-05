@@ -100,7 +100,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           <div style={{ display: "flex", gap: "28px", fontSize: "20px", fontWeight: "600", color: "#cbd5e1" }}>
             <span>⚡ Real-time Execution</span>
             <span>✓ 64-Bit Arithmetic</span>
-            <span>🌐 724 Total Online Tools</span>
+            <span>🌐 725 Total Online Tools</span>
           </div>
           <div style={{ fontSize: "26px", fontWeight: "900", color: "#38bdf8", letterSpacing: "1px" }}>
             trycalc.net

@@ -1,5 +1,5 @@
 {
-  "total": 724,
+  "total": 725,
   "categories": {
     "finance": [
       {
@@ -1725,9 +1725,9 @@
       },
       {
         "id": "hourly-to-salary-converter",
-        "name": "Hourly \u2192 Annual Salary Converter",
+        "name": "Hourly → Annual Salary Converter",
         "category": "finance",
-        "description": "Hourly \u2192 Annual Salary Converter",
+        "description": "Hourly → Annual Salary Converter",
         "fields": [
           {
             "name": "h2s-wage",
@@ -2376,24 +2376,24 @@
             "default": null,
             "options": [
               {
-                "value": "1 \u2014 Very Stable",
-                "label": "1 \u2014 Very Stable"
+                "value": "1 — Very Stable",
+                "label": "1 — Very Stable"
               },
               {
                 "value": "2",
                 "label": "2"
               },
               {
-                "value": "3 \u2014 Moderate",
-                "label": "3 \u2014 Moderate"
+                "value": "3 — Moderate",
+                "label": "3 — Moderate"
               },
               {
                 "value": "4",
                 "label": "4"
               },
               {
-                "value": "5 \u2014 Unstable",
-                "label": "5 \u2014 Unstable"
+                "value": "5 — Unstable",
+                "label": "5 — Unstable"
               }
             ],
             "min": null,
@@ -2494,9 +2494,9 @@
       },
       {
         "id": "salary-to-hourly-converter",
-        "name": "Salary \u2192 Hourly Converter",
+        "name": "Salary → Hourly Converter",
         "category": "finance",
-        "description": "Salary \u2192 Hourly Converter",
+        "description": "Salary → Hourly Converter",
         "fields": [
           {
             "name": "s2h-salary",
@@ -2954,7 +2954,7 @@
           },
           {
             "name": "taxRate",
-            "label": "Tax Rate (%) \u2014 Enter local value",
+            "label": "Tax Rate (%) — Enter local value",
             "type": "number",
             "unit": "",
             "required": true,
@@ -8879,7 +8879,7 @@
           },
           {
             "name": "standard_deviation",
-            "label": "Standard Deviation (\u03c3_a)",
+            "label": "Standard Deviation (σ_a)",
             "type": "number",
             "unit": "",
             "required": true,
@@ -11522,9 +11522,9 @@
       },
       {
         "id": "if-window-planner",
-        "name": "\u23f0 Intermittent Fasting Window Planner",
+        "name": "⏰ Intermittent Fasting Window Planner",
         "category": "health",
-        "description": "\u23f0 Intermittent Fasting Window Planner",
+        "description": "⏰ Intermittent Fasting Window Planner",
         "fields": [
           {
             "name": "protocol_select",
@@ -12175,9 +12175,9 @@
       },
       {
         "id": "race-pace-planner",
-        "name": "\u23f1 Race Pace Strategy Planner",
+        "name": "⏱ Race Pace Strategy Planner",
         "category": "health",
-        "description": "\u23f1 Race Pace Strategy Planner",
+        "description": "⏱ Race Pace Strategy Planner",
         "fields": [
           {
             "name": "race_distance",
@@ -12402,9 +12402,9 @@
       },
       {
         "id": "running-pace-calculator",
-        "name": "\u23f1 Running Pace Calculator",
+        "name": "⏱ Running Pace Calculator",
         "category": "health",
-        "description": "\u23f1 Running Pace Calculator",
+        "description": "⏱ Running Pace Calculator",
         "fields": [
           {
             "name": "distance",
@@ -14845,7 +14845,7 @@
             "name": "pitch",
             "label": "Roof Pitch",
             "type": "number",
-            "unit": "\u00b0",
+            "unit": "°",
             "required": true,
             "default": 30,
             "options": null,
@@ -19632,15 +19632,15 @@
               },
               {
                 "value": "subtract",
-                "label": "Subtract (\u2212)"
+                "label": "Subtract (−)"
               },
               {
                 "value": "multiply",
-                "label": "Multiply (\u00d7)"
+                "label": "Multiply (×)"
               },
               {
                 "value": "divide",
-                "label": "Divide (\u00f7)"
+                "label": "Divide (÷)"
               },
               {
                 "value": "power",
@@ -19717,7 +19717,7 @@
         "id": "quadratic",
         "name": "Quadratic Solver",
         "category": "basic",
-        "description": "Roots of ax\u00b2 + bx + c = 0.",
+        "description": "Roots of ax² + bx + c = 0.",
         "fields": [
           {
             "name": "a",
@@ -20987,9 +20987,9 @@
       },
       {
         "id": "pi-digit-finder",
-        "name": "Pi (\u03c0) Digit Finder",
+        "name": "Pi (π) Digit Finder",
         "category": "basic",
-        "description": "Pi (\u03c0) Digit Finder",
+        "description": "Pi (π) Digit Finder",
         "fields": [
           {
             "name": "position-input",
@@ -21230,9 +21230,9 @@
       },
       {
         "id": "radical-simplifier",
-        "name": "Radical Simplifier (\u221aN)",
+        "name": "Radical Simplifier (√N)",
         "category": "basic",
-        "description": "Radical Simplifier (\u221aN)",
+        "description": "Radical Simplifier (√N)",
         "fields": [
           {
             "name": "radicand-n",
@@ -21460,9 +21460,9 @@
       },
       {
         "id": "standard-deviation-calculator",
-        "name": "Standard Deviation Calculator (\u03c3)",
+        "name": "Standard Deviation Calculator (σ)",
         "category": "basic",
-        "description": "Standard Deviation Calculator (\u03c3)",
+        "description": "Standard Deviation Calculator (σ)",
         "fields": [
           {
             "name": "data-input",
@@ -22871,9 +22871,9 @@
       },
       {
         "id": "acceleration-converter",
-        "name": "Acceleration Converter (m/s\u00b2, ft/s\u00b2, g)",
+        "name": "Acceleration Converter (m/s², ft/s², g)",
         "category": "conversion",
-        "description": "Acceleration Converter (m/s\u00b2, ft/s\u00b2, g)",
+        "description": "Acceleration Converter (m/s², ft/s², g)",
         "fields": [
           {
             "name": "inputValue",
@@ -22963,11 +22963,11 @@
             "type": "select",
             "unit": "",
             "required": true,
-            "default": "Degrees (\u00b0)",
+            "default": "Degrees (°)",
             "options": [
               {
-                "value": "Degrees (\u00b0)",
-                "label": "Degrees (\u00b0)"
+                "value": "Degrees (°)",
+                "label": "Degrees (°)"
               },
               {
                 "value": "Radians (rad)",
@@ -22989,7 +22989,7 @@
           },
           {
             "name": "dmsDegrees",
-            "label": "Degrees (\u00b0)",
+            "label": "Degrees (°)",
             "type": "number",
             "unit": "",
             "required": true,
@@ -23002,7 +23002,7 @@
           },
           {
             "name": "dmsMinutes",
-            "label": "Minutes (\u2032)",
+            "label": "Minutes (′)",
             "type": "number",
             "unit": "",
             "required": true,
@@ -23015,7 +23015,7 @@
           },
           {
             "name": "dmsSeconds",
-            "label": "Seconds (\u2033)",
+            "label": "Seconds (″)",
             "type": "number",
             "unit": "",
             "required": true,
@@ -23232,12 +23232,12 @@
             "default": null,
             "options": [
               {
-                "value": "English Text \u2192 Braille",
-                "label": "English Text \u2192 Braille"
+                "value": "English Text → Braille",
+                "label": "English Text → Braille"
               },
               {
-                "value": "Braille \u2192 English Text",
-                "label": "Braille \u2192 English Text"
+                "value": "Braille → English Text",
+                "label": "Braille → English Text"
               }
             ],
             "min": null,
@@ -23275,12 +23275,12 @@
             "default": null,
             "options": [
               {
-                "value": "Enzyme Units (U) \u2192 Katal (kat)",
-                "label": "Enzyme Units (U) \u2192 Katal (kat)"
+                "value": "Enzyme Units (U) → Katal (kat)",
+                "label": "Enzyme Units (U) → Katal (kat)"
               },
               {
-                "value": "Katal (kat) \u2192 Enzyme Units (U)",
-                "label": "Katal (kat) \u2192 Enzyme Units (U)"
+                "value": "Katal (kat) → Enzyme Units (U)",
+                "label": "Katal (kat) → Enzyme Units (U)"
               }
             ],
             "min": null,
@@ -23457,9 +23457,9 @@
       },
       {
         "id": "density-converter",
-        "name": "Density Converter (kg/m\u00b3, g/cm\u00b3, lb/ft\u00b3)",
+        "name": "Density Converter (kg/m³, g/cm³, lb/ft³)",
         "category": "conversion",
-        "description": "Density Converter (kg/m\u00b3, g/cm\u00b3, lb/ft\u00b3)",
+        "description": "Density Converter (kg/m³, g/cm³, lb/ft³)",
         "fields": [
           {
             "name": "inputValue",
@@ -23707,12 +23707,12 @@
             "default": null,
             "options": [
               {
-                "value": "Coulombs (C) \u2192 Ampere-Hours (Ah)",
-                "label": "Coulombs (C) \u2192 Ampere-Hours (Ah)"
+                "value": "Coulombs (C) → Ampere-Hours (Ah)",
+                "label": "Coulombs (C) → Ampere-Hours (Ah)"
               },
               {
-                "value": "Ampere-Hours (Ah) \u2192 Coulombs (C)",
-                "label": "Ampere-Hours (Ah) \u2192 Coulombs (C)"
+                "value": "Ampere-Hours (Ah) → Coulombs (C)",
+                "label": "Ampere-Hours (Ah) → Coulombs (C)"
               }
             ],
             "min": null,
@@ -23745,9 +23745,9 @@
       },
       {
         "id": "flow-rate-converter",
-        "name": "Flow Rate Converter (GPM, L/s, m\u00b3/h)",
+        "name": "Flow Rate Converter (GPM, L/s, m³/h)",
         "category": "conversion",
-        "description": "Flow Rate Converter (GPM, L/s, m\u00b3/h)",
+        "description": "Flow Rate Converter (GPM, L/s, m³/h)",
         "fields": [
           {
             "name": "inputValue",
@@ -23818,12 +23818,12 @@
             "default": null,
             "options": [
               {
-                "value": "Newton (N) \u2192 Pound-force (lbf)",
-                "label": "Newton (N) \u2192 Pound-force (lbf)"
+                "value": "Newton (N) → Pound-force (lbf)",
+                "label": "Newton (N) → Pound-force (lbf)"
               },
               {
-                "value": "Pound-force (lbf) \u2192 Newton (N)",
-                "label": "Pound-force (lbf) \u2192 Newton (N)"
+                "value": "Pound-force (lbf) → Newton (N)",
+                "label": "Pound-force (lbf) → Newton (N)"
               }
             ],
             "min": null,
@@ -24049,12 +24049,12 @@
             "default": null,
             "options": [
               {
-                "value": "Candela (cd) \u2192 Candlepower (CP)",
-                "label": "Candela (cd) \u2192 Candlepower (CP)"
+                "value": "Candela (cd) → Candlepower (CP)",
+                "label": "Candela (cd) → Candlepower (CP)"
               },
               {
-                "value": "Candlepower (CP) \u2192 Candela (cd)",
-                "label": "Candlepower (CP) \u2192 Candela (cd)"
+                "value": "Candlepower (CP) → Candela (cd)",
+                "label": "Candlepower (CP) → Candela (cd)"
               }
             ],
             "min": null,
@@ -24255,9 +24255,9 @@
       },
       {
         "id": "moment-of-inertia-converter",
-        "name": "Moment of Inertia Converter (kg\u22c5m\u00b2 to g\u22c5cm\u00b2 to lbm\u22c5ft\u00b2)",
+        "name": "Moment of Inertia Converter (kg⋅m² to g⋅cm² to lbm⋅ft²)",
         "category": "conversion",
-        "description": "Moment of Inertia Converter (kg\u22c5m\u00b2 to g\u22c5cm\u00b2 to lbm\u22c5ft\u00b2)",
+        "description": "Moment of Inertia Converter (kg⋅m² to g⋅cm² to lbm⋅ft²)",
         "fields": [
           {
             "name": "inputValue",
@@ -24281,16 +24281,16 @@
             "default": null,
             "options": [
               {
-                "value": "Kilogram meter squared (kg\u00b7m^2)",
-                "label": "Kilogram meter squared (kg\u00b7m^2)"
+                "value": "Kilogram meter squared (kg·m^2)",
+                "label": "Kilogram meter squared (kg·m^2)"
               },
               {
-                "value": "Gram centimeter squared (g\u00b7cm^2)",
-                "label": "Gram centimeter squared (g\u00b7cm^2)"
+                "value": "Gram centimeter squared (g·cm^2)",
+                "label": "Gram centimeter squared (g·cm^2)"
               },
               {
-                "value": "Pound-mass foot squared (lbm\u00b7ft^2)",
-                "label": "Pound-mass foot squared (lbm\u00b7ft^2)"
+                "value": "Pound-mass foot squared (lbm·ft^2)",
+                "label": "Pound-mass foot squared (lbm·ft^2)"
               }
             ],
             "min": null,
@@ -24328,12 +24328,12 @@
             "default": null,
             "options": [
               {
-                "value": "Text \u2192 Morse Code",
-                "label": "Text \u2192 Morse Code"
+                "value": "Text → Morse Code",
+                "label": "Text → Morse Code"
               },
               {
-                "value": "Morse Code \u2192 Text",
-                "label": "Morse Code \u2192 Text"
+                "value": "Morse Code → Text",
+                "label": "Morse Code → Text"
               }
             ],
             "min": null,
@@ -24602,12 +24602,12 @@
             "default": null,
             "options": [
               {
-                "value": "Sieverts (Sv) \u2192 Rems (Rem)",
-                "label": "Sieverts (Sv) \u2192 Rems (Rem)"
+                "value": "Sieverts (Sv) → Rems (Rem)",
+                "label": "Sieverts (Sv) → Rems (Rem)"
               },
               {
-                "value": "Rems (Rem) \u2192 Sieverts (Sv)",
-                "label": "Rems (Rem) \u2192 Sieverts (Sv)"
+                "value": "Rems (Rem) → Sieverts (Sv)",
+                "label": "Rems (Rem) → Sieverts (Sv)"
               }
             ],
             "min": null,
@@ -24645,12 +24645,12 @@
             "default": null,
             "options": [
               {
-                "value": "Becquerel (Bq) \u2192 Curie (Ci)",
-                "label": "Becquerel (Bq) \u2192 Curie (Ci)"
+                "value": "Becquerel (Bq) → Curie (Ci)",
+                "label": "Becquerel (Bq) → Curie (Ci)"
               },
               {
-                "value": "Curie (Ci) \u2192 Becquerel (Bq)",
-                "label": "Curie (Ci) \u2192 Becquerel (Bq)"
+                "value": "Curie (Ci) → Becquerel (Bq)",
+                "label": "Curie (Ci) → Becquerel (Bq)"
               }
             ],
             "min": null,
@@ -24743,12 +24743,12 @@
             "default": null,
             "options": [
               {
-                "value": "Decimal \u2192 Roman",
-                "label": "Decimal \u2192 Roman"
+                "value": "Decimal → Roman",
+                "label": "Decimal → Roman"
               },
               {
-                "value": "Roman \u2192 Decimal",
-                "label": "Roman \u2192 Decimal"
+                "value": "Roman → Decimal",
+                "label": "Roman → Decimal"
               }
             ],
             "min": null,
@@ -24914,12 +24914,12 @@
             "default": null,
             "options": [
               {
-                "value": "Newton per Meter (N/m) \u2192 Dyne per Centimeter (dyne/cm)",
-                "label": "Newton per Meter (N/m) \u2192 Dyne per Centimeter (dyne/cm)"
+                "value": "Newton per Meter (N/m) → Dyne per Centimeter (dyne/cm)",
+                "label": "Newton per Meter (N/m) → Dyne per Centimeter (dyne/cm)"
               },
               {
-                "value": "Dyne per Centimeter (dyne/cm) \u2192 Newton per Meter (N/m)",
-                "label": "Dyne per Centimeter (dyne/cm) \u2192 Newton per Meter (N/m)"
+                "value": "Dyne per Centimeter (dyne/cm) → Newton per Meter (N/m)",
+                "label": "Dyne per Centimeter (dyne/cm) → Newton per Meter (N/m)"
               }
             ],
             "min": null,
@@ -25083,12 +25083,12 @@
             "default": null,
             "options": [
               {
-                "value": "Newton-Meters (N\u00b7m) \u2192 Foot-Pounds (ft\u00b7lb)",
-                "label": "Newton-Meters (N\u00b7m) \u2192 Foot-Pounds (ft\u00b7lb)"
+                "value": "Newton-Meters (N·m) → Foot-Pounds (ft·lb)",
+                "label": "Newton-Meters (N·m) → Foot-Pounds (ft·lb)"
               },
               {
-                "value": "Foot-Pounds (ft\u00b7lb) \u2192 Newton-Meters (N\u00b7m)",
-                "label": "Foot-Pounds (ft\u00b7lb) \u2192 Newton-Meters (N\u00b7m)"
+                "value": "Foot-Pounds (ft·lb) → Newton-Meters (N·m)",
+                "label": "Foot-Pounds (ft·lb) → Newton-Meters (N·m)"
               }
             ],
             "min": null,
@@ -25259,8 +25259,8 @@
             "default": null,
             "options": [
               {
-                "value": "Pascal-seconds (Pa \u00b7 s)",
-                "label": "Pascal-seconds (Pa \u00b7 s)"
+                "value": "Pascal-seconds (Pa · s)",
+                "label": "Pascal-seconds (Pa · s)"
               },
               {
                 "value": "Centipoise (cP)",
@@ -26846,12 +26846,276 @@
             "help": ""
           }
         ]
+      },
+      {
+        "id": "cctv-storage-calculator",
+        "name": "CCTV Storage & Bandwidth Calculator",
+        "category": "conversion",
+        "description": "Calculate CCTV & NVR hard drive storage, network bandwidth (Mbps), daily recording ingestion, RAID redundancy, and Western Digital / Seagate surveillance drive requirements based on camera count, resolution, FPS, and H.265/H.264 codecs.",
+        "fields": [
+          {
+            "name": "cameras",
+            "label": "Number of Cameras",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 256,
+            "step": 1,
+            "help": "Total number of surveillance IP or analog cameras."
+          },
+          {
+            "name": "resolution",
+            "label": "Camera Resolution",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "1080p",
+            "options": [
+              {
+                "value": "720p",
+                "label": "720p / 1MP (1280 × 720)"
+              },
+              {
+                "value": "1080p",
+                "label": "1080p / 2MP Full HD (1920 × 1080)"
+              },
+              {
+                "value": "3mp",
+                "label": "3MP (2048 × 1536)"
+              },
+              {
+                "value": "4mp",
+                "label": "4MP / 2K QHD (2560 × 1440)"
+              },
+              {
+                "value": "5mp",
+                "label": "5MP (2592 × 1944)"
+              },
+              {
+                "value": "6mp",
+                "label": "6MP (3072 × 2048)"
+              },
+              {
+                "value": "4k",
+                "label": "8MP / 4K UHD (3840 × 2160)"
+              },
+              {
+                "value": "12mp",
+                "label": "12MP Ultra (4000 × 3000)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Video capture resolution per camera."
+          },
+          {
+            "name": "fps",
+            "label": "Frame Rate (FPS)",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "15",
+            "options": [
+              {
+                "value": "5",
+                "label": "5 FPS (Low Bandwidth / Parking)"
+              },
+              {
+                "value": "10",
+                "label": "10 FPS (Standard Economy)"
+              },
+              {
+                "value": "15",
+                "label": "15 FPS (Recommended Surveillance Standard)"
+              },
+              {
+                "value": "20",
+                "label": "20 FPS (High Activity)"
+              },
+              {
+                "value": "25",
+                "label": "25 FPS (PAL Real-Time)"
+              },
+              {
+                "value": "30",
+                "label": "30 FPS (NTSC Full Motion)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Frames per second. 15 FPS is the surveillance industry sweet-spot."
+          },
+          {
+            "name": "codec",
+            "label": "Video Compression Codec",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "h265",
+            "options": [
+              {
+                "value": "h264",
+                "label": "H.264 (AVC Baseline)"
+              },
+              {
+                "value": "h264_plus",
+                "label": "H.264+ (Smart H.264 - 30% Savings)"
+              },
+              {
+                "value": "h265",
+                "label": "H.265 (HEVC Standard - 50% Savings)"
+              },
+              {
+                "value": "h265_plus",
+                "label": "H.265+ (Smart Codec - 70% Savings)"
+              },
+              {
+                "value": "mjpeg",
+                "label": "MJPEG (Legacy Uncompressed)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Video compression codec. Modern H.265+ delivers up to 70% storage savings."
+          },
+          {
+            "name": "motion_activity",
+            "label": "Scene Motion / Complexity",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "medium",
+            "options": [
+              {
+                "value": "low",
+                "label": "Low (~20% Motion, Static Room / Hallway)"
+              },
+              {
+                "value": "medium",
+                "label": "Medium (~40-50% Motion, Office / Retail)"
+              },
+              {
+                "value": "high",
+                "label": "High (~80% Motion, Active Street / Cashier)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Expected movement activity in the camera field of view."
+          },
+          {
+            "name": "hours_per_day",
+            "label": "Recording Hours per Day",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 24,
+            "options": null,
+            "min": 1,
+            "max": 24,
+            "step": 1,
+            "help": "Hours recorded per day (24 for continuous 24/7 recording)."
+          },
+          {
+            "name": "retention_days",
+            "label": "Storage Retention (Days)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 30,
+            "options": null,
+            "min": 1,
+            "max": 365,
+            "step": 1,
+            "help": "Number of days video recordings must be preserved before overwriting."
+          },
+          {
+            "name": "audio",
+            "label": "Audio Stream",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "no",
+            "options": [
+              {
+                "value": "no",
+                "label": "No Audio"
+              },
+              {
+                "value": "yes",
+                "label": "Yes (64 kbps G.711 / AAC)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Include synchronized audio stream per camera."
+          },
+          {
+            "name": "buffer_percent",
+            "label": "Safety Buffer Headroom (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 20,
+            "options": null,
+            "min": 0,
+            "max": 50,
+            "step": 5,
+            "help": "Recommended 20% margin for filesystem formatting overhead and VBR bitrate spikes."
+          },
+          {
+            "name": "raid_mode",
+            "label": "RAID Configuration",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "none",
+            "options": [
+              {
+                "value": "none",
+                "label": "None / JBOD (100% Usable Storage)"
+              },
+              {
+                "value": "raid0",
+                "label": "RAID 0 (Striping - No Redundancy)"
+              },
+              {
+                "value": "raid1",
+                "label": "RAID 1 (Mirroring - 50% Usable)"
+              },
+              {
+                "value": "raid5",
+                "label": "RAID 5 (Single Parity - Min 3 Drives)"
+              },
+              {
+                "value": "raid6",
+                "label": "RAID 6 (Dual Parity - Min 4 Drives)"
+              },
+              {
+                "value": "raid10",
+                "label": "RAID 10 (Striped Mirrors - 50% Usable)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Storage redundancy array type."
+          }
+        ]
       }
     ],
     "date_time": [
       {
         "id": "half-birthday-calculator",
-        "name": "\ud83c\udf82 'Half-Birthday' Calculator",
+        "name": "🎂 'Half-Birthday' Calculator",
         "category": "date_time",
         "description": "Calculate your exact half-birthday date (6 months away) and countdown timer.",
         "fields": [
@@ -26872,7 +27136,7 @@
       },
       {
         "id": "age-calculator",
-        "name": "\ud83c\udf82 Age Calculator",
+        "name": "🎂 Age Calculator",
         "category": "date_time",
         "description": "Calculate precise age in years, months, days, hours, and countdown to next birthday.",
         "fields": [
@@ -26893,7 +27157,7 @@
       },
       {
         "id": "chronological-age-calculator",
-        "name": "\ud83d\udcc5 Chronological Age Calculator",
+        "name": "📅 Chronological Age Calculator",
         "category": "date_time",
         "description": "Calculate exact chronological age from date of birth to current or target date.",
         "fields": [
@@ -26914,7 +27178,7 @@
       },
       {
         "id": "age-difference-calculator",
-        "name": "\ud83e\uddee Age Difference Calculator",
+        "name": "🧮 Age Difference Calculator",
         "category": "date_time",
         "description": "Calculate the exact difference in years, months, and days between two birthdays.",
         "fields": [
@@ -26948,7 +27212,7 @@
       },
       {
         "id": "date-difference-calculator",
-        "name": "\ud83d\udcc6 Date Difference Calculator",
+        "name": "📆 Date Difference Calculator",
         "category": "date_time",
         "description": "Calculate elapsed time, days, weeks, and hours between any two calendar dates.",
         "fields": [
@@ -26982,7 +27246,7 @@
       },
       {
         "id": "pregnancy-week-calculator",
-        "name": "\ud83e\udd30 Pregnancy Week Calculator",
+        "name": "🤰 Pregnancy Week Calculator",
         "category": "date_time",
         "description": "Calculate gestational age, current trimester, and estimated delivery due date (EDC).",
         "fields": [
@@ -27005,7 +27269,7 @@
             "type": "date",
             "unit": "",
             "required": true,
-            "default": "2026-10-03",
+            "default": "2026-10-05",
             "options": null,
             "min": null,
             "max": null,
@@ -27016,7 +27280,7 @@
       },
       {
         "id": "anniversary-and-milestone-calculator",
-        "name": "\ud83d\udc96 Anniversary & Milestone Calculator",
+        "name": "💖 Anniversary & Milestone Calculator",
         "category": "date_time",
         "description": "Calculate elapsed relationship milestones, next anniversary date, and days together.",
         "fields": [
@@ -27037,7 +27301,7 @@
       },
       {
         "id": "animal-age-calculator",
-        "name": "\ud83d\udc3e Animal Age Converter",
+        "name": "🐾 Animal Age Converter",
         "category": "date_time",
         "description": "Convert between dog/cat years and equivalent human years with veterinary accuracy.",
         "fields": [
@@ -27063,12 +27327,12 @@
             "default": null,
             "options": [
               {
-                "value": "Dog Years \u2192 Human Years",
-                "label": "Dog Years \u2192 Human Years"
+                "value": "Dog Years → Human Years",
+                "label": "Dog Years → Human Years"
               },
               {
-                "value": "Human Years \u2192 Dog Years",
-                "label": "Human Years \u2192 Dog Years"
+                "value": "Human Years → Dog Years",
+                "label": "Human Years → Dog Years"
               }
             ],
             "min": null,
@@ -27080,9 +27344,9 @@
       },
       {
         "id": "airport-time-zone-finder",
-        "name": "\u2708\ufe0f Airport Time Zone Finder",
+        "name": "✈️ Airport Time Zone Finder",
         "category": "date_time",
-        "description": "\u2708\ufe0f Airport Time Zone Finder",
+        "description": "✈️ Airport Time Zone Finder",
         "fields": [
           {
             "name": "iata-code",
@@ -27101,9 +27365,9 @@
       },
       {
         "id": "business-days-calculator",
-        "name": "\ud83d\udcbc Business Days Calculator",
+        "name": "💼 Business Days Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcbc Business Days Calculator",
+        "description": "💼 Business Days Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -27148,9 +27412,9 @@
       },
       {
         "id": "copyright-expiration-calculator",
-        "name": "\ud83d\udcdc Copyright Expiration Calculator",
+        "name": "📜 Copyright Expiration Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcdc Copyright Expiration Calculator",
+        "description": "📜 Copyright Expiration Calculator",
         "fields": [
           {
             "name": "death-year",
@@ -27217,9 +27481,9 @@
       },
       {
         "id": "countdown-to-specific-event",
-        "name": "\ud83d\udcc5 Countdown to Specific Event",
+        "name": "📅 Countdown to Specific Event",
         "category": "date_time",
-        "description": "\ud83d\udcc5 Countdown to Specific Event",
+        "description": "📅 Countdown to Specific Event",
         "fields": [
           {
             "name": "event-name",
@@ -27264,9 +27528,9 @@
       },
       {
         "id": "court-filing-deadline-calculator",
-        "name": "\u2696\ufe0f Court Filing Deadline Calculator",
+        "name": "⚖️ Court Filing Deadline Calculator",
         "category": "date_time",
-        "description": "\u2696\ufe0f Court Filing Deadline Calculator",
+        "description": "⚖️ Court Filing Deadline Calculator",
         "fields": [
           {
             "name": "trigger-date",
@@ -27298,9 +27562,9 @@
       },
       {
         "id": "credit-card-payment-due-date-calculator",
-        "name": "\ud83d\udcb3 Credit Card Payment Due Date Calculator",
+        "name": "💳 Credit Card Payment Due Date Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcb3 Credit Card Payment Due Date Calculator",
+        "description": "💳 Credit Card Payment Due Date Calculator",
         "fields": [
           {
             "name": "closing-date",
@@ -27332,9 +27596,9 @@
       },
       {
         "id": "custom-countdown-timer",
-        "name": "\u23f1\ufe0f Custom Countdown Timer",
+        "name": "⏱️ Custom Countdown Timer",
         "category": "date_time",
-        "description": "\u23f1\ufe0f Custom Countdown Timer",
+        "description": "⏱️ Custom Countdown Timer",
         "fields": [
           {
             "name": "target-date",
@@ -27366,9 +27630,9 @@
       },
       {
         "id": "date-addition-and-subtraction-calculator",
-        "name": "\ud83d\uddd3\ufe0f Date Addition/Subtraction Calculator",
+        "name": "🗓️ Date Addition/Subtraction Calculator",
         "category": "date_time",
-        "description": "\ud83d\uddd3\ufe0f Date Addition/Subtraction Calculator",
+        "description": "🗓️ Date Addition/Subtraction Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -27443,9 +27707,9 @@
       },
       {
         "id": "day-of-the-week-calculator",
-        "name": "\ud83d\udcc5 Day of the Week Calculator",
+        "name": "📅 Day of the Week Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcc5 Day of the Week Calculator",
+        "description": "📅 Day of the Week Calculator",
         "fields": [
           {
             "name": "target-date",
@@ -27464,9 +27728,9 @@
       },
       {
         "id": "day-of-year-calculator",
-        "name": "\ud83d\udcc5 Day of Year (Ordinal Date) Calculator",
+        "name": "📅 Day of Year (Ordinal Date) Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcc5 Day of Year (Ordinal Date) Calculator",
+        "description": "📅 Day of Year (Ordinal Date) Calculator",
         "fields": [
           {
             "name": "target-date",
@@ -27485,9 +27749,9 @@
       },
       {
         "id": "digital-stopwatch",
-        "name": "\u23f1\ufe0f Digital Stopwatch",
+        "name": "⏱️ Digital Stopwatch",
         "category": "date_time",
-        "description": "\u23f1\ufe0f Digital Stopwatch",
+        "description": "⏱️ Digital Stopwatch",
         "fields": [
           {
             "name": "value",
@@ -27506,9 +27770,9 @@
       },
       {
         "id": "floating-holiday-date-calculator",
-        "name": "\ud83d\uddd3\ufe0f Holiday Date Calculator",
+        "name": "🗓️ Holiday Date Calculator",
         "category": "date_time",
-        "description": "\ud83d\uddd3\ufe0f Holiday Date Calculator",
+        "description": "🗓️ Holiday Date Calculator",
         "fields": [
           {
             "name": "target-year",
@@ -27557,9 +27821,9 @@
       },
       {
         "id": "galactic-time-converter",
-        "name": "\ud83d\ude80 Galactic Time Converter",
+        "name": "🚀 Galactic Time Converter",
         "category": "date_time",
-        "description": "\ud83d\ude80 Galactic Time Converter",
+        "description": "🚀 Galactic Time Converter",
         "fields": [
           {
             "name": "earth-days",
@@ -27617,9 +27881,9 @@
       },
       {
         "id": "half-and-double-time-calculator",
-        "name": "\ud83d\udcb5 Overtime Pay Calculator",
+        "name": "💵 Overtime Pay Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcb5 Overtime Pay Calculator",
+        "description": "💵 Overtime Pay Calculator",
         "fields": [
           {
             "name": "regular-rate",
@@ -27664,9 +27928,9 @@
       },
       {
         "id": "historical-period-duration-calculator",
-        "name": "\ud83c\udfdb\ufe0f Historical Period Duration Calculator",
+        "name": "🏛️ Historical Period Duration Calculator",
         "category": "date_time",
-        "description": "\ud83c\udfdb\ufe0f Historical Period Duration Calculator",
+        "description": "🏛️ Historical Period Duration Calculator",
         "fields": [
           {
             "name": "start-year",
@@ -27742,9 +28006,9 @@
       },
       {
         "id": "interest-accrual-date-calculator",
-        "name": "\ud83d\udcb0 Interest Accrual Date Calculator",
+        "name": "💰 Interest Accrual Date Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcb0 Interest Accrual Date Calculator",
+        "description": "💰 Interest Accrual Date Calculator",
         "fields": [
           {
             "name": "last-accrual-date",
@@ -27818,9 +28082,9 @@
       },
       {
         "id": "international-phone-call-time-planner",
-        "name": "\ud83d\udcde International Phone Call Time Planner",
+        "name": "📞 International Phone Call Time Planner",
         "category": "date_time",
-        "description": "\ud83d\udcde International Phone Call Time Planner",
+        "description": "📞 International Phone Call Time Planner",
         "fields": [
           {
             "name": "origin-time",
@@ -27915,9 +28179,9 @@
       },
       {
         "id": "lease-end-date-calculator",
-        "name": "\ud83d\uddd3\ufe0f Lease End Date Calculator",
+        "name": "🗓️ Lease End Date Calculator",
         "category": "date_time",
-        "description": "\ud83d\uddd3\ufe0f Lease End Date Calculator",
+        "description": "🗓️ Lease End Date Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -27949,9 +28213,9 @@
       },
       {
         "id": "moon-phase-calendar-calculator",
-        "name": "\ud83c\udf15 Moon Phase Calendar Calculator",
+        "name": "🌕 Moon Phase Calendar Calculator",
         "category": "date_time",
-        "description": "\ud83c\udf15 Moon Phase Calendar Calculator",
+        "description": "🌕 Moon Phase Calendar Calculator",
         "fields": [
           {
             "name": "target-date",
@@ -27970,9 +28234,9 @@
       },
       {
         "id": "overtime-hours-pay-calculator",
-        "name": "\ud83d\udd70\ufe0f Overtime Hours & Pay Calculator",
+        "name": "🕰️ Overtime Hours & Pay Calculator",
         "category": "date_time",
-        "description": "\ud83d\udd70\ufe0f Overtime Hours & Pay Calculator",
+        "description": "🕰️ Overtime Hours & Pay Calculator",
         "fields": [
           {
             "name": "weekly-threshold",
@@ -28030,9 +28294,9 @@
       },
       {
         "id": "pay-period-date-calculator",
-        "name": "\ud83d\udcb8 Pay Period Calculator",
+        "name": "💸 Pay Period Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcb8 Pay Period Calculator",
+        "description": "💸 Pay Period Calculator",
         "fields": [
           {
             "name": "last-pay-date",
@@ -28081,9 +28345,9 @@
       },
       {
         "id": "project-deadline-calculator",
-        "name": "\ud83d\udcc5 Project Deadline Calculator",
+        "name": "📅 Project Deadline Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcc5 Project Deadline Calculator",
+        "description": "📅 Project Deadline Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -28115,9 +28379,9 @@
       },
       {
         "id": "retirement-date-calculator",
-        "name": "\ud83c\udfd6\ufe0f Retirement Date Calculator",
+        "name": "🏖️ Retirement Date Calculator",
         "category": "date_time",
-        "description": "\ud83c\udfd6\ufe0f Retirement Date Calculator",
+        "description": "🏖️ Retirement Date Calculator",
         "fields": [
           {
             "name": "current-age",
@@ -28162,9 +28426,9 @@
       },
       {
         "id": "seasons-start-end-calculator",
-        "name": "\ud83c\udf0e Seasons Start/End Calculator",
+        "name": "🌎 Seasons Start/End Calculator",
         "category": "date_time",
-        "description": "\ud83c\udf0e Seasons Start/End Calculator",
+        "description": "🌎 Seasons Start/End Calculator",
         "fields": [
           {
             "name": "target-year",
@@ -28205,9 +28469,9 @@
       },
       {
         "id": "seconds-to-time-converter",
-        "name": "\u23f3 Seconds to Time Converter",
+        "name": "⏳ Seconds to Time Converter",
         "category": "date_time",
-        "description": "\u23f3 Seconds to Time Converter",
+        "description": "⏳ Seconds to Time Converter",
         "fields": [
           {
             "name": "total-seconds",
@@ -28226,9 +28490,9 @@
       },
       {
         "id": "semester-quarter-end-date-calculator",
-        "name": "\ud83d\udcc5 Academic Term End Date Calculator",
+        "name": "📅 Academic Term End Date Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcc5 Academic Term End Date Calculator",
+        "description": "📅 Academic Term End Date Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -28282,9 +28546,9 @@
       },
       {
         "id": "shipping-delivery-date-estimator",
-        "name": "\ud83d\ude9a Shipping Delivery Date Estimator",
+        "name": "🚚 Shipping Delivery Date Estimator",
         "category": "date_time",
-        "description": "\ud83d\ude9a Shipping Delivery Date Estimator",
+        "description": "🚚 Shipping Delivery Date Estimator",
         "fields": [
           {
             "name": "shipping-date",
@@ -28329,9 +28593,9 @@
       },
       {
         "id": "statute-of-limitations-calculator",
-        "name": "\u2696\ufe0f Statute of Limitations Calculator",
+        "name": "⚖️ Statute of Limitations Calculator",
         "category": "date_time",
-        "description": "\u2696\ufe0f Statute of Limitations Calculator",
+        "description": "⚖️ Statute of Limitations Calculator",
         "fields": [
           {
             "name": "discovery-date",
@@ -28389,9 +28653,9 @@
       },
       {
         "id": "subscription-renewal-date-calculator",
-        "name": "\ud83d\udcc5 Subscription Renewal Date Calculator",
+        "name": "📅 Subscription Renewal Date Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcc5 Subscription Renewal Date Calculator",
+        "description": "📅 Subscription Renewal Date Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -28453,9 +28717,9 @@
       },
       {
         "id": "sunrise-sunset-calculator",
-        "name": "\ud83c\udf05 Sunrise & Sunset Calculator",
+        "name": "🌅 Sunrise & Sunset Calculator",
         "category": "date_time",
-        "description": "\ud83c\udf05 Sunrise & Sunset Calculator",
+        "description": "🌅 Sunrise & Sunset Calculator",
         "fields": [
           {
             "name": "target-date",
@@ -28485,7 +28749,7 @@
           },
           {
             "name": "latitude",
-            "label": "Latitude (\u03c6)",
+            "label": "Latitude (φ)",
             "type": "number",
             "unit": "",
             "required": true,
@@ -28498,7 +28762,7 @@
           },
           {
             "name": "longitude",
-            "label": "Longitude (\u03bb)",
+            "label": "Longitude (λ)",
             "type": "number",
             "unit": "",
             "required": true,
@@ -28513,9 +28777,9 @@
       },
       {
         "id": "tax-filing-deadline-calculator",
-        "name": "\ud83c\udfdb\ufe0f Tax Filing Deadline Calculator (US Federal)",
+        "name": "🏛️ Tax Filing Deadline Calculator (US Federal)",
         "category": "date_time",
-        "description": "\ud83c\udfdb\ufe0f Tax Filing Deadline Calculator (US Federal)",
+        "description": "🏛️ Tax Filing Deadline Calculator (US Federal)",
         "fields": [
           {
             "name": "target-year",
@@ -28534,9 +28798,9 @@
       },
       {
         "id": "time-duration-calculator",
-        "name": "\u23f0 Time Duration Calculator",
+        "name": "⏰ Time Duration Calculator",
         "category": "date_time",
-        "description": "\u23f0 Time Duration Calculator",
+        "description": "⏰ Time Duration Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -28594,9 +28858,9 @@
       },
       {
         "id": "time-until-solar-eclipse-meteor-shower",
-        "name": "\ud83d\udd2d Time Until Astronomical Event Countdown",
+        "name": "🔭 Time Until Astronomical Event Countdown",
         "category": "date_time",
-        "description": "\ud83d\udd2d Time Until Astronomical Event Countdown",
+        "description": "🔭 Time Until Astronomical Event Countdown",
         "fields": [
           {
             "name": "target-date",
@@ -28633,20 +28897,20 @@
             "default": null,
             "options": [
               {
-                "value": "Solar Eclipse \ud83c\udf11",
-                "label": "Solar Eclipse \ud83c\udf11"
+                "value": "Solar Eclipse 🌑",
+                "label": "Solar Eclipse 🌑"
               },
               {
-                "value": "Lunar Eclipse \ud83c\udf15",
-                "label": "Lunar Eclipse \ud83c\udf15"
+                "value": "Lunar Eclipse 🌕",
+                "label": "Lunar Eclipse 🌕"
               },
               {
-                "value": "Meteor Shower \u2728",
-                "label": "Meteor Shower \u2728"
+                "value": "Meteor Shower ✨",
+                "label": "Meteor Shower ✨"
               },
               {
-                "value": "Comet Flyby \u2604\ufe0f",
-                "label": "Comet Flyby \u2604\ufe0f"
+                "value": "Comet Flyby ☄️",
+                "label": "Comet Flyby ☄️"
               },
               {
                 "value": "Other Celestial Event",
@@ -28662,9 +28926,9 @@
       },
       {
         "id": "vacation-day-accrual-calculator",
-        "name": "\ud83c\udfdd\ufe0f Vacation Day Accrual Calculator",
+        "name": "🏝️ Vacation Day Accrual Calculator",
         "category": "date_time",
-        "description": "\ud83c\udfdd\ufe0f Vacation Day Accrual Calculator",
+        "description": "🏝️ Vacation Day Accrual Calculator",
         "fields": [
           {
             "name": "starting-balance",
@@ -28756,9 +29020,9 @@
       },
       {
         "id": "warranty-expiry-date-calculator",
-        "name": "\ud83d\udee1\ufe0f Warranty Expiry Date Calculator",
+        "name": "🛡️ Warranty Expiry Date Calculator",
         "category": "date_time",
-        "description": "\ud83d\udee1\ufe0f Warranty Expiry Date Calculator",
+        "description": "🛡️ Warranty Expiry Date Calculator",
         "fields": [
           {
             "name": "purchase-date",
@@ -28816,9 +29080,9 @@
       },
       {
         "id": "week-number-calculator",
-        "name": "\ud83d\uddd3\ufe0f ISO Week Number Calculator",
+        "name": "🗓️ ISO Week Number Calculator",
         "category": "date_time",
-        "description": "\ud83d\uddd3\ufe0f ISO Week Number Calculator",
+        "description": "🗓️ ISO Week Number Calculator",
         "fields": [
           {
             "name": "target-date",
@@ -28837,9 +29101,9 @@
       },
       {
         "id": "weekly-timesheet-pay-calculator",
-        "name": "\ud83d\udcc8 Weekly Timesheet Calculator",
+        "name": "📈 Weekly Timesheet Calculator",
         "category": "date_time",
-        "description": "\ud83d\udcc8 Weekly Timesheet Calculator",
+        "description": "📈 Weekly Timesheet Calculator",
         "fields": [
           {
             "name": "hourly-wage",
@@ -28871,9 +29135,9 @@
       },
       {
         "id": "work-hours-net-pay-calculator",
-        "name": "\ud83d\udd65 Work Hours Calculator",
+        "name": "🕥 Work Hours Calculator",
         "category": "date_time",
-        "description": "\ud83d\udd65 Work Hours Calculator",
+        "description": "🕥 Work Hours Calculator",
         "fields": [
           {
             "name": "start-time",
@@ -28931,9 +29195,9 @@
       },
       {
         "id": "workday-time-calculator",
-        "name": "\u23f1\ufe0f Workday Start/End Time Calculator",
+        "name": "⏱️ Workday Start/End Time Calculator",
         "category": "date_time",
-        "description": "\u23f1\ufe0f Workday Start/End Time Calculator",
+        "description": "⏱️ Workday Start/End Time Calculator",
         "fields": [
           {
             "name": "start-time",
@@ -28978,9 +29242,9 @@
       },
       {
         "id": "world-clock-meeting-planner",
-        "name": "\ud83e\udd1d World Clock Meeting Planner",
+        "name": "🤝 World Clock Meeting Planner",
         "category": "date_time",
-        "description": "\ud83e\udd1d World Clock Meeting Planner",
+        "description": "🤝 World Clock Meeting Planner",
         "fields": [
           {
             "name": "base-date",
@@ -29342,9 +29606,9 @@
     "education": [
       {
         "id": "academic-paper-formatting-checker",
-        "name": "\u270d\ufe0f Paper Length Estimator",
+        "name": "✍️ Paper Length Estimator",
         "category": "education",
-        "description": "\u270d\ufe0f Paper Length Estimator",
+        "description": "✍️ Paper Length Estimator",
         "fields": [
           {
             "name": "word-count",
@@ -29480,9 +29744,9 @@
       },
       {
         "id": "act-to-sat-score-converter",
-        "name": "\ud83d\udd04 ACT \u2194 SAT Score Converter",
+        "name": "🔄 ACT ↔ SAT Score Converter",
         "category": "education",
-        "description": "\ud83d\udd04 ACT \u2194 SAT Score Converter",
+        "description": "🔄 ACT ↔ SAT Score Converter",
         "fields": [
           {
             "name": "sat-math",
@@ -29527,9 +29791,9 @@
       },
       {
         "id": "citation-generator",
-        "name": "\ud83d\udcda Academic Citation Generator",
+        "name": "📚 Academic Citation Generator",
         "category": "education",
-        "description": "\ud83d\udcda Academic Citation Generator",
+        "description": "📚 Academic Citation Generator",
         "fields": [
           {
             "name": "{f.id}",
@@ -29699,9 +29963,9 @@
       },
       {
         "id": "class-schedule-conflict-checker",
-        "name": "\ud83d\uddd3\ufe0f Class Schedule Conflict Checker",
+        "name": "🗓️ Class Schedule Conflict Checker",
         "category": "education",
-        "description": "\ud83d\uddd3\ufe0f Class Schedule Conflict Checker",
+        "description": "🗓️ Class Schedule Conflict Checker",
         "fields": [
           {
             "name": "day-{day}-{rowId}",
@@ -29772,9 +30036,9 @@
       },
       {
         "id": "college-gpa-calculator",
-        "name": "\ud83c\udf93 College GPA Calculator",
+        "name": "🎓 College GPA Calculator",
         "category": "education",
-        "description": "\ud83c\udf93 College GPA Calculator",
+        "description": "🎓 College GPA Calculator",
         "fields": [
           {
             "name": "prev_gpa",
@@ -29845,9 +30109,9 @@
       },
       {
         "id": "college-savings-plan-calculator",
-        "name": "\ud83c\udfe6 529 College Savings Plan Calculator",
+        "name": "🏦 529 College Savings Plan Calculator",
         "category": "education",
-        "description": "\ud83c\udfe6 529 College Savings Plan Calculator",
+        "description": "🏦 529 College Savings Plan Calculator",
         "fields": [
           {
             "name": "initial_deposit",
@@ -29957,9 +30221,9 @@
       },
       {
         "id": "course-load-difficulty-calculator",
-        "name": "\ud83e\udde0 Course Load Difficulty Calculator",
+        "name": "🧠 Course Load Difficulty Calculator",
         "category": "education",
-        "description": "\ud83e\udde0 Course Load Difficulty Calculator",
+        "description": "🧠 Course Load Difficulty Calculator",
         "fields": [
           {
             "name": "input-credits",
@@ -29991,9 +30255,9 @@
       },
       {
         "id": "dorm-room-size-usable-area-calculator",
-        "name": "\ud83d\udccf Dorm Room Usable Space Calculator",
+        "name": "📏 Dorm Room Usable Space Calculator",
         "category": "education",
-        "description": "\ud83d\udccf Dorm Room Usable Space Calculator",
+        "description": "📏 Dorm Room Usable Space Calculator",
         "fields": [
           {
             "name": "room-width",
@@ -30171,9 +30435,9 @@
       },
       {
         "id": "final-grade-calculator",
-        "name": "\ud83c\udfaf Final Grade Target Calculator",
+        "name": "🎯 Final Grade Target Calculator",
         "category": "education",
-        "description": "\ud83c\udfaf Final Grade Target Calculator",
+        "description": "🎯 Final Grade Target Calculator",
         "fields": [
           {
             "name": "final_weight",
@@ -30231,9 +30495,9 @@
       },
       {
         "id": "gpa-calculator",
-        "name": "\ud83d\udcca Advanced Cumulative GPA Calculator",
+        "name": "📊 Advanced Cumulative GPA Calculator",
         "category": "education",
-        "description": "\ud83d\udcca Advanced Cumulative GPA Calculator",
+        "description": "📊 Advanced Cumulative GPA Calculator",
         "fields": [
           {
             "name": "prior_gpa",
@@ -30314,9 +30578,9 @@
       },
       {
         "id": "graduation-timeline-planner",
-        "name": "\ud83d\uddd3\ufe0f Graduation Timeline Planner",
+        "name": "🗓️ Graduation Timeline Planner",
         "category": "education",
-        "description": "\ud83d\uddd3\ufe0f Graduation Timeline Planner",
+        "description": "🗓️ Graduation Timeline Planner",
         "fields": [
           {
             "name": "required-credits",
@@ -30447,9 +30711,9 @@
       },
       {
         "id": "high-school-gpa-calculator",
-        "name": "\ud83c\udfeb High School GPA Calculator",
+        "name": "🏫 High School GPA Calculator",
         "category": "education",
-        "description": "\ud83c\udfeb High School GPA Calculator",
+        "description": "🏫 High School GPA Calculator",
         "fields": [
           {
             "name": "course-credits",
@@ -30504,9 +30768,9 @@
       },
       {
         "id": "internship-stipend-budget-calculator",
-        "name": "\ud83d\udcb5 Internship Stipend Budget Planner",
+        "name": "💵 Internship Stipend Budget Planner",
         "category": "education",
-        "description": "\ud83d\udcb5 Internship Stipend Budget Planner",
+        "description": "💵 Internship Stipend Budget Planner",
         "fields": [
           {
             "name": "total-stipend",
@@ -30872,9 +31136,9 @@
       },
       {
         "id": "minimum-grade-required-calculator",
-        "name": "\u2728 Minimum Grade Required Calculator",
+        "name": "✨ Minimum Grade Required Calculator",
         "category": "education",
-        "description": "\u2728 Minimum Grade Required Calculator",
+        "description": "✨ Minimum Grade Required Calculator",
         "fields": [
           {
             "name": "remaining_weight",
@@ -30979,9 +31243,9 @@
       },
       {
         "id": "paragraph-structure-planner",
-        "name": "\ud83d\udcdd Paragraph Structure Planner",
+        "name": "📝 Paragraph Structure Planner",
         "category": "education",
-        "description": "\ud83d\udcdd Paragraph Structure Planner",
+        "description": "📝 Paragraph Structure Planner",
         "fields": [
           {
             "name": "target-word-count",
@@ -31052,9 +31316,9 @@
       },
       {
         "id": "percentile-rank-calculator",
-        "name": "\ud83d\udcc8 Percentile Rank Calculator",
+        "name": "📈 Percentile Rank Calculator",
         "category": "education",
-        "description": "\ud83d\udcc8 Percentile Rank Calculator",
+        "description": "📈 Percentile Rank Calculator",
         "fields": [
           {
             "name": "total-scores-n",
@@ -31099,9 +31363,9 @@
       },
       {
         "id": "plagiarism-checker-score-estimator",
-        "name": "\ud83d\udd75\ufe0f\u200d\u2642\ufe0f Plagiarism Score Estimator",
+        "name": "🕵️‍♂️ Plagiarism Score Estimator",
         "category": "education",
-        "description": "\ud83d\udd75\ufe0f\u200d\u2642\ufe0f Plagiarism Score Estimator",
+        "description": "🕵️‍♂️ Plagiarism Score Estimator",
         "fields": [
           {
             "name": "quote-percentage",
@@ -31300,9 +31564,9 @@
       },
       {
         "id": "scholarship-finder-match-score-calculator",
-        "name": "\u2b50 Scholarship Match Score Generator",
+        "name": "⭐ Scholarship Match Score Generator",
         "category": "education",
-        "description": "\u2b50 Scholarship Match Score Generator",
+        "description": "⭐ Scholarship Match Score Generator",
         "fields": [
           {
             "name": "gpa-input",
@@ -31480,9 +31744,9 @@
       },
       {
         "id": "semester-workload-calculator",
-        "name": "\ud83c\udf93 Semester Workload Calculator",
+        "name": "🎓 Semester Workload Calculator",
         "category": "education",
-        "description": "\ud83c\udf93 Semester Workload Calculator",
+        "description": "🎓 Semester Workload Calculator",
         "fields": [
           {
             "name": "input-credit-hours",
@@ -31514,9 +31778,9 @@
       },
       {
         "id": "speech-and-presentation-length-calculator",
-        "name": "\ud83c\udf99\ufe0f Speech Length Calculator",
+        "name": "🎙️ Speech Length Calculator",
         "category": "education",
-        "description": "\ud83c\udf99\ufe0f Speech Length Calculator",
+        "description": "🎙️ Speech Length Calculator",
         "fields": [
           {
             "name": "wpm-input",
@@ -31548,9 +31812,9 @@
       },
       {
         "id": "student-loan-amortization-calculator",
-        "name": "\ud83d\udcb8 Student Loan Repayment Calculator",
+        "name": "💸 Student Loan Repayment Calculator",
         "category": "education",
-        "description": "\ud83d\udcb8 Student Loan Repayment Calculator",
+        "description": "💸 Student Loan Repayment Calculator",
         "fields": [
           {
             "name": "principal",
@@ -31655,9 +31919,9 @@
       },
       {
         "id": "student-loan-forgiveness-eligibility-calculator",
-        "name": "\u2705 Loan Forgiveness Eligibility Calculator",
+        "name": "✅ Loan Forgiveness Eligibility Calculator",
         "category": "education",
-        "description": "\u2705 Loan Forgiveness Eligibility Calculator",
+        "description": "✅ Loan Forgiveness Eligibility Calculator",
         "fields": [
           {
             "name": "payments-made-pslf",
@@ -31763,9 +32027,9 @@
       },
       {
         "id": "student-loan-refinance-savings-calculator",
-        "name": "\ud83d\udd04 Student Loan Refinance Calculator",
+        "name": "🔄 Student Loan Refinance Calculator",
         "category": "education",
-        "description": "\ud83d\udd04 Student Loan Refinance Calculator",
+        "description": "🔄 Student Loan Refinance Calculator",
         "fields": [
           {
             "name": "current_principal",
@@ -31849,9 +32113,9 @@
       },
       {
         "id": "student-monthly-budget-calculator",
-        "name": "\ud83d\udcca Student Monthly Budget",
+        "name": "📊 Student Monthly Budget",
         "category": "education",
-        "description": "\ud83d\udcca Student Monthly Budget",
+        "description": "📊 Student Monthly Budget",
         "fields": [
           {
             "name": "form-control-sm",
@@ -32055,9 +32319,9 @@
       },
       {
         "id": "text-character-and-word-counter",
-        "name": "\ud83d\udcdd Text Character & Word Counter",
+        "name": "📝 Text Character & Word Counter",
         "category": "education",
-        "description": "\ud83d\udcdd Text Character & Word Counter",
+        "description": "📝 Text Character & Word Counter",
         "fields": [
           {
             "name": "text-input",
@@ -32076,9 +32340,9 @@
       },
       {
         "id": "text-reading-time-calculator",
-        "name": "\u23f1\ufe0f Reading Time Calculator",
+        "name": "⏱️ Reading Time Calculator",
         "category": "education",
-        "description": "\u23f1\ufe0f Reading Time Calculator",
+        "description": "⏱️ Reading Time Calculator",
         "fields": [
           {
             "name": "wpm-input",
@@ -32110,9 +32374,9 @@
       },
       {
         "id": "textbook-cost-calculator",
-        "name": "\ud83d\udcb0 Textbook Cost Calculator",
+        "name": "💰 Textbook Cost Calculator",
         "category": "education",
-        "description": "\ud83d\udcb0 Textbook Cost Calculator",
+        "description": "💰 Textbook Cost Calculator",
         "fields": [
           {
             "name": "input-price",
@@ -32131,9 +32395,9 @@
       },
       {
         "id": "thesis-page-count-estimator",
-        "name": "\ud83d\udcda Thesis Page Count Estimator",
+        "name": "📚 Thesis Page Count Estimator",
         "category": "education",
-        "description": "\ud83d\udcda Thesis Page Count Estimator",
+        "description": "📚 Thesis Page Count Estimator",
         "fields": [
           {
             "name": "target-word-count",
@@ -32234,9 +32498,9 @@
       },
       {
         "id": "weekly-study-time-planner-and-workload-organizer",
-        "name": "\ud83d\udcc5 Weekly Study Time Planner",
+        "name": "📅 Weekly Study Time Planner",
         "category": "education",
-        "description": "\ud83d\udcc5 Weekly Study Time Planner",
+        "description": "📅 Weekly Study Time Planner",
         "fields": [
           {
             "name": "available-hours",
@@ -32268,9 +32532,9 @@
       },
       {
         "id": "words-per-minute-typing-speed-calculator",
-        "name": "\u2328\ufe0f Professional Typing Test",
+        "name": "⌨️ Professional Typing Test",
         "category": "education",
-        "description": "\u2328\ufe0f Professional Typing Test",
+        "description": "⌨️ Professional Typing Test",
         "fields": [
           {
             "name": "hidden-input",
@@ -32289,9 +32553,9 @@
       },
       {
         "id": "work-study-earnings-calculator",
-        "name": "\ud83d\udcb0 Work-Study Earnings Calculator",
+        "name": "💰 Work-Study Earnings Calculator",
         "category": "education",
-        "description": "\ud83d\udcb0 Work-Study Earnings Calculator",
+        "description": "💰 Work-Study Earnings Calculator",
         "fields": [
           {
             "name": "total-award",
@@ -40357,7 +40621,7 @@
             "options": [
               {
                 "value": "csv",
-                "label": "Comma Separated Values (CSV) \u2014 Recommended"
+                "label": "Comma Separated Values (CSV) — Recommended"
               },
               {
                 "value": "markdown_table",
@@ -40578,23 +40842,23 @@
               },
               {
                 "value": "bengali",
-                "label": "Bengali / \u09ac\u09be\u0982\u09b2\u09be (3.10 tokens/word)"
+                "label": "Bengali / বাংলা (3.10 tokens/word)"
               },
               {
                 "value": "hindi",
-                "label": "Hindi / \u0939\u093f\u0928\u094d\u0926\u0940 (2.95 tokens/word)"
+                "label": "Hindi / हिन्दी (2.95 tokens/word)"
               },
               {
                 "value": "chinese",
-                "label": "Chinese / \u4e2d\u6587 (2.20 tokens/word)"
+                "label": "Chinese / 中文 (2.20 tokens/word)"
               },
               {
                 "value": "japanese",
-                "label": "Japanese / \u65e5\u672c\u8a9e (2.35 tokens/word)"
+                "label": "Japanese / 日本語 (2.35 tokens/word)"
               },
               {
                 "value": "arabic",
-                "label": "Arabic / \u0627\u0644\u0639\u0631\u0628\u064a\u0629 (2.80 tokens/word)"
+                "label": "Arabic / العربية (2.80 tokens/word)"
               }
             ],
             "min": null,
@@ -41095,7 +41359,7 @@
             "options": [
               {
                 "value": "high",
-                "label": "High Fidelity (512px Patch Tiles \u2014 170 tokens/tile + 85 base)"
+                "label": "High Fidelity (512px Patch Tiles — 170 tokens/tile + 85 base)"
               },
               {
                 "value": "low",
@@ -43342,7 +43606,7 @@
           },
           {
             "name": "margin_of_error",
-            "label": "Acceptable Margin of Error (\u00b1 %)",
+            "label": "Acceptable Margin of Error (± %)",
             "type": "number",
             "unit": "",
             "required": true,

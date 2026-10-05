@@ -91,7 +91,7 @@ export default function SEORankRadarDrawer({ open, onClose }: SEORankRadarProps)
   const [error, setError] = useState<string | null>(null)
   const [lastCheckNotice, setLastCheckNotice] = useState<string | null>(null)
 
-  // Pagination states for smooth browsing of 724 routes
+  // Pagination states for smooth browsing of 725 routes
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(25)
 
@@ -290,7 +290,7 @@ export default function SEORankRadarDrawer({ open, onClose }: SEORankRadarProps)
               />
             </Box>
             <Typography variant="caption" sx={{ color: "#64748b" }}>
-              724 Calculator Pages • Real-Time Google & Bing SERP Monitoring & Historical Performance
+              725 Calculator Pages • Real-Time Google & Bing SERP Monitoring & Historical Performance
             </Typography>
           </Box>
         </Box>
@@ -364,7 +364,7 @@ export default function SEORankRadarDrawer({ open, onClose }: SEORankRadarProps)
                   Total Tracked
                 </Typography>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a", mt: 0.5 }}>
-                  {summary ? summary.total_tracked : "724"}
+                  {summary ? summary.total_tracked : "725"}
                 </Typography>
                 <Typography variant="caption" sx={{ color: "#10b981", fontWeight: 700 }}>
                   ● 100% Crawl Ready
@@ -449,7 +449,7 @@ export default function SEORankRadarDrawer({ open, onClose }: SEORankRadarProps)
                   Index Coverage
                 </Typography>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: "#059669", mt: 0.5 }}>
-                  {summary ? summary.indexed_total : "724"}
+                  {summary ? summary.indexed_total : "725"}
                 </Typography>
                 <Typography variant="caption" sx={{ color: "#059669", fontWeight: 700 }}>
                   Google + Bing Sitemaps

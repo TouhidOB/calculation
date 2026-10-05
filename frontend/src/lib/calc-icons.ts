@@ -904,6 +904,9 @@ export const CALC_ICONS: Record<string, string> = {
 
   // ─── AI Helper ──────
   "ai-token-calculator": "SmartToy",
+
+  // ─── Surveillance & Storage ──────
+  "cctv-storage-calculator": "Videocam",
 }
 
 export function getCalcIcon(calcId: string): string {

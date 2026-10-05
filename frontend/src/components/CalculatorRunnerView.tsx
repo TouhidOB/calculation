@@ -32,6 +32,7 @@ import {
   TactileButton,
 } from "@/components/instrument"
 import { AiTokenCalculatorView } from "@/components/AiTokenCalculatorView"
+import { CctvStorageCalculatorView } from "@/components/CctvStorageCalculatorView"
 
 // MUI components
 import Box from "@mui/material/Box"
@@ -1270,6 +1271,10 @@ export default function CalculatorRunnerView({
                 initialModel={values.model}
                 initialOutputTokens={Number(values.output_tokens) || 500}
                 initialRequests={Number(values.requests_count) || 1}
+                onToast={(msg) => setToast({ open: true, message: msg })}
+              />
+            ) : calc.id === "cctv-storage-calculator" ? (
+              <CctvStorageCalculatorView
                 onToast={(msg) => setToast({ open: true, message: msg })}
               />
             ) : (

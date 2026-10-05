@@ -16,7 +16,7 @@ import GlobalFooter from "@/components/GlobalFooter"
 export const metadata: Metadata = {
   title: "Free Calculator Widgets for Websites & Blogs (2026) | TryCalc",
   description:
-    "Embed 724+ free, interactive calculators on your website or blog with zero code. Mobile-ready, high-speed, and customizable HTML iframe widgets with instant results.",
+    "Embed 725+ free, interactive calculators on your website or blog with zero code. Mobile-ready, high-speed, and customizable HTML iframe widgets with instant results.",
   alternates: {
     canonical: "https://trycalc.net/widgets",
   },
@@ -168,10 +168,10 @@ export default function WidgetsPage() {
             <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#ffffff", height: "100%" }}>
               <Typography variant="h3" sx={{ mb: 1 }}>🛠️</Typography>
               <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a", mb: 1 }}>
-                724+ Tools Available
+                725+ Tools Available
               </Typography>
               <Typography variant="body2" sx={{ color: "#64748b", lineHeight: 1.6 }}>
-                Every single calculator on TryCalc can be embedded! Simply replace the ID in the iframe snippet with any of our 724 calculator slugs.
+                Every single calculator on TryCalc can be embedded! Simply replace the ID in the iframe snippet with any of our 725 calculator slugs.
               </Typography>
             </Paper>
           </Grid>
@@ -263,7 +263,7 @@ export default function WidgetsPage() {
                   Find the Calculator Slug
                 </Typography>
                 <Typography variant="body2" sx={{ color: "#64748b" }}>
-                  Browse any of our 724 calculators and copy its URL slug (e.g. <code>mortgage</code>, <code>calorie-calculator</code>, or <code>auto-loan</code>).
+                  Browse any of our 725 calculators and copy its URL slug (e.g. <code>mortgage</code>, <code>calorie-calculator</code>, or <code>auto-loan</code>).
                 </Typography>
               </Box>
             </Box>
