@@ -187,6 +187,29 @@ export async function generateMetadata({
             "video surveillance storage requirement",
             "nvr bandwidth calculator online",
           ]
+        : canonicalId === "raid-calculator"
+        ? [
+            "raid calculator",
+            "raid storage calculator",
+            "raid capacity calculator",
+            "raid 5 calculator",
+            "raid 6 calculator",
+            "raid 10 calculator",
+            "synology raid calculator",
+            "qnap raid calculator",
+            "zfs capacity calculator",
+            "raid rebuild time calculator",
+            "ure rebuild failure probability",
+            "raid usable space calculator",
+            "raid 0 vs raid 1 vs raid 5",
+            "raid 5 vs raid 6 vs raid 10",
+            "nas storage calculator",
+            "hot spare raid calculator",
+            "true-nas raid-z calculator",
+            "hard drive failure rate raid",
+            "how to calculate raid capacity",
+            "decimal tb to binary tib storage calculator",
+          ]
         : []),
     ],
   }

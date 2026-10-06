@@ -907,6 +907,7 @@ export const CALC_ICONS: Record<string, string> = {
 
   // ─── Surveillance & Storage ──────
   "cctv-storage-calculator": "Videocam",
+  "raid-calculator": "Dns",
 }
 
 export function getCalcIcon(calcId: string): string {

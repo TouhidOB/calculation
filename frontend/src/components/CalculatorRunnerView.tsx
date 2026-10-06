@@ -33,6 +33,7 @@ import {
 } from "@/components/instrument"
 import { AiTokenCalculatorView } from "@/components/AiTokenCalculatorView"
 import { CctvStorageCalculatorView } from "@/components/CctvStorageCalculatorView"
+import { RaidCalculatorView } from "@/components/RaidCalculatorView"
 
 // MUI components
 import Box from "@mui/material/Box"
@@ -1275,6 +1276,10 @@ export default function CalculatorRunnerView({
               />
             ) : calc.id === "cctv-storage-calculator" ? (
               <CctvStorageCalculatorView
+                onToast={(msg) => setToast({ open: true, message: msg })}
+              />
+            ) : calc.id === "raid-calculator" ? (
+              <RaidCalculatorView
                 onToast={(msg) => setToast({ open: true, message: msg })}
               />
             ) : (

@@ -52,6 +52,9 @@ export function seoDirectAnswerFor(calc: CalculatorDef): string {
   if (name.includes("cctv") || name.includes("surveillance") || name.includes("nvr")) {
     return "CCTV and NVR storage is calculated using: Storage (TB) = [Bitrate (Mbps) × 3,600 s × Hours/Day × Cameras × Retention Days] / (8 × 1,000,000) × 1.20 (overhead buffer). For an 8-camera 4MP (2K QHD) system at 15 FPS using H.265+ smart codec (1.35 Mbps/cam) recording 24/7 for 30 days, required storage is 4.2 TB, requiring one 6TB surveillance-grade hard drive (WD Purple or Seagate SkyHawk)."
   }
+  if (name.includes("raid") || name.includes("disk array") || name.includes("storage array")) {
+    return "RAID usable storage capacity depends on the redundancy topology and drive count N: for RAID 0, Usable = N × S (100% capacity, 0 fault tolerance); for RAID 1, Usable = S (50% with 2 drives); for RAID 5, Usable = (N - 1) × S (tolerates 1 drive failure); for RAID 6, Usable = (N - 2) × S (tolerates 2 drive failures); and for RAID 10, Usable = (N / 2) × S (tolerates up to 1 failure per mirror pair with maximum IOPS). For example, six 8TB enterprise drives in RAID 6 yield 32.0 TB of usable storage (~29.1 TiB) with dual-drive protection and 66.7% storage efficiency."
+  }
 
   const fieldsDesc = calc.fields.slice(0, 3).map((f) => f.label).join(", ")
   return `The ${calc.name} evaluates ${fieldsDesc} to produce verified, deterministic outputs according to standard mathematical models. Execute the calculator above to generate instant itemized figures, exportable audit ledgers, and calculation breakdowns.`
@@ -143,6 +146,26 @@ export function seoWorkedExampleFor(calc: CalculatorDef): WorkedExample {
         { label: "Recommended HDD Capacity", value: "4.20 TB (One 6TB WD Purple / SkyHawk Drive)" },
       ],
       explanation: "Using H.265+ compression slashes required storage from 14.0 TB (under standard H.264) down to 4.2 TB—saving 9.8 TB (70% storage and disk hardware expense). A single 6TB surveillance-grade drive comfortably fulfills the 30-day mandate with safety headroom.",
+    }
+  }
+
+  if (name.includes("raid") || name.includes("disk array")) {
+    return {
+      title: "Enterprise 6-Bay NAS RAID 6 Storage Deployment",
+      scenario: "A creative studio configuring a 6-bay rackmount NAS server with 8TB 7200 RPM enterprise SATA hard drives in RAID 6 dual-parity redundancy.",
+      inputs: [
+        { label: "Drive Quantity & Size", value: "6 Disks × 8 TB (48 TB Raw Total)" },
+        { label: "RAID Topology", value: "RAID 6 (Dual Distributed Parity)" },
+        { label: "Drive Specification", value: "Enterprise 7200 RPM HDD (URE 10^15)" },
+        { label: "Hot Spares", value: "0 Dedicated Spares" },
+      ],
+      results: [
+        { label: "Usable Storage Capacity", value: "32.0 TB (~29.1 TiB Usable)" },
+        { label: "Parity Protection Overhead", value: "16.0 TB (2 Drives Dedicated to P+Q Parity)" },
+        { label: "Fault Tolerance", value: "Survives Any 2 Concurrent Drive Failures" },
+        { label: "Storage Efficiency", value: "66.7% Usable Capacity Ratio" },
+      ],
+      explanation: "With RAID 6, the system tolerates up to two simultaneous disk drive failures without data loss or downtime. During a rebuild of an 8TB drive, RAID 6's secondary Q-parity protects the array against catastrophic Unrecoverable Read Errors (URE) that frequently destroy single-parity RAID 5 arrays on drives 8TB and larger.",
     }
   }
 
@@ -396,6 +419,31 @@ export function seoFaqFor(calc: CalculatorDef): { q: string; a: string }[] {
     ]
   }
 
+  if (name.includes("raid") || name.includes("disk array")) {
+    return [
+      {
+        q: "What is the difference between RAID 5, RAID 6, and RAID 10?",
+        a: "RAID 5 uses single distributed parity requiring min 3 drives with (N-1) usable capacity, tolerating 1 drive failure. RAID 6 uses dual parity (P+Q) requiring min 4 drives with (N-2) usable capacity, tolerating 2 concurrent failures. RAID 10 (1+0) stripes mirrored drive pairs requiring min 4 even drives with 50% capacity; it provides the highest random read/write IOPS and the fastest rebuild times with zero parity calculation overhead.",
+      },
+      {
+        q: "Why is RAID 5 considered risky for large hard drives (8TB to 20TB+)?",
+        a: "When a drive in RAID 5 fails, the controller must read every single bit on all surviving drives to reconstruct the missing data. For consumer drives with an Unrecoverable Read Error (URE) rate of 1 in 10^14 bits (~12.5 TB), reading 30–50 TB during a rebuild creates a >50% statistical probability of encountering an unreadable sector. An unreadable sector causes the entire rebuild to abort, resulting in total array loss. RAID 6 and RAID 10 eliminate this danger by maintaining a second parity block or full mirror copy.",
+      },
+      {
+        q: "What is the difference between Decimal Terabytes (TB) and Binary Tebibytes (TiB)?",
+        a: "Hard drive manufacturers market storage in decimal units (1 TB = 1,000,000,000,000 bytes). Computer operating systems (Windows, Linux, macOS, TrueNAS) calculate file systems in binary units (1 TiB = 1,099,511,627,776 bytes). Therefore, 1 TB is approximately 0.9095 TiB. An array with 32 TB of raw usable storage will display as approximately 29.1 TiB in your operating system before file system format overhead.",
+      },
+      {
+        q: "Does RAID replace regular backups?",
+        a: "No! RAID provides high availability and fault tolerance against hardware disk failures, but it is NOT a backup. RAID does not protect against accidental file deletion, ransomware, malware, database corruption, file system corruption, power surges, or site disasters (fire/flood). True data resilience requires adhering to the 3-2-1 backup rule: 3 copies of data, across 2 different media types, with 1 copy stored offsite or in the cloud.",
+      },
+      {
+        q: "How does a Hot Spare drive work in a RAID array?",
+        a: "A hot spare is an idle standby disk plugged into the server chassis. The moment the RAID controller detects that an active drive has degraded or failed, it immediately powers on the hot spare and initiates an automatic rebuild without requiring human intervention or physical drive replacement, minimizing the vulnerable rebuild window.",
+      },
+    ]
+  }
+
   if (name.includes("mortgage")) {
     return [
       {
@@ -544,6 +592,20 @@ export function seoFormulaFor(calc: CalculatorDef): FormulaInfo {
         { symbol: "1.20", meaning: "20% buffer covering filesystem structure, metadata, and binary-to-decimal disk format losses" },
       ],
       source: "CCTV Operational Standards, ONVIF Profile S/G/T Specifications, and Security Industry Association (SIA)",
+    }
+  }
+
+  if (name.includes("raid") || name.includes("disk array")) {
+    return {
+      formula: "Usable Capacity = (N - P) × S   |   P(URE) = 1 - e^[ -(N - 1) · S · 8 · 10^12 / URE_Rate ]",
+      explanation: "Standard storage array mathematics determining usable block device volume and the Poisson probability of encountering an unrecoverable read error during single-disk parity reconstruction.",
+      variables: [
+        { symbol: "N", meaning: "Total number of active physical disk drives in the array" },
+        { symbol: "P", meaning: "Parity disk overhead (P = 0 for RAID 0, 1 for RAID 5, 2 for RAID 6, N/2 for RAID 10)" },
+        { symbol: "S", meaning: "Individual drive capacity in Terabytes (TB)" },
+        { symbol: "URE_Rate", meaning: "Unrecoverable read error rate specification (e.g. 10^14 for consumer, 10^15 for enterprise NAS)" },
+      ],
+      source: "Storage Networking Industry Association (SNIA), IEEE Storage Architecture Standards, and Western Digital / Seagate Engineering Whitepapers",
     }
   }
 

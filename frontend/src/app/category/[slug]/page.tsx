@@ -171,15 +171,16 @@ const CATEGORY_EDITORIAL: Record<
     bestFor: "LLM application development, API cost budgeting, and prompt engineering",
   },
   storage: {
-    tagline: "CCTV, Hard Drive, Bandwidth & Digital Storage Workstations",
+    tagline: "CCTV, RAID Arrays, Hard Drive & Digital Storage Workstations",
     intro:
-      "Engineered for surveillance technicians, network engineers, system administrators, and digital media professionals. Calculate exact CCTV NVR storage capacities, network bandwidth (Mbps), surveillance-grade hard drive sizing (WD Purple, Seagate SkyHawk), and data conversions across Bytes, Gigabytes, Terabytes, and Petabytes.",
+      "Engineered for surveillance technicians, network engineers, system administrators, and storage architects. Calculate exact CCTV NVR storage capacities, RAID 0/1/5/6/10/50/60 array usable capacities, rebuild URE risks, network bandwidth (Mbps), surveillance-grade hard drive sizing, and binary-to-decimal disk formatting.",
     keyFeatures: [
+      "Modernized RAID calculator with visual drive bay racks, failure simulation, rebuild time, and URE risk",
       "CCTV storage and NVR retention modeling with H.264, H.265, and H.265+ smart codecs",
       "Surveillance-grade hard drive recommendations, RAID redundancy, and binary formatting losses",
       "Network bandwidth throughput, daily ingestion metrics, and audio/video file sizing",
     ],
-    bestFor: "CCTV & NVR installation planning, surveillance hard drive sizing, network bandwidth budgeting, and data storage conversions",
+    bestFor: "RAID array planning, NAS/SAN server sizing, CCTV & NVR installation, and digital storage architecture",
   },
 }
 

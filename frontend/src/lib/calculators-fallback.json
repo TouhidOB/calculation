@@ -29602,6 +29602,193 @@
             "help": "Storage redundancy array type."
           }
         ]
+      },
+      {
+        "id": "raid-calculator",
+        "name": "RAID Calculator",
+        "category": "storage",
+        "description": "Calculate usable array capacity, parity overhead, mirror redundancy, fault tolerance, read/write throughput multipliers, estimated rebuild time, and URE (Unrecoverable Read Error) risk for RAID 0, 1, 5, 6, 10, 50, 60, and OpenZFS RAID-Z1/Z2/Z3.",
+        "fields": [
+          {
+            "name": "raid_type",
+            "label": "RAID Configuration",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "raid5",
+            "options": [
+              {
+                "value": "raid0",
+                "label": "RAID 0 (Striping — Max Speed & Capacity, 0 Redundancy)"
+              },
+              {
+                "value": "raid1",
+                "label": "RAID 1 (Mirroring — 1 Drive Tolerance, 50% Capacity)"
+              },
+              {
+                "value": "raid5",
+                "label": "RAID 5 (Single Distributed Parity — 1 Drive Tolerance, Min 3 Drives)"
+              },
+              {
+                "value": "raid6",
+                "label": "RAID 6 (Dual Distributed Parity — 2 Drive Tolerance, Min 4 Drives)"
+              },
+              {
+                "value": "raid10",
+                "label": "RAID 10 (1+0 Striped Mirrors — High IOPS, Min 4 Even Drives)"
+              },
+              {
+                "value": "raid50",
+                "label": "RAID 50 (Striped RAID 5 Sets — Enterprise Min 6 Drives)"
+              },
+              {
+                "value": "raid60",
+                "label": "RAID 60 (Striped RAID 6 Sets — Enterprise Min 8 Drives)"
+              },
+              {
+                "value": "jbod",
+                "label": "JBOD (Just a Bunch of Disks — Linear Concatenation)"
+              },
+              {
+                "value": "zfs_z1",
+                "label": "OpenZFS RAID-Z1 (Single Parity Vdev — Min 3 Drives)"
+              },
+              {
+                "value": "zfs_z2",
+                "label": "OpenZFS RAID-Z2 (Dual Parity Vdev — Min 4 Drives)"
+              },
+              {
+                "value": "zfs_z3",
+                "label": "OpenZFS RAID-Z3 (Triple Parity Vdev — Min 5 Drives)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Choose the RAID array or ZFS vdev redundancy architecture."
+          },
+          {
+            "name": "disk_count",
+            "label": "Number of Drives",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 64,
+            "step": 1,
+            "help": "Total physical drive bays or installed disks in array."
+          },
+          {
+            "name": "disk_size",
+            "label": "Drive Capacity",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8,
+            "options": null,
+            "min": 0.1,
+            "max": 100,
+            "step": 0.5,
+            "help": "Uniform capacity of each drive."
+          },
+          {
+            "name": "disk_unit",
+            "label": "Capacity Unit",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "TB",
+            "options": [
+              {
+                "value": "TB",
+                "label": "TB (Terabytes)"
+              },
+              {
+                "value": "GB",
+                "label": "GB (Gigabytes)"
+              },
+              {
+                "value": "PB",
+                "label": "PB (Petabytes)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Capacity metric unit."
+          },
+          {
+            "name": "hot_spares",
+            "label": "Dedicated Hot Spares",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 0,
+            "options": null,
+            "min": 0,
+            "max": 4,
+            "step": 1,
+            "help": "Unused standby drives ready for automatic rebuild upon disk failure."
+          },
+          {
+            "name": "disk_type",
+            "label": "Drive Architecture & URE Rating",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "enterprise_hdd",
+            "options": [
+              {
+                "value": "consumer_hdd",
+                "label": "Consumer Desktop HDD (1 in 10¹⁴ URE rate)"
+              },
+              {
+                "value": "enterprise_hdd",
+                "label": "Enterprise / NAS HDD (WD Red Pro / IronWolf Pro — 1 in 10¹⁵ URE)"
+              },
+              {
+                "value": "sata_ssd",
+                "label": "SATA Data Center SSD (1 in 10¹⁶ URE rate)"
+              },
+              {
+                "value": "nvme_ssd",
+                "label": "Enterprise NVMe PCIe Gen4/Gen5 SSD (1 in 10¹⁶ URE)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Drive hardware grade determining Unrecoverable Read Error (URE) risk."
+          },
+          {
+            "name": "disk_speed_mb",
+            "label": "Sequential Drive Speed (MB/s)",
+            "type": "number",
+            "unit": "MB/s",
+            "required": true,
+            "default": 220,
+            "options": null,
+            "min": 10,
+            "max": 10000,
+            "step": 10,
+            "help": "Sustained sequential read/write speed of individual drives."
+          },
+          {
+            "name": "cost_per_disk",
+            "label": "Cost per Drive ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 180,
+            "options": null,
+            "min": 0,
+            "max": 10000,
+            "step": 5,
+            "help": "Drive purchase price to estimate total CapEx hardware spend."
+          }
+        ]
       }
     ],
     "education": [
@@ -44447,5 +44634,5 @@
       }
     ]
   },
-  "total": 725
+  "total": 726
 }

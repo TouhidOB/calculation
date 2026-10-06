@@ -12,3 +12,4 @@ from . import extended_native  # noqa: F401
 from . import ai_helper  # noqa: F401
 from . import ai_suite  # noqa: F401
 from . import cctv_storage  # noqa: F401
+from . import raid_calculator  # noqa: F401
