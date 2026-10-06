@@ -71,6 +71,7 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import CloseIcon from "@mui/icons-material/Close"
 import VideocamIcon from "@mui/icons-material/Videocam"
+import StorageIcon from "@mui/icons-material/Storage"
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   finance: <AttachMoneyIcon />,
@@ -83,6 +84,8 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   education: <SchoolIcon />,
   real_estate: <HomeWorkIcon />,
   event_budget: <CelebrationIcon />,
+  ai_helper: <AutoAwesomeIcon />,
+  storage: <StorageIcon />,
 }
 
 /* ---------- SEO helper: humanized how-to + FAQ per calculator ---------- */
@@ -582,8 +585,8 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                     TryCalc — Free Calculators for Everyday Decisions
                   </Typography>
                   <Typography variant="body1" sx={{ color: "#475569", fontSize: 16, lineHeight: 1.6, mb: 2 }}>
-                    Access {total || 725}+ high-precision tools across 11 categories: Mortgage, Loans, Health & BMI,
-                    Construction, Currency, Date & Time, AI Helper, and Unit Converters.
+                    Access {total || 725}+ high-precision tools across 12 categories: Mortgage, Loans, Health & BMI,
+                    Construction, Currency, Date & Time, AI Helper, Storage, and Unit Converters.
                   </Typography>
 
                   {/* High Visibility Quick Tags */}

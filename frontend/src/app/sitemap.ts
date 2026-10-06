@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next"
-import type { CalculatorDef } from "@/lib/calculator-api"
+import { CATEGORY_META, type CalculatorDef } from "@/lib/calculator-api"
 import fallbackData from "@/lib/calculators-fallback.json"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
@@ -8,18 +8,7 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
 export const dynamic = "force-dynamic"
 export const revalidate = 86400
 
-const CATEGORY_KEYS = [
-  "finance",
-  "business_investment",
-  "health",
-  "construction",
-  "basic",
-  "conversion",
-  "date_time",
-  "education",
-  "real_estate",
-  "event_budget",
-]
+const CATEGORY_KEYS = Object.keys(CATEGORY_META)
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()

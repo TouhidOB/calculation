@@ -2929,7 +2929,7 @@ register_calculator(
 )
 
 register_calculator(
-    "audio-conversion-calculator", "Audio Conversion Calculator (Bitrate & File Size)", "conversion",
+    "audio-conversion-calculator", "Audio Conversion Calculator (Bitrate & File Size)", "storage",
     "Audio Conversion Calculator (Bitrate & File Size)",
     fields=[
         CalcField("calculationType", "What do you want to calculate?", type="select", options=[{"value": "File Size (MB)", "label": "File Size (MB)"}, {"value": "Bitrate (kbps)", "label": "Bitrate (kbps)"}, {"value": "Duration (h:m:s)", "label": "Duration (h:m:s)"}]),
@@ -3012,7 +3012,7 @@ register_calculator(
 )
 
 register_calculator(
-    "data-storage-converter", "Data Storage Converter (MB, GB, TB, Bytes)", "conversion",
+    "data-storage-converter", "Data Storage Converter (MB, GB, TB, Bytes)", "storage",
     "Data Storage Converter (MB, GB, TB, Bytes)",
     fields=[
         CalcField("inputValue", "Inputvalue"),
@@ -3368,7 +3368,7 @@ register_calculator(
 )
 
 register_calculator(
-    "video-file-size-calculator", "Video File Size Calculator (Bitrate & Duration to MB)", "conversion",
+    "video-file-size-calculator", "Video File Size Calculator (Bitrate & Duration to MB)", "storage",
     "Video File Size Calculator (Bitrate & Duration to MB)",
     fields=[
         CalcField("videoBitrateValue", "Video Bitrate (kbps)"),
@@ -7069,7 +7069,7 @@ register_calculator(
 )
 
 register_calculator(
-    "bandwidth-calculator", "Bandwidth Calculator", "conversion",
+    "bandwidth-calculator", "Bandwidth Calculator", "storage",
     "Bandwidth Calculator",
     fields=[
         CalcField("amount", "Amount", "number"),

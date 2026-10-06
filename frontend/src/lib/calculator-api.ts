@@ -114,4 +114,5 @@ export const CATEGORY_META: Record<string, { label: string; emoji: string; color
   real_estate: { label: "Real Estate", emoji: "🏠", color: "#ef4444" },
   event_budget: { label: "Event & Budget", emoji: "🎉", color: "#f97316" },
   ai_helper: { label: "AI Helper Calculators", emoji: "🤖", color: "#8b5cf6" },
+  storage: { label: "Storage Calculators", emoji: "💾", color: "#0284c7" },
 }

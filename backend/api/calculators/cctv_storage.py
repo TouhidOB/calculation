@@ -377,7 +377,7 @@ def _cctv_storage_calculator(values: dict) -> dict:
 register_calculator(
     "cctv-storage-calculator",
     "CCTV Storage & Bandwidth Calculator",
-    "conversion",
+    "storage",
     "Calculate CCTV & NVR hard drive storage, network bandwidth (Mbps), daily recording ingestion, RAID redundancy, and Western Digital / Seagate surveillance drive requirements based on camera count, resolution, FPS, and H.265/H.264 codecs.",
     fields=[
         CalcField(

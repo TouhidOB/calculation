@@ -74,6 +74,7 @@ export function seoIntroFor(calc: CalculatorDef): string {
     event_budget: `Budget your events perfectly with this free online ${fname}. Enter ${fieldList} to estimate costs, split expenses, and track spending.`,
     business_investment: `Project returns and business metrics with this free online ${fname}. Enter ${fieldList} for ROI, growth, margin, and investment analysis.`,
     ai_helper: `Calculate AI prompt tokens, subword chunking, context window saturation, and real-time API inference costs with this free online ${fname}. Compare pricing across 34 leading models including OpenAI GPT-4o, Anthropic Claude 3.7 Sonnet, Google Gemini 2.0 Flash, DeepSeek-R1, and Meta Llama 3.3.`,
+    storage: `Calculate CCTV camera storage, NVR/DVR retention days, bandwidth throughput (Mbps), and drive capacities (WD Purple, Seagate SkyHawk) with this free online ${fname}. Analyze video codecs, bitrates, and data storage conversions accurately.`,
     science: `Compute scientific values with this free online ${fname}. Enter ${fieldList} for physics, chemistry, and engineering calculations.`,
     misc: `Get quick answers with this free online ${fname}. Enter ${fieldList} for instant, accurate results.`,
     other: `Get quick answers with this free online ${fname}. Enter ${fieldList} for instant, accurate results.`,

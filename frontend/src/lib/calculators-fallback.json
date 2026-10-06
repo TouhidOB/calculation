@@ -1,5 +1,4 @@
 {
-  "total": 725,
   "categories": {
     "finance": [
       {
@@ -23050,105 +23049,6 @@
         ]
       },
       {
-        "id": "audio-conversion-calculator",
-        "name": "Audio Conversion Calculator (Bitrate & File Size)",
-        "category": "conversion",
-        "description": "Audio Conversion Calculator (Bitrate & File Size)",
-        "fields": [
-          {
-            "name": "calculationType",
-            "label": "What do you want to calculate?",
-            "type": "select",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": [
-              {
-                "value": "File Size (MB)",
-                "label": "File Size (MB)"
-              },
-              {
-                "value": "Bitrate (kbps)",
-                "label": "Bitrate (kbps)"
-              },
-              {
-                "value": "Duration (h:m:s)",
-                "label": "Duration (h:m:s)"
-              }
-            ],
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "bitrateValue",
-            "label": "Bitrate (in kbps - kilobits per second)",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "sizeValue",
-            "label": "File Size (in MB - Megabytes)",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "durationH",
-            "label": "Durationh",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "durationM",
-            "label": "Durationm",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "durationS",
-            "label": "Durations",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          }
-        ]
-      },
-      {
         "id": "blood-sugar-unit-converter",
         "name": "Blood Sugar Unit Converter (mg/dL to mmol/L)",
         "category": "conversion",
@@ -23422,27 +23322,6 @@
           {
             "name": "inputValue",
             "label": "Enter Text to Hash",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          }
-        ]
-      },
-      {
-        "id": "data-storage-converter",
-        "name": "Data Storage Converter (MB, GB, TB, Bytes)",
-        "category": "conversion",
-        "description": "Data Storage Converter (MB, GB, TB, Bytes)",
-        "fields": [
-          {
-            "name": "inputValue",
-            "label": "Inputvalue",
             "type": "number",
             "unit": "",
             "required": true,
@@ -25159,79 +25038,6 @@
         ]
       },
       {
-        "id": "video-file-size-calculator",
-        "name": "Video File Size Calculator (Bitrate & Duration to MB)",
-        "category": "conversion",
-        "description": "Video File Size Calculator (Bitrate & Duration to MB)",
-        "fields": [
-          {
-            "name": "videoBitrateValue",
-            "label": "Video Bitrate (kbps)",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "audioBitrateValue",
-            "label": "Audio Bitrate (kbps)",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "durationH",
-            "label": "Durationh",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "durationM",
-            "label": "Durationm",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "durationS",
-            "label": "Durations",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          }
-        ]
-      },
-      {
         "id": "viscosity-converter",
         "name": "Viscosity Converter (Dynamic & Kinematic)",
         "category": "conversion",
@@ -25380,53 +25186,6 @@
           {
             "name": "values",
             "label": "Values",
-            "type": "text",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          }
-        ]
-      },
-      {
-        "id": "bandwidth-calculator",
-        "name": "Bandwidth Calculator",
-        "category": "conversion",
-        "description": "Bandwidth Calculator",
-        "fields": [
-          {
-            "name": "amount",
-            "label": "Amount",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "from-unit",
-            "label": "From Unit",
-            "type": "text",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "to-unit",
-            "label": "To Unit",
             "type": "text",
             "unit": "",
             "required": true,
@@ -26846,270 +26605,6 @@
             "help": ""
           }
         ]
-      },
-      {
-        "id": "cctv-storage-calculator",
-        "name": "CCTV Storage & Bandwidth Calculator",
-        "category": "conversion",
-        "description": "Calculate CCTV & NVR hard drive storage, network bandwidth (Mbps), daily recording ingestion, RAID redundancy, and Western Digital / Seagate surveillance drive requirements based on camera count, resolution, FPS, and H.265/H.264 codecs.",
-        "fields": [
-          {
-            "name": "cameras",
-            "label": "Number of Cameras",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": 4,
-            "options": null,
-            "min": 1,
-            "max": 256,
-            "step": 1,
-            "help": "Total number of surveillance IP or analog cameras."
-          },
-          {
-            "name": "resolution",
-            "label": "Camera Resolution",
-            "type": "select",
-            "unit": "",
-            "required": true,
-            "default": "1080p",
-            "options": [
-              {
-                "value": "720p",
-                "label": "720p / 1MP (1280 × 720)"
-              },
-              {
-                "value": "1080p",
-                "label": "1080p / 2MP Full HD (1920 × 1080)"
-              },
-              {
-                "value": "3mp",
-                "label": "3MP (2048 × 1536)"
-              },
-              {
-                "value": "4mp",
-                "label": "4MP / 2K QHD (2560 × 1440)"
-              },
-              {
-                "value": "5mp",
-                "label": "5MP (2592 × 1944)"
-              },
-              {
-                "value": "6mp",
-                "label": "6MP (3072 × 2048)"
-              },
-              {
-                "value": "4k",
-                "label": "8MP / 4K UHD (3840 × 2160)"
-              },
-              {
-                "value": "12mp",
-                "label": "12MP Ultra (4000 × 3000)"
-              }
-            ],
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": "Video capture resolution per camera."
-          },
-          {
-            "name": "fps",
-            "label": "Frame Rate (FPS)",
-            "type": "select",
-            "unit": "",
-            "required": true,
-            "default": "15",
-            "options": [
-              {
-                "value": "5",
-                "label": "5 FPS (Low Bandwidth / Parking)"
-              },
-              {
-                "value": "10",
-                "label": "10 FPS (Standard Economy)"
-              },
-              {
-                "value": "15",
-                "label": "15 FPS (Recommended Surveillance Standard)"
-              },
-              {
-                "value": "20",
-                "label": "20 FPS (High Activity)"
-              },
-              {
-                "value": "25",
-                "label": "25 FPS (PAL Real-Time)"
-              },
-              {
-                "value": "30",
-                "label": "30 FPS (NTSC Full Motion)"
-              }
-            ],
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": "Frames per second. 15 FPS is the surveillance industry sweet-spot."
-          },
-          {
-            "name": "codec",
-            "label": "Video Compression Codec",
-            "type": "select",
-            "unit": "",
-            "required": true,
-            "default": "h265",
-            "options": [
-              {
-                "value": "h264",
-                "label": "H.264 (AVC Baseline)"
-              },
-              {
-                "value": "h264_plus",
-                "label": "H.264+ (Smart H.264 - 30% Savings)"
-              },
-              {
-                "value": "h265",
-                "label": "H.265 (HEVC Standard - 50% Savings)"
-              },
-              {
-                "value": "h265_plus",
-                "label": "H.265+ (Smart Codec - 70% Savings)"
-              },
-              {
-                "value": "mjpeg",
-                "label": "MJPEG (Legacy Uncompressed)"
-              }
-            ],
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": "Video compression codec. Modern H.265+ delivers up to 70% storage savings."
-          },
-          {
-            "name": "motion_activity",
-            "label": "Scene Motion / Complexity",
-            "type": "select",
-            "unit": "",
-            "required": true,
-            "default": "medium",
-            "options": [
-              {
-                "value": "low",
-                "label": "Low (~20% Motion, Static Room / Hallway)"
-              },
-              {
-                "value": "medium",
-                "label": "Medium (~40-50% Motion, Office / Retail)"
-              },
-              {
-                "value": "high",
-                "label": "High (~80% Motion, Active Street / Cashier)"
-              }
-            ],
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": "Expected movement activity in the camera field of view."
-          },
-          {
-            "name": "hours_per_day",
-            "label": "Recording Hours per Day",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": 24,
-            "options": null,
-            "min": 1,
-            "max": 24,
-            "step": 1,
-            "help": "Hours recorded per day (24 for continuous 24/7 recording)."
-          },
-          {
-            "name": "retention_days",
-            "label": "Storage Retention (Days)",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": 30,
-            "options": null,
-            "min": 1,
-            "max": 365,
-            "step": 1,
-            "help": "Number of days video recordings must be preserved before overwriting."
-          },
-          {
-            "name": "audio",
-            "label": "Audio Stream",
-            "type": "select",
-            "unit": "",
-            "required": true,
-            "default": "no",
-            "options": [
-              {
-                "value": "no",
-                "label": "No Audio"
-              },
-              {
-                "value": "yes",
-                "label": "Yes (64 kbps G.711 / AAC)"
-              }
-            ],
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": "Include synchronized audio stream per camera."
-          },
-          {
-            "name": "buffer_percent",
-            "label": "Safety Buffer Headroom (%)",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": 20,
-            "options": null,
-            "min": 0,
-            "max": 50,
-            "step": 5,
-            "help": "Recommended 20% margin for filesystem formatting overhead and VBR bitrate spikes."
-          },
-          {
-            "name": "raid_mode",
-            "label": "RAID Configuration",
-            "type": "select",
-            "unit": "",
-            "required": true,
-            "default": "none",
-            "options": [
-              {
-                "value": "none",
-                "label": "None / JBOD (100% Usable Storage)"
-              },
-              {
-                "value": "raid0",
-                "label": "RAID 0 (Striping - No Redundancy)"
-              },
-              {
-                "value": "raid1",
-                "label": "RAID 1 (Mirroring - 50% Usable)"
-              },
-              {
-                "value": "raid5",
-                "label": "RAID 5 (Single Parity - Min 3 Drives)"
-              },
-              {
-                "value": "raid6",
-                "label": "RAID 6 (Dual Parity - Min 4 Drives)"
-              },
-              {
-                "value": "raid10",
-                "label": "RAID 10 (Striped Mirrors - 50% Usable)"
-              }
-            ],
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": "Storage redundancy array type."
-          }
-        ]
       }
     ],
     "date_time": [
@@ -27269,7 +26764,7 @@
             "type": "date",
             "unit": "",
             "required": true,
-            "default": "2026-10-05",
+            "default": "2026-10-06",
             "options": null,
             "min": null,
             "max": null,
@@ -29599,6 +29094,512 @@
             "max": null,
             "step": null,
             "help": ""
+          }
+        ]
+      }
+    ],
+    "storage": [
+      {
+        "id": "audio-conversion-calculator",
+        "name": "Audio Conversion Calculator (Bitrate & File Size)",
+        "category": "storage",
+        "description": "Audio Conversion Calculator (Bitrate & File Size)",
+        "fields": [
+          {
+            "name": "calculationType",
+            "label": "What do you want to calculate?",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": [
+              {
+                "value": "File Size (MB)",
+                "label": "File Size (MB)"
+              },
+              {
+                "value": "Bitrate (kbps)",
+                "label": "Bitrate (kbps)"
+              },
+              {
+                "value": "Duration (h:m:s)",
+                "label": "Duration (h:m:s)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "bitrateValue",
+            "label": "Bitrate (in kbps - kilobits per second)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "sizeValue",
+            "label": "File Size (in MB - Megabytes)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "durationH",
+            "label": "Durationh",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "durationM",
+            "label": "Durationm",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "durationS",
+            "label": "Durations",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "data-storage-converter",
+        "name": "Data Storage Converter (MB, GB, TB, Bytes)",
+        "category": "storage",
+        "description": "Data Storage Converter (MB, GB, TB, Bytes)",
+        "fields": [
+          {
+            "name": "inputValue",
+            "label": "Inputvalue",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "video-file-size-calculator",
+        "name": "Video File Size Calculator (Bitrate & Duration to MB)",
+        "category": "storage",
+        "description": "Video File Size Calculator (Bitrate & Duration to MB)",
+        "fields": [
+          {
+            "name": "videoBitrateValue",
+            "label": "Video Bitrate (kbps)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "audioBitrateValue",
+            "label": "Audio Bitrate (kbps)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "durationH",
+            "label": "Durationh",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "durationM",
+            "label": "Durationm",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "durationS",
+            "label": "Durations",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "bandwidth-calculator",
+        "name": "Bandwidth Calculator",
+        "category": "storage",
+        "description": "Bandwidth Calculator",
+        "fields": [
+          {
+            "name": "amount",
+            "label": "Amount",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "from-unit",
+            "label": "From Unit",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "to-unit",
+            "label": "To Unit",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": null,
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "cctv-storage-calculator",
+        "name": "CCTV Storage & Bandwidth Calculator",
+        "category": "storage",
+        "description": "Calculate CCTV & NVR hard drive storage, network bandwidth (Mbps), daily recording ingestion, RAID redundancy, and Western Digital / Seagate surveillance drive requirements based on camera count, resolution, FPS, and H.265/H.264 codecs.",
+        "fields": [
+          {
+            "name": "cameras",
+            "label": "Number of Cameras",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 256,
+            "step": 1,
+            "help": "Total number of surveillance IP or analog cameras."
+          },
+          {
+            "name": "resolution",
+            "label": "Camera Resolution",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "1080p",
+            "options": [
+              {
+                "value": "720p",
+                "label": "720p / 1MP (1280 × 720)"
+              },
+              {
+                "value": "1080p",
+                "label": "1080p / 2MP Full HD (1920 × 1080)"
+              },
+              {
+                "value": "3mp",
+                "label": "3MP (2048 × 1536)"
+              },
+              {
+                "value": "4mp",
+                "label": "4MP / 2K QHD (2560 × 1440)"
+              },
+              {
+                "value": "5mp",
+                "label": "5MP (2592 × 1944)"
+              },
+              {
+                "value": "6mp",
+                "label": "6MP (3072 × 2048)"
+              },
+              {
+                "value": "4k",
+                "label": "8MP / 4K UHD (3840 × 2160)"
+              },
+              {
+                "value": "12mp",
+                "label": "12MP Ultra (4000 × 3000)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Video capture resolution per camera."
+          },
+          {
+            "name": "fps",
+            "label": "Frame Rate (FPS)",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "15",
+            "options": [
+              {
+                "value": "5",
+                "label": "5 FPS (Low Bandwidth / Parking)"
+              },
+              {
+                "value": "10",
+                "label": "10 FPS (Standard Economy)"
+              },
+              {
+                "value": "15",
+                "label": "15 FPS (Recommended Surveillance Standard)"
+              },
+              {
+                "value": "20",
+                "label": "20 FPS (High Activity)"
+              },
+              {
+                "value": "25",
+                "label": "25 FPS (PAL Real-Time)"
+              },
+              {
+                "value": "30",
+                "label": "30 FPS (NTSC Full Motion)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Frames per second. 15 FPS is the surveillance industry sweet-spot."
+          },
+          {
+            "name": "codec",
+            "label": "Video Compression Codec",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "h265",
+            "options": [
+              {
+                "value": "h264",
+                "label": "H.264 (AVC Baseline)"
+              },
+              {
+                "value": "h264_plus",
+                "label": "H.264+ (Smart H.264 - 30% Savings)"
+              },
+              {
+                "value": "h265",
+                "label": "H.265 (HEVC Standard - 50% Savings)"
+              },
+              {
+                "value": "h265_plus",
+                "label": "H.265+ (Smart Codec - 70% Savings)"
+              },
+              {
+                "value": "mjpeg",
+                "label": "MJPEG (Legacy Uncompressed)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Video compression codec. Modern H.265+ delivers up to 70% storage savings."
+          },
+          {
+            "name": "motion_activity",
+            "label": "Scene Motion / Complexity",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "medium",
+            "options": [
+              {
+                "value": "low",
+                "label": "Low (~20% Motion, Static Room / Hallway)"
+              },
+              {
+                "value": "medium",
+                "label": "Medium (~40-50% Motion, Office / Retail)"
+              },
+              {
+                "value": "high",
+                "label": "High (~80% Motion, Active Street / Cashier)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Expected movement activity in the camera field of view."
+          },
+          {
+            "name": "hours_per_day",
+            "label": "Recording Hours per Day",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 24,
+            "options": null,
+            "min": 1,
+            "max": 24,
+            "step": 1,
+            "help": "Hours recorded per day (24 for continuous 24/7 recording)."
+          },
+          {
+            "name": "retention_days",
+            "label": "Storage Retention (Days)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 30,
+            "options": null,
+            "min": 1,
+            "max": 365,
+            "step": 1,
+            "help": "Number of days video recordings must be preserved before overwriting."
+          },
+          {
+            "name": "audio",
+            "label": "Audio Stream",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "no",
+            "options": [
+              {
+                "value": "no",
+                "label": "No Audio"
+              },
+              {
+                "value": "yes",
+                "label": "Yes (64 kbps G.711 / AAC)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Include synchronized audio stream per camera."
+          },
+          {
+            "name": "buffer_percent",
+            "label": "Safety Buffer Headroom (%)",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 20,
+            "options": null,
+            "min": 0,
+            "max": 50,
+            "step": 5,
+            "help": "Recommended 20% margin for filesystem formatting overhead and VBR bitrate spikes."
+          },
+          {
+            "name": "raid_mode",
+            "label": "RAID Configuration",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "none",
+            "options": [
+              {
+                "value": "none",
+                "label": "None / JBOD (100% Usable Storage)"
+              },
+              {
+                "value": "raid0",
+                "label": "RAID 0 (Striping - No Redundancy)"
+              },
+              {
+                "value": "raid1",
+                "label": "RAID 1 (Mirroring - 50% Usable)"
+              },
+              {
+                "value": "raid5",
+                "label": "RAID 5 (Single Parity - Min 3 Drives)"
+              },
+              {
+                "value": "raid6",
+                "label": "RAID 6 (Dual Parity - Min 4 Drives)"
+              },
+              {
+                "value": "raid10",
+                "label": "RAID 10 (Striped Mirrors - 50% Usable)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Storage redundancy array type."
           }
         ]
       }
@@ -44445,5 +44446,6 @@
         ]
       }
     ]
-  }
+  },
+  "total": 725
 }

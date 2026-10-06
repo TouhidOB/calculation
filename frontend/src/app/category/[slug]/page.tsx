@@ -159,6 +159,28 @@ const CATEGORY_EDITORIAL: Record<
     ],
     bestFor: "Wedding planners, corporate event coordinators, and party organizers",
   },
+  ai_helper: {
+    tagline: "AI Token, Prompt Cost & Context Window Engineering Tools",
+    intro:
+      "Engineered for AI developers, prompt engineers, and LLM application builders. Calculate Byte-Pair Encoding (BPE) subword tokens, multi-turn conversation cost projections across 34 top models (GPT-4o, Claude 3.7, Gemini 2.5, DeepSeek-R1), and context window saturation limits.",
+    keyFeatures: [
+      "Real-time token counting and BPE subword conversion across all frontier models",
+      "API inference cost projections for input, output, and reasoning tokens",
+      "Context window headroom and KV cache memory estimation",
+    ],
+    bestFor: "LLM application development, API cost budgeting, and prompt engineering",
+  },
+  storage: {
+    tagline: "CCTV, Hard Drive, Bandwidth & Digital Storage Workstations",
+    intro:
+      "Engineered for surveillance technicians, network engineers, system administrators, and digital media professionals. Calculate exact CCTV NVR storage capacities, network bandwidth (Mbps), surveillance-grade hard drive sizing (WD Purple, Seagate SkyHawk), and data conversions across Bytes, Gigabytes, Terabytes, and Petabytes.",
+    keyFeatures: [
+      "CCTV storage and NVR retention modeling with H.264, H.265, and H.265+ smart codecs",
+      "Surveillance-grade hard drive recommendations, RAID redundancy, and binary formatting losses",
+      "Network bandwidth throughput, daily ingestion metrics, and audio/video file sizing",
+    ],
+    bestFor: "CCTV & NVR installation planning, surveillance hard drive sizing, network bandwidth budgeting, and data storage conversions",
+  },
 }
 
 async function getCategoryCalculators(categorySlug: string): Promise<CalculatorDef[]> {
