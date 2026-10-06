@@ -167,6 +167,26 @@ export async function generateMetadata({
             "token visualizer online",
             "bpe tokenizer online",
           ]
+        : canonicalId === "cctv-storage-calculator"
+        ? [
+            "cctv storage calculator",
+            "nvr storage calculator",
+            "cctv hard drive calculator",
+            "cctv bandwidth calculator",
+            "hikvision storage calculator",
+            "dahua storage calculator",
+            "ip camera bandwidth calculator",
+            "surveillance hdd calculator",
+            "cctv retention calculator",
+            "h.265 storage calculator",
+            "h.265+ bandwidth savings",
+            "wd purple storage calculator",
+            "seagate skyhawk storage calculator",
+            "how many tb for cctv cameras",
+            "cctv hard disk capacity calculator",
+            "video surveillance storage requirement",
+            "nvr bandwidth calculator online",
+          ]
         : []),
     ],
   }

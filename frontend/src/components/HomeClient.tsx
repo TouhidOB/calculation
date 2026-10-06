@@ -70,6 +70,7 @@ import FlashOnIcon from "@mui/icons-material/FlashOn"
 import RestartAltIcon from "@mui/icons-material/RestartAlt"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import CloseIcon from "@mui/icons-material/Close"
+import VideocamIcon from "@mui/icons-material/Videocam"
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   finance: <AttachMoneyIcon />,
@@ -580,10 +581,35 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                   >
                     TryCalc — Free Calculators for Everyday Decisions
                   </Typography>
-                  <Typography variant="body1" sx={{ color: "#475569", fontSize: 16, lineHeight: 1.6, mb: 3 }}>
+                  <Typography variant="body1" sx={{ color: "#475569", fontSize: 16, lineHeight: 1.6, mb: 2 }}>
                     Access {total || 725}+ high-precision tools across 11 categories: Mortgage, Loans, Health & BMI,
                     Construction, Currency, Date & Time, AI Helper, and Unit Converters.
                   </Typography>
+
+                  {/* High Visibility Quick Tags */}
+                  <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: "wrap", gap: 1 }}>
+                    <Chip
+                      icon={<VideocamIcon sx={{ fontSize: "16px !important", color: "#4338ca !important" }} />}
+                      label="NEW: CCTV Storage & Bandwidth Calculator (2026)"
+                      onClick={() => router.push("/calculators/cctv-storage-calculator")}
+                      clickable
+                      sx={{
+                        bgcolor: "#eef2ff",
+                        color: "#4338ca",
+                        fontWeight: 700,
+                        border: "1px solid #c7d2fe",
+                        "&:hover": { bgcolor: "#e0e7ff" },
+                      }}
+                    />
+                    <Chip
+                      label="AI Token Cost Estimator"
+                      onClick={() => router.push("/calculators/ai-token-calculator")}
+                      clickable
+                      size="small"
+                      variant="outlined"
+                      sx={{ borderColor: "#cbd5e1", color: "#475569", fontWeight: 600 }}
+                    />
+                  </Stack>
 
                   <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
                     <Button
@@ -692,8 +718,9 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                 {Object.values(categories)
                   .flat()
                   .filter((c) =>
-                    ["mortgage", "bmi", "loan", "compound", "age", "percentage", "tip", "calorie", "concrete", "currency", "simple-interest", "discount", "half-birthday"].some((p) => c.id.includes(p))
+                    ["cctv-storage-calculator", "mortgage", "bmi", "loan", "compound", "age", "percentage", "tip", "calorie", "concrete", "currency", "simple-interest", "discount", "half-birthday"].some((p) => c.id.includes(p))
                   )
+                  .sort((a, b) => (a.id === "cctv-storage-calculator" ? -1 : b.id === "cctv-storage-calculator" ? 1 : 0))
                   .slice(0, 15)
                   .map((calc) => (
                     <Grid key={calc.id} size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2.4 }}>
@@ -816,9 +843,26 @@ function CalcCard({ calc, onOpen }: { calc: CalculatorDef; onOpen: (c: Calculato
             <DynamicCalcIcon iconName={getCalcIcon(calc.id)} category={calc.category} />
           </Box>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-            <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700, color: "#0f172a" }}>
-              {calc.name}
-            </Typography>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
+              <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700, color: "#0f172a" }}>
+                {calc.name}
+              </Typography>
+              {calc.id === "cctv-storage-calculator" && (
+                <Chip
+                  label="NEW"
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: 10,
+                    fontWeight: 800,
+                    bgcolor: "#e0e7ff",
+                    color: "#4338ca",
+                    border: "1px solid #c7d2fe",
+                    px: 0.5,
+                  }}
+                />
+              )}
+            </Stack>
             <Typography variant="caption" sx={{ color: "#475569", display: "block", fontWeight: 500 }}>
               {catMeta?.label || calc.category}
             </Typography>

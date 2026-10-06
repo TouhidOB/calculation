@@ -49,6 +49,9 @@ export function seoDirectAnswerFor(calc: CalculatorDef): string {
   if (name.includes("token") || name.includes("llm") || name.includes("ai prompt") || calc.category === "ai_helper") {
     return "AI token and inference cost is calculated by chunking text into Byte-Pair Encoding (BPE) subwords (~0.75 words per token in English). API pricing is evaluated per million tokens: Cost = (Input Tokens / 1,000,000 × Input Price) + (Output Tokens / 1,000,000 × Output Price). For example, a 1,000-token prompt with 500 completion tokens on OpenAI GPT-4o ($2.50 / $10.00 per 1M) costs exactly $0.0075 per single request ($7.50 per 1,000 requests)."
   }
+  if (name.includes("cctv") || name.includes("surveillance") || name.includes("nvr")) {
+    return "CCTV and NVR storage is calculated using: Storage (TB) = [Bitrate (Mbps) × 3,600 s × Hours/Day × Cameras × Retention Days] / (8 × 1,000,000) × 1.20 (overhead buffer). For an 8-camera 4MP (2K QHD) system at 15 FPS using H.265+ smart codec (1.35 Mbps/cam) recording 24/7 for 30 days, required storage is 4.2 TB, requiring one 6TB surveillance-grade hard drive (WD Purple or Seagate SkyHawk)."
+  }
 
   const fieldsDesc = calc.fields.slice(0, 3).map((f) => f.label).join(", ")
   return `The ${calc.name} evaluates ${fieldsDesc} to produce verified, deterministic outputs according to standard mathematical models. Execute the calculator above to generate instant itemized figures, exportable audit ledgers, and calculation breakdowns.`
@@ -119,6 +122,26 @@ export function seoWorkedExampleFor(calc: CalculatorDef): WorkedExample {
         { label: "Total Daily API Cost", value: "$77.50 (vs $1.20 on DeepSeek-V3)" },
       ],
       explanation: "Input prompt tokens comprise 48.4% of total daily inference spend. Switching high-volume standard queries to DeepSeek-V3 or Gemini 2.0 Flash would reduce daily operational expenses from $77.50 to under $2.50 with equivalent throughput.",
+    }
+  }
+
+  if (name.includes("cctv") || name.includes("surveillance") || name.includes("nvr")) {
+    return {
+      title: "Commercial 8-Camera 4MP Surveillance Storage Sizing",
+      scenario: "A retail store installing 8 IP cameras running at 4MP (2560×1440) resolution, 15 frames per second, using H.265+ smart codec, continuous 24/7 recording for 30 calendar days.",
+      inputs: [
+        { label: "Camera Count", value: "8 IP Cameras" },
+        { label: "Resolution & Frame Rate", value: "4MP (2K QHD) @ 15 FPS" },
+        { label: "Video Compression", value: "H.265+ Smart Codec" },
+        { label: "Retention Duration", value: "30 Days (24 Hours/Day)" },
+      ],
+      results: [
+        { label: "Single Stream Bitrate", value: "1.35 Mbps per Camera" },
+        { label: "Total Network Bandwidth", value: "10.80 Mbps (Throughput)" },
+        { label: "Daily Storage Ingestion", value: "116.64 GB per Day (Total)" },
+        { label: "Recommended HDD Capacity", value: "4.20 TB (One 6TB WD Purple / SkyHawk Drive)" },
+      ],
+      explanation: "Using H.265+ compression slashes required storage from 14.0 TB (under standard H.264) down to 4.2 TB—saving 9.8 TB (70% storage and disk hardware expense). A single 6TB surveillance-grade drive comfortably fulfills the 30-day mandate with safety headroom.",
     }
   }
 
@@ -347,6 +370,31 @@ export function seoFaqFor(calc: CalculatorDef): { q: string; a: string }[] {
     ]
   }
 
+  if (name.includes("cctv") || name.includes("surveillance") || name.includes("nvr")) {
+    return [
+      {
+        q: "How do I calculate CCTV hard drive storage requirements?",
+        a: "Total storage is calculated using: Storage (TB) = [Bitrate (Mbps) × 3,600 seconds × Hours/Day × Cameras × Retention Days] / (8 × 1,000,000) × 1.20 (buffer). The 20% margin accommodates filesystem directory overhead, RAID parity reserves, and the standard decimal-to-binary HDD formatting discrepancy (where a 1TB labeled drive yields ~931 GiB usable space).",
+      },
+      {
+        q: "What is the storage difference between H.264 and H.265 / H.265+ codecs?",
+        a: "H.265 (HEVC) uses variable block sizes up to 64×64 and advanced inter-frame motion vectors to cut required bandwidth and storage by 40–50% compared to H.264. H.265+ (Smart Codec by Hikvision/Dahua) extracts static background references and only encodes dynamic movement, slashing daily ingestion by up to 70%. For 8 cameras at 4MP for 30 days, H.264 consumes ~14 TB, while H.265+ requires only ~4.2 TB.",
+      },
+      {
+        q: "Why is 15 FPS standard for surveillance systems instead of 30 FPS or 60 FPS?",
+        a: "Surveillance cameras primarily require sharp, blur-free identification of faces, vehicles, and license plates. 15 frames per second delivers fluid motion that meets legal evidentiary requirements while reducing storage and network bandwidth by approximately 35% compared to 30 FPS.",
+      },
+      {
+        q: "Why must I use surveillance-grade hard drives (WD Purple or Seagate SkyHawk)?",
+        a: "Desktop computer HDDs are engineered for 8×5 read-heavy workloads (80% read, 20% write). Surveillance recorders (NVR/DVR) operate 24/7/365 with 90% write and 10% read cycles under sustained thermal stress. Surveillance drives like Western Digital Purple and Seagate SkyHawk feature specialized firmware (AllFrame / ImagePerfect) that prevents video frame dropping and withstands continuous multi-stream recording.",
+      },
+      {
+        q: "How do RAID configurations (RAID 1, RAID 5, RAID 6, RAID 10) impact usable CCTV capacity?",
+        a: "RAID arrays protect surveillance archives from catastrophic single-drive or dual-drive hardware failures. RAID 0 provides 100% capacity with 0 redundancy. RAID 1 and RAID 10 mirror data, providing 50% usable storage. RAID 5 requires at least 3 drives and allocates 1 drive's capacity for parity ((N-1)/N usable capacity), while enterprise RAID 6 allocates 2 drives for dual parity ((N-2)/N usable capacity).",
+      },
+    ]
+  }
+
   if (name.includes("mortgage")) {
     return [
       {
@@ -480,6 +528,21 @@ export function seoFormulaFor(calc: CalculatorDef): FormulaInfo {
         { symbol: "N_batch", meaning: "Batch execution scale multiplier (e.g. 1000 daily queries)" },
       ],
       source: "Official Pricing Specifications from OpenAI, Anthropic, Google Cloud, and DeepSeek",
+    }
+  }
+
+  if (name.includes("cctv") || name.includes("surveillance") || name.includes("nvr")) {
+    return {
+      formula: "Storage (TB) = [ Bitrate (Mbps) × 3,600 × Hours × Cameras × Days ] / (8 × 1,000,000) × 1.20",
+      explanation: "Standard digital video surveillance storage formulation computing required unformatted HDD capacity across camera streams, video codecs, frame rates, and retention cycles.",
+      variables: [
+        { symbol: "Bitrate", meaning: "Single camera stream bandwidth in Megabits per second (Mbps)" },
+        { symbol: "Hours", meaning: "Active recording duration per calendar day (typically 24 hours)" },
+        { symbol: "Cameras", meaning: "Total concurrent IP / analog camera stream count" },
+        { symbol: "Days", meaning: "Required video retention period (e.g. 30 days)" },
+        { symbol: "1.20", meaning: "20% buffer covering filesystem structure, metadata, and binary-to-decimal disk format losses" },
+      ],
+      source: "CCTV Operational Standards, ONVIF Profile S/G/T Specifications, and Security Industry Association (SIA)",
     }
   }
 
