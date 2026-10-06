@@ -53,6 +53,9 @@ import ScheduleIcon from "@mui/icons-material/Schedule"
 import SchoolIcon from "@mui/icons-material/School"
 import HomeWorkIcon from "@mui/icons-material/HomeWork"
 import CelebrationIcon from "@mui/icons-material/Celebration"
+import StorageIcon from "@mui/icons-material/Storage"
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
+import fallbackData from "@/lib/calculators-fallback.json"
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   finance: <AttachMoneyIcon />,
@@ -65,6 +68,8 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   education: <SchoolIcon />,
   real_estate: <HomeWorkIcon />,
   event_budget: <CelebrationIcon />,
+  ai_helper: <AutoAwesomeIcon />,
+  storage: <StorageIcon />,
 }
 
 const DRAWER_WIDTH = 290
@@ -81,7 +86,9 @@ export default function GlobalNavbar({
 }: GlobalNavbarProps) {
   const router = useRouter()
 
-  const [categories, setCategories] = useState<CategoryMap>({})
+  const [categories, setCategories] = useState<CategoryMap>(
+    (fallbackData.categories as unknown as CategoryMap) || {}
+  )
   const [total, setTotal] = useState(725)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")

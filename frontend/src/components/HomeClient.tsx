@@ -111,6 +111,7 @@ function seoIntroFor(calc: CalculatorDef): string {
     math: `Solve math problems step-by-step with this free online ${fname}. Enter ${fieldList} for fractions, statistics, algebra, and geometry answers.`,
     event_budget: `Budget your events perfectly with this free online ${fname}. Enter ${fieldList} to estimate costs, split expenses, and track spending.`,
     business_investment: `Project returns and business metrics with this free online ${fname}. Enter ${fieldList} for ROI, growth, margin, and investment analysis.`,
+    storage: `Calculate drive capacity, recording storage, file sizes, and network bandwidth with this free online ${fname}. Enter ${fieldList} for precise hardware planning and data calculations.`,
   }
   return intros[calc.category] || `Calculate ${fname} with this free online tool. Accurate, instant results with clear explanations.`
 }
@@ -180,14 +181,18 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [allFiltered, setAllFiltered] = useState(false)
 
-  // Sync category param from URL on popstate
+  // Sync category param from URL on initial mount and popstate
   useEffect(() => {
-    const handlePopState = () => {
+    const syncCategoryFromUrl = () => {
       const params = new URLSearchParams(window.location.search)
-      setActiveCat(params.get("cat") || params.get("category") || null)
+      const cat = params.get("cat") || params.get("category") || null
+      if (cat) {
+        setActiveCat(cat)
+      }
     }
-    window.addEventListener("popstate", handlePopState)
-    return () => window.removeEventListener("popstate", handlePopState)
+    syncCategoryFromUrl()
+    window.addEventListener("popstate", syncCategoryFromUrl)
+    return () => window.removeEventListener("popstate", syncCategoryFromUrl)
   }, [])
 
   useEffect(() => {
@@ -209,6 +214,10 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
     setSelectedCalc(null)
     setAllFiltered(false)
     setDrawerOpen(false)
+    if (typeof window !== "undefined") {
+      const newUrl = cat ? `/?cat=${encodeURIComponent(cat)}` : "/"
+      window.history.pushState({}, "", newUrl)
+    }
   }
 
   const openCalculator = (calc: CalculatorDef) => {
@@ -689,7 +698,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                             {meta.label}
                           </Typography>
                           <Typography variant="body2" sx={{ color: "#475569", fontSize: 13, mb: 1.5, flexGrow: 1 }}>
-                            Explore {count} {meta.label.toLowerCase()} calculators
+                            Explore {count} {meta.label.toLowerCase().endsWith("calculator") ? `${meta.label.toLowerCase()} tools` : `${meta.label.toLowerCase()} calculators`}
                           </Typography>
                           <Chip
                             label={`${count} tools`}

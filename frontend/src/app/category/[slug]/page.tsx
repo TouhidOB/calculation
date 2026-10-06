@@ -213,7 +213,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     intro: `Free online ${catMeta.label.toLowerCase()} calculators with instant verified results.`,
   }
 
-  const title = `${catMeta.label} Calculators (2026) — Free Online Precision Tools | TryCalc`
+  const displayCategoryName = catMeta.label.endsWith("Calculator") || catMeta.label.endsWith("Calculators")
+    ? catMeta.label
+    : `${catMeta.label} Calculators`
+
+  const title = `${displayCategoryName} (2026) — Free Online Precision Tools | TryCalc`
   const description = `${editorial.tagline} (2026 Updated). ${editorial.intro.slice(0, 150)}`
   const canonicalUrl = `${SITE_URL}/category/${slug}`
 
@@ -244,9 +248,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   if (!catMeta) notFound()
 
   const calcs = await getCategoryCalculators(slug)
+  const displayCategoryName = catMeta.label.endsWith("Calculator") || catMeta.label.endsWith("Calculators")
+    ? catMeta.label
+    : `${catMeta.label} Calculators`
+
   const editorial = CATEGORY_EDITORIAL[slug] || {
-    tagline: `${catMeta.label} Calculators`,
-    intro: `Free online ${catMeta.label.toLowerCase()} calculators with instant verified results.`,
+    tagline: displayCategoryName,
+    intro: `Free online ${catMeta.label.toLowerCase()} tools with instant verified results.`,
     keyFeatures: ["Deterministic calculation algorithms", "High precision 64-bit arithmetic", "100% free with no registration"],
     bestFor: `${catMeta.label} planning and everyday computations`,
   }
@@ -257,14 +265,14 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: `${catMeta.label} Calculators`, item: `${SITE_URL}/category/${slug}` },
+      { "@type": "ListItem", position: 2, name: displayCategoryName, item: `${SITE_URL}/category/${slug}` },
     ],
   }
 
   const collectionLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `${catMeta.label} Calculators — TryCalc`,
+    name: `${displayCategoryName} — TryCalc`,
     description: editorial.intro,
     url: `${SITE_URL}/category/${slug}`,
     isPartOf: {
@@ -394,7 +402,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                   TRYCALC TOPIC CLUSTER
                 </Typography>
                 <Typography variant="h4" sx={{ fontWeight: 900, color: "#f8fafc", letterSpacing: -0.5 }}>
-                  {catMeta.label} Calculators
+                  {displayCategoryName}
                 </Typography>
               </Box>
             </Stack>
