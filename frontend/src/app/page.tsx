@@ -5,7 +5,7 @@ import fallbackData from "@/lib/calculators-fallback.json"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
 
-export const revalidate = 3600
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: {
@@ -22,7 +22,7 @@ async function getCalculators(): Promise<{ categories: CategoryMap; total: numbe
   try {
     const res = await fetch(`${BACKEND_URL}/api/calculators/`, {
       headers: { Accept: "application/json" },
-      next: { revalidate: 3600 },
+      next: { revalidate: 60 },
     })
     if (res.ok) {
       const data = await res.json()

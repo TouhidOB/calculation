@@ -5,13 +5,13 @@ const BACKEND = "http://backend:8000/api"
 export async function GET() {
   const res = await fetch(`${BACKEND}/calculators/`, {
     headers: { Accept: "application/json" },
-    next: { revalidate: 3600 },
+    next: { revalidate: 60 },
   })
   const data = await res.json()
   return NextResponse.json(data, {
     status: res.status,
     headers: {
-      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      "Cache-Control": "public, max-age=60, stale-while-revalidate=120, must-revalidate",
     },
   })
 }

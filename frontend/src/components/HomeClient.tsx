@@ -12,6 +12,7 @@ import GlobalFooter from "@/components/GlobalFooter"
 import { getIconComponent } from "@/lib/icon-registry"
 import DOMPurify from "dompurify"
 import QuickCalculator from "./QuickCalculator"
+import fallbackData from "@/lib/calculators-fallback.json"
 
 // MUI components
 import AppBar from "@mui/material/AppBar"
@@ -162,12 +163,17 @@ export interface HomeClientProps {
 export default function HomeClient({ initialCategories, initialTotal }: HomeClientProps = {}) {
   const router = useRouter()
 
-  const [categories, setCategories] = useState<CategoryMap>(initialCategories || {})
+  const fallbackCategories = (fallbackData.categories as unknown as CategoryMap) || {}
+  const [categories, setCategories] = useState<CategoryMap>(
+    initialCategories && Object.keys(initialCategories).length > 0
+      ? initialCategories
+      : fallbackCategories
+  )
   const [total, setTotal] = useState(
     initialTotal ||
-      (initialCategories
+      (initialCategories && Object.keys(initialCategories).length > 0
         ? Object.values(initialCategories).reduce((s, a) => s + a.length, 0)
-        : 0)
+        : fallbackData.total || 725)
   )
   const [activeCat, setActiveCat] = useState<string | null>(() => {
     if (typeof window !== "undefined") {

@@ -109,10 +109,10 @@ export const CATEGORY_META: Record<string, { label: string; emoji: string; color
   construction: { label: "Construction", emoji: "🏗️", color: "#f59e0b" },
   basic: { label: "Basic & Math", emoji: "🧮", color: "#6b7280" },
   conversion: { label: "Unit Conversion", emoji: "🔄", color: "#06b6d4" },
+  storage: { label: "Storage Calculator", emoji: "💾", color: "#0284c7" },
   date_time: { label: "Date & Time", emoji: "📅", color: "#0ea5e9" },
   education: { label: "Education", emoji: "🎓", color: "#a855f7" },
   real_estate: { label: "Real Estate", emoji: "🏠", color: "#ef4444" },
   event_budget: { label: "Event & Budget", emoji: "🎉", color: "#f97316" },
   ai_helper: { label: "AI Helper", emoji: "🤖", color: "#8b5cf6" },
-  storage: { label: "Storage Calculator", emoji: "💾", color: "#0284c7" },
 }
