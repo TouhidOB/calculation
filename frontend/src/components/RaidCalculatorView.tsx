@@ -1,16 +1,19 @@
 "use client"
 
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useCallback } from "react"
 import Box from "@mui/material/Box"
 import Typography from "@mui/material/Typography"
 import Paper from "@mui/material/Paper"
 import Button from "@mui/material/Button"
 import Chip from "@mui/material/Chip"
 import Slider from "@mui/material/Slider"
-import TextField from "@mui/material/TextField"
 import MenuItem from "@mui/material/MenuItem"
+import Select from "@mui/material/Select"
+import FormControl from "@mui/material/FormControl"
+import InputLabel from "@mui/material/InputLabel"
 import Tooltip from "@mui/material/Tooltip"
-import Grid from "@mui/material/Grid"
+import IconButton from "@mui/material/IconButton"
+import Divider from "@mui/material/Divider"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
 import TableCell from "@mui/material/TableCell"
@@ -19,1765 +22,1504 @@ import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import Alert from "@mui/material/Alert"
 import LinearProgress from "@mui/material/LinearProgress"
-import Divider from "@mui/material/Divider"
-import Tabs from "@mui/material/Tabs"
-import Tab from "@mui/material/Tab"
-import IconButton from "@mui/material/IconButton"
-import DnsIcon from "@mui/icons-material/Dns"
+import AddIcon from "@mui/icons-material/Add"
+import RemoveIcon from "@mui/icons-material/Remove"
+import DeleteIcon from "@mui/icons-material/Delete"
 import StorageIcon from "@mui/icons-material/Storage"
 import SpeedIcon from "@mui/icons-material/Speed"
 import SecurityIcon from "@mui/icons-material/Security"
-import WarningAmberIcon from "@mui/icons-material/WarningAmber"
+import MemoryIcon from "@mui/icons-material/Memory"
+import RefreshIcon from "@mui/icons-material/Refresh"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 import ErrorIcon from "@mui/icons-material/Error"
-import ContentCopyIcon from "@mui/icons-material/ContentCopy"
-import PrintIcon from "@mui/icons-material/Print"
-import RestartAltIcon from "@mui/icons-material/RestartAlt"
-import BoltIcon from "@mui/icons-material/Bolt"
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney"
-import AddIcon from "@mui/icons-material/Add"
-import RemoveIcon from "@mui/icons-material/Remove"
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
 import TuneIcon from "@mui/icons-material/Tune"
 import InfoIcon from "@mui/icons-material/Info"
+import LanIcon from "@mui/icons-material/Lan"
+import DvrIcon from "@mui/icons-material/Dvr"
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows"
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn"
+import ViewModuleIcon from "@mui/icons-material/ViewModule"
 
-// Types
 export interface RaidCalculatorViewProps {
-  onToast?: (msg: string) => void
+  onToast?: (message: string, severity?: "success" | "info" | "warning" | "error") => void
 }
 
-interface RaidConfigMeta {
+export type RaidTypeCode =
+  | "shr1"
+  | "shr2"
+  | "raid0"
+  | "raid1"
+  | "raid5"
+  | "raid6"
+  | "raid10"
+  | "raid50"
+  | "raid60"
+  | "zfs_z1"
+  | "zfs_z2"
+  | "zfs_z3"
+  | "jbod"
+
+export interface RaidMeta {
+  code: RaidTypeCode
   name: string
-  fullName: string
+  shortLabel: string
+  category: "hybrid" | "standard" | "zfs" | "linear"
   minDrives: number
-  badge: string
-  description: string
-  maxFaultTolerance: (n: number) => number
-  computeUsableTB: (n: number, s: number, spares: number) => {
-    usableTB: number
-    parityTB: number
-    mirrorTB: number
-    spareTB: number
-    wastedTB: number
-  }
-  readMultiplier: (n: number) => number
-  writeMultiplier: (n: number) => number
+  maxDriveTolerance: number
   writePenalty: number
-  pros: string[]
-  cons: string[]
+  tag: string
+  color: string
+  description: string
 }
 
-const RAID_TYPES: Record<string, RaidConfigMeta> = {
-  raid0: {
-    name: "RAID 0",
-    fullName: "Striping (No Redundancy)",
-    minDrives: 2,
-    badge: "Maximum Speed",
-    description: "Maximum speed and 100% capacity. Data is split evenly across all drives without parity.",
-    maxFaultTolerance: () => 0,
-    computeUsableTB: (n, s, spares) => {
-      const active = Math.max(0, n - spares)
-      return {
-        usableTB: active * s,
-        parityTB: 0,
-        mirrorTB: 0,
-        spareTB: spares * s,
-        wastedTB: 0,
-      }
-    },
-    readMultiplier: (n) => n,
-    writeMultiplier: (n) => n,
-    writePenalty: 1,
-    pros: ["100% storage efficiency", "Maximum read/write performance", "No CPU parity overhead"],
-    cons: ["Zero fault tolerance (1 drive failure = 100% data loss)", "Never use for unbacked data"],
+export const RAID_ARCHITECTURES: Record<RaidTypeCode, RaidMeta> = {
+  shr1: {
+    code: "shr1",
+    name: "Synology Hybrid RAID 1 (SHR-1)",
+    shortLabel: "SHR-1",
+    category: "hybrid",
+    minDrives: 1,
+    maxDriveTolerance: 1,
+    writePenalty: 4,
+    tag: "Best for Mixed Disks",
+    color: "#0284c7",
+    description: "Automatic mixed-drive horizontal slicing with 1-drive redundancy. Maximizes usable storage.",
   },
-  raid1: {
-    name: "RAID 1",
-    fullName: "Mirroring (1:1 Duplication)",
-    minDrives: 2,
-    badge: "Simple Mirror",
-    description: "Exact replica of data across mirrored drives. Simple and fast recovery.",
-    maxFaultTolerance: (n) => n - 1,
-    computeUsableTB: (n, s, spares) => {
-      const active = Math.max(0, n - spares)
-      const usable = active > 0 ? s : 0
-      const mirror = Math.max(0, (active - 1) * s)
-      return {
-        usableTB: usable,
-        parityTB: 0,
-        mirrorTB: mirror,
-        spareTB: spares * s,
-        wastedTB: 0,
-      }
-    },
-    readMultiplier: (n) => n,
-    writeMultiplier: () => 1,
-    writePenalty: 2,
-    pros: ["Simple and fast recovery", "Can lose all but one mirrored drive", "Fast multi-threaded reads"],
-    cons: ["High storage cost (50% capacity with 2 drives)", "Slow writes relative to RAID 0"],
+  shr2: {
+    code: "shr2",
+    name: "Synology Hybrid RAID 2 (SHR-2)",
+    shortLabel: "SHR-2",
+    category: "hybrid",
+    minDrives: 4,
+    maxDriveTolerance: 2,
+    writePenalty: 6,
+    tag: "High Mixed Safety",
+    color: "#0369a1",
+    description: "Mixed-drive slicing with 2-drive redundancy. Ideal for 4+ mixed drive arrays.",
   },
   raid5: {
-    name: "RAID 5",
-    fullName: "Distributed Single Parity",
+    code: "raid5",
+    name: "RAID 5 (Single Distributed Parity)",
+    shortLabel: "RAID 5",
+    category: "standard",
     minDrives: 3,
-    badge: "Most Popular for NAS",
-    description: "Data and single parity distributed across 3+ drives. Best balance of capacity, speed, and cost.",
-    maxFaultTolerance: () => 1,
-    computeUsableTB: (n, s, spares) => {
-      const active = Math.max(0, n - spares)
-      if (active < 3) return { usableTB: 0, parityTB: 0, mirrorTB: 0, spareTB: spares * s, wastedTB: active * s }
-      return {
-        usableTB: (active - 1) * s,
-        parityTB: 1 * s,
-        mirrorTB: 0,
-        spareTB: spares * s,
-        wastedTB: 0,
-      }
-    },
-    readMultiplier: (n) => Math.max(1, n - 1),
-    writeMultiplier: (n) => Math.max(0.25, (n - 1) / 4),
+    maxDriveTolerance: 1,
     writePenalty: 4,
-    pros: ["High capacity efficiency ((N-1)/N)", "Cost effective for 3-5 drives", "Fast sequential reads"],
-    cons: ["Only 1 drive failure allowed", "High URE rebuild risk on large drives (>8TB)", "Write penalty (4 I/O per write)"],
+    tag: "Most Popular NAS",
+    color: "#10b981",
+    description: "1 disk capacity dedicated to parity across all disks. Array capacity bounded by smallest drive.",
   },
   raid6: {
-    name: "RAID 6",
-    fullName: "Distributed Dual Parity (P+Q)",
+    code: "raid6",
+    name: "RAID 6 (Dual Distributed Parity)",
+    shortLabel: "RAID 6",
+    category: "standard",
     minDrives: 4,
-    badge: "Recommended for >8TB Drives",
-    description: "Dual parity blocks distributed across 4+ drives. Withstands simultaneous loss of any 2 drives.",
-    maxFaultTolerance: () => 2,
-    computeUsableTB: (n, s, spares) => {
-      const active = Math.max(0, n - spares)
-      if (active < 4) return { usableTB: 0, parityTB: 0, mirrorTB: 0, spareTB: spares * s, wastedTB: active * s }
-      return {
-        usableTB: (active - 2) * s,
-        parityTB: 2 * s,
-        mirrorTB: 0,
-        spareTB: spares * s,
-        wastedTB: 0,
-      }
-    },
-    readMultiplier: (n) => Math.max(1, n - 2),
-    writeMultiplier: (n) => Math.max(0.2, (n - 2) / 6),
+    maxDriveTolerance: 2,
     writePenalty: 6,
-    pros: ["Tolerates 2 concurrent drive failures", "Safe against URE during rebuild on large HDDs", "Enterprise standard"],
-    cons: ["Requires minimum 4 drives", "Higher write penalty (6 I/O per random write)"],
+    tag: "Dual Parity Safety",
+    color: "#059669",
+    description: "2 disks capacity for parity. Survives 2 concurrent disk failures during long rebuilds.",
   },
   raid10: {
-    name: "RAID 10",
-    fullName: "1+0 Striped Mirrors",
+    code: "raid10",
+    name: "RAID 10 (Striped Mirrors 1+0)",
+    shortLabel: "RAID 10",
+    category: "standard",
     minDrives: 4,
-    badge: "Best for Databases & VMs",
-    description: "Stripe of mirrored pairs (RAID 1+0). Combines extreme IOPS performance with rapid, stress-free rebuilds.",
-    maxFaultTolerance: (n) => Math.floor(n / 2),
-    computeUsableTB: (n, s, spares) => {
-      const active = Math.max(0, n - spares)
-      const validEven = active - (active % 2)
-      const wasted = (active % 2) * s
-      if (validEven < 4) return { usableTB: 0, parityTB: 0, mirrorTB: 0, spareTB: spares * s, wastedTB: active * s }
-      return {
-        usableTB: (validEven / 2) * s,
-        parityTB: 0,
-        mirrorTB: (validEven / 2) * s,
-        spareTB: spares * s,
-        wastedTB: wasted,
-      }
-    },
-    readMultiplier: (n) => n,
-    writeMultiplier: (n) => n / 2,
+    maxDriveTolerance: 1,
     writePenalty: 2,
-    pros: ["Top-tier random read & write IOPS", "Blazing fast rebuild times (simple mirror copy)", "No parity CPU overhead"],
-    cons: ["50% storage capacity efficiency", "Requires an even number of drives (min 4)"],
+    tag: "Fastest & Best IOPS",
+    color: "#8b5cf6",
+    description: "Pairs of mirrored disks striped together. 50% capacity with fastest rebuilds and highest IOPS.",
   },
-  raid50: {
-    name: "RAID 50",
-    fullName: "Striped RAID 5 Sub-Arrays",
-    minDrives: 6,
-    badge: "High Capacity + Speed",
-    description: "RAID 0 stripe across two or more RAID 5 parity groups. High capacity with better IOPS than single RAID 5.",
-    maxFaultTolerance: () => 2,
-    computeUsableTB: (n, s, spares) => {
-      const active = Math.max(0, n - spares)
-      if (active < 6) return { usableTB: 0, parityTB: 0, mirrorTB: 0, spareTB: spares * s, wastedTB: active * s }
-      const groups = 2
-      return {
-        usableTB: (active - groups) * s,
-        parityTB: groups * s,
-        mirrorTB: 0,
-        spareTB: spares * s,
-        wastedTB: 0,
-      }
-    },
-    readMultiplier: (n) => n - 2,
-    writeMultiplier: (n) => (n - 2) / 3,
-    writePenalty: 4,
-    pros: ["Higher write throughput than RAID 5", "Faster rebuild than single RAID 5", "Great for 8-16 drive arrays"],
-    cons: ["Requires minimum 6 drives", "Array fails if 2 drives fail in same sub-group"],
+  raid1: {
+    code: "raid1",
+    name: "RAID 1 (1:1 Mirroring)",
+    shortLabel: "RAID 1",
+    category: "standard",
+    minDrives: 2,
+    maxDriveTolerance: 1,
+    writePenalty: 1,
+    tag: "Simple 2-Bay Mirror",
+    color: "#6366f1",
+    description: "Exact duplicate copy across 2+ disks. 1 disk usable, ideal for 2-bay NAS.",
   },
-  raid60: {
-    name: "RAID 60",
-    fullName: "Striped RAID 6 Sub-Arrays",
-    minDrives: 8,
-    badge: "Ultra Resilient Enterprise",
-    description: "RAID 0 stripe across two or more RAID 6 dual-parity sets. High redundancy for large petabyte arrays.",
-    maxFaultTolerance: () => 4,
-    computeUsableTB: (n, s, spares) => {
-      const active = Math.max(0, n - spares)
-      if (active < 8) return { usableTB: 0, parityTB: 0, mirrorTB: 0, spareTB: spares * s, wastedTB: active * s }
-      const groups = 2
-      return {
-        usableTB: (active - groups * 2) * s,
-        parityTB: groups * 2 * s,
-        mirrorTB: 0,
-        spareTB: spares * s,
-        wastedTB: 0,
-      }
-    },
-    readMultiplier: (n) => n - 4,
-    writeMultiplier: (n) => (n - 4) / 4,
-    writePenalty: 6,
-    pros: ["Can withstand 2 drive failures in EACH sub-array", "Top tier safety for 12+ drive chassis"],
-    cons: ["Requires minimum 8 drives", "4 drives dedicated to parity"],
+  raid0: {
+    code: "raid0",
+    name: "RAID 0 (Pure Striping)",
+    shortLabel: "RAID 0",
+    category: "standard",
+    minDrives: 2,
+    maxDriveTolerance: 0,
+    writePenalty: 1,
+    tag: "Max Speed (No Safety)",
+    color: "#ef4444",
+    description: "Data split evenly across disks. Maximum speed and capacity, but 1 drive failure loses ALL data.",
   },
   zfs_z1: {
-    name: "ZFS RAID-Z1",
-    fullName: "OpenZFS Single Parity vdev",
+    code: "zfs_z1",
+    name: "OpenZFS RAID-Z1",
+    shortLabel: "RAID-Z1",
+    category: "zfs",
     minDrives: 3,
-    badge: "TrueNAS / OpenZFS",
-    description: "OpenZFS software RAID with dynamic stripe width and end-to-end data checksumming against silent corruption.",
-    maxFaultTolerance: () => 1,
-    computeUsableTB: (n, s, spares) => {
-      const active = Math.max(0, n - spares)
-      if (active < 3) return { usableTB: 0, parityTB: 0, mirrorTB: 0, spareTB: spares * s, wastedTB: active * s }
-      const rawUsable = (active - 1) * s
-      return {
-        usableTB: rawUsable * 0.967,
-        parityTB: 1 * s,
-        mirrorTB: 0,
-        spareTB: spares * s,
-        wastedTB: rawUsable * 0.033,
-      }
-    },
-    readMultiplier: (n) => Math.max(1, n - 1),
-    writeMultiplier: (n) => Math.max(0.25, (n - 1) / 4),
+    maxDriveTolerance: 1,
     writePenalty: 4,
-    pros: ["Automatic self-healing data checksums", "No write-hole vulnerability", "Copy-on-write snapshots"],
-    cons: ["Only 1 drive failure tolerated", "Vdev expansion requires careful planning"],
+    tag: "TrueNAS Single Parity",
+    color: "#0d9488",
+    description: "ZFS dynamic stripe-width parity with data self-healing and checksum verification.",
   },
   zfs_z2: {
-    name: "ZFS RAID-Z2",
-    fullName: "OpenZFS Dual Parity vdev",
+    code: "zfs_z2",
+    name: "OpenZFS RAID-Z2",
+    shortLabel: "RAID-Z2",
+    category: "zfs",
     minDrives: 4,
-    badge: "Recommended for TrueNAS",
-    description: "OpenZFS dual distributed parity. Highly recommended for modern high-capacity TrueNAS and ZFS pools.",
-    maxFaultTolerance: () => 2,
-    computeUsableTB: (n, s, spares) => {
-      const active = Math.max(0, n - spares)
-      if (active < 4) return { usableTB: 0, parityTB: 0, mirrorTB: 0, spareTB: spares * s, wastedTB: active * s }
-      const rawUsable = (active - 2) * s
-      return {
-        usableTB: rawUsable * 0.967,
-        parityTB: 2 * s,
-        mirrorTB: 0,
-        spareTB: spares * s,
-        wastedTB: rawUsable * 0.033,
-      }
-    },
-    readMultiplier: (n) => Math.max(1, n - 2),
-    writeMultiplier: (n) => Math.max(0.2, (n - 2) / 6),
+    maxDriveTolerance: 2,
     writePenalty: 6,
-    pros: ["Protects against 2 drive failures", "End-to-end ZFS checksum data integrity", "Safe for 16TB+ drives"],
-    cons: ["Requires minimum 4 drives", "Slightly higher CPU utilization for dual parity"],
+    tag: "TrueNAS Dual Parity",
+    color: "#0f766e",
+    description: "ZFS dual-parity with end-to-end data integrity. Recommended for drives 8TB and above.",
+  },
+  zfs_z3: {
+    code: "zfs_z3",
+    name: "OpenZFS RAID-Z3",
+    shortLabel: "RAID-Z3",
+    category: "zfs",
+    minDrives: 5,
+    maxDriveTolerance: 3,
+    writePenalty: 8,
+    tag: "Triple Parity Mission-Critical",
+    color: "#115e59",
+    description: "ZFS triple-parity protection. Survives 3 simultaneous drive failures in large disk pools.",
+  },
+  raid50: {
+    code: "raid50",
+    name: "RAID 50 (Striped RAID 5 Sets)",
+    shortLabel: "RAID 50",
+    category: "standard",
+    minDrives: 6,
+    maxDriveTolerance: 1,
+    writePenalty: 4,
+    tag: "Enterprise 6+ Bays",
+    color: "#d97706",
+    description: "Two or more RAID 5 arrays striped together. Faster rebuild times than single large RAID 5.",
+  },
+  raid60: {
+    code: "raid60",
+    name: "RAID 60 (Striped RAID 6 Sets)",
+    shortLabel: "RAID 60",
+    category: "standard",
+    minDrives: 8,
+    maxDriveTolerance: 2,
+    writePenalty: 6,
+    tag: "Enterprise 8+ Bays",
+    color: "#b45309",
+    description: "Two or more RAID 6 arrays striped together. High fault tolerance for enterprise SANs.",
   },
   jbod: {
-    name: "JBOD",
-    fullName: "Just a Bunch of Disks (Span)",
+    code: "jbod",
+    name: "JBOD (Just a Bunch of Disks)",
+    shortLabel: "JBOD",
+    category: "linear",
     minDrives: 1,
-    badge: "Linear Spanning",
-    description: "Combines drives into one large volume sequentially. No performance gain or redundancy.",
-    maxFaultTolerance: () => 0,
-    computeUsableTB: (n, s, spares) => {
-      const active = Math.max(0, n - spares)
-      return {
-        usableTB: active * s,
-        parityTB: 0,
-        mirrorTB: 0,
-        spareTB: spares * s,
-        wastedTB: 0,
-      }
-    },
-    readMultiplier: () => 1,
-    writeMultiplier: () => 1,
+    maxDriveTolerance: 0,
     writePenalty: 1,
-    pros: ["Can mix different drive capacities seamlessly", "100% capacity utilization", "Simple concatenation"],
-    cons: ["No redundancy", "Loss of one drive corrupts the spanned filesystem"],
+    tag: "Span All Disks",
+    color: "#64748b",
+    description: "Disks concatenated into a single large volume. 100% capacity, no redundancy.",
   },
 }
 
-const POPULAR_RAID_KEYS = ["raid5", "raid6", "raid10", "raid1", "raid0", "zfs_z2"]
+export const POPULAR_DRIVE_CAPACITIES = [1, 2, 3, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
 
-const DRIVE_TYPES = [
-  { id: "consumer_hdd", label: "Consumer HDD (5400 RPM / URE 10¹⁴)", ure: 1e-14, speedMB: 150, cost: 120 },
-  { id: "nas_hdd", label: "NAS / Enterprise HDD (7200 RPM / URE 10¹⁵)", ure: 1e-15, speedMB: 220, cost: 180 },
-  { id: "datacenter_hdd", label: "Datacenter Enterprise (SAS 12Gb / URE 10¹⁶)", ure: 1e-16, speedMB: 270, cost: 260 },
-  { id: "sata_ssd", label: "SATA SSD (550 MB/s / URE 10¹⁷)", ure: 1e-17, speedMB: 520, cost: 190 },
-  { id: "nvme_ssd", label: "NVMe Gen4 SSD (5000 MB/s / URE 10¹⁸)", ure: 1e-18, speedMB: 4500, cost: 280 },
+export const FILESYSTEM_OPTIONS = [
+  { value: "btrfs", label: "Btrfs (4% Metadata & Snapshots - Synology DSM)", overhead: 0.04 },
+  { value: "zfs", label: "OpenZFS (1.56% Slop Space - TrueNAS / Proxmox)", overhead: 0.0156 },
+  { value: "ext4", label: "EXT4 (2% Reserved Inodes - Linux)", overhead: 0.02 },
+  { value: "ntfs", label: "NTFS / ReFS (1.5% Cluster Overhead - Windows Server)", overhead: 0.015 },
+  { value: "raw", label: "Raw Partition (0% Overhead)", overhead: 0.0 },
 ]
 
-const POPULAR_DRIVE_SIZES = [2, 4, 8, 12, 16, 20, 22, 24]
-const POPULAR_DRIVE_COUNTS = [2, 4, 6, 8, 12, 16, 24]
-
-const PRESETS = [
-  {
-    name: "Home NAS / Media Hub",
-    badge: "Plex / Synology",
-    raid: "raid5",
-    drives: 4,
-    size: 8,
-    type: "nas_hdd",
-    spares: 0,
-    cost: 180,
-  },
-  {
-    name: "Enterprise File Server",
-    badge: "High Security",
-    raid: "raid6",
-    drives: 8,
-    size: 16,
-    type: "nas_hdd",
-    spares: 1,
-    cost: 320,
-  },
-  {
-    name: "4K/8K Video Editing Suite",
-    badge: "Extreme IOPS",
-    raid: "raid10",
-    drives: 6,
-    size: 4,
-    type: "sata_ssd",
-    spares: 0,
-    cost: 210,
-  },
-  {
-    name: "Database / VM Host",
-    badge: "Fast Rebuild",
-    raid: "raid10",
-    drives: 8,
-    size: 8,
-    type: "nvme_ssd",
-    spares: 0,
-    cost: 280,
-  },
-  {
-    name: "Cold Cloud Archive",
-    badge: "Max Capacity",
-    raid: "zfs_z2",
-    drives: 12,
-    size: 20,
-    type: "datacenter_hdd",
-    spares: 1,
-    cost: 380,
-  },
+export const DRIVE_MEDIA_TYPES = [
+  { value: "enterprise_hdd", label: "Enterprise HDD (7200 RPM, URE 10^15)", ure: 1e-15, defaultSpeed: 240, defaultCost: 280 },
+  { value: "nas_hdd", label: "NAS / Consumer HDD (5400-5900 RPM, URE 10^14)", ure: 1e-14, defaultSpeed: 180, defaultCost: 180 },
+  { value: "sata_ssd", label: "SATA 2.5\" SSD (TLC, URE 10^16)", ure: 1e-16, defaultSpeed: 540, defaultCost: 220 },
+  { value: "nvme_ssd", label: "NVMe PCIe Gen4 SSD (Enterprise, URE 10^17)", ure: 1e-17, defaultSpeed: 3500, defaultCost: 450 },
 ]
+
+// Pure calculation engine for individual architecture
+export function calculateArrayMetrics(
+  raidCode: RaidTypeCode,
+  drives: number[],
+  hotSpares: number = 0,
+  diskSpeedMb: number = 220,
+  ureRate: number = 1e-15,
+  fsOverheadPct: number = 0.04
+) {
+  const nTotal = drives.length
+  if (nTotal === 0) {
+    return {
+      valid: false,
+      error: "No drives selected",
+      usableTb: 0,
+      usableTib: 0,
+      netUsableTb: 0,
+      netUsableTib: 0,
+      parityTb: 0,
+      spareTb: 0,
+      unusedTb: 0,
+      totalRawTb: 0,
+      efficiencyPct: 0,
+      faultToleranceDrives: 0,
+      readMultiplier: 1,
+      writeMultiplier: 1,
+      estReadSpeedMb: 0,
+      estWriteSpeedMb: 0,
+      rebuildHours: 0,
+      ureProbPct: 0,
+    }
+  }
+
+  const nActive = Math.max(1, nTotal - hotSpares)
+  const activeDrives = [...drives.slice(0, nActive)].sort((a, b) => b - a)
+  const spareDrives = drives.slice(nActive)
+  const totalRawTb = drives.reduce((sum, d) => sum + d, 0)
+  const spareTb = spareDrives.reduce((sum, d) => sum + d, 0)
+  const meta = RAID_ARCHITECTURES[raidCode]
+
+  if (nActive < meta.minDrives) {
+    return {
+      valid: false,
+      error: `Requires min ${meta.minDrives} drives (current: ${nActive})`,
+      usableTb: 0,
+      usableTib: 0,
+      netUsableTb: 0,
+      netUsableTib: 0,
+      parityTb: 0,
+      spareTb: spareTb,
+      unusedTb: totalRawTb - spareTb,
+      totalRawTb,
+      efficiencyPct: 0,
+      faultToleranceDrives: 0,
+      readMultiplier: 1,
+      writeMultiplier: 1,
+      estReadSpeedMb: 0,
+      estWriteSpeedMb: 0,
+      rebuildHours: 0,
+      ureProbPct: 0,
+    }
+  }
+
+  const minDriveSize = activeDrives[activeDrives.length - 1] || 0
+  let usableTb = 0
+  let parityTb = 0
+  let unusedTb = 0
+  let faultToleranceDrives = meta.maxDriveTolerance
+  let readMult = 1.0
+  let writeMult = 1.0
+  let readNeedsDrives = 1
+
+  if (raidCode === "shr1") {
+    // Slicing algorithm
+    const uniqueHeights = Array.from(new Set(activeDrives)).sort((a, b) => a - b)
+    let prevH = 0
+    let u = 0
+    let p = 0
+    let un = 0
+    for (const h of uniqueHeights) {
+      const sliceH = h - prevH
+      const count = activeDrives.filter((d) => d >= h).length
+      if (count >= 3) {
+        u += (count - 1) * sliceH
+        p += 1 * sliceH
+      } else if (count === 2) {
+        u += 1 * sliceH
+        p += 1 * sliceH
+      } else if (count === 1) {
+        un += 1 * sliceH
+      }
+      prevH = h
+    }
+    usableTb = u
+    parityTb = p
+    unusedTb = un
+    faultToleranceDrives = 1
+    readMult = Math.max(1.0, nActive - 1)
+    writeMult = Math.max(0.5, nActive / 4.0)
+    readNeedsDrives = nActive - 1
+  } else if (raidCode === "shr2") {
+    if (nActive < 4) {
+      return {
+        valid: false,
+        error: "SHR-2 requires at least 4 drives",
+        usableTb: 0,
+        usableTib: 0,
+        netUsableTb: 0,
+        netUsableTib: 0,
+        parityTb: 0,
+        spareTb: spareTb,
+        unusedTb: totalRawTb - spareTb,
+        totalRawTb,
+        efficiencyPct: 0,
+        faultToleranceDrives: 0,
+        readMultiplier: 1,
+        writeMultiplier: 1,
+        estReadSpeedMb: 0,
+        estWriteSpeedMb: 0,
+        rebuildHours: 0,
+        ureProbPct: 0,
+      }
+    }
+    const uniqueHeights = Array.from(new Set(activeDrives)).sort((a, b) => a - b)
+    let prevH = 0
+    let u = 0
+    let p = 0
+    let un = 0
+    for (const h of uniqueHeights) {
+      const sliceH = h - prevH
+      const count = activeDrives.filter((d) => d >= h).length
+      if (count >= 4) {
+        u += (count - 2) * sliceH
+        p += 2 * sliceH
+      } else if (count === 3) {
+        u += 1 * sliceH
+        p += 2 * sliceH
+      } else {
+        un += count * sliceH
+      }
+      prevH = h
+    }
+    usableTb = u
+    parityTb = p
+    unusedTb = un
+    faultToleranceDrives = 2
+    readMult = Math.max(1.0, nActive - 2)
+    writeMult = Math.max(0.4, nActive / 6.0)
+    readNeedsDrives = nActive - 1
+  } else if (raidCode === "raid0") {
+    usableTb = nActive * minDriveSize
+    unusedTb = activeDrives.reduce((s, d) => s + d, 0) - usableTb
+    faultToleranceDrives = 0
+    readMult = nActive
+    writeMult = nActive
+    readNeedsDrives = nActive
+  } else if (raidCode === "raid1") {
+    usableTb = minDriveSize
+    parityTb = (nActive - 1) * minDriveSize
+    unusedTb = activeDrives.reduce((s, d) => s + d, 0) - (usableTb + parityTb)
+    faultToleranceDrives = nActive - 1
+    readMult = nActive
+    writeMult = 1.0
+    readNeedsDrives = 1
+  } else if (raidCode === "raid5" || raidCode === "zfs_z1") {
+    usableTb = (nActive - 1) * minDriveSize
+    parityTb = 1 * minDriveSize
+    unusedTb = activeDrives.reduce((s, d) => s + d, 0) - (usableTb + parityTb)
+    faultToleranceDrives = 1
+    readMult = Math.max(1.0, nActive - 1)
+    writeMult = Math.max(0.5, nActive / 4.0)
+    readNeedsDrives = nActive - 1
+  } else if (raidCode === "raid6" || raidCode === "zfs_z2") {
+    usableTb = (nActive - 2) * minDriveSize
+    parityTb = 2 * minDriveSize
+    unusedTb = activeDrives.reduce((s, d) => s + d, 0) - (usableTb + parityTb)
+    faultToleranceDrives = 2
+    readMult = Math.max(1.0, nActive - 2)
+    writeMult = Math.max(0.4, nActive / 6.0)
+    readNeedsDrives = nActive - 1
+  } else if (raidCode === "zfs_z3") {
+    usableTb = (nActive - 3) * minDriveSize
+    parityTb = 3 * minDriveSize
+    unusedTb = activeDrives.reduce((s, d) => s + d, 0) - (usableTb + parityTb)
+    faultToleranceDrives = 3
+    readMult = Math.max(1.0, nActive - 3)
+    writeMult = Math.max(0.3, nActive / 8.0)
+    readNeedsDrives = nActive - 1
+  } else if (raidCode === "raid10") {
+    const effN = nActive % 2 === 0 ? nActive : nActive - 1
+    const pairCount = Math.floor(effN / 2)
+    usableTb = pairCount * minDriveSize
+    parityTb = pairCount * minDriveSize
+    unusedTb = activeDrives.reduce((s, d) => s + d, 0) - (usableTb + parityTb)
+    faultToleranceDrives = 1
+    readMult = effN
+    writeMult = pairCount
+    readNeedsDrives = 1
+  } else if (raidCode === "raid50") {
+    const groups = 2
+    usableTb = (nActive - groups) * minDriveSize
+    parityTb = groups * minDriveSize
+    unusedTb = activeDrives.reduce((s, d) => s + d, 0) - (usableTb + parityTb)
+    faultToleranceDrives = 1
+    readMult = Math.max(1.0, nActive - groups)
+    writeMult = Math.max(0.5, nActive / 4.0)
+    readNeedsDrives = nActive - groups
+  } else if (raidCode === "raid60") {
+    const groups = 2
+    usableTb = (nActive - groups * 2) * minDriveSize
+    parityTb = groups * 2 * minDriveSize
+    unusedTb = activeDrives.reduce((s, d) => s + d, 0) - (usableTb + parityTb)
+    faultToleranceDrives = 2
+    readMult = Math.max(1.0, nActive - groups * 2)
+    writeMult = Math.max(0.4, nActive / 6.0)
+    readNeedsDrives = nActive - groups * 2
+  } else if (raidCode === "jbod") {
+    usableTb = activeDrives.reduce((s, d) => s + d, 0)
+    parityTb = 0
+    unusedTb = 0
+    faultToleranceDrives = 0
+    readMult = 1.0
+    writeMult = 1.0
+    readNeedsDrives = 1
+  }
+
+  const efficiencyPct = totalRawTb > 0 ? (usableTb / totalRawTb) * 100 : 0
+  const tibFactor = Math.pow(1000, 4) / Math.pow(1024, 4)
+  const usableTib = usableTb * tibFactor
+  const netUsableTb = Math.max(0, usableTb * (1 - fsOverheadPct))
+  const netUsableTib = Math.max(0, usableTib * (1 - fsOverheadPct))
+
+  // Scientific URE Calculation during rebuild
+  const bitsRead = Math.max(0, readNeedsDrives) * minDriveSize * 8 * 1e12
+  const exponent = -bitsRead * ureRate
+  let ureProbPct = exponent < -50 ? 99.99 : (1 - Math.exp(exponent)) * 100
+  ureProbPct = Math.min(99.99, Math.max(0.01, ureProbPct))
+
+  // Rebuild duration
+  const rebuildSpeedMb = Math.max(40, diskSpeedMb * 0.65)
+  const diskMb = minDriveSize * 1000 * 1000
+  const rebuildHours = minDriveSize > 0 ? Math.round((diskMb / (rebuildSpeedMb * 3600)) * 10) / 10 : 0
+
+  return {
+    valid: true,
+    error: null,
+    usableTb: Math.round(usableTb * 100) / 100,
+    usableTib: Math.round(usableTib * 100) / 100,
+    netUsableTb: Math.round(netUsableTb * 100) / 100,
+    netUsableTib: Math.round(netUsableTib * 100) / 100,
+    parityTb: Math.round(parityTb * 100) / 100,
+    spareTb: Math.round(spareTb * 100) / 100,
+    unusedTb: Math.round(unusedTb * 100) / 100,
+    totalRawTb: Math.round(totalRawTb * 100) / 100,
+    efficiencyPct: Math.round(efficiencyPct * 10) / 10,
+    faultToleranceDrives,
+    readMultiplier: Math.round(readMult * 10) / 10,
+    writeMultiplier: Math.round(writeMult * 10) / 10,
+    estReadSpeedMb: Math.round(diskSpeedMb * readMult),
+    estWriteSpeedMb: Math.round(diskSpeedMb * writeMult),
+    rebuildHours,
+    ureProbPct: Math.round(ureProbPct * 10) / 10,
+  }
+}
 
 export function RaidCalculatorView({ onToast }: RaidCalculatorViewProps) {
-  // State
-  const [activeTab, setActiveTab] = useState<number>(0) // 0: Builder, 1: Recommendation Wizard
-  const [raidMode, setRaidMode] = useState<string>("raid5")
-  const [driveCount, setDriveCount] = useState<number>(6)
-  const [driveSizeTB, setDriveSizeTB] = useState<number>(8)
-  const [driveType, setDriveType] = useState<string>("nas_hdd")
+  // State: Drive selection (list of drive sizes in TB)
+  const [drives, setDrives] = useState<number[]>([16, 16, 8, 4])
+  const [selectedRaid, setSelectedRaid] = useState<RaidTypeCode>("shr1")
   const [hotSpares, setHotSpares] = useState<number>(0)
-  const [costPerDrive, setCostPerDrive] = useState<number>(180)
-  const [failedBays, setFailedBays] = useState<number[]>([])
+  const [diskMediaType, setDiskMediaType] = useState<string>("enterprise_hdd")
+  const [diskSpeedMb, setDiskSpeedMb] = useState<number>(240)
+  const [costPerTb, setCostPerTb] = useState<number>(22) // $22/TB typical enterprise
+  const [filesystem, setFilesystem] = useState<string>("btrfs")
+  const [failedDriveIndexes, setFailedDriveIndexes] = useState<number[]>([])
+  const [activeTab, setActiveTab] = useState<"visualizer" | "wizard">("visualizer")
 
   // Wizard state
-  const [wizardUseCase, setWizardUseCase] = useState<string>("nas")
+  const [wizardGoal, setWizardGoal] = useState<string>("home_nas")
   const [wizardPriority, setWizardPriority] = useState<string>("balanced")
 
-  const currentMeta = RAID_TYPES[raidMode] || RAID_TYPES.raid5
-  const currentDriveMeta = DRIVE_TYPES.find((d) => d.id === driveType) || DRIVE_TYPES[1]
+  // Selected media metadata
+  const currentMedia = useMemo(
+    () => DRIVE_MEDIA_TYPES.find((m) => m.value === diskMediaType) || DRIVE_MEDIA_TYPES[0],
+    [diskMediaType]
+  )
 
-  // Calculated Results
-  const calcResults = useMemo(() => {
-    const rawTotalTB = driveCount * driveSizeTB
-    const rawTotalTiB = (rawTotalTB * 1e12) / Math.pow(1024, 4)
+  const currentFs = useMemo(
+    () => FILESYSTEM_OPTIONS.find((f) => f.value === filesystem) || FILESYSTEM_OPTIONS[0],
+    [filesystem]
+  )
 
-    const allocation = currentMeta.computeUsableTB(driveCount, driveSizeTB, hotSpares)
-    const usableTB = Math.max(0, allocation.usableTB)
-    const parityTB = Math.max(0, allocation.parityTB)
-    const mirrorTB = Math.max(0, allocation.mirrorTB)
-    const spareTB = Math.max(0, allocation.spareTB)
-    const wastedTB = Math.max(0, allocation.wastedTB)
-
-    const usableTiB = (usableTB * 1e12) / Math.pow(1024, 4)
-    const osFormattedTiB = usableTiB * 0.975 // 2.5% filesystem metadata / ext4 reserve
-    const efficiencyPercent = rawTotalTB > 0 ? (usableTB / rawTotalTB) * 100 : 0
-
-    const faultToleranceDrives = currentMeta.maxFaultTolerance(driveCount - hotSpares)
-
-    // Speeds
-    const activeDrives = Math.max(1, driveCount - hotSpares)
-    const readSpeedMB = currentMeta.readMultiplier(activeDrives) * currentDriveMeta.speedMB
-    const writeSpeedMB = currentMeta.writeMultiplier(activeDrives) * currentDriveMeta.speedMB
-
-    // Rebuild Time & URE Probability
-    const singleDriveSpeedMB = currentDriveMeta.speedMB
-    const totalRebuildSeconds = (driveSizeTB * 1e6) / (singleDriveSpeedMB * 0.65) // 65% controller throughput under load
-    const rebuildTimeHours = totalRebuildSeconds / 3600
-
-    const bitsToReadDuringRebuild = (activeDrives - 1) * driveSizeTB * 8 * 1e12
-    const ureRate = currentDriveMeta.ure
-    const ureRiskPercent =
-      faultToleranceDrives === 1
-        ? Math.min(99.9, (1 - Math.pow(1 - ureRate, bitsToReadDuringRebuild)) * 100)
-        : faultToleranceDrives >= 2
-        ? Math.min(99.9, Math.pow((1 - Math.pow(1 - ureRate, bitsToReadDuringRebuild)), 2) * 100)
-        : 0
-
-    // Costs
-    const totalHardwareCost = driveCount * costPerDrive
-    const costPerUsableTB = usableTB > 0 ? totalHardwareCost / usableTB : 0
-
-    // Simulation status
-    const actualFailedCount = failedBays.length
-    let arrayStatus: "optimal" | "degraded" | "failed" = "optimal"
-    let statusMessage = "All drives operational. Array is in Optimal state."
-
-    if (actualFailedCount > 0) {
-      if (actualFailedCount <= faultToleranceDrives) {
-        arrayStatus = "degraded"
-        statusMessage = `Array is DEGRADED (${actualFailedCount} failed drive). Redundancy is compromised. Hot rebuild required!`
-      } else {
-        arrayStatus = "failed"
-        statusMessage = `ARRAY FAILED! (${actualFailedCount} drives failed, exceeding fault tolerance of ${faultToleranceDrives}). Data loss has occurred!`
-      }
+  // Handlers for drive bay tray
+  const handleAddDrive = (size: number) => {
+    if (drives.length >= 24) {
+      onToast?.("Maximum 24 drive bays reached.", "warning")
+      return
     }
+    setDrives((prev) => [...prev, size])
+    onToast?.(`Added ${size} TB Drive to array.`, "success")
+  }
 
-    return {
-      rawTotalTB,
-      rawTotalTiB,
-      usableTB,
-      parityTB,
-      mirrorTB,
-      spareTB,
-      wastedTB,
-      usableTiB,
-      osFormattedTiB,
-      efficiencyPercent,
-      faultToleranceDrives,
-      readSpeedMB,
-      writeSpeedMB,
-      rebuildTimeHours,
-      ureRiskPercent,
-      totalHardwareCost,
-      costPerUsableTB,
-      arrayStatus,
-      statusMessage,
-      actualFailedCount,
-    }
-  }, [raidMode, driveCount, driveSizeTB, driveType, hotSpares, costPerDrive, failedBays, currentMeta, currentDriveMeta])
+  const handleRemoveDrive = (index: number) => {
+    setDrives((prev) => prev.filter((_, i) => i !== index))
+    setFailedDriveIndexes((prev) => prev.filter((i) => i !== index).map((i) => (i > index ? i - 1 : i)))
+  }
 
-  // Comparison Matrix for all RAID levels
-  const comparisonMatrix = useMemo(() => {
-    return Object.entries(RAID_TYPES).map(([k, meta]) => {
-      const active = Math.max(0, driveCount - hotSpares)
-      const valid = active >= meta.minDrives
-      const alloc = valid ? meta.computeUsableTB(driveCount, driveSizeTB, hotSpares) : { usableTB: 0 }
-      const usableTB = alloc.usableTB
-      const rawTotal = driveCount * driveSizeTB
-      const eff = rawTotal > 0 ? (usableTB / rawTotal) * 100 : 0
-      const ft = meta.maxFaultTolerance(active)
-      const rSpeed = meta.readMultiplier(active) * currentDriveMeta.speedMB
-      const wSpeed = meta.writeMultiplier(active) * currentDriveMeta.speedMB
-
-      return {
-        key: k,
-        name: meta.name,
-        badge: meta.badge,
-        valid,
-        minDrives: meta.minDrives,
-        usableTB,
-        efficiencyPercent: eff,
-        faultTolerance: ft,
-        readSpeed: rSpeed,
-        writeSpeed: wSpeed,
-        isCurrent: k === raidMode,
-      }
+  const handleChangeDriveSize = (index: number, newSize: number) => {
+    setDrives((prev) => {
+      const next = [...prev]
+      next[index] = newSize
+      return next
     })
-  }, [driveCount, driveSizeTB, hotSpares, raidMode, currentDriveMeta])
+  }
 
-  // Smart Wizard Recommendation
+  const handleFillAll = (size: number, count: number) => {
+    const newArr = Array(count).fill(size)
+    setDrives(newArr)
+    setFailedDriveIndexes([])
+    onToast?.(`Configured ${count} × ${size} TB drives.`, "info")
+  }
+
+  const handleClearAll = () => {
+    setDrives([])
+    setFailedDriveIndexes([])
+  }
+
+  // Toggle failure simulation on a specific bay
+  const handleToggleFailDrive = (index: number) => {
+    setFailedDriveIndexes((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    )
+  }
+
+  // Primary calculation for currently selected RAID architecture
+  const currentMetrics = useMemo(() => {
+    return calculateArrayMetrics(
+      selectedRaid,
+      drives,
+      hotSpares,
+      diskSpeedMb,
+      currentMedia.ure,
+      currentFs.overhead
+    )
+  }, [selectedRaid, drives, hotSpares, diskSpeedMb, currentMedia.ure, currentFs.overhead])
+
+  // Multi-RAID Comparison Matrix (Calculates all compatible levels simultaneously)
+  const allComparisons = useMemo(() => {
+    const list: (RaidMeta & ReturnType<typeof calculateArrayMetrics>)[] = []
+    const codes: RaidTypeCode[] = [
+      "shr1",
+      "shr2",
+      "raid5",
+      "raid6",
+      "raid10",
+      "raid1",
+      "raid0",
+      "zfs_z1",
+      "zfs_z2",
+      "zfs_z3",
+      "raid50",
+      "raid60",
+      "jbod",
+    ]
+    for (const code of codes) {
+      const meta = RAID_ARCHITECTURES[code]
+      const metrics = calculateArrayMetrics(
+        code,
+        drives,
+        hotSpares,
+        diskSpeedMb,
+        currentMedia.ure,
+        currentFs.overhead
+      )
+      if (metrics.valid) {
+        list.push({ ...meta, ...metrics })
+      }
+    }
+    return list
+  }, [drives, hotSpares, diskSpeedMb, currentMedia.ure, currentFs.overhead])
+
+  // Array Simulation Health Status
+  const simulationState = useMemo(() => {
+    const failCount = failedDriveIndexes.length
+    const allowed = currentMetrics.faultToleranceDrives
+    if (failCount === 0) {
+      return { status: "OPTIMAL", color: "#10b981", title: "Array Healthy & Optimal", alertType: "success" as const }
+    } else if (failCount <= allowed) {
+      return {
+        status: "DEGRADED",
+        color: "#f59e0b",
+        title: `Array Degraded (${failCount} Failed Drive). Data Intact - Rebuild Urgently Required!`,
+        alertType: "warning" as const,
+      }
+    } else {
+      return {
+        status: "FAILED",
+        color: "#ef4444",
+        title: `Array Crash (${failCount} Failed Drives). Exceeded Fault Tolerance of ${allowed} - Data Loss!`,
+        alertType: "error" as const,
+      }
+    }
+  }, [failedDriveIndexes.length, currentMetrics.faultToleranceDrives])
+
+  // Cost estimates
+  const totalHardwareCost = useMemo(() => {
+    const totalRaw = drives.reduce((sum, d) => sum + d, 0)
+    return Math.round(totalRaw * costPerTb)
+  }, [drives, costPerTb])
+
+  const costPerUsableTb = useMemo(() => {
+    if (currentMetrics.usableTb <= 0) return 0
+    return Math.round((totalHardwareCost / currentMetrics.usableTb) * 10) / 10
+  }, [totalHardwareCost, currentMetrics.usableTb])
+
+  // NAS Hardware & Networking Recommendation
+  const nasRecommendation = useMemo(() => {
+    const bayCount = drives.length
+    if (bayCount <= 2) {
+      return {
+        chassis: "2-Bay Desktop NAS (e.g. Synology DS224+ / QNAP TS-264)",
+        nic: "1 GbE / 2.5 GbE Ethernet",
+        bandwidthMb: "125 - 280 MB/s",
+        powerWatts: "~25W (Idle: 10W)",
+      }
+    } else if (bayCount <= 4) {
+      return {
+        chassis: "4-Bay Tower NAS (e.g. Synology DS923+ / QNAP TS-464)",
+        nic: "2.5 GbE / 10 GbE SFP+ (Optional PCIe)",
+        bandwidthMb: "280 - 1,100 MB/s",
+        powerWatts: "~45W (Idle: 20W)",
+      }
+    } else if (bayCount <= 6) {
+      return {
+        chassis: "6-Bay High-Density Tower (e.g. Synology DS1621+)",
+        nic: "10 GbE RJ45 / Dual 2.5 GbE Link Aggregation",
+        bandwidthMb: "1,100 MB/s (Saturates 10G)",
+        powerWatts: "~65W (Idle: 30W)",
+      }
+    } else if (bayCount <= 8) {
+      return {
+        chassis: "8-Bay Tower / 2U Rackmount (e.g. Synology DS1821+ / RS1221+)",
+        nic: "10 GbE / 25 GbE SFP28 Dual Port",
+        bandwidthMb: "1,100 - 2,500 MB/s",
+        powerWatts: "~95W (Idle: 45W)",
+      }
+    } else {
+      return {
+        chassis: `${bayCount}-Bay Enterprise 2U/3U/4U SAN Rackmount Server`,
+        nic: "25 GbE / 40 GbE / 100 GbE NVMe-oF RoCE",
+        bandwidthMb: "3,000+ MB/s",
+        powerWatts: "~180W - 350W",
+      }
+    }
+  }, [drives.length])
+
+  // Wizard Recommendation Logic
   const wizardRecommendation = useMemo(() => {
-    if (wizardUseCase === "video" || wizardPriority === "speed") {
+    if (wizardGoal === "home_nas" || wizardGoal === "plex") {
       return {
-        raid: "raid10",
-        name: "RAID 10 (Striped Mirrors)",
-        reason: "Delivers maximum read/write IOPS and the fastest rebuild speeds. Ideal for 4K/8K real-time editing and databases without parity calculation latency.",
-        suggestedDrives: Math.max(4, driveCount % 2 === 0 ? driveCount : driveCount + 1),
+        raid: "shr1" as RaidTypeCode,
+        title: "Synology SHR-1 / RAID 5",
+        reason: "Best balance of maximum storage capacity and single-drive fault tolerance for media streaming & family backup.",
       }
-    }
-    if (driveSizeTB >= 12 || wizardPriority === "max_safety") {
+    } else if (wizardGoal === "video_editing") {
       return {
-        raid: "raid6",
-        name: "RAID 6 (Dual Distributed Parity)",
-        reason: "With drives 12TB or larger, RAID 6 is essential. It survives 2 simultaneous disk failures, guarding against URE read errors during multi-day rebuilds.",
-        suggestedDrives: Math.max(4, driveCount),
+        raid: "raid10" as RaidTypeCode,
+        title: "RAID 10 (Striped Mirrors)",
+        reason: "Zero parity write penalties ($W_p = 2$), fastest random 4K read/write speeds, and instant rebuilds without bottlenecking video timeline scrub.",
       }
-    }
-    if (wizardUseCase === "truenas" || wizardUseCase === "zfs") {
+    } else if (wizardGoal === "cold_backup" || wizardGoal === "large_archive") {
       return {
-        raid: "zfs_z2",
-        name: "OpenZFS RAID-Z2",
-        reason: "TrueNAS and ZFS standard. Provides end-to-end cryptographic checksumming against silent data corruption and protects against 2 drive failures.",
-        suggestedDrives: Math.max(4, driveCount),
+        raid: "raid6" as RaidTypeCode,
+        title: "RAID 6 / ZFS RAID-Z2 (Dual Parity)",
+        reason: "Crucial for large disks (8TB+) where secondary drive failure during multi-day rebuilds would cause total volume loss.",
       }
-    }
-    if (wizardPriority === "cheap") {
+    } else if (wizardGoal === "database") {
       return {
-        raid: "raid5",
-        name: "RAID 5 (Single Parity)",
-        reason: "Offers the highest capacity efficiency (N-1)/N while retaining 1-disk fault tolerance. Cost-effective for 3 to 5 disk home storage.",
-        suggestedDrives: Math.max(3, driveCount),
+        raid: "raid10" as RaidTypeCode,
+        title: "RAID 10 (1+0)",
+        reason: "Maximum IOPS write throughput for transactional SQL databases and virtual machine hosting.",
       }
     }
     return {
-      raid: "raid5",
-      name: "RAID 5 (Single Parity)",
-      reason: "The gold standard for general home NAS, Plex servers, and medium backup repositories with up to 5 drives.",
-      suggestedDrives: Math.max(3, driveCount),
+      raid: "shr1" as RaidTypeCode,
+      title: "SHR-1 (Flexible Parity)",
+      reason: "Optimal flexibility for mixed drive sizes with full drive failure safety.",
     }
-  }, [wizardUseCase, wizardPriority, driveSizeTB, driveCount])
-
-  // Handlers
-  const handleApplyPreset = (p: (typeof PRESETS)[0]) => {
-    setRaidMode(p.raid)
-    setDriveCount(p.drives)
-    setDriveSizeTB(p.size)
-    setDriveType(p.type)
-    setHotSpares(p.spares)
-    setCostPerDrive(p.cost)
-    setFailedBays([])
-    if (onToast) onToast(`Applied preset: ${p.name}`)
-  }
-
-  const handleToggleBayFailure = (bayIndex: number) => {
-    setFailedBays((prev) => {
-      if (prev.includes(bayIndex)) {
-        return prev.filter((b) => b !== bayIndex)
-      } else {
-        return [...prev, bayIndex]
-      }
-    })
-  }
-
-  const handleSimulateFailCount = (count: number) => {
-    const baysToFail = Array.from({ length: Math.min(count, driveCount) }, (_, i) => i)
-    setFailedBays(baysToFail)
-    if (onToast) onToast(`Simulated ${baysToFail.length} failed drive(s)`)
-  }
-
-  const handleResetSimulation = () => {
-    setFailedBays([])
-    if (onToast) onToast("All drive bays restored to healthy status")
-  }
-
-  const handleCopySummary = () => {
-    const text = `=== TryCalc RAID Array Specification ===
-RAID Level: ${currentMeta.name} (${currentMeta.fullName})
-Drives: ${driveCount} × ${driveSizeTB} TB (${currentDriveMeta.label})
-Hot Spares: ${hotSpares} drive(s)
-Raw Total: ${calcResults.rawTotalTB.toFixed(1)} TB (${calcResults.rawTotalTiB.toFixed(1)} TiB)
-Usable Capacity: ${calcResults.usableTB.toFixed(1)} TB (${calcResults.usableTiB.toFixed(1)} TiB)
-Storage Efficiency: ${calcResults.efficiencyPercent.toFixed(1)}%
-Fault Tolerance: Up to ${calcResults.faultToleranceDrives} drive failure(s)
-Est. Read Throughput: ~${calcResults.readSpeedMB.toFixed(0)} MB/s
-Est. Write Throughput: ~${calcResults.writeSpeedMB.toFixed(0)} MB/s
-Est. Rebuild Time: ~${calcResults.rebuildTimeHours.toFixed(1)} hours
-URE Rebuild Risk: ${calcResults.ureRiskPercent.toFixed(2)}%
-Total Hardware Investment: $${calcResults.totalHardwareCost.toLocaleString()} ($${calcResults.costPerUsableTB.toFixed(2)}/usable TB)
-Calculated via: https://trycalc.net/calculators/raid-calculator`
-
-    navigator.clipboard.writeText(text)
-    if (onToast) onToast("RAID specification copied to clipboard!")
-  }
+  }, [wizardGoal])
 
   return (
-    <Box sx={{ width: "100%", mt: 1 }}>
-      {/* ─── TOP MODE NAVIGATION & PRESETS ─── */}
+    <Box sx={{ width: "100%", maxWidth: 1280, mx: "auto", pb: 6 }}>
+      {/* Header Banner with High-Contrast Typography */}
       <Paper
         elevation={0}
         sx={{
-          p: 2,
+          p: { xs: 2.5, md: 3.5 },
           mb: 3,
-          border: "1px solid #e2e8f0",
           borderRadius: 3,
-          bgcolor: "#ffffff",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+          color: "#ffffff",
+          border: "1px solid #334155",
         }}
       >
-        <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 1.5, mb: 1.5 }}>
-          <Tabs
-            value={activeTab}
-            onChange={(_, val) => setActiveTab(val)}
-            textColor="primary"
-            indicatorColor="primary"
-            sx={{ minHeight: 40 }}
-          >
-            <Tab
-              icon={<TuneIcon sx={{ fontSize: 18, mr: 0.5 }} />}
-              iconPosition="start"
-              label="Interactive Array Builder"
-              sx={{ fontWeight: 700, textTransform: "none", fontSize: "0.9rem", minHeight: 40, py: 0.5 }}
-            />
-            <Tab
-              icon={<AutoAwesomeIcon sx={{ fontSize: 18, mr: 0.5, color: "#8b5cf6" }} />}
-              iconPosition="start"
-              label="Smart Recommendation Wizard"
-              sx={{ fontWeight: 700, textTransform: "none", fontSize: "0.9rem", minHeight: 40, py: 0.5 }}
-            />
-          </Tabs>
+        <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 2 }}>
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+              <StorageIcon sx={{ fontSize: 32, color: "#38bdf8" }} />
+              <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: "1.5rem", md: "1.875rem" } }}>
+                RAID & Storage Array Calculator
+              </Typography>
+              <Chip label="Synology SHR & ZFS Ready" size="small" sx={{ bgcolor: "#0284c7", color: "#fff", fontWeight: 700 }} />
+            </Box>
+            <Typography variant="body2" sx={{ color: "#94a3b8", maxWidth: 780 }}>
+              Interactive storage planning workbench inspired by Synology RAID Calculator. Supports mixed drive sizes,
+              dynamic horizontal slicing (SHR-1/SHR-2), standard RAID (0, 1, 5, 6, 10, 50, 60), OpenZFS, and live array failure simulation.
+            </Typography>
+          </Box>
 
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant={activeTab === "visualizer" ? "contained" : "outlined"}
+              onClick={() => setActiveTab("visualizer")}
+              startIcon={<ViewModuleIcon />}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 700,
+                bgcolor: activeTab === "visualizer" ? "#0284c7" : "transparent",
+                color: "#fff",
+                borderColor: "#475569",
+              }}
+            >
+              Interactive Array Builder
+            </Button>
+            <Button
+              variant={activeTab === "wizard" ? "contained" : "outlined"}
+              onClick={() => setActiveTab("wizard")}
+              startIcon={<AutoAwesomeIcon />}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 700,
+                bgcolor: activeTab === "wizard" ? "#8b5cf6" : "transparent",
+                color: "#fff",
+                borderColor: "#475569",
+              }}
+            >
+              Recommendation Wizard
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
+
+      {/* STEP 1: DRIVE PALETTE & INTERACTIVE CHASSIS TRAY */}
+      <Paper elevation={0} sx={{ p: 3, mb: 3, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#ffffff" }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", mb: 2, gap: 1.5 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+              1. Select & Insert Drives
+            </Typography>
+            <Chip
+              label={`${drives.length} Drives (${drives.reduce((s, d) => s + d, 0)} TB Raw)`}
+              size="small"
+              sx={{ bgcolor: "#f1f5f9", color: "#334155", fontWeight: 700 }}
+            />
+          </Box>
+
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             <Button
               size="small"
               variant="outlined"
-              startIcon={<RestartAltIcon fontSize="small" />}
-              onClick={handleResetSimulation}
-              sx={{ textTransform: "none", fontWeight: 600, fontSize: "0.8rem", borderColor: "#cbd5e1" }}
+              onClick={() => handleFillAll(8, 4)}
+              sx={{ textTransform: "none", borderRadius: 1.5, fontWeight: 600 }}
             >
-              Reset Simulation
+              4 × 8TB Preset
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => handleFillAll(16, 6)}
+              sx={{ textTransform: "none", borderRadius: 1.5, fontWeight: 600 }}
+            >
+              6 × 16TB Preset
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => handleFillAll(20, 8)}
+              sx={{ textTransform: "none", borderRadius: 1.5, fontWeight: 600 }}
+            >
+              8 × 20TB Preset
+            </Button>
+            <Button
+              size="small"
+              color="error"
+              variant="outlined"
+              startIcon={<DeleteIcon />}
+              onClick={handleClearAll}
+              disabled={drives.length === 0}
+              sx={{ textTransform: "none", borderRadius: 1.5, fontWeight: 600 }}
+            >
+              Clear Bays
             </Button>
           </Box>
         </Box>
 
-        {/* 1-Click Architecture Presets */}
-        <Box sx={{ pt: 1.5, borderTop: "1px solid #f1f5f9" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-            <BoltIcon sx={{ color: "#f59e0b", fontSize: 18 }} />
-            <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: 0.5 }}>
-              1-Click Industry Presets:
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {PRESETS.map((p) => (
-              <Button
-                key={p.name}
-                size="small"
-                variant="outlined"
-                onClick={() => handleApplyPreset(p)}
-                sx={{
-                  textTransform: "none",
-                  fontWeight: 600,
-                  fontSize: "0.8rem",
-                  borderColor: "#e2e8f0",
-                  bgcolor: "#f8fafc",
-                  color: "#1e293b",
-                  py: 0.5,
-                  px: 1.2,
-                  "&:hover": { bgcolor: "#f1f5f9", borderColor: "#cbd5e1" },
-                }}
-              >
-                {p.name}
-                <Chip
-                  label={p.badge}
-                  size="small"
-                  sx={{
-                    ml: 0.8,
-                    height: 18,
-                    fontSize: "0.65rem",
-                    fontWeight: 700,
-                    bgcolor: "#e2e8f0",
-                    color: "#475569",
-                  }}
-                />
-              </Button>
-            ))}
-          </Box>
+        {/* Drive Palette Bar */}
+        <Typography variant="caption" sx={{ fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5, mb: 1, display: "block" }}>
+          Click to Insert a Drive into Next Available Bay:
+        </Typography>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
+          {POPULAR_DRIVE_CAPACITIES.map((cap) => (
+            <Button
+              key={`palette-${cap}`}
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+              onClick={() => handleAddDrive(cap)}
+              sx={{
+                bgcolor: "#f8fafc",
+                color: "#0f172a",
+                border: "1px solid #cbd5e1",
+                borderRadius: 2,
+                px: 1.5,
+                py: 0.6,
+                fontWeight: 700,
+                fontSize: "0.8125rem",
+                boxShadow: "none",
+                "&:hover": {
+                  bgcolor: "#0284c7",
+                  color: "#ffffff",
+                  borderColor: "#0284c7",
+                },
+              }}
+            >
+              {cap} TB
+            </Button>
+          ))}
         </Box>
-      </Paper>
 
-      {/* ─── SMART RECOMMENDATION WIZARD TAB ─── */}
-      {activeTab === 1 && (
-        <Paper
-          elevation={0}
+        {/* Virtual 24-Bay Chassis Tray */}
+        <Box
           sx={{
-            p: 3,
-            mb: 3.5,
-            border: "2px solid #8b5cf6",
-            borderRadius: 3.5,
-            bgcolor: "#faf5ff",
+            p: 2.5,
+            borderRadius: 2.5,
+            bgcolor: "#0f172a",
+            border: "2px solid #1e293b",
+            color: "#ffffff",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-            <AutoAwesomeIcon sx={{ color: "#8b5cf6", fontSize: 26 }} />
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#581c87" }}>
-                RAID Architecture Recommendation Assistant
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#7e22ce" }}>
-                Answer 2 quick questions to find the perfect RAID level for your workload and safety requirements.
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2, flexWrap: "wrap", gap: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <DvrIcon sx={{ color: "#38bdf8", fontSize: 20 }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#e2e8f0" }}>
+                VIRTUAL STORAGE CHASSIS ({drives.length} SLOTS POPULATED)
               </Typography>
             </Box>
+            <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+              💡 Click any drive slot to simulate failure or change drive capacity
+            </Typography>
           </Box>
 
-          <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, color: "#6b21a8", display: "block", mb: 0.8 }}>
-                1. PRIMARY USE CASE:
-              </Typography>
-              <TextField
-                select
-                fullWidth
-                size="small"
-                value={wizardUseCase}
-                onChange={(e) => setWizardUseCase(e.target.value)}
-                sx={{ bgcolor: "#ffffff" }}
-              >
-                <MenuItem value="nas">Home NAS / Media Server (Plex, Photos, General Backups)</MenuItem>
-                <MenuItem value="video">Real-time 4K/8K Video Editing / Production Scratch</MenuItem>
-                <MenuItem value="business">Business File Server & Cloud Sync</MenuItem>
-                <MenuItem value="db">High-IOPS Database / Virtualization (VMware/Proxmox)</MenuItem>
-                <MenuItem value="truenas">TrueNAS / OpenZFS Dedicated Storage Pool</MenuItem>
-              </TextField>
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, color: "#6b21a8", display: "block", mb: 0.8 }}>
-                2. TOP PRIORITY:
-              </Typography>
-              <TextField
-                select
-                fullWidth
-                size="small"
-                value={wizardPriority}
-                onChange={(e) => setWizardPriority(e.target.value)}
-                sx={{ bgcolor: "#ffffff" }}
-              >
-                <MenuItem value="balanced">Balanced (High Capacity + 1-Disk Redundancy)</MenuItem>
-                <MenuItem value="max_safety">Maximum Safety (Dual Parity / 2-Disk Redundancy)</MenuItem>
-                <MenuItem value="speed">Maximum Speed & Lowest Latency (Fastest IOPS)</MenuItem>
-                <MenuItem value="cheap">Lowest Cost per Usable TB</MenuItem>
-              </TextField>
-            </Grid>
-          </Grid>
-
-          {/* Recommended Result Banner */}
-          <Paper
-            elevation={0}
-            sx={{
-              p: 2.5,
-              borderRadius: 2.5,
-              bgcolor: "#ffffff",
-              border: "1px solid #d8b4fe",
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <Box sx={{ maxWidth: 650 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <CheckCircleIcon sx={{ color: "#8b5cf6", fontSize: 20 }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#4c1d95" }}>
-                  Recommended: {wizardRecommendation.name}
-                </Typography>
-              </Box>
-              <Typography variant="body2" sx={{ color: "#475569" }}>
-                {wizardRecommendation.reason}
+          {drives.length === 0 ? (
+            <Box sx={{ p: 4, textAlign: "center", color: "#64748b", border: "1px dashed #334155", borderRadius: 2 }}>
+              <StorageIcon sx={{ fontSize: 40, mb: 1, opacity: 0.5 }} />
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                No drives in chassis. Click the capacities above to populate drive bays.
               </Typography>
             </Box>
-
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<TuneIcon />}
-              onClick={() => {
-                setRaidMode(wizardRecommendation.raid)
-                setDriveCount(wizardRecommendation.suggestedDrives)
-                setActiveTab(0)
-                if (onToast) onToast(`Applied recommended ${wizardRecommendation.name}`)
-              }}
+          ) : (
+            <Box
               sx={{
-                fontWeight: 700,
-                textTransform: "none",
-                bgcolor: "#7c3aed",
-                "&:hover": { bgcolor: "#6d28d9" },
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "repeat(2, 1fr)",
+                  sm: "repeat(3, 1fr)",
+                  md: "repeat(4, 1fr)",
+                  lg: "repeat(6, 1fr)",
+                },
+                gap: 1.5,
               }}
             >
-              Apply Recommended Setup
-            </Button>
-          </Paper>
-        </Paper>
-      )}
-
-      {/* ─── MAIN TWO-COLUMN WORKBENCH ─── */}
-      <Grid container spacing={3.5}>
-        {/* LEFT COLUMN: ARRAY BUILDER & DRIVE PARAMETERS */}
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 2.5, sm: 3 },
-              border: "1px solid #e2e8f0",
-              borderRadius: 3.5,
-              bgcolor: "#ffffff",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-              <DnsIcon sx={{ color: "#2563eb", fontSize: 28 }} />
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", fontSize: "1.1rem" }}>
-                  Array Configuration
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#64748b" }}>
-                  Customize drives, parity levels, and hot spares
-                </Typography>
-              </Box>
-            </Box>
-
-            <Divider sx={{ mb: 2.5 }} />
-
-            {/* 1. Quick RAID Level Pills */}
-            <Box sx={{ mb: 2.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569", display: "block", mb: 1 }}>
-                SELECT RAID ARCHITECTURE:
-              </Typography>
-
-              {/* Popular Quick Buttons */}
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8, mb: 1.5 }}>
-                {POPULAR_RAID_KEYS.map((k) => {
-                  const meta = RAID_TYPES[k]
-                  const isSelected = raidMode === k
-                  return (
-                    <Button
-                      key={k}
-                      size="small"
-                      variant={isSelected ? "contained" : "outlined"}
-                      onClick={() => {
-                        setRaidMode(k)
-                        const minRequired = meta.minDrives
-                        if (driveCount < minRequired) setDriveCount(minRequired)
-                        setFailedBays([])
-                      }}
+              {drives.map((size, index) => {
+                const isFailed = failedDriveIndexes.includes(index)
+                const isHotSpare = index >= drives.length - hotSpares && hotSpares > 0
+                return (
+                  <Box key={`bay-${index}`}>
+                    <Paper
+                      elevation={0}
                       sx={{
-                        textTransform: "none",
-                        fontWeight: 700,
-                        fontSize: "0.78rem",
-                        py: 0.5,
-                        px: 1.2,
+                        p: 1.5,
                         borderRadius: 2,
-                        bgcolor: isSelected ? "#2563eb" : "#f8fafc",
-                        borderColor: isSelected ? "#2563eb" : "#cbd5e1",
-                        color: isSelected ? "#ffffff" : "#334155",
+                        bgcolor: isFailed ? "#7f1d1d" : isHotSpare ? "#0c4a6e" : "#1e293b",
+                        border: isFailed
+                          ? "2px solid #ef4444"
+                          : isHotSpare
+                          ? "2px solid #0284c7"
+                          : "1px solid #334155",
+                        color: "#ffffff",
+                        transition: "all 0.2s ease",
+                        position: "relative",
                         "&:hover": {
-                          bgcolor: isSelected ? "#1d4ed8" : "#f1f5f9",
+                          borderColor: isFailed ? "#f87171" : "#38bdf8",
                         },
                       }}
                     >
-                      {meta.name}
-                    </Button>
-                  )
-                })}
-              </Box>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 800, color: "#94a3b8", fontSize: "0.7rem" }}>
+                          BAY {String(index + 1).padStart(2, "0")}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleRemoveDrive(index)}
+                          sx={{ color: "#94a3b8", p: 0.2, "&:hover": { color: "#ef4444" } }}
+                        >
+                          <DeleteIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Box>
 
-              {/* Full Select Dropdown */}
-              <TextField
-                select
-                fullWidth
-                size="small"
-                value={raidMode}
-                onChange={(e) => {
-                  const newMode = e.target.value
-                  setRaidMode(newMode)
-                  const minRequired = RAID_TYPES[newMode]?.minDrives || 2
-                  if (driveCount < minRequired) {
-                    setDriveCount(minRequired)
-                  }
-                  setFailedBays([])
-                }}
-              >
-                {Object.entries(RAID_TYPES).map(([k, meta]) => (
-                  <MenuItem key={k} value={k}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                        {meta.name} — {meta.fullName}
-                      </Typography>
-                      <Chip
-                        label={`min ${meta.minDrives}`}
+                      {/* Drive capacity selector inside bay */}
+                      <Box sx={{ mb: 1 }}>
+                        <Select
+                          size="small"
+                          value={size}
+                          onChange={(e) => handleChangeDriveSize(index, Number(e.target.value))}
+                          sx={{
+                            color: "#ffffff",
+                            bgcolor: "#0f172a",
+                            fontWeight: 800,
+                            fontSize: "0.875rem",
+                            width: "100%",
+                            "& .MuiSelect-select": { py: 0.6, px: 1 },
+                            "& .MuiOutlinedInput-notchedOutline": { borderColor: "#334155" },
+                          }}
+                        >
+                          {POPULAR_DRIVE_CAPACITIES.map((c) => (
+                            <MenuItem key={`opt-${index}-${c}`} value={c}>
+                              {c} TB HDD
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </Box>
+
+                      {/* Interactive Failure Simulation Button */}
+                      <Button
+                        fullWidth
                         size="small"
-                        sx={{ height: 18, fontSize: "0.65rem", ml: 1 }}
-                      />
-                    </Box>
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <Alert severity="info" sx={{ mt: 1.2, py: 0.5, px: 1.5, "& .MuiAlert-message": { fontSize: "0.8rem" } }}>
-                <strong>{currentMeta.name}:</strong> {currentMeta.description}
-              </Alert>
-            </Box>
-
-            {/* 2. Number of Drives with Stepper Buttons */}
-            <Box sx={{ mb: 2.5 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.8 }}>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569" }}>
-                  NUMBER OF DISKS:
-                </Typography>
-                <Chip
-                  label={`${driveCount} Disks (${driveCount - hotSpares} Active + ${hotSpares} Spare)`}
-                  size="small"
-                  color="primary"
-                  sx={{ fontWeight: 700 }}
-                />
-              </Box>
-
-              {/* Stepper + Slider Row */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-                <IconButton
-                  size="small"
-                  disabled={driveCount <= currentMeta.minDrives}
-                  onClick={() => {
-                    const newCount = Math.max(currentMeta.minDrives, driveCount - 1)
-                    setDriveCount(newCount)
-                    if (hotSpares >= newCount) setHotSpares(0)
-                    setFailedBays((prev) => prev.filter((b) => b < newCount))
-                  }}
-                  sx={{ border: "1px solid #cbd5e1", borderRadius: 1.5 }}
-                >
-                  <RemoveIcon fontSize="small" />
-                </IconButton>
-
-                <Slider
-                  value={driveCount}
-                  min={currentMeta.minDrives}
-                  max={24}
-                  step={1}
-                  onChange={(_, val) => {
-                    const num = Number(val)
-                    setDriveCount(num)
-                    if (hotSpares >= num) setHotSpares(0)
-                    setFailedBays((prev) => prev.filter((b) => b < num))
-                  }}
-                  sx={{
-                    color: "#2563eb",
-                    "& .MuiSlider-thumb": { width: 18, height: 18 },
-                  }}
-                />
-
-                <IconButton
-                  size="small"
-                  disabled={driveCount >= 24}
-                  onClick={() => {
-                    const newCount = Math.min(24, driveCount + 1)
-                    setDriveCount(newCount)
-                  }}
-                  sx={{ border: "1px solid #cbd5e1", borderRadius: 1.5 }}
-                >
-                  <AddIcon fontSize="small" />
-                </IconButton>
-              </Box>
-
-              {/* Quick Drive Count Chips */}
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6 }}>
-                {POPULAR_DRIVE_COUNTS.filter((n) => n >= currentMeta.minDrives).map((num) => (
-                  <Chip
-                    key={num}
-                    label={`${num} Drives`}
-                    clickable
-                    size="small"
-                    variant={driveCount === num ? "filled" : "outlined"}
-                    color={driveCount === num ? "primary" : "default"}
-                    onClick={() => {
-                      setDriveCount(num)
-                      if (hotSpares >= num) setHotSpares(0)
-                      setFailedBays((prev) => prev.filter((b) => b < num))
-                    }}
-                    sx={{ fontWeight: 600, fontSize: "0.75rem", height: 24 }}
-                  />
-                ))}
-              </Box>
-            </Box>
-
-            {/* 3. Individual Drive Capacity with Stepper */}
-            <Box sx={{ mb: 2.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569", display: "block", mb: 0.8 }}>
-                DRIVE CAPACITY (TB):
-              </Typography>
-
-              {/* Quick Capacity Chips */}
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6, mb: 1.2 }}>
-                {POPULAR_DRIVE_SIZES.map((sz) => (
-                  <Chip
-                    key={sz}
-                    label={`${sz} TB`}
-                    clickable
-                    size="small"
-                    variant={driveSizeTB === sz ? "filled" : "outlined"}
-                    color={driveSizeTB === sz ? "primary" : "default"}
-                    onClick={() => setDriveSizeTB(sz)}
-                    sx={{ fontWeight: 600, fontSize: "0.75rem", height: 24 }}
-                  />
-                ))}
-              </Box>
-
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <IconButton
-                  size="small"
-                  disabled={driveSizeTB <= 1}
-                  onClick={() => setDriveSizeTB(Math.max(1, driveSizeTB - 1))}
-                  sx={{ border: "1px solid #cbd5e1", borderRadius: 1.5 }}
-                >
-                  <RemoveIcon fontSize="small" />
-                </IconButton>
-
-                <TextField
-                  type="number"
-                  size="small"
-                  fullWidth
-                  label="Custom Drive Size (TB)"
-                  value={driveSizeTB}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value) || 1
-                    setDriveSizeTB(Math.max(0.5, Math.min(100, val)))
-                  }}
-                  slotProps={{
-                    htmlInput: { min: 0.5, max: 100, step: 0.5 },
-                  }}
-                />
-
-                <IconButton
-                  size="small"
-                  disabled={driveSizeTB >= 100}
-                  onClick={() => setDriveSizeTB(Math.min(100, driveSizeTB + 1))}
-                  sx={{ border: "1px solid #cbd5e1", borderRadius: 1.5 }}
-                >
-                  <AddIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            </Box>
-
-            {/* 4. Drive Class & Error Rate */}
-            <Box sx={{ mb: 2.5 }}>
-              <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569", display: "block", mb: 0.8 }}>
-                DRIVE TYPE & URE SPECIFICATION:
-              </Typography>
-              <TextField
-                select
-                fullWidth
-                size="small"
-                value={driveType}
-                onChange={(e) => {
-                  const newType = e.target.value
-                  setDriveType(newType)
-                  const matched = DRIVE_TYPES.find((d) => d.id === newType)
-                  if (matched) setCostPerDrive(matched.cost)
-                }}
-              >
-                {DRIVE_TYPES.map((dt) => (
-                  <MenuItem key={dt.id} value={dt.id}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {dt.label}
-                    </Typography>
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Box>
-
-            {/* 5. Hot Spares & Cost Per Drive */}
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 6 }}>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569", display: "block", mb: 0.5 }}>
-                  HOT SPARES:
-                </Typography>
-                <TextField
-                  select
-                  fullWidth
-                  size="small"
-                  value={hotSpares}
-                  onChange={(e) => setHotSpares(Number(e.target.value))}
-                >
-                  {[0, 1, 2, 3, 4].filter((n) => n < driveCount - 1).map((n) => (
-                    <MenuItem key={n} value={n}>
-                      {n === 0 ? "None (0)" : `${n} Spare Disk(s)`}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              <Grid size={{ xs: 6 }}>
-                <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569", display: "block", mb: 0.5 }}>
-                  COST / DRIVE ($):
-                </Typography>
-                <TextField
-                  type="number"
-                  size="small"
-                  fullWidth
-                  value={costPerDrive}
-                  onChange={(e) => setCostPerDrive(Math.max(0, parseFloat(e.target.value) || 0))}
-                  slotProps={{
-                    htmlInput: { min: 0, step: 10 },
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
-
-        {/* RIGHT COLUMN: VISUAL CHASSIS, HERO KPIS, PERFORMANCE & RISK */}
-        <Grid size={{ xs: 12, md: 7 }}>
-          {/* ─── HERO STATS CALLOUT (4 KPI CARDS) ─── */}
-          <Grid container spacing={2} sx={{ mb: 2.5 }}>
-            {/* Card 1: Usable Capacity */}
-            <Grid size={{ xs: 6, sm: 3 }}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  borderRadius: 3,
-                  border: "1px solid #bfdbfe",
-                  bgcolor: "#eff6ff",
-                  textAlign: "center",
-                }}
-              >
-                <Typography variant="caption" sx={{ fontWeight: 800, color: "#1e40af", textTransform: "uppercase" }}>
-                  Usable Storage
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 900, color: "#1d4ed8", my: 0.5 }}>
-                  {calcResults.usableTB.toFixed(1)} <span style={{ fontSize: "0.9rem", fontWeight: 700 }}>TB</span>
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#3b82f6", fontWeight: 600 }}>
-                  {calcResults.usableTiB.toFixed(1)} TiB ({calcResults.efficiencyPercent.toFixed(0)}%)
-                </Typography>
-              </Paper>
-            </Grid>
-
-            {/* Card 2: Fault Tolerance */}
-            <Grid size={{ xs: 6, sm: 3 }}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  borderRadius: 3,
-                  border: "1px solid #bbf7d0",
-                  bgcolor: "#f0fdf4",
-                  textAlign: "center",
-                }}
-              >
-                <Typography variant="caption" sx={{ fontWeight: 800, color: "#166534", textTransform: "uppercase" }}>
-                  Fault Tolerance
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 900, color: "#15803d", my: 0.5 }}>
-                  {calcResults.faultToleranceDrives} <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>Drive(s)</span>
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#16a34a", fontWeight: 600 }}>
-                  Max Safe Failures
-                </Typography>
-              </Paper>
-            </Grid>
-
-            {/* Card 3: Read Throughput */}
-            <Grid size={{ xs: 6, sm: 3 }}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  borderRadius: 3,
-                  border: "1px solid #e2e8f0",
-                  bgcolor: "#f8fafc",
-                  textAlign: "center",
-                }}
-              >
-                <Typography variant="caption" sx={{ fontWeight: 800, color: "#475569", textTransform: "uppercase" }}>
-                  Est. Read Speed
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 900, color: "#0f172a", my: 0.5 }}>
-                  ~{calcResults.readSpeedMB.toFixed(0)} <span style={{ fontSize: "0.75rem", fontWeight: 700 }}>MB/s</span>
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                  {currentMeta.readMultiplier(Math.max(1, driveCount - hotSpares))}× Multiplier
-                </Typography>
-              </Paper>
-            </Grid>
-
-            {/* Card 4: Total Cost */}
-            <Grid size={{ xs: 6, sm: 3 }}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  borderRadius: 3,
-                  border: "1px solid #fed7aa",
-                  bgcolor: "#fff7ed",
-                  textAlign: "center",
-                }}
-              >
-                <Typography variant="caption" sx={{ fontWeight: 800, color: "#9a3412", textTransform: "uppercase" }}>
-                  Hardware Cost
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 900, color: "#c2410c", my: 0.5 }}>
-                  ${calcResults.totalHardwareCost.toLocaleString()}
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#ea580c", fontWeight: 600 }}>
-                  ${calcResults.costPerUsableTB.toFixed(2)} / Usable TB
-                </Typography>
-              </Paper>
-            </Grid>
-          </Grid>
-
-          {/* ─── VIRTUAL CHASSIS & INTERACTIVE FAULT SIMULATION ─── */}
-          <Paper
-            elevation={0}
-            sx={{
-              p: 2.5,
-              mb: 3,
-              borderRadius: 3.5,
-              border: "1px solid #e2e8f0",
-              bgcolor: "#ffffff",
-            }}
-          >
-            {/* Header with 1-Click Simulation Triggers */}
-            <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 1.5, mb: 2 }}>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                  Interactive Drive Chassis ({driveCount} Bays)
-                </Typography>
-                <Typography variant="caption" sx={{ color: "#64748b" }}>
-                  Click any bay or use quick buttons to simulate live disk failure
-                </Typography>
-              </Box>
-
-              {/* 1-Click Simulation Buttons */}
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="error"
-                  onClick={() => handleSimulateFailCount(1)}
-                  sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.75rem" }}
-                >
-                  Fail 1 Disk
-                </Button>
-                {calcResults.faultToleranceDrives >= 2 && (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="error"
-                    onClick={() => handleSimulateFailCount(2)}
-                    sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.75rem" }}
-                  >
-                    Fail 2 Disks
-                  </Button>
-                )}
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="success"
-                  onClick={handleResetSimulation}
-                  sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.75rem" }}
-                >
-                  Heal All
-                </Button>
-              </Box>
-            </Box>
-
-            {/* Array Health Status Banner */}
-            <Alert
-              severity={
-                calcResults.arrayStatus === "optimal"
-                  ? "success"
-                  : calcResults.arrayStatus === "degraded"
-                  ? "warning"
-                  : "error"
-              }
-              sx={{
-                mb: 2,
-                borderRadius: 2.5,
-                fontWeight: 700,
-                "& .MuiAlert-message": { fontSize: "0.85rem" },
-              }}
-            >
-              {calcResults.statusMessage}
-            </Alert>
-
-            {/* Rack Module */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2,
-                borderRadius: 2.5,
-                bgcolor: "#0f172a",
-                border: "1px solid #1e293b",
-              }}
-            >
-              <Grid container spacing={1.5}>
-                {Array.from({ length: driveCount }, (_, idx) => {
-                  const isFailed = failedBays.includes(idx)
-                  const isHotSpare = idx >= driveCount - hotSpares
-
-                  let bayColor = "#10b981" // Operational Green
-                  let bayLabel = "Data + Parity"
-                  let statusTag = "HEALTHY"
-
-                  if (isFailed) {
-                    bayColor = "#ef4444"
-                    bayLabel = "FAILED DISK"
-                    statusTag = "FAILED"
-                  } else if (isHotSpare) {
-                    bayColor = "#0284c7"
-                    bayLabel = "Hot Standby"
-                    statusTag = "SPARE"
-                  }
-
-                  return (
-                    <Grid size={{ xs: 6, sm: 4, md: 3 }} key={idx}>
-                      <Box
-                        onClick={() => handleToggleBayFailure(idx)}
+                        onClick={() => handleToggleFailDrive(index)}
                         sx={{
-                          p: 1.2,
-                          borderRadius: 2,
-                          bgcolor: isFailed ? "rgba(239, 68, 68, 0.15)" : "#1e293b",
-                          border: `1.5px solid ${isFailed ? "#ef4444" : "#334155"}`,
-                          cursor: "pointer",
-                          transition: "all 0.2s ease",
+                          py: 0.4,
+                          fontSize: "0.6875rem",
+                          fontWeight: 700,
+                          textTransform: "none",
+                          borderRadius: 1,
+                          bgcolor: isFailed ? "#ef4444" : isHotSpare ? "#0284c7" : "#334155",
+                          color: "#ffffff",
                           "&:hover": {
-                            borderColor: bayColor,
-                            transform: "translateY(-2px)",
-                            boxShadow: `0 4px 12px ${isFailed ? "rgba(239,68,68,0.3)" : "rgba(16,185,129,0.2)"}`,
+                            bgcolor: isFailed ? "#dc2626" : isHotSpare ? "#0369a1" : "#475569",
                           },
                         }}
                       >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
-                          <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 800, fontSize: "0.7rem" }}>
-                            BAY {idx + 1}
-                          </Typography>
-                          <Chip
-                            label={statusTag}
-                            size="small"
-                            sx={{
-                              height: 16,
-                              fontSize: "0.6rem",
-                              fontWeight: 900,
-                              bgcolor: isFailed ? "#ef4444" : isHotSpare ? "#0284c7" : "#10b981",
-                              color: "#ffffff",
-                            }}
-                          />
-                        </Box>
-                        <Typography variant="body2" sx={{ color: "#f8fafc", fontWeight: 800 }}>
-                          {driveSizeTB} TB
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: isFailed ? "#fca5a5" : "#94a3b8", fontSize: "0.7rem", display: "block" }}>
-                          {bayLabel}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  )
-                })}
-              </Grid>
-
-              {/* Bay Legend */}
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2, pt: 1.5, borderTop: "1px solid #334155" }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: "#10b981" }} />
-                  <Typography variant="caption" sx={{ color: "#cbd5e1", fontWeight: 600 }}>
-                    Active Data/Parity
-                  </Typography>
-                </Box>
-                {hotSpares > 0 && (
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                    <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: "#0284c7" }} />
-                    <Typography variant="caption" sx={{ color: "#cbd5e1", fontWeight: 600 }}>
-                      Hot Spare
-                    </Typography>
+                        {isFailed ? "🔴 FAILED" : isHotSpare ? "🔵 HOT SPARE" : "🟢 HEALTHY"}
+                      </Button>
+                    </Paper>
                   </Box>
-                )}
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: "#ef4444" }} />
-                  <Typography variant="caption" sx={{ color: "#cbd5e1", fontWeight: 600 }}>
-                    Simulated Failure (Click bay to toggle)
-                  </Typography>
-                </Box>
-              </Box>
-            </Paper>
-          </Paper>
-
-          {/* ─── STORAGE ALLOCATION SEGMENT BAR ─── */}
-          <Paper
-            elevation={0}
-            sx={{
-              p: 2.5,
-              mb: 3,
-              borderRadius: 3.5,
-              border: "1px solid #e2e8f0",
-              bgcolor: "#ffffff",
-            }}
-          >
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                Storage Allocation Breakdown
-              </Typography>
-              <Chip
-                label={`${calcResults.efficiencyPercent.toFixed(1)}% Usable Efficiency`}
-                size="small"
-                color="primary"
-                sx={{ fontWeight: 700 }}
-              />
+                )
+              })}
             </Box>
+          )}
+        </Box>
+      </Paper>
 
-            {/* Segmented Progress Bar */}
-            <Box
-              sx={{
-                display: "flex",
-                height: 18,
-                width: "100%",
-                borderRadius: 2,
-                overflow: "hidden",
-                bgcolor: "#f1f5f9",
-                mb: 2,
-              }}
-            >
-              {calcResults.usableTB > 0 && (
-                <Box
-                  sx={{
-                    width: `${(calcResults.usableTB / calcResults.rawTotalTB) * 100}%`,
-                    bgcolor: "#10b981",
-                    transition: "width 0.3s ease",
-                  }}
-                />
-              )}
-              {calcResults.parityTB > 0 && (
-                <Box
-                  sx={{
-                    width: `${(calcResults.parityTB / calcResults.rawTotalTB) * 100}%`,
-                    bgcolor: "#f59e0b",
-                    transition: "width 0.3s ease",
-                  }}
-                />
-              )}
-              {calcResults.mirrorTB > 0 && (
-                <Box
-                  sx={{
-                    width: `${(calcResults.mirrorTB / calcResults.rawTotalTB) * 100}%`,
-                    bgcolor: "#8b5cf6",
-                    transition: "width 0.3s ease",
-                  }}
-                />
-              )}
-              {calcResults.spareTB > 0 && (
-                <Box
-                  sx={{
-                    width: `${(calcResults.spareTB / calcResults.rawTotalTB) * 100}%`,
-                    bgcolor: "#0284c7",
-                    transition: "width 0.3s ease",
-                  }}
-                />
-              )}
-            </Box>
-
-            {/* Legend Stats Grid */}
-            <Grid container spacing={1.5}>
-              <Grid size={{ xs: 6, sm: 3 }}>
-                <Box sx={{ p: 1.2, borderRadius: 2, bgcolor: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                  <Typography variant="caption" sx={{ color: "#166534", fontWeight: 700, display: "block" }}>
-                    ● Usable Space
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#15803d" }}>
-                    {calcResults.usableTB.toFixed(1)} TB
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "#16a34a", fontSize: "0.7rem" }}>
-                    ({calcResults.usableTiB.toFixed(1)} TiB)
-                  </Typography>
-                </Box>
-              </Grid>
-
-              <Grid size={{ xs: 6, sm: 3 }}>
-                <Box sx={{ p: 1.2, borderRadius: 2, bgcolor: "#fffbeb", border: "1px solid #fde68a" }}>
-                  <Typography variant="caption" sx={{ color: "#92400e", fontWeight: 700, display: "block" }}>
-                    ● Protection
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#b45309" }}>
-                    {(calcResults.parityTB + calcResults.mirrorTB).toFixed(1)} TB
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "#d97706", fontSize: "0.7rem" }}>
-                    {calcResults.parityTB > 0 ? "Parity" : "Mirroring"}
-                  </Typography>
-                </Box>
-              </Grid>
-
-              <Grid size={{ xs: 6, sm: 3 }}>
-                <Box sx={{ p: 1.2, borderRadius: 2, bgcolor: "#f0f9ff", border: "1px solid #bae6fd" }}>
-                  <Typography variant="caption" sx={{ color: "#075985", fontWeight: 700, display: "block" }}>
-                    ● Hot Spare
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#0369a1" }}>
-                    {calcResults.spareTB.toFixed(1)} TB
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "#0284c7", fontSize: "0.7rem" }}>
-                    {hotSpares} Disk(s)
-                  </Typography>
-                </Box>
-              </Grid>
-
-              <Grid size={{ xs: 6, sm: 3 }}>
-                <Box sx={{ p: 1.2, borderRadius: 2, bgcolor: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                  <Typography variant="caption" sx={{ color: "#475569", fontWeight: 700, display: "block" }}>
-                    ● Raw Total
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#1e293b" }}>
-                    {calcResults.rawTotalTB.toFixed(1)} TB
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.7rem" }}>
-                    ({calcResults.rawTotalTiB.toFixed(1)} TiB)
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </Paper>
-
-          {/* ─── PERFORMANCE & REBUILD RISK CARDS ─── */}
-          <Grid container spacing={2.5} sx={{ mb: 3 }}>
-            {/* Speed Details */}
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2.5,
-                  borderRadius: 3,
-                  border: "1px solid #e2e8f0",
-                  bgcolor: "#ffffff",
-                  height: "100%",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-                  <SpeedIcon sx={{ color: "#0284c7" }} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                    IOPS & Throughput Multipliers
-                  </Typography>
-                </Box>
-                <Box sx={{ mb: 1 }}>
-                  <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
-                    Estimated Read Speed:
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#0369a1" }}>
-                    ~{calcResults.readSpeedMB.toFixed(0)} MB/s ({currentMeta.readMultiplier(Math.max(1, driveCount - hotSpares))}× Single Drive)
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
-                    Estimated Write Speed (Penalty: {currentMeta.writePenalty}):
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                    ~{calcResults.writeSpeedMB.toFixed(0)} MB/s ({currentMeta.writeMultiplier(Math.max(1, driveCount - hotSpares)).toFixed(2)}× Single Drive)
-                  </Typography>
-                </Box>
-              </Paper>
-            </Grid>
-
-            {/* Rebuild & URE Risk */}
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2.5,
-                  borderRadius: 3,
-                  border: "1px solid #e2e8f0",
-                  bgcolor: "#ffffff",
-                  height: "100%",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-                  <SecurityIcon sx={{ color: "#8b5cf6" }} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                    Rebuild Time & URE Risk
-                  </Typography>
-                </Box>
-                <Box sx={{ mb: 1 }}>
-                  <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
-                    Est. Array Rebuild Duration:
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                    ~{calcResults.rebuildTimeHours.toFixed(1)} Hours (@ 65% controller load)
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
-                    Unrecoverable Read Error (URE) Risk:
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 800,
-                      color: calcResults.ureRiskPercent > 20 ? "#dc2626" : calcResults.ureRiskPercent > 5 ? "#d97706" : "#16a34a",
-                    }}
-                  >
-                    {calcResults.ureRiskPercent.toFixed(2)}% Probability
-                  </Typography>
-                </Box>
-                {calcResults.ureRiskPercent > 20 && (
-                  <Typography variant="caption" sx={{ color: "#b91c1c", fontWeight: 700, display: "block", mt: 0.5 }}>
-                    ⚠️ High risk on large HDDs! Consider RAID 6 or RAID 10.
-                  </Typography>
-                )}
-              </Paper>
-            </Grid>
-          </Grid>
-
-          {/* ─── ACTION UTILITIES & EXPORT ─── */}
-          <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 1.5 }}>
-            <Typography variant="body2" sx={{ color: "#64748b" }}>
-              Total Hardware: <strong>${calcResults.totalHardwareCost.toLocaleString()}</strong> (${calcResults.costPerUsableTB.toFixed(2)}/TB)
-            </Typography>
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<ContentCopyIcon />}
-                onClick={handleCopySummary}
-                sx={{ textTransform: "none", fontWeight: 700, borderColor: "#cbd5e1" }}
-              >
-                Copy Specification
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<PrintIcon />}
-                onClick={() => window.print()}
-                sx={{ textTransform: "none", fontWeight: 700, borderColor: "#cbd5e1" }}
-              >
-                Print / PDF
-              </Button>
-            </Box>
-          </Box>
-        </Grid>
-      </Grid>
-
-      {/* ─── SIDE-BY-SIDE COMPARISON TABLE WITH 1-CLICK APPLY ─── */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3,
-          mt: 4,
-          border: "1px solid #e2e8f0",
-          borderRadius: 3.5,
-          bgcolor: "#ffffff",
-        }}
-      >
-        <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 1, mb: 2 }}>
+      {/* STEP 2: MULTI-RAID REAL-TIME VISUALIZER (SYNOLOGY PARITY & COMPARISON STACK) */}
+      <Paper elevation={0} sx={{ p: 3, mb: 3, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#ffffff" }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", mb: 2.5, gap: 1.5 }}>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", fontSize: "1.1rem" }}>
-              Side-by-Side Comparison for {driveCount} × {driveSizeTB} TB Drives
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+              2. Real-Time Storage Breakdown Across All RAID Types
             </Typography>
-            <Typography variant="caption" sx={{ color: "#64748b" }}>
-              Compare storage capacity, speed multipliers, and fault tolerance across all RAID configurations
+            <Typography variant="body2" sx={{ color: "#64748b" }}>
+              Instantly compares usable capacity, parity protection, and wasted space for your exact drive configuration.
             </Typography>
+          </Box>
+
+          {/* Color Legend */}
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <Box sx={{ width: 12, height: 12, borderRadius: "3px", bgcolor: "#0284c7" }} />
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#334155" }}>
+                Available Space
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <Box sx={{ width: 12, height: 12, borderRadius: "3px", bgcolor: "#f59e0b" }} />
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#334155" }}>
+                Parity / Protection
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <Box sx={{ width: 12, height: 12, borderRadius: "3px", bgcolor: "#94a3b8" }} />
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#334155" }}>
+                Unused (Wasted)
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <Box sx={{ width: 12, height: 12, borderRadius: "3px", bgcolor: "#38bdf8" }} />
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#334155" }}>
+                Hot Spare
+              </Typography>
+            </Box>
           </Box>
         </Box>
 
-        <TableContainer sx={{ borderRadius: 2, border: "1px solid #e2e8f0" }}>
-          <Table size="small">
-            <TableHead sx={{ bgcolor: "#f8fafc" }}>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 800, color: "#334155" }}>RAID Level</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 800, color: "#334155" }}>Usable (TB)</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 800, color: "#334155" }}>Efficiency</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 800, color: "#334155" }}>Fault Tolerance</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 800, color: "#334155" }}>Read Speed</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 800, color: "#334155" }}>Write Speed</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 800, color: "#334155" }}>Action</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {comparisonMatrix.map((row) => (
-                <TableRow
-                  key={row.key}
-                  sx={{
-                    bgcolor: row.isCurrent ? "#eff6ff" : "inherit",
-                    "&:hover": { bgcolor: row.isCurrent ? "#dbeafe" : "#f8fafc" },
-                  }}
-                >
-                  <TableCell>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: row.isCurrent ? 800 : 600, color: row.isCurrent ? "#1d4ed8" : "#1e293b" }}>
-                        {row.name}
-                      </Typography>
-                      {row.isCurrent && (
-                        <Chip
-                          label="ACTIVE"
-                          size="small"
-                          color="primary"
-                          sx={{ height: 18, fontSize: "0.62rem", fontWeight: 800 }}
-                        />
-                      )}
-                    </Box>
-                    <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.7rem" }}>
-                      {row.badge}
+        {/* Stack of all compatible architectures */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {allComparisons.map((row) => {
+            const isSelected = selectedRaid === row.code
+            const totalRaw = row.totalRawTb || 1
+            const usableWidth = `${Math.min(100, Math.max(0, (row.usableTb / totalRaw) * 100))}%`
+            const parityWidth = `${Math.min(100, Math.max(0, (row.parityTb / totalRaw) * 100))}%`
+            const spareWidth = `${Math.min(100, Math.max(0, (row.spareTb / totalRaw) * 100))}%`
+            const unusedWidth = `${Math.min(100, Math.max(0, (row.unusedTb / totalRaw) * 100))}%`
+
+            return (
+              <Paper
+                key={`comp-row-${row.code}`}
+                elevation={0}
+                onClick={() => setSelectedRaid(row.code)}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  border: isSelected ? "2px solid #0284c7" : "1px solid #e2e8f0",
+                  bgcolor: isSelected ? "#f0f9ff" : "#f8fafc",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  "&:hover": {
+                    borderColor: "#0284c7",
+                    bgcolor: "#f0f9ff",
+                  },
+                }}
+              >
+                <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", mb: 1, gap: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                      {row.name}
                     </Typography>
-                  </TableCell>
-
-                  <TableCell align="right" sx={{ fontWeight: 700, color: row.valid ? "#0f172a" : "#94a3b8" }}>
-                    {row.valid ? `${row.usableTB.toFixed(1)} TB` : `Requires ${row.minDrives}+ Disks`}
-                  </TableCell>
-
-                  <TableCell align="right" sx={{ fontWeight: 600 }}>
-                    {row.valid ? `${row.efficiencyPercent.toFixed(0)}%` : "—"}
-                  </TableCell>
-
-                  <TableCell align="center">
-                    {row.valid ? (
-                      <Chip
-                        label={row.faultTolerance === 0 ? "0 (No Protection)" : `${row.faultTolerance} Disk Failure(s)`}
-                        size="small"
-                        sx={{
-                          height: 20,
-                          fontSize: "0.7rem",
-                          fontWeight: 700,
-                          bgcolor: row.faultTolerance === 0 ? "#fee2e2" : row.faultTolerance >= 2 ? "#dcfce7" : "#fef3c7",
-                          color: row.faultTolerance === 0 ? "#991b1b" : row.faultTolerance >= 2 ? "#166534" : "#92400e",
-                        }}
-                      />
-                    ) : (
-                      "—"
+                    <Chip label={row.tag} size="small" sx={{ bgcolor: isSelected ? "#0284c7" : "#e2e8f0", color: isSelected ? "#fff" : "#334155", fontWeight: 700, fontSize: "0.7rem" }} />
+                    {isSelected && (
+                      <Chip label="ACTIVE CONFIGURATION" size="small" color="primary" sx={{ fontWeight: 800, fontSize: "0.6875rem" }} />
                     )}
-                  </TableCell>
+                  </Box>
 
-                  <TableCell align="right" sx={{ fontWeight: 600, color: row.valid ? "#0369a1" : "#94a3b8" }}>
-                    {row.valid ? `~${row.readSpeed.toFixed(0)} MB/s` : "—"}
-                  </TableCell>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 800, color: "#0284c7" }}>
+                      {row.usableTb} TB Usable ({row.usableTib} TiB)
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
+                      Tolerance: {row.faultToleranceDrives} Drive{row.faultToleranceDrives !== 1 ? "s" : ""}
+                    </Typography>
+                  </Box>
+                </Box>
 
-                  <TableCell align="right" sx={{ fontWeight: 600, color: row.valid ? "#0f172a" : "#94a3b8" }}>
-                    {row.valid ? `~${row.writeSpeed.toFixed(0)} MB/s` : "—"}
-                  </TableCell>
+                {/* Segmented Visual Progress Bar */}
+                <Box sx={{ width: "100%", height: 26, borderRadius: 1.5, overflow: "hidden", display: "flex", bgcolor: "#e2e8f0", mb: 1 }}>
+                  {row.usableTb > 0 && (
+                    <Tooltip title={`Available Capacity: ${row.usableTb} TB (${row.efficiencyPct}%)`}>
+                      <Box sx={{ width: usableWidth, height: "100%", bgcolor: "#0284c7", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "0.75rem", fontWeight: 700 }}>
+                        {parseFloat(usableWidth) > 12 ? `${row.usableTb} TB` : ""}
+                      </Box>
+                    </Tooltip>
+                  )}
+                  {row.parityTb > 0 && (
+                    <Tooltip title={`Protection / Parity: ${row.parityTb} TB`}>
+                      <Box sx={{ width: parityWidth, height: "100%", bgcolor: "#f59e0b", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "0.75rem", fontWeight: 700 }}>
+                        {parseFloat(parityWidth) > 12 ? `${row.parityTb} TB` : ""}
+                      </Box>
+                    </Tooltip>
+                  )}
+                  {row.spareTb > 0 && (
+                    <Tooltip title={`Hot Spare: ${row.spareTb} TB`}>
+                      <Box sx={{ width: spareWidth, height: "100%", bgcolor: "#38bdf8", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "0.75rem", fontWeight: 700 }}>
+                        {parseFloat(spareWidth) > 12 ? `${row.spareTb} TB` : ""}
+                      </Box>
+                    </Tooltip>
+                  )}
+                  {row.unusedTb > 0 && (
+                    <Tooltip title={`Unused (Wasted): ${row.unusedTb} TB`}>
+                      <Box sx={{ width: unusedWidth, height: "100%", bgcolor: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "0.75rem", fontWeight: 700 }}>
+                        {parseFloat(unusedWidth) > 12 ? `${row.unusedTb} TB Unused` : ""}
+                      </Box>
+                    </Tooltip>
+                  )}
+                </Box>
 
-                  <TableCell align="center">
-                    {row.isCurrent ? (
-                      <Typography variant="caption" sx={{ fontWeight: 800, color: "#2563eb" }}>
-                        Selected
-                      </Typography>
-                    ) : (
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        disabled={!row.valid}
-                        onClick={() => {
-                          setRaidMode(row.key)
-                          setFailedBays([])
-                          if (onToast) onToast(`Switched to ${row.name}`)
-                        }}
-                        sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.75rem", py: 0.2 }}
-                      >
-                        Apply
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                {/* Subtext info */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1 }}>
+                  <Typography variant="caption" sx={{ color: "#64748b" }}>
+                    {row.description}
+                  </Typography>
+                  {row.unusedTb > 0 && (
+                    <Typography variant="caption" sx={{ color: "#d97706", fontWeight: 700 }}>
+                      ⚠️ {row.unusedTb} TB wasted due to mixed disk size limitation. Use SHR-1 to reclaim!
+                    </Typography>
+                  )}
+                </Box>
+              </Paper>
+            )
+          })}
+        </Box>
       </Paper>
+
+      {/* STEP 3: DEEP-DIVE TELEMETRY & HARDWARE TELEMETRY DECK */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "5fr 7fr" }, gap: 3, mb: 3 }}>
+        {/* Left Side: Array Parameters & Filesystem Options */}
+        <Box>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#ffffff", height: "100%" }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", mb: 2 }}>
+              3. Array Parameters & Filesystem
+            </Typography>
+
+            {/* Hot Spares Stepper */}
+            <Box sx={{ mb: 2.5 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#334155", display: "block", mb: 0.5 }}>
+                Dedicated Hot Spare Drives: {hotSpares}
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <IconButton
+                  size="small"
+                  disabled={hotSpares <= 0}
+                  onClick={() => setHotSpares((p) => Math.max(0, p - 1))}
+                  sx={{ border: "1px solid #cbd5e1" }}
+                >
+                  <RemoveIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+                <Slider
+                  size="small"
+                  value={hotSpares}
+                  min={0}
+                  max={Math.max(0, drives.length - 2)}
+                  step={1}
+                  onChange={(_, val) => setHotSpares(Number(val))}
+                  sx={{ color: "#0284c7", flex: 1 }}
+                />
+                <IconButton
+                  size="small"
+                  disabled={hotSpares >= drives.length - 2}
+                  onClick={() => setHotSpares((p) => Math.min(drives.length - 2, p + 1))}
+                  sx={{ border: "1px solid #cbd5e1" }}
+                >
+                  <AddIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Box>
+            </Box>
+
+            {/* Drive Media Type & URE */}
+            <Box sx={{ mb: 2.5 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel sx={{ fontWeight: 600 }}>Drive Media & Reliability</InputLabel>
+                <Select
+                  value={diskMediaType}
+                  label="Drive Media & Reliability"
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setDiskMediaType(val)
+                    const m = DRIVE_MEDIA_TYPES.find((x) => x.value === val)
+                    if (m) setDiskSpeedMb(m.defaultSpeed)
+                  }}
+                  sx={{ fontWeight: 700, borderRadius: 2 }}
+                >
+                  {DRIVE_MEDIA_TYPES.map((media) => (
+                    <MenuItem key={media.value} value={media.value}>
+                      {media.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            {/* Target Filesystem (Overhead reservation) */}
+            <Box sx={{ mb: 2.5 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel sx={{ fontWeight: 600 }}>Volume Filesystem Metadata Overhead</InputLabel>
+                <Select
+                  value={filesystem}
+                  label="Volume Filesystem Metadata Overhead"
+                  onChange={(e) => setFilesystem(e.target.value)}
+                  sx={{ fontWeight: 700, borderRadius: 2 }}
+                >
+                  {FILESYSTEM_OPTIONS.map((fs) => (
+                    <MenuItem key={fs.value} value={fs.value}>
+                      {fs.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            {/* Estimated Hardware Cost per TB */}
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#334155", display: "block", mb: 0.5 }}>
+                Estimated Cost per TB ($): ${costPerTb} / TB
+              </Typography>
+              <Slider
+                size="small"
+                value={costPerTb}
+                min={10}
+                max={100}
+                step={2}
+                onChange={(_, val) => setCostPerTb(Number(val))}
+                sx={{ color: "#10b981" }}
+              />
+            </Box>
+          </Paper>
+        </Box>
+
+        {/* Right Side: Primary Active Array Metrics & Failure Simulator */}
+        <Box>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#ffffff", height: "100%" }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2, flexWrap: "wrap", gap: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                Active Telemetry: {RAID_ARCHITECTURES[selectedRaid].name}
+              </Typography>
+              <Chip
+                label={simulationState.status}
+                sx={{
+                  bgcolor: simulationState.color,
+                  color: "#ffffff",
+                  fontWeight: 800,
+                  fontSize: "0.75rem",
+                }}
+              />
+            </Box>
+
+            {/* Live Simulation Alert */}
+            {failedDriveIndexes.length > 0 && (
+              <Alert severity={simulationState.alertType} sx={{ mb: 2.5, borderRadius: 2, fontWeight: 600 }}>
+                {simulationState.title}
+              </Alert>
+            )}
+
+            {/* Hero Metric Grid */}
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(4, 1fr)" }, gap: 2, mb: 3 }}>
+              <Box>
+                <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                  <Typography variant="caption" sx={{ color: "#166534", fontWeight: 700, display: "block" }}>
+                    Net Usable Storage
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: "#15803d" }}>
+                    {currentMetrics.netUsableTb} TB
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#166534" }}>
+                    {currentMetrics.netUsableTib} TiB Formatted
+                  </Typography>
+                </Paper>
+              </Box>
+
+              <Box>
+                <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: "#f0f9ff", border: "1px solid #bae6fd" }}>
+                  <Typography variant="caption" sx={{ color: "#0369a1", fontWeight: 700, display: "block" }}>
+                    Fault Tolerance
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: "#0284c7" }}>
+                    {currentMetrics.faultToleranceDrives} Disk{currentMetrics.faultToleranceDrives !== 1 ? "s" : ""}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#0369a1" }}>
+                    {currentMetrics.faultToleranceDrives > 0 ? "Protected" : "Zero Redundancy"}
+                  </Typography>
+                </Paper>
+              </Box>
+
+              <Box>
+                <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: "#faf5ff", border: "1px solid #e9d5ff" }}>
+                  <Typography variant="caption" sx={{ color: "#6b21a8", fontWeight: 700, display: "block" }}>
+                    Read Throughput
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: "#7e22ce" }}>
+                    ~{currentMetrics.estReadSpeedMb} MB/s
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#6b21a8" }}>
+                    {currentMetrics.readMultiplier}× Speed Multiplier
+                  </Typography>
+                </Paper>
+              </Box>
+
+              <Box>
+                <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: "#fffbeb", border: "1px solid #fde68a" }}>
+                  <Typography variant="caption" sx={{ color: "#92400e", fontWeight: 700, display: "block" }}>
+                    Array Hardware Cost
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: "#b45309" }}>
+                    ${totalHardwareCost}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#92400e" }}>
+                    ${costPerUsableTb} / Usable TB
+                  </Typography>
+                </Paper>
+              </Box>
+            </Box>
+
+            {/* Rebuild Duration & URE Probability Analysis */}
+            <Box sx={{ p: 2.5, borderRadius: 2, bgcolor: "#f8fafc", border: "1px solid #e2e8f0", mb: 3 }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, flexWrap: "wrap", gap: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <SecurityIcon sx={{ color: "#0284c7", fontSize: 20 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                    Rebuild Duration & URE Risk Analysis
+                  </Typography>
+                </Box>
+                <Chip
+                  label={
+                    currentMetrics.ureProbPct > 30
+                      ? "High Rebuild Risk"
+                      : currentMetrics.ureProbPct > 10
+                      ? "Moderate Risk"
+                      : "Low Risk"
+                  }
+                  size="small"
+                  sx={{
+                    bgcolor: currentMetrics.ureProbPct > 30 ? "#fee2e2" : "#f0fdf4",
+                    color: currentMetrics.ureProbPct > 30 ? "#991b1b" : "#166534",
+                    fontWeight: 800,
+                  }}
+                />
+              </Box>
+
+              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                <Box>
+                  <Typography variant="body2" sx={{ color: "#64748b", mb: 0.5 }}>
+                    Estimated Drive Rebuild Time:
+                  </Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                    ⏱️ {currentMetrics.rebuildHours} Hours (~{Math.round((currentMetrics.rebuildHours / 24) * 10) / 10} Days)
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+                    Based on 65% sustained drive speed under active rebuild workload.
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="body2" sx={{ color: "#64748b", mb: 0.5 }}>
+                    Probability of URE during Rebuild:
+                  </Typography>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 800,
+                      color: currentMetrics.ureProbPct > 30 ? "#dc2626" : "#0284c7",
+                    }}
+                  >
+                    🎲 {currentMetrics.ureProbPct}% Probability
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+                    {currentMetrics.ureProbPct > 30
+                      ? "Recommend RAID 6 / SHR-2 / RAID-Z2 to protect against rebuild loss."
+                      : "Within safe operational margins."}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Recommended NAS Chassis & Network Matcher */}
+            <Box sx={{ p: 2, borderRadius: 2, bgcolor: "#0f172a", color: "#ffffff", border: "1px solid #334155" }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                <LanIcon sx={{ color: "#38bdf8", fontSize: 18 }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#e2e8f0" }}>
+                  RECOMMENDED NAS HARDWARE & NETWORK INTERFACE
+                </Typography>
+              </Box>
+              <Typography variant="body2" sx={{ color: "#38bdf8", fontWeight: 700, mb: 0.5 }}>
+                • Enclosure: {nasRecommendation.chassis}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#94a3b8", display: "block" }}>
+                • Recommended NIC: {nasRecommendation.nic} ({nasRecommendation.bandwidthMb})
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#94a3b8", display: "block" }}>
+                • Est. System Power Draw: {nasRecommendation.powerWatts}
+              </Typography>
+            </Box>
+          </Paper>
+        </Box>
+      </Box>
+
+      {/* STEP 4: DECISION WIZARD (WHEN TAB IS WIZARD) */}
+      {activeTab === "wizard" && (
+        <Paper elevation={0} sx={{ p: 3.5, mb: 3, borderRadius: 3, border: "2px solid #8b5cf6", bgcolor: "#faf5ff" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+            <AutoAwesomeIcon sx={{ color: "#8b5cf6", fontSize: 28 }} />
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "#581c87" }}>
+              Smart RAID Recommendation Guide
+            </Typography>
+          </Box>
+          <Typography variant="body2" sx={{ color: "#6b21a8", mb: 3 }}>
+            Answer these 2 simple questions to find the perfect RAID architecture for your specific project or workflow:
+          </Typography>
+
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 3, mb: 3 }}>
+            <Box>
+              <FormControl fullWidth size="small">
+                <InputLabel sx={{ fontWeight: 600 }}>What is your primary use case?</InputLabel>
+                <Select
+                  value={wizardGoal}
+                  label="What is your primary use case?"
+                  onChange={(e) => setWizardGoal(e.target.value)}
+                  sx={{ fontWeight: 700, borderRadius: 2, bgcolor: "#fff" }}
+                >
+                  <MenuItem value="home_nas">Plex Media Server & Family File Storage</MenuItem>
+                  <MenuItem value="video_editing">4K/8K Video Editing & Creative Workstation</MenuItem>
+                  <MenuItem value="cold_backup">Large Cold Archive & Backup (8TB+ Disks)</MenuItem>
+                  <MenuItem value="database">Database, Virtualization (VMware/Proxmox) & High IOPS</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box>
+              <FormControl fullWidth size="small">
+                <InputLabel sx={{ fontWeight: 600 }}>What is your top priority?</InputLabel>
+                <Select
+                  value={wizardPriority}
+                  label="What is your top priority?"
+                  onChange={(e) => setWizardPriority(e.target.value)}
+                  sx={{ fontWeight: 700, borderRadius: 2, bgcolor: "#fff" }}
+                >
+                  <MenuItem value="balanced">Balanced (Maximum Storage with 1-Drive Safety)</MenuItem>
+                  <MenuItem value="max_safety">Maximum Safety (Dual Parity 2-Drive Safety)</MenuItem>
+                  <MenuItem value="max_speed">Maximum Speed & IOPS Throughput</MenuItem>
+                  <MenuItem value="mixed_disks">Ability to mix different size hard drives over time</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+
+          <Paper elevation={0} sx={{ p: 2.5, borderRadius: 2, bgcolor: "#ffffff", border: "1px solid #d8b4fe" }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+              <Box>
+                <Typography variant="caption" sx={{ color: "#7e22ce", fontWeight: 800, textTransform: "uppercase" }}>
+                  RECOMMENDED ARCHITECTURE
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: "#581c87" }}>
+                  🎯 {wizardRecommendation.title}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#6b21a8", maxWidth: 650, mt: 0.5 }}>
+                  {wizardRecommendation.reason}
+                </Typography>
+              </Box>
+
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setSelectedRaid(wizardRecommendation.raid)
+                  setActiveTab("visualizer")
+                  onToast?.(`Applied ${wizardRecommendation.title} to array workbench.`, "success")
+                }}
+                sx={{
+                  bgcolor: "#7e22ce",
+                  color: "#fff",
+                  fontWeight: 700,
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1,
+                  textTransform: "none",
+                  "&:hover": { bgcolor: "#6b21a8" },
+                }}
+              >
+                Apply This Architecture
+              </Button>
+            </Box>
+          </Paper>
+        </Paper>
+      )}
     </Box>
   )
 }
