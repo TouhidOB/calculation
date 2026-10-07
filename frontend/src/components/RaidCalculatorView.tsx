@@ -77,27 +77,27 @@ export interface RaidMeta {
 export const RAID_ARCHITECTURES: Record<RaidTypeCode, RaidMeta> = {
   shr1: {
     code: "shr1",
-    name: "Synology Hybrid RAID 1 (SHR-1)",
-    shortLabel: "SHR-1",
+    name: "Dynamic Hybrid Array 1 (DHA-1)",
+    shortLabel: "DHA-1",
     category: "hybrid",
     minDrives: 1,
     maxDriveTolerance: 1,
     writePenalty: 4,
     tag: "Best for Mixed Disks",
     color: "#0284c7",
-    description: "Automatic mixed-drive horizontal slicing with 1-drive redundancy. Maximizes usable storage.",
+    description: "Dynamic mixed-drive horizontal parity slicing with 1-drive redundancy. Maximizes usable storage across unequal disk sizes.",
   },
   shr2: {
     code: "shr2",
-    name: "Synology Hybrid RAID 2 (SHR-2)",
-    shortLabel: "SHR-2",
+    name: "Dynamic Hybrid Array 2 (DHA-2)",
+    shortLabel: "DHA-2",
     category: "hybrid",
     minDrives: 4,
     maxDriveTolerance: 2,
     writePenalty: 6,
     tag: "High Mixed Safety",
     color: "#0369a1",
-    description: "Mixed-drive slicing with 2-drive redundancy. Ideal for 4+ mixed drive arrays.",
+    description: "Dynamic mixed-drive slicing with dual-drive redundancy. Ideal for 4+ mixed drive arrays with catastrophic failure protection.",
   },
   raid5: {
     code: "raid5",
@@ -236,9 +236,9 @@ export const RAID_ARCHITECTURES: Record<RaidTypeCode, RaidMeta> = {
 export const POPULAR_DRIVE_CAPACITIES = [1, 2, 3, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
 
 export const FILESYSTEM_OPTIONS = [
-  { value: "btrfs", label: "Btrfs (4% Metadata & Snapshots - Synology DSM)", overhead: 0.04 },
-  { value: "zfs", label: "OpenZFS (1.56% Slop Space - TrueNAS / Proxmox)", overhead: 0.0156 },
-  { value: "ext4", label: "EXT4 (2% Reserved Inodes - Linux)", overhead: 0.02 },
+  { value: "btrfs", label: "Btrfs (4% Metadata & Subvolumes - Linux Enterprise)", overhead: 0.04 },
+  { value: "zfs", label: "OpenZFS (1.56% Slop Space - ZFS Pool / TrueNAS)", overhead: 0.0156 },
+  { value: "ext4", label: "EXT4 (2% Reserved Inodes - Linux POSIX)", overhead: 0.02 },
   { value: "ntfs", label: "NTFS / ReFS (1.5% Cluster Overhead - Windows Server)", overhead: 0.015 },
   { value: "raw", label: "Raw Partition (0% Overhead)", overhead: 0.0 },
 ]
@@ -354,7 +354,7 @@ export function calculateArrayMetrics(
     if (nActive < 4) {
       return {
         valid: false,
-        error: "SHR-2 requires at least 4 drives",
+        error: "DHA-2 requires at least 4 drives",
         usableTb: 0,
         usableTib: 0,
         netUsableTb: 0,
@@ -670,28 +670,28 @@ export function RaidCalculatorView({ onToast }: RaidCalculatorViewProps) {
     const bayCount = drives.length
     if (bayCount <= 2) {
       return {
-        chassis: "2-Bay Desktop NAS (e.g. Synology DS224+ / QNAP TS-264)",
+        chassis: "2-Bay Desktop NAS Enclosure",
         nic: "1 GbE / 2.5 GbE Ethernet",
         bandwidthMb: "125 - 280 MB/s",
         powerWatts: "~25W (Idle: 10W)",
       }
     } else if (bayCount <= 4) {
       return {
-        chassis: "4-Bay Tower NAS (e.g. Synology DS923+ / QNAP TS-464)",
+        chassis: "4-Bay Tower NAS Enclosure",
         nic: "2.5 GbE / 10 GbE SFP+ (Optional PCIe)",
         bandwidthMb: "280 - 1,100 MB/s",
         powerWatts: "~45W (Idle: 20W)",
       }
     } else if (bayCount <= 6) {
       return {
-        chassis: "6-Bay High-Density Tower (e.g. Synology DS1621+)",
+        chassis: "6-Bay High-Density Storage Tower",
         nic: "10 GbE RJ45 / Dual 2.5 GbE Link Aggregation",
         bandwidthMb: "1,100 MB/s (Saturates 10G)",
         powerWatts: "~65W (Idle: 30W)",
       }
     } else if (bayCount <= 8) {
       return {
-        chassis: "8-Bay Tower / 2U Rackmount (e.g. Synology DS1821+ / RS1221+)",
+        chassis: "8-Bay Tower / 2U Rackmount Enclosure",
         nic: "10 GbE / 25 GbE SFP28 Dual Port",
         bandwidthMb: "1,100 - 2,500 MB/s",
         powerWatts: "~95W (Idle: 45W)",
@@ -711,7 +711,7 @@ export function RaidCalculatorView({ onToast }: RaidCalculatorViewProps) {
     if (wizardGoal === "home_nas" || wizardGoal === "plex") {
       return {
         raid: "shr1" as RaidTypeCode,
-        title: "Synology SHR-1 / RAID 5",
+        title: "Dynamic Hybrid Array 1 (DHA-1) / RAID 5",
         reason: "Best balance of maximum storage capacity and single-drive fault tolerance for media streaming & family backup.",
       }
     } else if (wizardGoal === "video_editing") {
@@ -735,7 +735,7 @@ export function RaidCalculatorView({ onToast }: RaidCalculatorViewProps) {
     }
     return {
       raid: "shr1" as RaidTypeCode,
-      title: "SHR-1 (Flexible Parity)",
+      title: "DHA-1 (Dynamic Sliced Parity)",
       reason: "Optimal flexibility for mixed drive sizes with full drive failure safety.",
     }
   }, [wizardGoal])
@@ -761,11 +761,11 @@ export function RaidCalculatorView({ onToast }: RaidCalculatorViewProps) {
               <Typography variant="h4" component="h1" sx={{ fontWeight: 800, fontSize: { xs: "1.5rem", md: "1.875rem" } }}>
                 RAID & Storage Array Calculator
               </Typography>
-              <Chip label="Synology SHR & ZFS Ready" size="small" sx={{ bgcolor: "#0284c7", color: "#fff", fontWeight: 700 }} />
+              <Chip label="Mixed-Drive & Parity Slicing" size="small" sx={{ bgcolor: "#0284c7", color: "#fff", fontWeight: 700 }} />
             </Box>
             <Typography variant="body2" sx={{ color: "#94a3b8", maxWidth: 780 }}>
-              Interactive storage planning workbench inspired by Synology RAID Calculator. Supports mixed drive sizes,
-              dynamic horizontal slicing (SHR-1/SHR-2), standard RAID (0, 1, 5, 6, 10, 50, 60), OpenZFS, and live array failure simulation.
+              Professional storage planning and simulation workbench. Supports mixed drive capacities,
+              dynamic horizontal slicing (DHA-1/DHA-2), standard RAID (0, 1, 5, 6, 10, 50, 60), OpenZFS, and live array failure simulation.
             </Typography>
           </Box>
 
@@ -1152,7 +1152,7 @@ export function RaidCalculatorView({ onToast }: RaidCalculatorViewProps) {
                   </Typography>
                   {row.unusedTb > 0 && (
                     <Typography variant="caption" sx={{ color: "#d97706", fontWeight: 700 }}>
-                      ⚠️ {row.unusedTb} TB wasted due to mixed disk size limitation. Use SHR-1 to reclaim!
+                      ⚠️ {row.unusedTb} TB unallocated due to fixed disk geometry. Use DHA-1 to reclaim!
                     </Typography>
                   )}
                 </Box>
@@ -1404,7 +1404,7 @@ export function RaidCalculatorView({ onToast }: RaidCalculatorViewProps) {
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#94a3b8" }}>
                     {currentMetrics.ureProbPct > 30
-                      ? "Recommend RAID 6 / SHR-2 / RAID-Z2 to protect against rebuild loss."
+                      ? "Recommend RAID 6 / DHA-2 / RAID-Z2 to protect against rebuild loss."
                       : "Within safe operational margins."}
                   </Typography>
                 </Box>

@@ -1,10 +1,10 @@
 """
-RAID Calculator (Array Capacity, Redundancy, Rebuild Time & URE Risk).
+RAID & Storage Array Calculator (Capacity, Redundancy, Rebuild Time & URE Risk).
 
 Calculates usable storage capacity, fault tolerance, parity overhead,
 storage efficiency, read/write throughput multipliers, IOPS write penalties,
 rebuild times, and scientific Unrecoverable Read Error (URE) probabilities
-across Synology Hybrid RAID (SHR-1, SHR-2), standard (RAID 0, 1, 5, 6, 10),
+across Dynamic Hybrid Arrays (DHA-1, DHA-2), standard (RAID 0, 1, 5, 6, 10),
 enterprise (RAID 50, 60), JBOD, and OpenZFS (RAID-Z1, RAID-Z2, RAID-Z3) configurations.
 Supports both uniform drive sets and heterogeneous mixed-capacity drive arrays.
 """
@@ -21,8 +21,8 @@ URE_RATES = {
 }
 
 FILESYSTEM_OVERHEADS = {
-    "btrfs": 0.04,     # 4% metadata & B-tree reservation (Synology DSM default)
-    "zfs": 0.0156,     # 1/64 slop space (TrueNAS / Proxmox)
+    "btrfs": 0.04,     # 4% metadata & B-tree reservation (Modern Linux Btrfs)
+    "zfs": 0.0156,     # 1/64 slop space (OpenZFS / TrueNAS / Proxmox)
     "ext4": 0.02,      # 2% reserved root blocks & inodes (Linux standard)
     "ntfs": 0.015,     # 1.5% MFT reservation (Windows Server)
     "raw": 0.0,        # 0% raw unformatted partition
@@ -46,7 +46,7 @@ MIN_DRIVES = {
 
 
 def _calc_mixed_shr1(drives: List[float]) -> Dict[str, float]:
-    """Calculate SHR-1 dynamic horizontal slicing for mixed drives."""
+    """Calculate Dynamic Hybrid Array 1 (DHA-1) horizontal slicing for mixed drives."""
     sorted_d = sorted([d for d in drives if d > 0], reverse=True)
     n = len(sorted_d)
     if n == 0:
@@ -84,7 +84,7 @@ def _calc_mixed_shr1(drives: List[float]) -> Dict[str, float]:
 
 
 def _calc_mixed_shr2(drives: List[float]) -> Dict[str, float]:
-    """Calculate SHR-2 dynamic horizontal slicing (2-drive fault tolerance)."""
+    """Calculate Dynamic Hybrid Array 2 (DHA-2) horizontal slicing (2-drive fault tolerance)."""
     sorted_d = sorted([d for d in drives if d > 0], reverse=True)
     n = len(sorted_d)
     if n < 4:
@@ -385,8 +385,8 @@ def _raid_calculator(values: dict) -> dict:
 
     # Build comparison across all compatible RAID architectures
     comparison_levels = [
-        ("shr1", "Synology SHR-1 (1-Drive Protection)"),
-        ("shr2", "Synology SHR-2 (2-Drive Protection)"),
+        ("shr1", "Dynamic Hybrid Array 1 (DHA-1)"),
+        ("shr2", "Dynamic Hybrid Array 2 (DHA-2)"),
         ("raid0", "RAID 0 (Pure Stripe)"),
         ("raid1", "RAID 1 (Mirror)"),
         ("raid5", "RAID 5 (Single Parity)"),
@@ -428,16 +428,16 @@ def _raid_calculator(values: dict) -> dict:
     # Recommended NAS enclosure bay size
     bay_count = len(drives)
     if bay_count <= 2:
-        recommended_chassis = "2-Bay Desktop NAS (e.g. Synology DS224+ / QNAP TS-264)"
+        recommended_chassis = "2-Bay Desktop NAS Enclosure"
         recommended_nic = "1 GbE / 2.5 GbE Ethernet"
     elif bay_count <= 4:
-        recommended_chassis = "4-Bay Tower NAS (e.g. Synology DS923+ / QNAP TS-464)"
+        recommended_chassis = "4-Bay Tower NAS Enclosure"
         recommended_nic = "2.5 GbE / 10 GbE SFP+ / PCIe"
     elif bay_count <= 6:
-        recommended_chassis = "6-Bay Workstation / NAS (e.g. Synology DS1621+)"
+        recommended_chassis = "6-Bay High-Density Storage Tower"
         recommended_nic = "10 GbE RJ45 / SFP+ Dual Port"
     elif bay_count <= 8:
-        recommended_chassis = "8-Bay Tower / 2U Rackmount (e.g. Synology DS1821+ / RS1221+)"
+        recommended_chassis = "8-Bay Tower / 2U Rackmount Enclosure"
         recommended_nic = "10 GbE / 25 GbE Dual SFP28"
     else:
         recommended_chassis = f"{bay_count}-Bay Enterprise 2U/3U/4U Rackmount Server"
@@ -458,7 +458,7 @@ def _raid_calculator(values: dict) -> dict:
 register_calculator(
     id="raid-calculator",
     name="RAID Storage Calculator",
-    description="Calculate usable capacity, parity protection, rebuild times, and failure resilience for Synology SHR, RAID 0/1/5/6/10, and OpenZFS.",
+    description="Calculate usable capacity, parity protection, rebuild times, and failure resilience for Dynamic Hybrid Arrays (DHA), RAID 0/1/5/6/10, and OpenZFS.",
     category="storage",
     fields=[
         CalcField(
@@ -467,8 +467,8 @@ register_calculator(
             type="select",
             default="raid5",
             options=[
-                {"value": "shr1", "label": "Synology SHR-1 (Single Drive Protection)"},
-                {"value": "shr2", "label": "Synology SHR-2 (Dual Drive Protection)"},
+                {"value": "shr1", "label": "Dynamic Hybrid Array 1 (DHA-1 Single Protection)"},
+                {"value": "shr2", "label": "Dynamic Hybrid Array 2 (DHA-2 Dual Protection)"},
                 {"value": "raid0", "label": "RAID 0 (Striping - No Redundancy)"},
                 {"value": "raid1", "label": "RAID 1 (Mirroring)"},
                 {"value": "raid5", "label": "RAID 5 (Single Distributed Parity)"},
@@ -517,7 +517,7 @@ register_calculator(
             type="select",
             default="btrfs",
             options=[
-                {"value": "btrfs", "label": "Btrfs (4% metadata reserve - Synology DSM default)"},
+                {"value": "btrfs", "label": "Btrfs (4% metadata reserve - Linux Btrfs Pool)"},
                 {"value": "zfs", "label": "OpenZFS (1.56% slop space - TrueNAS / Proxmox)"},
                 {"value": "ext4", "label": "EXT4 (2% reserved inodes - Linux)"},
                 {"value": "ntfs", "label": "NTFS / ReFS (1.5% cluster overhead - Windows Server)"},
