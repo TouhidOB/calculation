@@ -34,6 +34,7 @@ import {
 import { AiTokenCalculatorView } from "@/components/AiTokenCalculatorView"
 import { CctvStorageCalculatorView } from "@/components/CctvStorageCalculatorView"
 import { RaidCalculatorView } from "@/components/RaidCalculatorView"
+import AdBanner from "@/components/AdBanner"
 
 // MUI components
 import Box from "@mui/material/Box"
@@ -1949,6 +1950,9 @@ export default function CalculatorRunnerView({
                     </TactileButton>
                   </Stack>
 
+                  {/* Below-Result High-Impact AdSense Display Banner */}
+                  <AdBanner minHeight={110} />
+
                   {/* Print-Only Official Footer Sign-off */}
                   <Box className="print-only" sx={{ display: "none", "@media print": { display: "block !important" }, mt: 3, pt: 1.5, borderTop: "1px solid #cbd5e1", textAlign: "center" }}>
                     <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
@@ -1983,6 +1987,9 @@ export default function CalculatorRunnerView({
                       Fill parameters in the control deck on the left or tap <strong>⚡ Fill Example</strong> for instant precision telemetry.
                     </Typography>
                   </Paper>
+
+                  {/* Standby Banner */}
+                  <AdBanner minHeight={100} />
                 </Stack>
               )}
             </Grid>

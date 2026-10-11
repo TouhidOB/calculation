@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography"
 import Paper from "@mui/material/Paper"
 import Button from "@mui/material/Button"
 import Chip from "@mui/material/Chip"
+import AdBanner from "@/components/AdBanner"
 import Slider from "@mui/material/Slider"
 import MenuItem from "@mui/material/MenuItem"
 import Select from "@mui/material/Select"
@@ -1159,6 +1160,11 @@ export function RaidCalculatorView({ onToast }: RaidCalculatorViewProps) {
               </Paper>
             )
           })}
+        </Box>
+
+        {/* AdSense Banner inside Multi-RAID Architecture Stack */}
+        <Box sx={{ mt: 2.5 }}>
+          <AdBanner minHeight={90} />
         </Box>
       </Paper>
 
