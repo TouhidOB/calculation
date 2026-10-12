@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound, permanentRedirect } from "next/navigation"
 import CalculatorRunnerView from "@/components/CalculatorRunnerView"
+import CalculatorDocumentationGuide from "@/components/CalculatorDocumentationGuide"
 import { seoIntroFor, seoTitleFor, seoFaqFor, seoHowToFor, seoMetaDescriptionFor, seoDirectAnswerFor } from "@/lib/seo-helpers"
 import type { CalculatorDef } from "@/lib/calculator-api"
 import { CATEGORY_META } from "@/lib/calculator-api"
@@ -342,53 +343,10 @@ export default async function CalculatorPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToLd) }}
       />
 
-      {/*
-        ── SEO-critical server-rendered heading block ──
-        Visually hidden but fully rendered in the HTML for Google/AI crawlers.
-        Supplies H1, H2, direct-answer capsule and intro paragraph that the
-        client-only CalculatorRunnerView cannot provide at parse time.
-      */}
-      <div
-        aria-hidden="false"
-        style={{
-          position: "absolute",
-          width: "1px",
-          height: "1px",
-          padding: 0,
-          margin: "-1px",
-          overflow: "hidden",
-          clip: "rect(0,0,0,0)",
-          whiteSpace: "nowrap",
-          borderWidth: 0,
-        }}
-      >
-        <h1>{calc.name} — Free Online {catLabel.replace(" Calculators", " Calculator")} | TryCalc</h1>
-        <p className="direct-answer-capsule">{directAnswer}</p>
-        <h2>About the {calc.name}</h2>
-        <p>{intro}</p>
-        <h2>How to Use the {calc.name}</h2>
-        <ol>
-          {howToSteps.map((step, i) => (
-            <li key={i}>{step}</li>
-          ))}
-        </ol>
-        <h2>Frequently Asked Questions</h2>
-        {faqs.map((faq, i) => (
-          <div key={i}>
-            <h3>{faq.q}</h3>
-            <p>{faq.a}</p>
-          </div>
-        ))}
-        <nav aria-label="Breadcrumb">
-          <ol>
-            <li><a href={SITE_URL}>TryCalc</a></li>
-            <li><a href={`${SITE_URL}/category/${calc.category}`}>{catLabel}</a></li>
-            <li>{calc.name}</li>
-          </ol>
-        </nav>
-      </div>
-
       <CalculatorRunnerView calc={calc} initialRelatedCalcs={relatedCalcs} />
+
+      {/* ── Fully visible, crawlable, high-value editorial & mathematical guide (E-E-A-T) ── */}
+      <CalculatorDocumentationGuide calc={calc} catLabel={catLabel} />
     </>
   )
 }

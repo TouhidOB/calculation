@@ -151,7 +151,7 @@ export default function GlobalNavbar({
 
   const handleSelectCategory = (catKey: string) => {
     setDrawerOpen(false)
-    router.push(`/?cat=${catKey}`)
+    router.push(`/category/${catKey}`)
   }
 
   // Side Drawer Content
@@ -657,7 +657,7 @@ export default function GlobalNavbar({
                     <Chip
                       key={catKey}
                       component={Link}
-                      href={`/?cat=${catKey}`}
+                      href={`/category/${catKey}`}
                       clickable
                       label={`${meta.emoji} ${meta.label}${count > 0 ? ` (${count})` : ""}`}
                       size="small"

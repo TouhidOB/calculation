@@ -4,6 +4,7 @@ import "./globals.css"
 import ThemeRegistry from "@/theme/ThemeRegistry"
 import OrganizationJsonLd from "@/components/OrganizationJsonLd"
 import TrafficTelemetry from "@/components/TrafficTelemetry"
+import CookieConsent from "@/components/CookieConsent"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-KXFZGDCLVQ"
@@ -135,6 +136,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <OrganizationJsonLd />
         <TrafficTelemetry />
         <ThemeRegistry>{children}</ThemeRegistry>
+        <CookieConsent />
       </body>
     </html>
   )

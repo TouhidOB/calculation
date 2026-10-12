@@ -105,29 +105,39 @@ export default function GlobalFooter() {
               Popular Categories
             </Typography>
             <Stack spacing={1.25}>
-              <Link href="/?category=finance" style={{ textDecoration: "none" }}>
+              <Link href="/category/finance" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Finance &amp; Investment
                 </Typography>
               </Link>
-              <Link href="/?category=health" style={{ textDecoration: "none" }}>
+              <Link href="/category/health" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Health &amp; Fitness
                 </Typography>
               </Link>
-              <Link href="/?category=construction" style={{ textDecoration: "none" }}>
+              <Link href="/category/construction" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Construction &amp; Building
                 </Typography>
               </Link>
-              <Link href="/?category=conversion" style={{ textDecoration: "none" }}>
+              <Link href="/category/conversion" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Unit Conversion
                 </Typography>
               </Link>
-              <Link href="/?category=basic" style={{ textDecoration: "none" }}>
+              <Link href="/category/math" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Math &amp; Statistics
+                </Typography>
+              </Link>
+              <Link href="/category/ai_helper" style={{ textDecoration: "none" }}>
+                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
+                  AI Prompt &amp; Token Math
+                </Typography>
+              </Link>
+              <Link href="/category/real_estate" style={{ textDecoration: "none" }}>
+                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
+                  Real Estate &amp; Mortgages
                 </Typography>
               </Link>
               <Link href="/" style={{ textDecoration: "none" }}>

@@ -171,6 +171,114 @@ export default function AboutUsPage() {
             </Box>
           </Stack>
         </Paper>
+
+        {/* Leadership & Editorial Contributors (E-E-A-T Transparency) */}
+        <Paper
+          elevation={0}
+          sx={{
+            mt: 4,
+            p: { xs: 3, sm: 5 },
+            borderRadius: 4,
+            border: "1px solid #e2e8f0",
+            bgcolor: "#ffffff",
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a", mb: 2 }}>
+            Engineering Leadership &amp; Mathematical Contributors
+          </Typography>
+
+          <Typography variant="body1" sx={{ color: "#475569", lineHeight: 1.8, mb: 3 }}>
+            TryCalc was created and is actively maintained by an engineering team committed to providing free, high-speed, transparent computational tools. We reject black-box AI approximations in favor of verified deterministic mathematics.
+          </Typography>
+
+          <Grid container spacing={3}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: "1px solid #e2e8f0",
+                  bgcolor: "#f8fafc",
+                  height: "100%",
+                }}
+              >
+                <Stack direction="row" spacing={2} sx={{ alignItems: "center", mb: 2 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: "50%",
+                      bgcolor: "rgba(79, 70, 229, 0.1)",
+                      color: "#4f46e5",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 900,
+                      fontSize: 20,
+                    }}
+                  >
+                    MI
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                      Md. Mainul Islam Imon
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#4f46e5", fontWeight: 700 }}>
+                      Founder &amp; Lead Systems Architect (B.Sc. CSE)
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Typography variant="body2" sx={{ color: "#334155", lineHeight: 1.7 }}>
+                  Systems architect specializing in high-throughput computational platforms, cloud infrastructure, and deterministic algorithmic engines. Leads architectural validation, numerical precision bounds, and zero-hallucination computation across all 725+ online utilities.
+                </Typography>
+              </Paper>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  border: "1px solid #e2e8f0",
+                  bgcolor: "#f8fafc",
+                  height: "100%",
+                }}
+              >
+                <Stack direction="row" spacing={2} sx={{ alignItems: "center", mb: 2 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: "50%",
+                      bgcolor: "rgba(16, 185, 129, 0.1)",
+                      color: "#10b981",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 900,
+                      fontSize: 20,
+                    }}
+                  >
+                    ∑
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                      Mathematical &amp; Actuarial Review Board
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#166534", fontWeight: 700 }}>
+                      Domain Verification Contributors
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Typography variant="body2" sx={{ color: "#334155", lineHeight: 1.7 }}>
+                  Domain specialists and analytical reviewers auditing amortization matrices, compound interest algorithms, health BMR/BMI formulas, and engineering unit standards. Ensures strict alignment with IEEE floating-point standards and academic textbooks.
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Paper>
       </Container>
     </Box>
   )
