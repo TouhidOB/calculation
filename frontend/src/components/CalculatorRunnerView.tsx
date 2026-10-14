@@ -234,12 +234,22 @@ function generateExampleValues(fields: CalculatorDef["fields"]): Record<string, 
     } else {
       if (f.default != null && f.default !== "") {
         ex[f.name] = String(f.default)
-      } else if (name.includes("price") || name.includes("loan") || name.includes("amount") || name.includes("principal")) {
-        ex[f.name] = "50000"
-      } else if (name.includes("rate") || name.includes("interest") || name.includes("percent") || name.includes("tax")) {
+      } else if (f.options && f.options.length > 0) {
+        ex[f.name] = String(f.options[0].value)
+      } else if (name.includes("rate") || name.includes("interest") || name.includes("percent") || name.includes("tax") || name.includes("apr") || name.includes("margin")) {
         ex[f.name] = "6.5"
-      } else if (name.includes("term") || name.includes("year") || name.includes("period") || name.includes("tenure")) {
+      } else if (name.includes("term") || name.includes("year") || name.includes("period") || name.includes("tenure") || name.includes("duration") || name.includes("amortization")) {
         ex[f.name] = "15"
+      } else if (name.includes("month")) {
+        ex[f.name] = "12"
+      } else if (name.includes("down") || name.includes("deposit")) {
+        ex[f.name] = "10000"
+      } else if (name.includes("target_weight") || name.includes("target-weight")) {
+        ex[f.name] = "100"
+      } else if (name.includes("bar_weight") || name.includes("bar-weight")) {
+        ex[f.name] = "20"
+      } else if (name.includes("price") || name.includes("loan") || name.includes("amount") || name.includes("principal") || name.includes("balance") || name.includes("budget") || name.includes("cost") || name.includes("capital")) {
+        ex[f.name] = "50000"
       } else if (name.includes("month")) {
         ex[f.name] = "12"
       } else if (name.includes("thickness") || name.includes("depth")) {
@@ -296,6 +306,15 @@ function extractPrimaryResult(result: Record<string, unknown> | null): {
 } {
   if (!result) {
     return { primaryKey: "", primaryLabel: "AWAITING TELEMETRY", primaryValue: "STANDBY" }
+  }
+
+  if (typeof result.error === "string" && result.error.trim().length > 0) {
+    return {
+      primaryKey: "error",
+      primaryLabel: "INPUT VALIDATION NOTICE",
+      primaryValue: result.error,
+      statusBadge: "CHECK INPUTS",
+    }
   }
 
   const entries = Object.entries(result).filter(([k]) => k !== "note" && k !== "js_required" && k !== "error")

@@ -3,7 +3,7 @@
 /**
  * JS Sandbox Executor — runs Django template JS in a sandboxed iframe.
  * Uses original template HTML/CSS when available for high-fidelity rendering,
- * with resilient input matching, event dispatching, and guaranteed error recovery.
+ * with resilient input matching, semantic DOM proxying, and guaranteed error recovery.
  */
 
 import { useEffect, useRef, useCallback } from "react"
@@ -87,24 +87,44 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
         const inputElements: string[] = []
         for (const f of fields) {
           const val = String(f.value ?? "").replace(/"/g, "&quot;")
+          const n = f.name.toLowerCase()
+          const extraClasses = []
+          if (n.includes("income") || n.includes("salary") || n.includes("budget")) extraClasses.push("income")
+          if (n.includes("debt") || n.includes("expense")) extraClasses.push("debts")
+          if (n.includes("rate") || n.includes("interest") || n.includes("apr")) extraClasses.push("rate")
+          if (n.includes("term") || n.includes("year") || n.includes("period") || n.includes("duration")) extraClasses.push("term")
+          if (n.includes("loan") || n.includes("price") || n.includes("amount") || n.includes("principal")) extraClasses.push("loan-amount", "principal")
+
+          const classAttr = extraClasses.length > 0 ? ` class="${extraClasses.join(" ")}"` : ""
+
           if (f.type === "select") {
             inputElements.push(
-              `<select id="${f.name}" name="${f.name}"><option value="${val}" selected>${val}</option></select>`
+              `<select id="${f.name}" name="${f.name}"${classAttr}><option value="${val}" selected>${val}</option></select>`
             )
           } else {
             inputElements.push(
-              `<input type="${f.type === "number" ? "number" : "text"}" id="${f.name}" name="${f.name}" value="${val}">`
+              `<input type="${f.type === "number" ? "number" : "text"}" id="${f.name}" name="${f.name}" value="${val}"${classAttr}>`
             )
           }
         }
         templateHtml = `
-          <form id="${calcId}-form">
+          <form id="${calcId}-form" class="calc-form mort-form loan-form">
             ${inputElements.join("\n")}
+            <div id="loan-list"></div>
             <button type="submit" id="calculate-btn">Calculate</button>
+            <button type="button" id="loan-add" class="d-none">Add</button>
           </form>
+          <div id="results-ui" class="result-area"></div>
           <div id="results-container" class="result-area"></div>
           <div id="result" class="result-area"></div>
           <div id="output" class="result-area"></div>
+          <div id="mort-result" class="result-area"></div>
+          <div id="loan-summary" class="result-area"></div>
+          <table id="mort-table" class="d-none"><tbody id="mort-body"></tbody></table>
+          <canvas id="mort-chart" class="d-none" width="400" height="200"></canvas>
+          <canvas id="loan-chart" class="d-none" width="400" height="200"></canvas>
+          <div id="placeholder-ui" class="d-none"></div>
+          <div id="error-ui" class="d-none alert alert-danger"></div>
         `
       }
 
@@ -126,10 +146,26 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
   </style>
 </head>
 <body>
+  <div id="calc-error-box" class="alert alert-danger d-none"></div>
   ${templateHtml}
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
-    // Chart fallback if CDN is unreachable
+    // 1. Alert trap
+    window.alert = function(msg) {
+      console.warn("[CALC_ALERT]", msg);
+      var box = document.getElementById("calc-error-box");
+      if (!box) {
+        box = document.createElement("div");
+        box.id = "calc-error-box";
+        box.className = "alert alert-danger";
+        document.body.prepend(box);
+      }
+      box.textContent = String(msg);
+      box.style.display = "block";
+      box.classList.remove("d-none");
+    };
+
+    // 2. Chart fallback if CDN is unreachable
     if (typeof window.Chart === 'undefined') {
       window.Chart = function(ctx, config) { 
         this.destroy = function(){}; 
@@ -140,13 +176,113 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
       window.Chart.defaults = {};
       window.Chart.plugins = {};
     }
-    // MathJax stub so LaTeX calls never crash
+
+    // 3. MathJax stub
     window.MathJax = {
       typesetPromise: function() { return Promise.resolve(); },
       typeset: function() {},
       startup: { ready: function() {} }
     };
-    // Minimal jQuery shim for older calculators
+
+    // 4. Smart DOM Proxies
+    var _origGetById = document.getElementById.bind(document);
+    document.getElementById = function(id) {
+      var el = _origGetById(id);
+      if (el) return el;
+      if (!id) return null;
+      var lowerId = String(id).toLowerCase();
+
+      // Form alias
+      if (lowerId.includes("form")) {
+        var anyForm = document.querySelector("form");
+        if (anyForm) return anyForm;
+      }
+
+      // Input semantic fallback
+      var allInputs = document.querySelectorAll("input, select, textarea");
+      var normId = lowerId.replace(/[-_]/g, "");
+      for (var i = 0; i < allInputs.length; i++) {
+        var inp = allInputs[i];
+        var inpNorm = (inp.id || inp.name || "").toLowerCase().replace(/[-_]/g, "");
+        if (inpNorm && (inpNorm === normId || inpNorm.includes(normId) || normId.includes(inpNorm))) {
+          return inp;
+        }
+      }
+
+      // Common semantic categories
+      if (/principal|price|amount|loan|balance|p-input/i.test(id)) {
+        for (var j = 0; j < allInputs.length; j++) {
+          if (/price|amount|principal|loan|balance/i.test(allInputs[j].id || allInputs[j].name || "")) return allInputs[j];
+        }
+      }
+      if (/rate|interest|apr|r-input/i.test(id)) {
+        for (var j = 0; j < allInputs.length; j++) {
+          if (/rate|interest|apr/i.test(allInputs[j].id || allInputs[j].name || "")) return allInputs[j];
+        }
+      }
+      if (/term|year|period|tenure|amort|t-input/i.test(id)) {
+        for (var j = 0; j < allInputs.length; j++) {
+          if (/term|year|period|tenure|amort/i.test(allInputs[j].id || allInputs[j].name || "")) return allInputs[j];
+        }
+      }
+      if (/budget|income|salary/i.test(id)) {
+        for (var j = 0; j < allInputs.length; j++) {
+          if (/budget|income|salary/i.test(allInputs[j].id || allInputs[j].name || "")) return allInputs[j];
+        }
+      }
+      if (/weight/i.test(id)) {
+        for (var j = 0; j < allInputs.length; j++) {
+          if (/weight/i.test(allInputs[j].id || allInputs[j].name || "")) return allInputs[j];
+        }
+      }
+
+      // Auto-create UI containers so scripts never throw null errors
+      if (/result|output|summary|error|placeholder|table|chart|list|box/i.test(id)) {
+        var tag = /table/i.test(id) ? "table" : (/chart/i.test(id) ? "canvas" : "div");
+        var dummy = document.createElement(tag);
+        dummy.id = id;
+        dummy.className = /error/i.test(id) ? "d-none" : "result-area";
+        document.body.appendChild(dummy);
+        return dummy;
+      }
+      return null;
+    };
+
+    var _origQuerySelector = document.querySelector.bind(document);
+    document.querySelector = function(sel) {
+      try {
+        var el = _origQuerySelector(sel);
+        if (el) return el;
+      } catch(e) {}
+      if (typeof sel === "string") {
+        if (sel.includes(".mort-form") || sel.includes(".calc-form")) {
+          return document.querySelector("form") || document.body;
+        }
+        if (sel.startsWith(".")) {
+          var cls = sel.slice(1).toLowerCase();
+          var inputs = document.querySelectorAll("input, select");
+          for (var k = 0; k < inputs.length; k++) {
+            var n = (inputs[k].name || inputs[k].id || "").toLowerCase();
+            if (n.includes(cls)) return inputs[k];
+          }
+        }
+      }
+      return null;
+    };
+
+    var _origQuerySelectorAll = document.querySelectorAll.bind(document);
+    document.querySelectorAll = function(sel) {
+      try {
+        var list = _origQuerySelectorAll(sel);
+        if (list && list.length > 0) return list;
+      } catch(e) {}
+      if (typeof sel === "string" && (sel.includes(".mort-form") || sel.includes(".calc-form"))) {
+        return document.querySelectorAll("form");
+      }
+      return _origQuerySelectorAll(sel);
+    };
+
+    // Minimal jQuery shim
     window.$ = window.jQuery = function(sel) {
       var el = typeof sel === 'string' ? document.querySelector(sel) : sel;
       return {
@@ -160,6 +296,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
         removeClass: function(c) { if (el) { el.classList.remove(c); } }
       };
     };
+
     try {
       ${runtime.script}
     } catch (e) {
@@ -184,13 +321,21 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
 
         const currentDoc = iframe.contentDocument || win.document
 
+        // Check dynamic row initializers (e.g., loan-calculator multi-row)
+        const loanAddBtn = currentDoc.getElementById("loan-add") as HTMLElement | null
+        if (loanAddBtn && currentDoc.querySelectorAll(".loan-row").length === 0) {
+          try {
+            loanAddBtn.click()
+          } catch {}
+        }
+
         // Populate fields with user inputs: multi-tier matching
         const populatedElements = new Set<HTMLElement>()
         for (const f of fields) {
           const val = String(f.value ?? "")
           const normHyphen = f.name.replace(/_/g, "-")
           const normUnder = f.name.replace(/-/g, "_")
-          
+
           const candidates = [
             `#${f.name}`,
             `[name="${f.name}"]`,
@@ -201,10 +346,38 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
             `#inf-${normHyphen}`,
             `#${normHyphen}-input`,
             `#input-${normHyphen}`,
-            // Common aliases (e.g. home-price -> principal-input)
-            ...(normHyphen.includes("price") || normHyphen.includes("amount") ? ['#principal-input', '#principal', '#loan-amount', '#amount-input'] : []),
-            ...(normHyphen.includes("rate") ? ['#rate-input', '#interest-rate-input', '#apr-input', '#rate'] : []),
-            ...(normHyphen.includes("term") || normHyphen.includes("year") ? ['#term-input', '#loan-term-input', '#years-input', '#term'] : []),
+            // Incomes / Budgets
+            ...(normHyphen.includes("income") || normHyphen.includes("salary") || normHyphen.includes("budget")
+              ? [".income", "#budget-input", "#income", "#salary", "#annual-income", "#monthly-income"]
+              : []),
+            // Debts
+            ...(normHyphen.includes("debt") || normHyphen.includes("expense")
+              ? [".debts", "#debts", "#debt-input", "#monthly-debts"]
+              : []),
+            // Rates
+            ...(normHyphen.includes("rate") || normHyphen.includes("interest") || normHyphen.includes("apr")
+              ? [".rate", "#rate-input", "#interest-rate-input", "#apr-input", "#rate", "#r-input", ".loan-rate"]
+              : []),
+            // Terms
+            ...(normHyphen.includes("term") ||
+            normHyphen.includes("year") ||
+            normHyphen.includes("period") ||
+            normHyphen.includes("tenure") ||
+            normHyphen.includes("amortization") ||
+            normHyphen.includes("duration")
+              ? [".term", "#term-input", "#loan-term-input", "#years-input", "#term", "#t-input", ".loan-term", "#amortization-input"]
+              : []),
+            // Amounts / Principals / Prices
+            ...(normHyphen.includes("price") ||
+            normHyphen.includes("amount") ||
+            normHyphen.includes("principal") ||
+            normHyphen.includes("loan")
+              ? [".principal", "#principal-input", "#principal", "#loan-amount", "#amount-input", "#p-input", ".loan-amount"]
+              : []),
+            // Weights
+            ...(normHyphen.includes("weight")
+              ? ["#target_weight", "#target-weight", "#bar_weight", "#bar-weight", "#weight_unit", "#weight-unit"]
+              : []),
             `input[id*="${f.name}"]`,
             `select[id*="${f.name}"]`,
             `input[id*="${normUnder}"]`,
@@ -225,6 +398,14 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
           if (el) {
             populatedElements.add(el)
             el.value = val
+            // For selects, if option mismatch due to case (e.g. Kg vs kg)
+            if (el.tagName === "SELECT") {
+              const sel = el as HTMLSelectElement
+              const opt = Array.from(sel.options).find(
+                (o) => o.value.toLowerCase() === val.toLowerCase()
+              )
+              if (opt) sel.value = opt.value
+            }
             el.dispatchEvent(new Event("input", { bubbles: true }))
             el.dispatchEvent(new Event("change", { bubbles: true }))
           }
@@ -247,6 +428,10 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
             el.dispatchEvent(new Event("change", { bubbles: true }))
           }
         })
+
+        // Also ensure multi-row calculators have their row inputs populated
+        const loanRowName = currentDoc.querySelector(".loan-name") as HTMLInputElement | null
+        if (loanRowName && !loanRowName.value) loanRowName.value = "Primary Loan"
 
         // Trigger execution: Submit event on form
         const forms = currentDoc.querySelectorAll("form")
@@ -281,12 +466,24 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
         // Capture result after execution
         setTimeout(() => {
           try {
+            // Check for alert error box
+            const alertBox = currentDoc.getElementById("calc-error-box")
+            if (alertBox && alertBox.textContent?.trim() && !alertBox.classList.contains("d-none")) {
+              onError(alertBox.textContent.trim())
+              isExecuting.current = false
+              return
+            }
+
             // Check for explicit error messages in status/alert divs
             const statusDiv = currentDoc.getElementById("status-message") || currentDoc.querySelector(".alert-danger")
             if (statusDiv) {
               const statusText = statusDiv.textContent?.trim() || ""
               const isVisible = !statusDiv.classList.contains("d-none") && statusDiv.style.display !== "none"
-              if (isVisible && statusText && (statusText.toLowerCase().includes("error") || statusText.toLowerCase().includes("please"))) {
+              if (
+                isVisible &&
+                statusText &&
+                (statusText.toLowerCase().includes("error") || statusText.toLowerCase().includes("please"))
+              ) {
                 onError(statusText)
                 isExecuting.current = false
                 return
@@ -295,6 +492,9 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
 
             // Look for visible result containers
             const resultSelectors = [
+              "#mort-result",
+              "#loan-summary",
+              "#results-ui",
               "#results-container",
               "#result-container",
               "#result-section",
@@ -306,7 +506,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
               "#result",
               "#results",
               "#output",
-              "#answer"
+              "#answer",
             ]
 
             let foundHtml = ""
@@ -344,6 +544,17 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
               }
             }
 
+            // Also append table if it has rendered rows (e.g. amortization table or breakdown)
+            const tableBody = currentDoc.querySelector("table tbody")
+            if (tableBody && tableBody.children.length > 0) {
+              const table = tableBody.closest("table")
+              if (table && !foundHtml.includes(table.innerHTML)) {
+                table.classList.remove("d-none")
+                table.style.display = ""
+                foundHtml = (foundHtml ? foundHtml + "<br>" : "") + table.outerHTML
+              }
+            }
+
             // Parse text
             const tempDiv = currentDoc.createElement("div")
             tempDiv.innerHTML = foundHtml
@@ -359,13 +570,13 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
           } finally {
             isExecuting.current = false
           }
-        }, 250)
-      }, 150)
-    } catch (e) {
-      onError(e instanceof Error ? e.message : String(e))
+        }, 120)
+      }, 50)
+    } catch (err: unknown) {
+      onError(err instanceof Error ? err.message : "Error executing calculation engine")
       isExecuting.current = false
     }
-  }, [calcId, fields, trigger, onResult, onError])
+  }, [calcId, fields, onResult, onError, trigger])
 
   useEffect(() => {
     execute()
@@ -376,7 +587,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
       ref={iframeRef}
       style={{ position: "absolute", width: 0, height: 0, border: "none", overflow: "hidden" }}
       title="Calculator Sandbox"
-      sandbox="allow-scripts allow-same-origin allow-forms"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
     />
   )
 }
