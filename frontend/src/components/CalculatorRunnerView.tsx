@@ -884,7 +884,18 @@ export default function CalculatorRunnerView({
   const handleJsResult = (sandboxResult: { html: string; text: string }) => {
     setJsHtml(sandboxResult.html)
     setBusy(false)
-    saveHistory(values, null, sandboxResult.html)
+
+    // Extract primary numeric / currency value for hero readout display
+    const text = sandboxResult.text || ""
+    const curMatch = text.match(/\$[\d,]+(\.\d+)?/i)
+    const numMatch = text.match(/\b\d+([,.]\d+)?(\s*[%a-zA-Z]+)?/i)
+    const primaryFound = curMatch ? curMatch[0] : (numMatch ? numMatch[0] : "COMPUTED")
+
+    const syntheticResult: Record<string, string | number> = {
+      calculated_value: primaryFound,
+    }
+    setResult(syntheticResult)
+    saveHistory(values, syntheticResult, sandboxResult.html)
   }
 
   const handleJsError = (error: string) => {

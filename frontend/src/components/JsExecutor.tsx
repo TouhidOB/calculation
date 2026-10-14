@@ -36,6 +36,13 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
   const runtimeCache = useRef<CalcRuntime | null>(null)
   const isExecuting = useRef(false)
 
+  const fieldsRef = useRef(fields)
+  fieldsRef.current = fields
+  const onResultRef = useRef(onResult)
+  onResultRef.current = onResult
+  const onErrorRef = useRef(onError)
+  onErrorRef.current = onError
+
   const execute = useCallback(async () => {
     if (trigger === 0 || isExecuting.current) return
     isExecuting.current = true
@@ -46,7 +53,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
         const res = await fetch(`/api/calculators/${calcId}/script/`)
         if (!res.ok) {
           if (res.status === 404) {
-            onError("Calculator script not found.")
+            onErrorRef.current("Calculator script not found.")
             isExecuting.current = false
             return
           }
@@ -62,30 +69,32 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
 
       const runtime = runtimeCache.current
       if (!runtime || !runtime.script) {
-        onError("No computational script available for this calculator.")
+        onErrorRef.current("No computational script available for this calculator.")
         isExecuting.current = false
         return
       }
 
       const iframe = iframeRef.current
       if (!iframe) {
-        onError("Sandboxed runner unavailable.")
+        onErrorRef.current("Sandboxed runner unavailable.")
         isExecuting.current = false
         return
       }
 
       const doc = iframe.contentDocument || iframe.contentWindow?.document
       if (!doc) {
-        onError("Cannot access runner sandbox.")
+        onErrorRef.current("Cannot access runner sandbox.")
         isExecuting.current = false
         return
       }
+
+      const currentFields = fieldsRef.current
 
       // Build DOM: Use original template HTML if available; otherwise fallback
       let templateHtml = runtime.html || ""
       if (!templateHtml) {
         const inputElements: string[] = []
-        for (const f of fields) {
+        for (const f of currentFields) {
           const val = String(f.value ?? "").replace(/"/g, "&quot;")
           const n = f.name.toLowerCase()
           const extraClasses = []
@@ -315,7 +324,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
       setTimeout(() => {
         const win = iframe.contentWindow
         if (!win) {
-          onError("Runner window unavailable")
+          onErrorRef.current("Runner window unavailable")
           isExecuting.current = false
           return
         }
@@ -332,10 +341,10 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
 
         // Compound field resolution: Home Price - Down Payment = Principal
         const populatedElements = new Set<HTMLElement>()
-        const priceField = fields.find((f) => /price|loan.*amount|principal/i.test(f.name))
-        const downField = fields.find((f) => /down.*payment|deposit/i.test(f.name))
-        const rateField = fields.find((f) => /rate|interest|apr/i.test(f.name))
-        const termField = fields.find((f) => /term|year|period|tenure|amortization|duration/i.test(f.name))
+        const priceField = currentFields.find((f) => /price|loan.*amount|principal/i.test(f.name))
+        const downField = currentFields.find((f) => /down.*payment|deposit/i.test(f.name))
+        const rateField = currentFields.find((f) => /rate|interest|apr/i.test(f.name))
+        const termField = currentFields.find((f) => /term|year|period|tenure|amortization|duration/i.test(f.name))
 
         const principalInp = currentDoc.querySelector("#principal-input, #loan-amount, #p-input") as HTMLInputElement | null
         if (principalInp && priceField && priceField.value) {
@@ -359,7 +368,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
         }
 
         // Multi-tier matching for remaining fields
-        for (const f of fields) {
+        for (const f of currentFields) {
           const val = String(f.value ?? "")
           const normHyphen = f.name.replace(/_/g, "-")
           const normUnder = f.name.replace(/-/g, "_")
@@ -444,7 +453,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
           currentDoc.querySelectorAll('input:not([type="submit"]):not([type="button"]):not([type="hidden"]), select')
         ).filter((inp) => !populatedElements.has(inp as HTMLElement)) as (HTMLInputElement | HTMLSelectElement)[]
 
-        const unpopulatedFields = fields.filter((_, idx) => {
+        const unpopulatedFields = currentFields.filter((_, idx) => {
           return idx >= populatedElements.size
         })
 
@@ -548,7 +557,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
 
             if (foundHtml) {
               const textContent = currentDoc.body?.innerText || ""
-              onResult({ html: foundHtml, text: textContent })
+              onResultRef.current({ html: foundHtml, text: textContent })
               isExecuting.current = false
               return
             }
@@ -556,7 +565,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
             // 2. Only check for errors if NO result container produced output
             const alertBox = currentDoc.getElementById("calc-error-box")
             if (alertBox && alertBox.textContent?.trim() && !alertBox.closest(".d-none") && alertBox.style.display !== "none") {
-              onError(alertBox.textContent.trim())
+              onErrorRef.current(alertBox.textContent.trim())
               isExecuting.current = false
               return
             }
@@ -571,25 +580,25 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
                 statusText &&
                 (statusText.toLowerCase().includes("error") || statusText.toLowerCase().includes("please"))
               ) {
-                onError(statusText)
+                onErrorRef.current(statusText)
                 isExecuting.current = false
                 return
               }
             }
 
-            onError("Calculation completed with no visible output. Please verify input values.")
+            onErrorRef.current("Calculation completed with no visible output. Please verify input values.")
           } catch (captureErr) {
-            onError(captureErr instanceof Error ? captureErr.message : String(captureErr))
+            onErrorRef.current(captureErr instanceof Error ? captureErr.message : String(captureErr))
           } finally {
             isExecuting.current = false
           }
-        }, 120)
+        }, 150)
       }, 50)
     } catch (err: unknown) {
-      onError(err instanceof Error ? err.message : "Error executing calculation engine")
+      onErrorRef.current(err instanceof Error ? err.message : "Error executing calculation engine")
       isExecuting.current = false
     }
-  }, [calcId, fields, onResult, onError, trigger])
+  }, [calcId, trigger])
 
   useEffect(() => {
     execute()
