@@ -184,8 +184,11 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
       startup: { ready: function() {} }
     };
 
-    // 4. Smart DOM Proxies
+    // 4. Smart DOM Proxies (using original native methods to prevent recursion)
     var _origGetById = document.getElementById.bind(document);
+    var _origQuerySelector = document.querySelector.bind(document);
+    var _origQuerySelectorAll = document.querySelectorAll.bind(document);
+
     document.getElementById = function(id) {
       var el = _origGetById(id);
       if (el) return el;
@@ -194,12 +197,12 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
 
       // Form alias
       if (lowerId.includes("form")) {
-        var anyForm = document.querySelector("form");
+        var anyForm = _origQuerySelector("form");
         if (anyForm) return anyForm;
       }
 
       // Input semantic fallback
-      var allInputs = document.querySelectorAll("input, select, textarea");
+      var allInputs = _origQuerySelectorAll("input, select, textarea");
       var normId = lowerId.replace(/[-_]/g, "");
       for (var i = 0; i < allInputs.length; i++) {
         var inp = allInputs[i];
@@ -248,7 +251,6 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
       return null;
     };
 
-    var _origQuerySelector = document.querySelector.bind(document);
     document.querySelector = function(sel) {
       try {
         var el = _origQuerySelector(sel);
@@ -256,11 +258,11 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
       } catch(e) {}
       if (typeof sel === "string") {
         if (sel.includes(".mort-form") || sel.includes(".calc-form")) {
-          return document.querySelector("form") || document.body;
+          return _origQuerySelector("form") || document.body;
         }
         if (sel.startsWith(".")) {
           var cls = sel.slice(1).toLowerCase();
-          var inputs = document.querySelectorAll("input, select");
+          var inputs = _origQuerySelectorAll("input, select");
           for (var k = 0; k < inputs.length; k++) {
             var n = (inputs[k].name || inputs[k].id || "").toLowerCase();
             if (n.includes(cls)) return inputs[k];
@@ -270,14 +272,13 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
       return null;
     };
 
-    var _origQuerySelectorAll = document.querySelectorAll.bind(document);
     document.querySelectorAll = function(sel) {
       try {
         var list = _origQuerySelectorAll(sel);
         if (list && list.length > 0) return list;
       } catch(e) {}
       if (typeof sel === "string" && (sel.includes(".mort-form") || sel.includes(".calc-form"))) {
-        return document.querySelectorAll("form");
+        return _origQuerySelectorAll("form");
       }
       return _origQuerySelectorAll(sel);
     };
