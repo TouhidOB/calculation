@@ -329,8 +329,35 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
           } catch {}
         }
 
-        // Populate fields with user inputs: multi-tier matching
+        // Compound field resolution: Home Price - Down Payment = Principal
         const populatedElements = new Set<HTMLElement>()
+        const priceField = fields.find((f) => /price|loan.*amount|principal/i.test(f.name))
+        const downField = fields.find((f) => /down.*payment|deposit/i.test(f.name))
+        const rateField = fields.find((f) => /rate|interest|apr/i.test(f.name))
+        const termField = fields.find((f) => /term|year|period|tenure|amortization|duration/i.test(f.name))
+
+        const principalInp = currentDoc.querySelector("#principal-input, #loan-amount, #p-input") as HTMLInputElement | null
+        if (principalInp && priceField && priceField.value) {
+          const pPrice = parseFloat(String(priceField.value)) || 0
+          const pDown = downField ? (parseFloat(String(downField.value)) || 0) : 0
+          const effPrincipal = pPrice > pDown && pDown > 0 ? pPrice - pDown : pPrice
+          principalInp.value = String(effPrincipal)
+          populatedElements.add(principalInp)
+        }
+
+        const rateInp = currentDoc.querySelector("#rate-input, #r-input, [name='rate'], .rate") as HTMLInputElement | null
+        if (rateInp && rateField && rateField.value) {
+          rateInp.value = String(rateField.value)
+          populatedElements.add(rateInp)
+        }
+
+        const termInp = currentDoc.querySelector("#term-input, #t-input, [name='term'], .term") as HTMLInputElement | null
+        if (termInp && termField && termField.value) {
+          termInp.value = String(termField.value)
+          populatedElements.add(termInp)
+        }
+
+        // Multi-tier matching for remaining fields
         for (const f of fields) {
           const val = String(f.value ?? "")
           const normHyphen = f.name.replace(/_/g, "-")
@@ -466,31 +493,7 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
         // Capture result after execution
         setTimeout(() => {
           try {
-            // Check for alert error box
-            const alertBox = currentDoc.getElementById("calc-error-box")
-            if (alertBox && alertBox.textContent?.trim() && !alertBox.classList.contains("d-none")) {
-              onError(alertBox.textContent.trim())
-              isExecuting.current = false
-              return
-            }
-
-            // Check for explicit error messages in status/alert divs
-            const statusDiv = currentDoc.getElementById("status-message") || currentDoc.querySelector(".alert-danger")
-            if (statusDiv) {
-              const statusText = statusDiv.textContent?.trim() || ""
-              const isVisible = !statusDiv.classList.contains("d-none") && statusDiv.style.display !== "none"
-              if (
-                isVisible &&
-                statusText &&
-                (statusText.toLowerCase().includes("error") || statusText.toLowerCase().includes("please"))
-              ) {
-                onError(statusText)
-                isExecuting.current = false
-                return
-              }
-            }
-
-            // Look for visible result containers
+            // 1. Look for visible result containers FIRST!
             const resultSelectors = [
               "#mort-result",
               "#loan-summary",
@@ -513,18 +516,17 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
             for (const sel of resultSelectors) {
               const el = currentDoc.querySelector(sel) as HTMLElement | null
               if (el) {
-                el.classList.remove("d-none")
-                el.style.display = ""
+                const isHidden = !!el.closest(".d-none") || el.style.display === "none"
                 const h = el.innerHTML.trim()
                 const t = el.textContent?.trim() || ""
-                if (h && t.length > 0) {
+                if (!isHidden && h && t.length > 0) {
                   foundHtml = el.outerHTML
                   break
                 }
               }
             }
 
-            // Fallback: search any element with result/output/answer in ID
+            // Fallback: search any element with result/output/answer in ID that is not hidden
             if (!foundHtml) {
               const anyResults = currentDoc.querySelectorAll(
                 "[id*='result']:not(form):not(input):not(button), [id*='output']:not(form):not(input):not(button), [id*='answer']:not(form):not(input):not(button)"
@@ -532,39 +534,49 @@ function JsExecutor({ calcId, fields, onResult, onError, trigger }: JsExecutorPr
               const parts: string[] = []
               anyResults.forEach((r) => {
                 const el = r as HTMLElement
-                el.classList.remove("d-none")
-                el.style.display = ""
+                const isHidden = !!el.closest(".d-none") || el.style.display === "none"
                 const content = el.innerHTML.trim()
-                if (content && el.textContent?.trim()) {
-                  parts.push(content)
+                if (!isHidden && content && el.textContent?.trim()) {
+                  parts.push(el.outerHTML)
                 }
               })
               if (parts.length > 0) {
-                foundHtml = parts.join("<hr style='margin:12px 0;border-color:#e2e8f0'>")
+                foundHtml = parts.join("\n")
               }
             }
 
-            // Also append table if it has rendered rows (e.g. amortization table or breakdown)
-            const tableBody = currentDoc.querySelector("table tbody")
-            if (tableBody && tableBody.children.length > 0) {
-              const table = tableBody.closest("table")
-              if (table && !foundHtml.includes(table.innerHTML)) {
-                table.classList.remove("d-none")
-                table.style.display = ""
-                foundHtml = (foundHtml ? foundHtml + "<br>" : "") + table.outerHTML
+            if (foundHtml) {
+              const textContent = currentDoc.body?.innerText || ""
+              onResult({ html: foundHtml, text: textContent })
+              isExecuting.current = false
+              return
+            }
+
+            // 2. Only check for errors if NO result container produced output
+            const alertBox = currentDoc.getElementById("calc-error-box")
+            if (alertBox && alertBox.textContent?.trim() && !alertBox.closest(".d-none") && alertBox.style.display !== "none") {
+              onError(alertBox.textContent.trim())
+              isExecuting.current = false
+              return
+            }
+
+            // Check for explicit error messages in genuinely visible status/alert divs
+            const statusDiv = currentDoc.querySelector(".alert-danger:not(.d-none), #status-message:not(.d-none)") as HTMLElement | null
+            if (statusDiv) {
+              const statusText = statusDiv.textContent?.trim() || ""
+              const isVisible = !statusDiv.closest(".d-none") && statusDiv.style.display !== "none"
+              if (
+                isVisible &&
+                statusText &&
+                (statusText.toLowerCase().includes("error") || statusText.toLowerCase().includes("please"))
+              ) {
+                onError(statusText)
+                isExecuting.current = false
+                return
               }
             }
 
-            // Parse text
-            const tempDiv = currentDoc.createElement("div")
-            tempDiv.innerHTML = foundHtml
-            const cleanText = tempDiv.textContent || tempDiv.innerText || ""
-
-            if (foundHtml && cleanText.trim().length > 0) {
-              onResult({ html: foundHtml, text: cleanText.trim() })
-            } else {
-              onError("Calculation completed with no visible output. Please verify input values.")
-            }
+            onError("Calculation completed with no visible output. Please verify input values.")
           } catch (captureErr) {
             onError(captureErr instanceof Error ? captureErr.message : String(captureErr))
           } finally {
