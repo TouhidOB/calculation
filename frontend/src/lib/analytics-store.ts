@@ -961,7 +961,7 @@ class AnalyticsStore {
 
     return {
       liveActiveUsers,
-      totalVisits: allEvents.length,
+      totalVisits: totalInTimeframe,
       filteredVisits: fullyFiltered.length,
       filteredUniqueIPs: uniqueFilteredIPs.size,
       todayVisits,

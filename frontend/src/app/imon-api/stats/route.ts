@@ -65,21 +65,27 @@ export async function GET(req: NextRequest) {
         const dbPeriodRequests = breakdownSlice.reduce((sum, r) => sum + (r.totalRequests || 0), 0)
         const dbPeriodUniqueIps = breakdownSlice.reduce((sum, r) => sum + (r.uniqueIps || 0), 0)
 
+        const todayRow = breakdown.find((d) => d.date === new Date().toISOString().split("T")[0])
+        const dbTodayBots = todayRow?.botRequests || 0
+        const dbTodayUniqueIps = todayRow?.uniqueIps || dbTodayVisitors
+
         // When viewing global (country === "ALL"), bridge the persistent database metrics
         if (country === "ALL") {
           if (timeframe === "all") {
             const totalHuman = Math.max(stats.humanVisitsCount, dbLifetimeVisitors)
-            const totalBots = Math.max(stats.botVisitsCount, Math.max(0, dbLifetimeRequests - dbLifetimeVisitors))
+            const totalBots = Math.max(stats.botVisitsCount, Math.max(0, dbLifetimeRequests - totalHuman))
             stats.humanVisitsCount = totalHuman
             stats.botVisitsCount = totalBots
-            stats.totalVisits = Math.max(stats.totalVisits, dbLifetimeRequests, totalHuman + totalBots)
+            stats.totalVisits = totalHuman + totalBots
+            stats.lifetimeVisits = Math.max(stats.lifetimeVisits, dbLifetimeVisitors)
+            stats.totalHitsLogged = Math.max(stats.totalHitsLogged, dbLifetimeRequests, stats.totalVisits)
 
             if (audience === "human") {
-              stats.filteredVisits = Math.max(stats.filteredVisits, totalHuman)
+              stats.filteredVisits = totalHuman
             } else if (audience === "bots") {
-              stats.filteredVisits = Math.max(stats.filteredVisits, totalBots)
+              stats.filteredVisits = totalBots
             } else {
-              stats.filteredVisits = Math.max(stats.filteredVisits, totalHuman + totalBots, stats.totalVisits)
+              stats.filteredVisits = stats.totalVisits
             }
 
             if (dbLifetimeVisitors > 0) {
@@ -87,35 +93,40 @@ export async function GET(req: NextRequest) {
               stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, stats.uniqueVisitorIPs)
             }
           } else if (timeframe === "30d" || timeframe === "7d") {
-            stats.humanVisitsCount = Math.max(stats.humanVisitsCount, dbPeriodHuman)
-            stats.botVisitsCount = Math.max(stats.botVisitsCount, dbPeriodBots)
-            stats.totalVisits = Math.max(stats.totalVisits, dbPeriodRequests, dbPeriodHuman + dbPeriodBots)
+            const periodHuman = Math.max(stats.humanVisitsCount, dbPeriodHuman)
+            const periodBots = Math.max(stats.botVisitsCount, dbPeriodBots, Math.max(0, dbPeriodRequests - periodHuman))
+            stats.humanVisitsCount = periodHuman
+            stats.botVisitsCount = periodBots
+            stats.totalVisits = periodHuman + periodBots
 
             if (audience === "human") {
-              stats.filteredVisits = Math.max(stats.filteredVisits, dbPeriodHuman)
+              stats.filteredVisits = periodHuman
             } else if (audience === "bots") {
-              stats.filteredVisits = Math.max(stats.filteredVisits, dbPeriodBots)
+              stats.filteredVisits = periodBots
             } else {
-              stats.filteredVisits = Math.max(stats.filteredVisits, dbPeriodRequests, stats.totalVisits)
+              stats.filteredVisits = stats.totalVisits
             }
 
             if (dbPeriodUniqueIps > 0) {
               stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, dbPeriodUniqueIps)
             }
           } else if (timeframe === "today") {
-            if (dbTodayVisitors > 0) {
-              stats.humanVisitsCount = Math.max(stats.humanVisitsCount, dbTodayVisitors)
-            }
-            if (dbTodayRequests > 0) {
-              stats.totalVisits = Math.max(stats.totalVisits, dbTodayRequests)
-              stats.botVisitsCount = Math.max(stats.botVisitsCount, Math.max(0, dbTodayRequests - stats.humanVisitsCount))
-            }
+            const todayHuman = Math.max(stats.humanVisitsCount, dbTodayVisitors)
+            const todayBots = Math.max(stats.botVisitsCount, dbTodayBots, Math.max(0, dbTodayRequests - todayHuman))
+            stats.humanVisitsCount = todayHuman
+            stats.botVisitsCount = todayBots
+            stats.totalVisits = todayHuman + todayBots
+
             if (audience === "human") {
-              stats.filteredVisits = Math.max(stats.filteredVisits, stats.humanVisitsCount)
+              stats.filteredVisits = todayHuman
             } else if (audience === "bots") {
-              stats.filteredVisits = Math.max(stats.filteredVisits, stats.botVisitsCount)
+              stats.filteredVisits = todayBots
             } else {
-              stats.filteredVisits = Math.max(stats.filteredVisits, stats.totalVisits)
+              stats.filteredVisits = stats.totalVisits
+            }
+
+            if (dbTodayUniqueIps > 0) {
+              stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, dbTodayUniqueIps)
             }
           }
 
