@@ -25,13 +25,106 @@ export async function GET(req: NextRequest) {
       const dbData = await dbRes.json()
       if (dbData.ok && Array.isArray(dbData.dailyBreakdown)) {
         stats.databaseDailyBreakdown = dbData.dailyBreakdown
-        // Override lifetime and today with true multi-week database persistence if available
-        if (dbData.lifetime?.visitors > 0) {
-          stats.lifetimeVisits = dbData.lifetime.visitors
-          stats.totalHitsLogged = dbData.lifetime.requests
+        
+        const dbLifetimeVisitors = dbData.lifetime?.visitors || 0
+        const dbLifetimeRequests = dbData.lifetime?.requests || 0
+        const dbTodayVisitors = dbData.today?.visitors || 0
+        const dbTodayRequests = dbData.today?.requests || 0
+
+        // Multi-week SQLite database persistence
+        if (dbLifetimeVisitors > 0) {
+          stats.lifetimeVisits = dbLifetimeVisitors
+          stats.totalHitsLogged = dbLifetimeRequests
         }
-        if (dbData.today?.visitors > 0) {
-          stats.todayVisits = dbData.today.visitors
+        if (dbTodayVisitors > 0) {
+          stats.todayVisits = Math.max(stats.todayVisits, dbTodayVisitors)
+        }
+
+        // Calculate period slices from daily breakdown
+        interface DailyRow {
+          date: string
+          realHumanVisitors?: number
+          botRequests?: number
+          totalRequests?: number
+          uniqueIps?: number
+        }
+
+        const breakdown = dbData.dailyBreakdown as DailyRow[]
+        let breakdownSlice = breakdown
+        if (timeframe === "today") {
+          const todayStr = new Date().toISOString().split("T")[0]
+          breakdownSlice = breakdown.filter((d) => d.date === todayStr)
+        } else if (timeframe === "7d") {
+          breakdownSlice = breakdown.slice(0, 7)
+        } else if (timeframe === "30d") {
+          breakdownSlice = breakdown.slice(0, 30)
+        }
+
+        const dbPeriodHuman = breakdownSlice.reduce((sum, r) => sum + (r.realHumanVisitors || 0), 0)
+        const dbPeriodBots = breakdownSlice.reduce((sum, r) => sum + (r.botRequests || 0), 0)
+        const dbPeriodRequests = breakdownSlice.reduce((sum, r) => sum + (r.totalRequests || 0), 0)
+        const dbPeriodUniqueIps = breakdownSlice.reduce((sum, r) => sum + (r.uniqueIps || 0), 0)
+
+        // When viewing global (country === "ALL"), bridge the persistent database metrics
+        if (country === "ALL") {
+          if (timeframe === "all") {
+            const totalHuman = Math.max(stats.humanVisitsCount, dbLifetimeVisitors)
+            const totalBots = Math.max(stats.botVisitsCount, Math.max(0, dbLifetimeRequests - dbLifetimeVisitors))
+            stats.humanVisitsCount = totalHuman
+            stats.botVisitsCount = totalBots
+            stats.totalVisits = Math.max(stats.totalVisits, dbLifetimeRequests, totalHuman + totalBots)
+
+            if (audience === "human") {
+              stats.filteredVisits = Math.max(stats.filteredVisits, totalHuman)
+            } else if (audience === "bots") {
+              stats.filteredVisits = Math.max(stats.filteredVisits, totalBots)
+            } else {
+              stats.filteredVisits = Math.max(stats.filteredVisits, totalHuman + totalBots, stats.totalVisits)
+            }
+
+            if (dbLifetimeVisitors > 0) {
+              stats.uniqueVisitorIPs = Math.max(stats.uniqueVisitorIPs, dbLifetimeVisitors)
+              stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, stats.uniqueVisitorIPs)
+            }
+          } else if (timeframe === "30d" || timeframe === "7d") {
+            stats.humanVisitsCount = Math.max(stats.humanVisitsCount, dbPeriodHuman)
+            stats.botVisitsCount = Math.max(stats.botVisitsCount, dbPeriodBots)
+            stats.totalVisits = Math.max(stats.totalVisits, dbPeriodRequests, dbPeriodHuman + dbPeriodBots)
+
+            if (audience === "human") {
+              stats.filteredVisits = Math.max(stats.filteredVisits, dbPeriodHuman)
+            } else if (audience === "bots") {
+              stats.filteredVisits = Math.max(stats.filteredVisits, dbPeriodBots)
+            } else {
+              stats.filteredVisits = Math.max(stats.filteredVisits, dbPeriodRequests, stats.totalVisits)
+            }
+
+            if (dbPeriodUniqueIps > 0) {
+              stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, dbPeriodUniqueIps)
+            }
+          } else if (timeframe === "today") {
+            if (dbTodayVisitors > 0) {
+              stats.humanVisitsCount = Math.max(stats.humanVisitsCount, dbTodayVisitors)
+            }
+            if (dbTodayRequests > 0) {
+              stats.totalVisits = Math.max(stats.totalVisits, dbTodayRequests)
+              stats.botVisitsCount = Math.max(stats.botVisitsCount, Math.max(0, dbTodayRequests - stats.humanVisitsCount))
+            }
+            if (audience === "human") {
+              stats.filteredVisits = Math.max(stats.filteredVisits, stats.humanVisitsCount)
+            } else if (audience === "bots") {
+              stats.filteredVisits = Math.max(stats.filteredVisits, stats.botVisitsCount)
+            } else {
+              stats.filteredVisits = Math.max(stats.filteredVisits, stats.totalVisits)
+            }
+          }
+
+          // Recalculate human / bot ratio
+          const totalVis = stats.humanVisitsCount + stats.botVisitsCount
+          if (totalVis > 0) {
+            stats.humanPercentage = Number(((stats.humanVisitsCount / totalVis) * 100).toFixed(1))
+            stats.botPercentage = Number(((stats.botVisitsCount / totalVis) * 100).toFixed(1))
+          }
         }
       }
     }

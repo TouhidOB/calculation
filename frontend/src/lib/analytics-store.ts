@@ -1,5 +1,6 @@
 import fs from "fs"
 import path from "path"
+import zlib from "zlib"
 
 export interface PageViewEvent {
   id?: number
@@ -212,6 +213,17 @@ class AnalyticsStore {
   private beaconEvents: PageViewEvent[] = []
   private maxBeaconInMemory = 5000
 
+  private fileCache = new Map<
+    string,
+    {
+      mtimeMs: number
+      size: number
+      events: PageViewEvent[]
+      securityEvents: AnalyticsStats["securityEvents"]
+      linesCount: number
+    }
+  >()
+
   private ipGeoCache = new Map<string, { countryCode: string; countryName: string; city: string }>()
 
   constructor() {
@@ -360,110 +372,202 @@ class AnalyticsStore {
     return null
   }
 
+  private getCaddyLogFiles(): string[] {
+    const candidateDirs = [
+      path.dirname(this.caddyLogPath),
+      "/caddy_data",
+      "/var/lib/docker/volumes/stockwhisk_updated_caddy_data/_data",
+      "/var/log/caddy",
+      "/data",
+      path.join(process.cwd(), "logs"),
+      path.join(process.cwd(), "public"),
+    ]
+
+    for (const dir of candidateDirs) {
+      try {
+        if (dir && fs.existsSync(/*turbopackIgnore: true*/ dir)) {
+          const files = fs.readdirSync(/*turbopackIgnore: true*/ dir)
+          const matched = files
+            .filter(
+              (f) =>
+                f.startsWith("trycalc_access") &&
+                (f.endsWith(".log") || f.endsWith(".gz") || f.includes(".log."))
+            )
+            .map((f) => path.join(/*turbopackIgnore: true*/ dir, f))
+
+          if (matched.length > 0) {
+            // Sort: oldest (.gz) files first, active (.log) file last
+            matched.sort((a, b) => {
+              const aIsGz = a.endsWith(".gz")
+              const bIsGz = b.endsWith(".gz")
+              if (aIsGz && !bIsGz) return -1
+              if (!aIsGz && bIsGz) return 1
+              return a.localeCompare(b)
+            })
+            return matched
+          }
+        }
+      } catch {
+        // continue
+      }
+    }
+
+    const single = this.getCaddyLogFile()
+    return single ? [single] : []
+  }
+
   public refreshCaddyEvents(): { events: PageViewEvent[]; securityEvents: AnalyticsStats["securityEvents"]; totalHits: number } {
-    const filePath = this.getCaddyLogFile()
-    if (!filePath) {
+    const files = this.getCaddyLogFiles()
+    if (files.length === 0) {
       return { events: this.beaconEvents, securityEvents: [], totalHits: this.beaconEvents.length }
     }
 
     try {
-      const stats = fs.statSync(filePath)
-      if (stats.mtimeMs === this.lastMtime && stats.size === this.lastSize && this.cachedEvents.length > 0) {
-        return {
-          events: this.cachedEvents,
-          securityEvents: this.cachedSecurityEvents,
-          totalHits: this.totalCaddyLines,
+      let anyChanged = false
+      const currentFileSet = new Set(files)
+
+      // Evict deleted files from cache
+      for (const cachedPath of this.fileCache.keys()) {
+        if (!currentFileSet.has(cachedPath)) {
+          this.fileCache.delete(cachedPath)
+          anyChanged = true
         }
       }
 
-      const content = fs.readFileSync(filePath, "utf-8")
-      const lines = content.trim().split("\n")
-      const parsed: PageViewEvent[] = []
-      const securityList: AnalyticsStats["securityEvents"] = []
-
-      for (const line of lines) {
-        if (!line.trim()) continue
+      for (const file of files) {
         try {
-          const item = JSON.parse(line)
-          const req = item.request || {}
-          const headers = req.headers || {}
-          const rawUri = req.uri || "/"
-          const status = item.status || 200
+          const stats = fs.statSync(file)
+          const cached = this.fileCache.get(file)
 
-          const ip =
-            (headers["Cf-Connecting-Ip"] && headers["Cf-Connecting-Ip"][0]) ||
-            (headers["X-Forwarded-For"] && headers["X-Forwarded-For"][0]?.split(",")[0]?.trim()) ||
-            req.client_ip ||
-            "127.0.0.1"
-
-          const countryCode = (headers["Cf-Ipcountry"] && headers["Cf-Ipcountry"][0]?.toUpperCase()) || "US"
-          const countryName = COUNTRY_NAMES[countryCode] || countryCode
-          const ua = (headers["User-Agent"] && headers["User-Agent"][0]) || ""
-          const referer = (headers["Referer"] && headers["Referer"][0]) || ""
-          const isMobileHeader = headers["Sec-Ch-Ua-Mobile"] && headers["Sec-Ch-Ua-Mobile"][0]
-          const isBot = this.detectBot(ua)
-          const timestamp = item.ts ? Math.round(item.ts * 1000) : Date.now()
-          const durationSeconds = item.duration ? Number(item.duration) : 0
-
-          // Check if this is a scanner probe or 4xx error -> Route to Security Events
-          if (
-            status >= 400 ||
-            rawUri.includes(".php") ||
-            rawUri.includes(".env") ||
-            rawUri.includes("wp-") ||
-            rawUri.includes(".git")
-          ) {
-            const parts = ip.split(".")
-            const ipMasked = parts.length === 4 ? `${parts[0]}.${parts[1]}.***.***` : "103.***.***"
-            securityList.push({
-              ipMasked,
-              countryCode,
-              countryName,
-              path: rawUri.split("?")[0],
-              status,
-              timestamp,
-            })
+          if (cached && cached.mtimeMs === stats.mtimeMs && cached.size === stats.size) {
             continue
           }
 
-          const clean = this.cleanPath(rawUri)
-          if (!clean) continue
+          anyChanged = true
 
-          parsed.push({
-            sessionId: `${ip}_${Math.floor(timestamp / 1800000)}`,
-            ip,
-            countryCode,
-            countryName,
-            city: "",
-            path: clean,
-            referrer: referer,
-            userAgent: ua,
-            isBot,
-            durationSeconds,
-            timestamp,
-            device: this.parseDevice(ua, isMobileHeader),
-            browser: this.parseBrowser(ua),
-            source: this.parseSource(referer),
-            status,
+          let content = ""
+          if (file.endsWith(".gz")) {
+            const buf = fs.readFileSync(file)
+            content = zlib.gunzipSync(buf).toString("utf-8")
+          } else {
+            content = fs.readFileSync(file, "utf-8")
+          }
+
+          const lines = content.trim().split("\n")
+          const fileParsed: PageViewEvent[] = []
+          const fileSecurity: AnalyticsStats["securityEvents"] = []
+
+          for (const line of lines) {
+            if (!line.trim()) continue
+            try {
+              const item = JSON.parse(line)
+              const req = item.request || {}
+              const headers = req.headers || {}
+              const rawUri = req.uri || "/"
+              const status = item.status || 200
+
+              const ip =
+                (headers["Cf-Connecting-Ip"] && headers["Cf-Connecting-Ip"][0]) ||
+                (headers["X-Forwarded-For"] && headers["X-Forwarded-For"][0]?.split(",")[0]?.trim()) ||
+                req.client_ip ||
+                "127.0.0.1"
+
+              const countryCode = (headers["Cf-Ipcountry"] && headers["Cf-Ipcountry"][0]?.toUpperCase()) || "US"
+              const countryName = COUNTRY_NAMES[countryCode] || countryCode
+              const ua = (headers["User-Agent"] && headers["User-Agent"][0]) || ""
+              const referer = (headers["Referer"] && headers["Referer"][0]) || ""
+              const isMobileHeader = headers["Sec-Ch-Ua-Mobile"] && headers["Sec-Ch-Ua-Mobile"][0]
+              const isBot = this.detectBot(ua)
+              const timestamp = item.ts ? Math.round(item.ts * 1000) : Date.now()
+              const durationSeconds = item.duration ? Number(item.duration) : 0
+
+              // Check if scanner probe or 4xx error -> Route to Security Events
+              if (
+                status >= 400 ||
+                rawUri.includes(".php") ||
+                rawUri.includes(".env") ||
+                rawUri.includes("wp-") ||
+                rawUri.includes(".git")
+              ) {
+                const parts = ip.split(".")
+                const ipMasked = parts.length === 4 ? `${parts[0]}.${parts[1]}.***.***` : "103.***.***"
+                fileSecurity.push({
+                  ipMasked,
+                  countryCode,
+                  countryName,
+                  path: rawUri.split("?")[0],
+                  status,
+                  timestamp,
+                })
+                continue
+              }
+
+              const clean = this.cleanPath(rawUri)
+              if (!clean) continue
+
+              fileParsed.push({
+                sessionId: `${ip}_${Math.floor(timestamp / 1800000)}`,
+                ip,
+                countryCode,
+                countryName,
+                city: "",
+                path: clean,
+                referrer: referer,
+                userAgent: ua,
+                isBot,
+                durationSeconds,
+                timestamp,
+                device: this.parseDevice(ua, isMobileHeader),
+                browser: this.parseBrowser(ua),
+                source: this.parseSource(referer),
+                status,
+              })
+            } catch {
+              // ignore invalid JSON lines
+            }
+          }
+
+          this.fileCache.set(file, {
+            mtimeMs: stats.mtimeMs,
+            size: stats.size,
+            events: fileParsed,
+            securityEvents: fileSecurity,
+            linesCount: lines.length,
           })
-        } catch {
-          // ignore invalid JSON lines
+        } catch (fileErr) {
+          console.error(`Error processing caddy log file ${file}:`, fileErr)
         }
       }
 
-      this.cachedEvents = parsed
-      this.cachedSecurityEvents = securityList.slice(-25).reverse()
-      this.totalCaddyLines = lines.length
-      this.lastMtime = stats.mtimeMs
-      this.lastSize = stats.size
+      if (anyChanged || this.cachedEvents.length === 0) {
+        const combinedEvents: PageViewEvent[] = []
+        const combinedSecurity: AnalyticsStats["securityEvents"] = []
+        let totalLines = 0
+
+        for (const file of files) {
+          const cached = this.fileCache.get(file)
+          if (cached) {
+            combinedEvents.push(...cached.events)
+            combinedSecurity.push(...cached.securityEvents)
+            totalLines += cached.linesCount
+          }
+        }
+
+        // Sort events chronologically ascending
+        combinedEvents.sort((a, b) => a.timestamp - b.timestamp)
+
+        this.cachedEvents = combinedEvents
+        this.cachedSecurityEvents = combinedSecurity.slice(-30).reverse()
+        this.totalCaddyLines = totalLines
+      }
 
       return {
-        events: parsed,
+        events: this.cachedEvents,
         securityEvents: this.cachedSecurityEvents,
         totalHits: this.totalCaddyLines,
       }
     } catch (err) {
-      console.error("Error parsing Caddy access log:", err)
+      console.error("Error parsing Caddy access logs:", err)
       return {
         events: this.cachedEvents.length > 0 ? this.cachedEvents : this.beaconEvents,
         securityEvents: this.cachedSecurityEvents,
