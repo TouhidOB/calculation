@@ -65,6 +65,8 @@ export async function GET(req: NextRequest) {
         const dbPeriodRequests = breakdownSlice.reduce((sum, r) => sum + (r.totalRequests || 0), 0)
         const dbPeriodUniqueIps = breakdownSlice.reduce((sum, r) => sum + (r.uniqueIps || 0), 0)
 
+        const dbLifetimeBots = breakdown.reduce((sum, r) => sum + (r.botRequests || 0), 0)
+
         const todayRow = breakdown.find((d) => d.date === new Date().toISOString().split("T")[0])
         const dbTodayBots = todayRow?.botRequests || 0
         const dbTodayUniqueIps = todayRow?.uniqueIps || dbTodayVisitors
@@ -73,61 +75,58 @@ export async function GET(req: NextRequest) {
         if (country === "ALL") {
           if (timeframe === "all") {
             const totalHuman = Math.max(stats.humanVisitsCount, dbLifetimeVisitors)
-            const totalBots = Math.max(stats.botVisitsCount, Math.max(0, dbLifetimeRequests - totalHuman))
+            const totalBots = Math.max(stats.botVisitsCount, dbLifetimeBots)
             stats.humanVisitsCount = totalHuman
             stats.botVisitsCount = totalBots
             stats.totalVisits = totalHuman + totalBots
             stats.lifetimeVisits = Math.max(stats.lifetimeVisits, dbLifetimeVisitors)
             stats.totalHitsLogged = Math.max(stats.totalHitsLogged, dbLifetimeRequests, stats.totalVisits)
 
-            if (audience === "human") {
-              stats.filteredVisits = totalHuman
-            } else if (audience === "bots") {
-              stats.filteredVisits = totalBots
-            } else {
-              stats.filteredVisits = stats.totalVisits
-            }
-
             if (dbLifetimeVisitors > 0) {
               stats.uniqueVisitorIPs = Math.max(stats.uniqueVisitorIPs, dbLifetimeVisitors)
               stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, stats.uniqueVisitorIPs)
             }
-          } else if (timeframe === "30d" || timeframe === "7d") {
+          } else if (timeframe === "30d") {
             const periodHuman = Math.max(stats.humanVisitsCount, dbPeriodHuman)
-            const periodBots = Math.max(stats.botVisitsCount, dbPeriodBots, Math.max(0, dbPeriodRequests - periodHuman))
+            const periodBots = Math.max(stats.botVisitsCount, dbPeriodBots)
             stats.humanVisitsCount = periodHuman
             stats.botVisitsCount = periodBots
             stats.totalVisits = periodHuman + periodBots
 
-            if (audience === "human") {
-              stats.filteredVisits = periodHuman
-            } else if (audience === "bots") {
-              stats.filteredVisits = periodBots
-            } else {
-              stats.filteredVisits = stats.totalVisits
+            if (dbPeriodUniqueIps > 0) {
+              stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, dbPeriodUniqueIps)
             }
+          } else if (timeframe === "7d") {
+            const periodHuman = Math.max(stats.humanVisitsCount, dbPeriodHuman)
+            const periodBots = Math.max(stats.botVisitsCount, dbPeriodBots)
+            stats.humanVisitsCount = periodHuman
+            stats.botVisitsCount = periodBots
+            stats.totalVisits = periodHuman + periodBots
 
             if (dbPeriodUniqueIps > 0) {
               stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, dbPeriodUniqueIps)
             }
           } else if (timeframe === "today") {
             const todayHuman = Math.max(stats.humanVisitsCount, dbTodayVisitors)
-            const todayBots = Math.max(stats.botVisitsCount, dbTodayBots, Math.max(0, dbTodayRequests - todayHuman))
+            const todayBots = Math.max(stats.botVisitsCount, dbTodayBots)
             stats.humanVisitsCount = todayHuman
             stats.botVisitsCount = todayBots
             stats.totalVisits = todayHuman + todayBots
 
-            if (audience === "human") {
-              stats.filteredVisits = todayHuman
-            } else if (audience === "bots") {
-              stats.filteredVisits = todayBots
-            } else {
-              stats.filteredVisits = stats.totalVisits
-            }
-
             if (dbTodayUniqueIps > 0) {
               stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, dbTodayUniqueIps)
             }
+          } else {
+            // e.g. 24h, live
+            stats.totalVisits = stats.humanVisitsCount + stats.botVisitsCount
+          }
+
+          if (audience === "human") {
+            stats.filteredVisits = stats.humanVisitsCount
+          } else if (audience === "bots") {
+            stats.filteredVisits = stats.botVisitsCount
+          } else {
+            stats.filteredVisits = stats.totalVisits
           }
 
           // Recalculate human / bot ratio
