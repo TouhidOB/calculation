@@ -1137,6 +1137,11 @@ export default function ImonAdminView() {
                   : "All Time"}{" "}
                 • {countryFilter === "ALL" ? "Global" : countryFilter}
               </Typography>
+              {stats?.totalHitsLogged && audience === "all" ? (
+                <Typography variant="caption" sx={{ color: "#2563eb", fontWeight: 700, display: "block", mt: 0.5, fontSize: 11 }}>
+                  {stats.totalHitsLogged.toLocaleString()} Total Server Requests
+                </Typography>
+              ) : null}
             </Paper>
           </Grid>
 

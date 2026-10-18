@@ -92,6 +92,7 @@ export async function GET(req: NextRequest) {
             stats.humanVisitsCount = periodHuman
             stats.botVisitsCount = periodBots
             stats.totalVisits = periodHuman + periodBots
+            stats.totalHitsLogged = Math.max(stats.totalHitsLogged, dbPeriodRequests, stats.totalVisits)
 
             if (dbPeriodUniqueIps > 0) {
               stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, dbPeriodUniqueIps)
@@ -102,6 +103,7 @@ export async function GET(req: NextRequest) {
             stats.humanVisitsCount = periodHuman
             stats.botVisitsCount = periodBots
             stats.totalVisits = periodHuman + periodBots
+            stats.totalHitsLogged = Math.max(stats.totalHitsLogged, dbPeriodRequests, stats.totalVisits)
 
             if (dbPeriodUniqueIps > 0) {
               stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, dbPeriodUniqueIps)
@@ -112,6 +114,7 @@ export async function GET(req: NextRequest) {
             stats.humanVisitsCount = todayHuman
             stats.botVisitsCount = todayBots
             stats.totalVisits = todayHuman + todayBots
+            stats.totalHitsLogged = Math.max(stats.totalHitsLogged, dbTodayRequests, stats.totalVisits)
 
             if (dbTodayUniqueIps > 0) {
               stats.filteredUniqueIPs = Math.max(stats.filteredUniqueIPs, dbTodayUniqueIps)
@@ -119,6 +122,7 @@ export async function GET(req: NextRequest) {
           } else {
             // e.g. 24h, live
             stats.totalVisits = stats.humanVisitsCount + stats.botVisitsCount
+            stats.totalHitsLogged = Math.max(stats.totalHitsLogged, stats.totalVisits)
           }
 
           if (audience === "human") {
