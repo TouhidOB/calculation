@@ -196,7 +196,7 @@ export async function generateMetadata({
             "raid 5 calculator",
             "raid 6 calculator",
             "raid 10 calculator",
-            "synology raid calculator",
+            "nas raid calculator",
             "qnap raid calculator",
             "zfs capacity calculator",
             "raid rebuild time calculator",

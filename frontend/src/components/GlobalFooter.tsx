@@ -125,7 +125,7 @@ export default function GlobalFooter() {
                   Unit Conversion
                 </Typography>
               </Link>
-              <Link href="/category/math" style={{ textDecoration: "none" }}>
+              <Link href="/category/basic" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Math &amp; Statistics
                 </Typography>

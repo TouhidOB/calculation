@@ -4,6 +4,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   compress: true,
+  async redirects() {
+    return [
+      { source: "/calculators", destination: "/", permanent: true },
+      { source: "/category/math", destination: "/category/basic", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

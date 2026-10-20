@@ -1024,7 +1024,7 @@ export function RaidCalculatorView({ onToast }: RaidCalculatorViewProps) {
         </Box>
       </Paper>
 
-      {/* STEP 2: MULTI-RAID REAL-TIME VISUALIZER (SYNOLOGY PARITY & COMPARISON STACK) */}
+      {/* STEP 2: MULTI-RAID REAL-TIME VISUALIZER (NAS MULTI-DISK PARITY & COMPARISON STACK) */}
       <Paper elevation={0} sx={{ p: 3, mb: 3, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#ffffff" }}>
         <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", mb: 2.5, gap: 1.5 }}>
           <Box>

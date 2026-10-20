@@ -30,6 +30,12 @@ export default function AdBanner({
   // Default fallback slot or user-configured slot
   const adSlot = slot || process.env.NEXT_PUBLIC_ADSENSE_RESULT_SLOT
 
+  // If no ad slot is configured (e.g. site is pending approval or slot ID not created yet),
+  // do not render empty dashed placeholders that can trigger AdSense 'site under construction' flags.
+  if (!adSlot) {
+    return null
+  }
+
   useEffect(() => {
     // Only push once per mount and if element is in DOM
     if (isPushed.current) return
