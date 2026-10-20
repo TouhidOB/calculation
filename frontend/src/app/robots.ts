@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/_next/static/", "/_next/image/"],
+        disallow: ["/api/"],
       },
       // AI crawlers — allow full content indexing (GEO/AEO benefit)
       {
