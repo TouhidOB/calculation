@@ -12,6 +12,8 @@ services:
       ALLOWED_HOSTS: "localhost,127.0.0.1,backend,trycalc.net,www.trycalc.net,172.17.0.1,163.227.239.114"
       CORS_ALLOWED_ORIGINS: "https://trycalc.net,https://www.trycalc.net,http://localhost:3002"
       CSRF_TRUSTED_ORIGINS: "https://trycalc.net,https://www.trycalc.net"
+    volumes:
+      - /root/trycalc/app/backend/db.sqlite3:/app/db.sqlite3
     ports:
       - "127.0.0.1:8088:8000"
       - "172.17.0.1:8088:8000"

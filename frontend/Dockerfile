@@ -1,4 +1,16 @@
-FROM node:20-alpine
+# Multi-stage Next.js production build
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --prefer-offline --no-audit
+
+COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+RUN npm run build
+
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -8,9 +20,9 @@ ENV PORT=3000
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
 RUN mkdir .next && chown nextjs:nodejs .next
 
-COPY .next/standalone ./
-COPY .next/static ./.next/static
-COPY public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 RUN chown -R nextjs:nodejs /app
 
 USER nextjs

@@ -169,6 +169,11 @@ export default function GlobalFooter() {
                   About TryCalc
                 </Typography>
               </Link>
+                            <Link href="/guides" style={{ textDecoration: "none" }}>
+                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
+                  Calculation Guides
+                </Typography>
+              </Link>
               <Link href="/widgets" style={{ textDecoration: "none" }}>
                 <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
                   Embed Widgets

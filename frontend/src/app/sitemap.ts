@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next"
 import { CATEGORY_META, type CalculatorDef } from "@/lib/calculator-api"
 import fallbackData from "@/lib/calculators-fallback.json"
+import { GUIDES } from "@/lib/guides-data"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
@@ -16,114 +17,102 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 1. Core pages
   const staticRoutes: MetadataRoute.Sitemap = [
     {
-      url: `${SITE_URL}`,
+      url: SITE_URL,
       lastModified: now,
       changeFrequency: "daily",
       priority: 1.0,
     },
     {
-      url: `${SITE_URL}/about`,
+      url: SITE_URL + "/guides",
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: SITE_URL + "/widgets",
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: SITE_URL + "/about",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
-      url: `${SITE_URL}/contact`,
+      url: SITE_URL + "/contact",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
-      url: `${SITE_URL}/disclaimer`,
+      url: SITE_URL + "/disclaimer",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.4,
     },
     {
-      url: `${SITE_URL}/privacy`,
+      url: SITE_URL + "/privacy-policy",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.4,
     },
     {
-      url: `${SITE_URL}/privacy-policy`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.4,
-    },
-    {
-      url: `${SITE_URL}/terms`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.4,
-    },
-    {
-      url: `${SITE_URL}/terms-of-service`,
+      url: SITE_URL + "/terms-of-service",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.4,
     },
   ]
 
-  // 2. Hub-and-Spoke Semantic Category Hub URLs (2026 SEO Topical Authority)
-  const categoryRoutes: MetadataRoute.Sitemap = CATEGORY_KEYS.map((slug) => ({
-    url: `${SITE_URL}/category/${slug}`,
-    lastModified: now,
-    changeFrequency: "daily",
-    priority: 0.9,
+  // 2. Guide Articles
+  const guideRoutes: MetadataRoute.Sitemap = GUIDES.map((guide) => ({
+    url: SITE_URL + "/guides/" + guide.slug,
+    lastModified: new Date(guide.publishedAt),
+    changeFrequency: "monthly",
+    priority: 0.85,
   }))
 
-  // 3. All 725 Calculators
-  const calcRoutes: MetadataRoute.Sitemap = []
-  const seenIds = new Set<string>()
+  // 3. Category pages
+  const categoryRoutes: MetadataRoute.Sitemap = CATEGORY_KEYS.map((cat) => ({
+    url: SITE_URL + "/category/" + cat,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }))
 
+  // 4. Calculator pages from fallback or API
+  let calcs: CalculatorDef[] = []
   try {
-    const res = await fetch(`${BACKEND_URL}/api/calculators/`, {
+    const res = await fetch(BACKEND_URL + "/api/v1/calculators/", {
       next: { revalidate: 86400 },
       headers: { Accept: "application/json" },
     })
     if (res.ok) {
-      const data = await res.json()
-      const categories = data.categories || {}
-      for (const catKey of Object.keys(categories)) {
-        const raw = categories[catKey]
-        const calcs: CalculatorDef[] = Array.isArray(raw) ? raw : (raw?.calculators || [])
-        for (const c of calcs) {
-          if (c?.id && !seenIds.has(c.id)) {
-            seenIds.add(c.id)
-            calcRoutes.push({
-              url: `${SITE_URL}/calculators/${c.id}`,
-              lastModified: now,
-              changeFrequency: "weekly",
-              priority: 0.8,
-            })
-          }
-        }
-      }
+      calcs = await res.json()
     }
-  } catch (err) {
-    console.warn("Sitemap: Backend unreachable during build, using fallback registry:", err)
+  } catch {
+    // backend unreachable at build time, use fallback
   }
 
-  // Ensure all 725 calculators are present via fallback if backend was unavailable
-  if (calcRoutes.length === 0) {
-    const fallbackCats = (fallbackData.categories as unknown) as Record<string, CalculatorDef[] | { calculators: CalculatorDef[] }>
-    for (const catKey of Object.keys(fallbackCats)) {
-      const raw = fallbackCats[catKey]
-      const calcs: CalculatorDef[] = Array.isArray(raw) ? raw : (raw?.calculators || [])
-      for (const c of calcs) {
-        if (c?.id && !seenIds.has(c.id)) {
-          seenIds.add(c.id)
-          calcRoutes.push({
-            url: `${SITE_URL}/calculators/${c.id}`,
-            lastModified: now,
-            changeFrequency: "weekly",
-            priority: 0.8,
-          })
-        }
+  if (!calcs || calcs.length === 0) {
+    const cats = (fallbackData.categories as unknown as Record<string, CalculatorDef[]>) || {}
+    for (const list of Object.values(cats)) {
+      if (Array.isArray(list)) {
+        calcs.push(...list)
       }
     }
   }
 
-  return [...staticRoutes, ...categoryRoutes, ...calcRoutes]
+  const calculatorRoutes: MetadataRoute.Sitemap = (calcs || [])
+    .filter((c) => c && c.id)
+    .map((c) => ({
+      url: SITE_URL + "/calculators/" + c.id,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    }))
+
+  return [...staticRoutes, ...guideRoutes, ...categoryRoutes, ...calculatorRoutes]
 }
