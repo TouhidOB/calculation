@@ -19127,53 +19127,6 @@
         ]
       },
       {
-        "id": "ohms-law-calculator",
-        "name": "Ohms Law Calculator",
-        "category": "construction",
-        "description": "Ohms Law Calculator",
-        "fields": [
-          {
-            "name": "voltage",
-            "label": "Voltage",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "current",
-            "label": "Current",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "resistance",
-            "label": "Resistance",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          }
-        ]
-      },
-      {
         "id": "pythagorean-theorem-calculator",
         "name": "Pythagorean Theorem Calculator",
         "category": "construction",
@@ -24638,92 +24591,6 @@
         ]
       },
       {
-        "id": "screen-aspect-ratio-calculator",
-        "name": "Screen Aspect Ratio Calculator",
-        "category": "conversion",
-        "description": "Screen Aspect Ratio Calculator",
-        "fields": [
-          {
-            "name": "calculationMode",
-            "label": "What do you want to calculate?",
-            "type": "select",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": [
-              {
-                "value": "Aspect Ratio (X:Y)",
-                "label": "Aspect Ratio (X:Y)"
-              },
-              {
-                "value": "Screen Height (px)",
-                "label": "Screen Height (px)"
-              },
-              {
-                "value": "Screen Width (px)",
-                "label": "Screen Width (px)"
-              }
-            ],
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "widthValue",
-            "label": "Width (px)",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "heightValue",
-            "label": "Height (px)",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "ratioX",
-            "label": "Ratiox",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          },
-          {
-            "name": "ratioY",
-            "label": "Ratioy",
-            "type": "number",
-            "unit": "",
-            "required": true,
-            "default": null,
-            "options": null,
-            "min": null,
-            "max": null,
-            "step": null,
-            "help": ""
-          }
-        ]
-      },
-      {
         "id": "shoe-size-converter",
         "name": "Shoe Size Converter (US, UK, EU)",
         "category": "conversion",
@@ -26764,7 +26631,7 @@
             "type": "date",
             "unit": "",
             "required": true,
-            "default": "2026-10-06",
+            "default": "2026-11-14",
             "options": null,
             "min": null,
             "max": null,
@@ -29098,6 +28965,3373 @@
         ]
       }
     ],
+    "mobile_servicing": [
+      {
+        "id": "battery-health-percentage-calculator",
+        "name": "Battery Health Percentage Calculator",
+        "category": "mobile_servicing",
+        "description": "Calculate smartphone battery state-of-health (SoH), capacity loss, and replacement urgency based on cycle count.",
+        "fields": [
+          {
+            "name": "design_capacity",
+            "label": "Design Capacity (mAh)",
+            "type": "number",
+            "unit": "mAh",
+            "required": true,
+            "default": 4000,
+            "options": null,
+            "min": 500,
+            "max": 25000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "current_capacity",
+            "label": "Current Full Charge Capacity (mAh)",
+            "type": "number",
+            "unit": "mAh",
+            "required": true,
+            "default": 3400,
+            "options": null,
+            "min": 100,
+            "max": 25000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "cycle_count",
+            "label": "Battery Charge Cycles",
+            "type": "number",
+            "unit": "cycles",
+            "required": false,
+            "default": 450,
+            "options": null,
+            "min": 0,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "battery-runtime-calculator",
+        "name": "Battery Runtime Calculator",
+        "category": "mobile_servicing",
+        "description": "Estimate smartphone screen-on time (SOT) and continuous standby runtime under varied workload currents.",
+        "fields": [
+          {
+            "name": "capacity_mah",
+            "label": "Battery Capacity (mAh)",
+            "type": "number",
+            "unit": "mAh",
+            "required": true,
+            "default": 5000,
+            "options": null,
+            "min": 500,
+            "max": 30000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "voltage",
+            "label": "Nominal Battery Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": true,
+            "default": 3.85,
+            "options": null,
+            "min": 3.0,
+            "max": 12.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "consumption_ma",
+            "label": "Average Current Draw (mA)",
+            "type": "number",
+            "unit": "mA",
+            "required": true,
+            "default": 350,
+            "options": null,
+            "min": 10,
+            "max": 5000,
+            "step": null,
+            "help": "Typical browsing: 300-450mA, Gaming: 800-1500mA"
+          }
+        ]
+      },
+      {
+        "id": "battery-charging-time-calculator",
+        "name": "Battery Charging-Time Calculator",
+        "category": "mobile_servicing",
+        "description": "Calculate complete charging duration and 80% fast-charge benchmark accounting for thermal conversion losses.",
+        "fields": [
+          {
+            "name": "capacity_mah",
+            "label": "Battery Capacity (mAh)",
+            "type": "number",
+            "unit": "mAh",
+            "required": true,
+            "default": 4500,
+            "options": null,
+            "min": 500,
+            "max": 30000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "charger_current_a",
+            "label": "Charger Current Rating (A)",
+            "type": "number",
+            "unit": "A",
+            "required": true,
+            "default": 2.0,
+            "options": null,
+            "min": 0.2,
+            "max": 20.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "efficiency_pct",
+            "label": "Thermal Charging Efficiency (%)",
+            "type": "number",
+            "unit": "%",
+            "required": false,
+            "default": 85,
+            "options": null,
+            "min": 50,
+            "max": 100,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "battery-capacity-mah-wh-converter",
+        "name": "Battery Capacity mAh/Wh Converter",
+        "category": "mobile_servicing",
+        "description": "Accurately convert between battery energy (Watt-hours) and charge capacity (Milliampere-hours).",
+        "fields": [
+          {
+            "name": "value",
+            "label": "Value to Convert",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 5000,
+            "options": null,
+            "min": 0.01,
+            "max": 1000000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "voltage",
+            "label": "Nominal Cell Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": true,
+            "default": 3.85,
+            "options": null,
+            "min": 1.0,
+            "max": 48.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "conversion_type",
+            "label": "Conversion Direction",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "mah_to_wh",
+            "options": [
+              {
+                "value": "mah_to_wh",
+                "label": "mAh to Wh (Capacity to Energy)"
+              },
+              {
+                "value": "wh_to_mah",
+                "label": "Wh to mAh (Energy to Capacity)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "charging-current-calculator",
+        "name": "Charging Current Calculator",
+        "category": "mobile_servicing",
+        "description": "Calculate electrical charging current, series cable resistive losses, and net wattage delivered to phone battery.",
+        "fields": [
+          {
+            "name": "charger_wattage",
+            "label": "Charger Output Power (W)",
+            "type": "number",
+            "unit": "W",
+            "required": true,
+            "default": 25.0,
+            "options": null,
+            "min": 1.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "charging_voltage",
+            "label": "Negotiated Bus Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": true,
+            "default": 9.0,
+            "options": null,
+            "min": 3.0,
+            "max": 48.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "cable_resistance",
+            "label": "Cable & Contact Resistance (Ω)",
+            "type": "number",
+            "unit": "Ω",
+            "required": false,
+            "default": 0.15,
+            "options": null,
+            "min": 0.01,
+            "max": 2.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "fast-charge-wattage-calculator",
+        "name": "Fast-Charge Wattage Calculator",
+        "category": "mobile_servicing",
+        "description": "Determine real charging speed and fast-charging protocol tier from V/A multimeter telemetries.",
+        "fields": [
+          {
+            "name": "protocol",
+            "label": "Charging Protocol",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "pd3",
+            "options": [
+              {
+                "value": "pd3",
+                "label": "USB Power Delivery 3.0 / PPS"
+              },
+              {
+                "value": "qc3",
+                "label": "Qualcomm Quick Charge 3.0 / 4+"
+              },
+              {
+                "value": "supervooc",
+                "label": "SuperVOOC / Warp Charge"
+              },
+              {
+                "value": "custom",
+                "label": "Universal Fast Charge"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "voltage",
+            "label": "Measured Bus Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": true,
+            "default": 9.0,
+            "options": null,
+            "min": 3.0,
+            "max": 48.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "current",
+            "label": "Measured Bus Current (A)",
+            "type": "number",
+            "unit": "A",
+            "required": true,
+            "default": 3.0,
+            "options": null,
+            "min": 0.1,
+            "max": 20.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "usb-cable-voltage-drop-calculator",
+        "name": "USB Cable Voltage-Drop Calculator",
+        "category": "mobile_servicing",
+        "description": "Diagnose USB charging cable degradation, line resistance, and voltage drop across wire AWG gauges.",
+        "fields": [
+          {
+            "name": "source_voltage",
+            "label": "Charger Port Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": true,
+            "default": 5.0,
+            "options": null,
+            "min": 4.0,
+            "max": 48.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "current_amps",
+            "label": "Charging Current (A)",
+            "type": "number",
+            "unit": "A",
+            "required": true,
+            "default": 2.4,
+            "options": null,
+            "min": 0.1,
+            "max": 10.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "cable_length_m",
+            "label": "Cable Length (meters)",
+            "type": "number",
+            "unit": "m",
+            "required": true,
+            "default": 1.5,
+            "options": null,
+            "min": 0.1,
+            "max": 10.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "wire_gauge_awg",
+            "label": "Wire Gauge (AWG)",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": 24,
+            "options": [
+              {
+                "value": 20,
+                "label": "20 AWG (Heavy Duty High-Speed)"
+              },
+              {
+                "value": 22,
+                "label": "22 AWG (Premium Fast Charge)"
+              },
+              {
+                "value": 24,
+                "label": "24 AWG (Standard Quality)"
+              },
+              {
+                "value": 26,
+                "label": "26 AWG (Thin / Budget Cable)"
+              },
+              {
+                "value": 28,
+                "label": "28 AWG (Ultra-Thin Legacy Cable)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "usb-c-power-delivery-wattage-calculator",
+        "name": "USB-C Power-Delivery Wattage Calculator",
+        "category": "mobile_servicing",
+        "description": "Calculate USB-PD 3.0/3.1 wattage profiles and verify E-Marker 5A cable requirements.",
+        "fields": [
+          {
+            "name": "pd_profile",
+            "label": "USB-PD Fixed Profile",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "9v3a",
+            "options": [
+              {
+                "value": "5v3a",
+                "label": "5V / 3A (15W Basic)"
+              },
+              {
+                "value": "9v3a",
+                "label": "9V / 3A (27W Standard Fast Charge)"
+              },
+              {
+                "value": "15v3a",
+                "label": "15V / 3A (45W Fast Charge / Tablet)"
+              },
+              {
+                "value": "20v3_25a",
+                "label": "20V / 3.25A (65W Laptop / Ultra Phone)"
+              },
+              {
+                "value": "20v5a",
+                "label": "20V / 5A (100W High Power)"
+              },
+              {
+                "value": "28v5a",
+                "label": "28V / 5A (140W USB-PD 3.1 EPR)"
+              },
+              {
+                "value": "custom",
+                "label": "Custom Voltage & Current"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "custom_voltage",
+            "label": "Custom Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": false,
+            "default": 9.0,
+            "options": null,
+            "min": 3.0,
+            "max": 48.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "custom_amps",
+            "label": "Custom Current (A)",
+            "type": "number",
+            "unit": "A",
+            "required": false,
+            "default": 3.0,
+            "options": null,
+            "min": 0.1,
+            "max": 10.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "charger-output-compatibility-checker",
+        "name": "Charger Output Compatibility Checker",
+        "category": "mobile_servicing",
+        "description": "Verify smartphone handshake compatibility and wattage negotiation with third-party GaN chargers.",
+        "fields": [
+          {
+            "name": "phone_max_wattage",
+            "label": "Phone Max Fast Charge Rating (W)",
+            "type": "number",
+            "unit": "W",
+            "required": true,
+            "default": 33.0,
+            "options": null,
+            "min": 5.0,
+            "max": 240.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "phone_max_volts",
+            "label": "Phone Max Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": false,
+            "default": 11.0,
+            "options": null,
+            "min": 5.0,
+            "max": 30.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "phone_max_amps",
+            "label": "Phone Max Current (A)",
+            "type": "number",
+            "unit": "A",
+            "required": false,
+            "default": 3.0,
+            "options": null,
+            "min": 1.0,
+            "max": 12.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "charger_wattage",
+            "label": "Charger Maximum Wattage (W)",
+            "type": "number",
+            "unit": "W",
+            "required": true,
+            "default": 65.0,
+            "options": null,
+            "min": 5.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "charger_max_volts",
+            "label": "Charger Max Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": false,
+            "default": 20.0,
+            "options": null,
+            "min": 5.0,
+            "max": 48.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "charger_max_amps",
+            "label": "Charger Max Current (A)",
+            "type": "number",
+            "unit": "A",
+            "required": false,
+            "default": 3.25,
+            "options": null,
+            "min": 1.0,
+            "max": 15.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "screen-size-diagonal-calculator",
+        "name": "Screen Size & Diagonal Calculator",
+        "category": "mobile_servicing",
+        "description": "Calculate display diagonal inches, surface area, and physical dimensions from millimeter screen measurements.",
+        "fields": [
+          {
+            "name": "screen_width_mm",
+            "label": "Screen Active Width (mm)",
+            "type": "number",
+            "unit": "mm",
+            "required": true,
+            "default": 70.6,
+            "options": null,
+            "min": 10.0,
+            "max": 500.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "screen_height_mm",
+            "label": "Screen Active Height (mm)",
+            "type": "number",
+            "unit": "mm",
+            "required": true,
+            "default": 152.8,
+            "options": null,
+            "min": 10.0,
+            "max": 500.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "screen-ppi-calculator",
+        "name": "Screen PPI Calculator",
+        "category": "mobile_servicing",
+        "description": "Calculate screen pixels-per-inch (PPI) density, total megapixels, and retina viewing distance.",
+        "fields": [
+          {
+            "name": "horizontal_pixels",
+            "label": "Horizontal Resolution (pixels)",
+            "type": "number",
+            "unit": "px",
+            "required": true,
+            "default": 1080,
+            "options": null,
+            "min": 100,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "vertical_pixels",
+            "label": "Vertical Resolution (pixels)",
+            "type": "number",
+            "unit": "px",
+            "required": true,
+            "default": 2400,
+            "options": null,
+            "min": 100,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "diagonal_inches",
+            "label": "Screen Diagonal (inches)",
+            "type": "number",
+            "unit": "in",
+            "required": true,
+            "default": 6.67,
+            "options": null,
+            "min": 1.0,
+            "max": 32.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "screen-aspect-ratio-calculator",
+        "name": "Screen Aspect-Ratio Calculator",
+        "category": "mobile_servicing",
+        "description": "Find greatest common divisor (GCD) aspect ratio and modern smartphone display form factor.",
+        "fields": [
+          {
+            "name": "width_pixels",
+            "label": "Width Resolution (pixels)",
+            "type": "number",
+            "unit": "px",
+            "required": true,
+            "default": 1080,
+            "options": null,
+            "min": 100,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "height_pixels",
+            "label": "Height Resolution (pixels)",
+            "type": "number",
+            "unit": "px",
+            "required": true,
+            "default": 2400,
+            "options": null,
+            "min": 100,
+            "max": 10000,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "display-replacement-size-matcher",
+        "name": "Display Replacement Size Matcher",
+        "category": "mobile_servicing",
+        "description": "Verify aftermarket LCD/OLED replacement frame fit tolerance against OEM housing specifications.",
+        "fields": [
+          {
+            "name": "original_width_mm",
+            "label": "Original Screen Width (mm)",
+            "type": "number",
+            "unit": "mm",
+            "required": true,
+            "default": 75.8,
+            "options": null,
+            "min": 20.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "original_height_mm",
+            "label": "Original Screen Height (mm)",
+            "type": "number",
+            "unit": "mm",
+            "required": true,
+            "default": 164.2,
+            "options": null,
+            "min": 20.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "replacement_width_mm",
+            "label": "Replacement Glass Width (mm)",
+            "type": "number",
+            "unit": "mm",
+            "required": true,
+            "default": 75.5,
+            "options": null,
+            "min": 20.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "replacement_height_mm",
+            "label": "Replacement Glass Height (mm)",
+            "type": "number",
+            "unit": "mm",
+            "required": true,
+            "default": 163.9,
+            "options": null,
+            "min": 20.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "frame_margin_mm",
+            "label": "Frame Gasket Tolerance (mm)",
+            "type": "number",
+            "unit": "mm",
+            "required": false,
+            "default": 0.8,
+            "options": null,
+            "min": 0.1,
+            "max": 3.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "camera-megapixel-calculator",
+        "name": "Camera Megapixel Calculator",
+        "category": "mobile_servicing",
+        "description": "Calculate raw sensor megapixels, pixel binning (Tetracell/Nonacell) resolution, and aspect ratio.",
+        "fields": [
+          {
+            "name": "sensor_width_pixels",
+            "label": "Sensor Width (pixels)",
+            "type": "number",
+            "unit": "px",
+            "required": true,
+            "default": 8192,
+            "options": null,
+            "min": 100,
+            "max": 25000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "sensor_height_pixels",
+            "label": "Sensor Height (pixels)",
+            "type": "number",
+            "unit": "px",
+            "required": true,
+            "default": 6144,
+            "options": null,
+            "min": 100,
+            "max": 25000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "binning_mode",
+            "label": "Pixel Binning Architecture",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "4in1_quad_bayer",
+            "options": [
+              {
+                "value": "1x1_raw",
+                "label": "Full Sensor Resolution (1x1 Raw)"
+              },
+              {
+                "value": "4in1_quad_bayer",
+                "label": "Quad Bayer / Tetracell (4-in-1)"
+              },
+              {
+                "value": "9in1_nona_bayer",
+                "label": "Nona Bayer / Nonacell (9-in-1)"
+              },
+              {
+                "value": "16in1_tetra",
+                "label": "Tetra2Pixel (16-in-1)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "storage-capacity-converter",
+        "name": "Storage Capacity Converter",
+        "category": "mobile_servicing",
+        "description": "Explain decimal retail storage (GB) versus true operating system binary storage (GiB).",
+        "fields": [
+          {
+            "name": "advertised_gb",
+            "label": "Advertised Capacity",
+            "type": "number",
+            "unit": "GB",
+            "required": true,
+            "default": 128.0,
+            "options": null,
+            "min": 1.0,
+            "max": 4096.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "unit_system",
+            "label": "Conversion Mode",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "decimal_to_binary",
+            "options": [
+              {
+                "value": "decimal_to_binary",
+                "label": "Retail GB (Base 1000) to OS GiB (Base 1024)"
+              },
+              {
+                "value": "binary_to_decimal",
+                "label": "OS GiB (Base 1024) to Retail GB (Base 1000)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "usable-storage-calculator",
+        "name": "Usable Storage Calculator",
+        "category": "mobile_servicing",
+        "description": "Calculate actual available storage space for user files after Android/iOS OS partitions and firmware.",
+        "fields": [
+          {
+            "name": "rom_capacity_gb",
+            "label": "Phone Internal Storage (ROM)",
+            "type": "number",
+            "unit": "GB",
+            "required": true,
+            "default": 128.0,
+            "options": null,
+            "min": 8.0,
+            "max": 2048.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "os_type",
+            "label": "Operating System",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "android",
+            "options": [
+              {
+                "value": "android",
+                "label": "Android OS (OneUI, HyperOS, ColorOS)"
+              },
+              {
+                "value": "ios",
+                "label": "Apple iOS (iPhone)"
+              },
+              {
+                "value": "stock",
+                "label": "Stock / Clean Android"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "system_overhead_gb",
+            "label": "Firmware & System Reserved (GB)",
+            "type": "number",
+            "unit": "GB",
+            "required": false,
+            "default": 16.0,
+            "options": null,
+            "min": 2.0,
+            "max": 64.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ram-storage-performance-estimator",
+        "name": "RAM / Storage Performance Estimator",
+        "category": "mobile_servicing",
+        "description": "Estimate system memory bandwidth and storage read/write throughput speeds across LPDDR and UFS generations.",
+        "fields": [
+          {
+            "name": "ram_type",
+            "label": "RAM Architecture",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "lpddr5",
+            "options": [
+              {
+                "value": "lpddr4",
+                "label": "LPDDR4 (Legacy Budget)"
+              },
+              {
+                "value": "lpddr4x",
+                "label": "LPDDR4X (Budget / Mid-range Standard)"
+              },
+              {
+                "value": "lpddr5",
+                "label": "LPDDR5 (Flagship Standard)"
+              },
+              {
+                "value": "lpddr5x",
+                "label": "LPDDR5X (Next-Gen AI Flagship)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "storage_type",
+            "label": "Internal Storage Flash Type",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "ufs31",
+            "options": [
+              {
+                "value": "emmc51",
+                "label": "eMMC 5.1 (Legacy Entry-level)"
+              },
+              {
+                "value": "ufs22",
+                "label": "UFS 2.2 (Modern Budget)"
+              },
+              {
+                "value": "ufs31",
+                "label": "UFS 3.1 (High Speed Flagship)"
+              },
+              {
+                "value": "ufs40",
+                "label": "UFS 4.0 (Ultra High-Speed)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "processor-performance-comparison-calculator",
+        "name": "Processor Performance Comparison Calculator",
+        "category": "mobile_servicing",
+        "description": "Compare smartphone mobile SoC compute capabilities based on clock frequency, core architecture, and lithography nodes.",
+        "fields": [
+          {
+            "name": "chip_a_cores",
+            "label": "Chip A Core Count",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8,
+            "options": null,
+            "min": 1,
+            "max": 16,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "chip_a_freq_ghz",
+            "label": "Chip A Peak Clock (GHz)",
+            "type": "number",
+            "unit": "GHz",
+            "required": true,
+            "default": 3.2,
+            "options": null,
+            "min": 0.5,
+            "max": 5.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "chip_a_node_nm",
+            "label": "Chip A Process Node (nm)",
+            "type": "number",
+            "unit": "nm",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 1,
+            "max": 28,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "chip_b_cores",
+            "label": "Chip B Core Count",
+            "type": "number",
+            "unit": "",
+            "required": true,
+            "default": 8,
+            "options": null,
+            "min": 1,
+            "max": 16,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "chip_b_freq_ghz",
+            "label": "Chip B Peak Clock (GHz)",
+            "type": "number",
+            "unit": "GHz",
+            "required": true,
+            "default": 2.4,
+            "options": null,
+            "min": 0.5,
+            "max": 5.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "chip_b_node_nm",
+            "label": "Chip B Process Node (nm)",
+            "type": "number",
+            "unit": "nm",
+            "required": true,
+            "default": 6,
+            "options": null,
+            "min": 1,
+            "max": 28,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "device-heat-power-consumption-calculator",
+        "name": "Device Heat / Power Consumption Calculator",
+        "category": "mobile_servicing",
+        "description": "Analyze mobile device thermal dissipation, SoC temperature deltas, and throttling thresholds.",
+        "fields": [
+          {
+            "name": "battery_temp_c",
+            "label": "Battery Temperature (°C)",
+            "type": "number",
+            "unit": "°C",
+            "required": true,
+            "default": 38.5,
+            "options": null,
+            "min": 0.0,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "cpu_temp_c",
+            "label": "CPU SoC Temperature (°C)",
+            "type": "number",
+            "unit": "°C",
+            "required": true,
+            "default": 52.0,
+            "options": null,
+            "min": 0.0,
+            "max": 120.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "ambient_temp_c",
+            "label": "Ambient Room Temperature (°C)",
+            "type": "number",
+            "unit": "°C",
+            "required": true,
+            "default": 28.0,
+            "options": null,
+            "min": -10.0,
+            "max": 55.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "power_draw_w",
+            "label": "Instantaneous Power Draw (W)",
+            "type": "number",
+            "unit": "W",
+            "required": true,
+            "default": 4.5,
+            "options": null,
+            "min": 0.1,
+            "max": 50.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "resistor-color-code-calculator",
+        "name": "Resistor Color-Code Calculator",
+        "category": "mobile_servicing",
+        "description": "Decode 4-band axial resistor color bands into exact resistance value and tolerance margins.",
+        "fields": [
+          {
+            "name": "band1",
+            "label": "1st Color Band",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": 1,
+            "options": [
+              {
+                "value": 0,
+                "label": "Black (0)"
+              },
+              {
+                "value": 1,
+                "label": "Brown (1)"
+              },
+              {
+                "value": 2,
+                "label": "Red (2)"
+              },
+              {
+                "value": 3,
+                "label": "Orange (3)"
+              },
+              {
+                "value": 4,
+                "label": "Yellow (4)"
+              },
+              {
+                "value": 5,
+                "label": "Green (5)"
+              },
+              {
+                "value": 6,
+                "label": "Blue (6)"
+              },
+              {
+                "value": 7,
+                "label": "Violet (7)"
+              },
+              {
+                "value": 8,
+                "label": "Grey (8)"
+              },
+              {
+                "value": 9,
+                "label": "White (9)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "band2",
+            "label": "2nd Color Band",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": 0,
+            "options": [
+              {
+                "value": 0,
+                "label": "Black (0)"
+              },
+              {
+                "value": 1,
+                "label": "Brown (1)"
+              },
+              {
+                "value": 2,
+                "label": "Red (2)"
+              },
+              {
+                "value": 3,
+                "label": "Orange (3)"
+              },
+              {
+                "value": 4,
+                "label": "Yellow (4)"
+              },
+              {
+                "value": 5,
+                "label": "Green (5)"
+              },
+              {
+                "value": 6,
+                "label": "Blue (6)"
+              },
+              {
+                "value": 7,
+                "label": "Violet (7)"
+              },
+              {
+                "value": 8,
+                "label": "Grey (8)"
+              },
+              {
+                "value": 9,
+                "label": "White (9)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "band3_multiplier",
+            "label": "Multiplier Band",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": 1000,
+            "options": [
+              {
+                "value": 1,
+                "label": "Black (×1)"
+              },
+              {
+                "value": 10,
+                "label": "Brown (×10)"
+              },
+              {
+                "value": 100,
+                "label": "Red (×100)"
+              },
+              {
+                "value": 1000,
+                "label": "Orange (×1k)"
+              },
+              {
+                "value": 10000,
+                "label": "Yellow (×10k)"
+              },
+              {
+                "value": 100000,
+                "label": "Green (×100k)"
+              },
+              {
+                "value": 1000000,
+                "label": "Blue (×1M)"
+              },
+              {
+                "value": 0.1,
+                "label": "Gold (×0.1)"
+              },
+              {
+                "value": 0.01,
+                "label": "Silver (×0.01)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "band4_tolerance",
+            "label": "Tolerance Band",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": 5,
+            "options": [
+              {
+                "value": 1,
+                "label": "Brown (±1%)"
+              },
+              {
+                "value": 2,
+                "label": "Red (±2%)"
+              },
+              {
+                "value": 5,
+                "label": "Gold (±5%)"
+              },
+              {
+                "value": 10,
+                "label": "Silver (±10%)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "smd-resistor-code-calculator",
+        "name": "SMD Resistor Code Calculator",
+        "category": "mobile_servicing",
+        "description": "Decode 3-digit, 4-digit, and R-notation surface mount (SMD) smartphone resistor markings.",
+        "fields": [
+          {
+            "name": "code",
+            "label": "SMD Resistor Code",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "103",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Examples: 103, 4R7, 1002, 0R0"
+          }
+        ]
+      },
+      {
+        "id": "smd-capacitor-code-calculator",
+        "name": "SMD Capacitor Code Calculator",
+        "category": "mobile_servicing",
+        "description": "Decode 3-digit ceramic SMD capacitor codes into Picofarads (pF), Nanofarads (nF), and Microfarads (µF).",
+        "fields": [
+          {
+            "name": "code",
+            "label": "3-Digit Marking Code",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "104",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Examples: 104 = 0.1µF, 226 = 22µF"
+          },
+          {
+            "name": "voltage_rating",
+            "label": "Voltage Rating Label",
+            "type": "text",
+            "unit": "",
+            "required": false,
+            "default": "16V",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "inductor-value-calculator",
+        "name": "Inductor Value Calculator",
+        "category": "mobile_servicing",
+        "description": "Decode surface mount power inductors and switching chokes in mobile PMIC power lines.",
+        "fields": [
+          {
+            "name": "code",
+            "label": "Inductor Marking Code",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "4R7",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": "Examples: 4R7 = 4.7µH, 100 = 10µH, 221 = 220µH"
+          },
+          {
+            "name": "core_type",
+            "label": "Core Construction",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "shielded_ferrite",
+            "options": [
+              {
+                "value": "shielded_ferrite",
+                "label": "Shielded Ferrite Power Choke"
+              },
+              {
+                "value": "ceramic_rf",
+                "label": "Multilayer Ceramic RF Choke"
+              },
+              {
+                "value": "iron_powder",
+                "label": "Iron Powder High-Current"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "ohms-law-calculator",
+        "name": "Ohm’s Law Calculator",
+        "category": "mobile_servicing",
+        "description": "Solve electrical circuits for voltage, current, resistance, and power dissipation.",
+        "fields": [
+          {
+            "name": "voltage_v",
+            "label": "Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": false,
+            "default": 4.2,
+            "options": null,
+            "min": 0.0,
+            "max": 1000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "current_a",
+            "label": "Current (A)",
+            "type": "number",
+            "unit": "A",
+            "required": false,
+            "default": 1.2,
+            "options": null,
+            "min": 0.001,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "resistance_ohms",
+            "label": "Resistance (Ω)",
+            "type": "number",
+            "unit": "Ω",
+            "required": false,
+            "default": 3.5,
+            "options": null,
+            "min": 0.001,
+            "max": 1000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "calculate_target",
+            "label": "Solve For Variable",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "r",
+            "options": [
+              {
+                "value": "r",
+                "label": "Resistance (R = V ÷ I)"
+              },
+              {
+                "value": "v",
+                "label": "Voltage (V = I × R)"
+              },
+              {
+                "value": "i",
+                "label": "Current (I = V ÷ R)"
+              },
+              {
+                "value": "p",
+                "label": "Power (P = V × I)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "voltage-current-power-calculator",
+        "name": "Voltage / Current / Power Calculator",
+        "category": "mobile_servicing",
+        "description": "Direct DC power calculation, load resistance, and Joule heating emission.",
+        "fields": [
+          {
+            "name": "voltage_v",
+            "label": "DC Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": true,
+            "default": 12.0,
+            "options": null,
+            "min": 0.1,
+            "max": 500.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "current_a",
+            "label": "Current Load (A)",
+            "type": "number",
+            "unit": "A",
+            "required": true,
+            "default": 2.5,
+            "options": null,
+            "min": 0.01,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "series-parallel-resistance-calculator",
+        "name": "Series / Parallel Resistance Calculator",
+        "category": "mobile_servicing",
+        "description": "Calculate combined equivalent resistance for series or parallel board circuit resistor arrays.",
+        "fields": [
+          {
+            "name": "r1",
+            "label": "Resistor 1 (Ω)",
+            "type": "number",
+            "unit": "Ω",
+            "required": true,
+            "default": 100.0,
+            "options": null,
+            "min": 0.1,
+            "max": 10000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "r2",
+            "label": "Resistor 2 (Ω)",
+            "type": "number",
+            "unit": "True",
+            "required": true,
+            "default": 100.0,
+            "options": null,
+            "min": 0.1,
+            "max": 10000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "r3",
+            "label": "Resistor 3 (Optional, Ω)",
+            "type": "number",
+            "unit": "Ω",
+            "required": false,
+            "default": 0.0,
+            "options": null,
+            "min": 0.0,
+            "max": 10000000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "circuit_mode",
+            "label": "Connection Topology",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "parallel",
+            "options": [
+              {
+                "value": "parallel",
+                "label": "Parallel Network"
+              },
+              {
+                "value": "series",
+                "label": "Series Network"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "short-circuit-current-estimator",
+        "name": "Short-Circuit Current Estimator",
+        "category": "mobile_servicing",
+        "description": "Estimate DC bench power supply current clamp behavior and localized Joule heat during motherboard short-finding.",
+        "fields": [
+          {
+            "name": "supply_voltage_v",
+            "label": "DC Power Supply Voltage (V)",
+            "type": "number",
+            "unit": "V",
+            "required": true,
+            "default": 4.0,
+            "options": null,
+            "min": 0.5,
+            "max": 30.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "line_impedance_milliohm",
+            "label": "Probe & Line Impedance (mΩ)",
+            "type": "number",
+            "unit": "mΩ",
+            "required": true,
+            "default": 80.0,
+            "options": null,
+            "min": 1.0,
+            "max": 5000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "psu_current_limit_a",
+            "label": "PSU Current Limit (A)",
+            "type": "number",
+            "unit": "A",
+            "required": true,
+            "default": 3.0,
+            "options": null,
+            "min": 0.1,
+            "max": 10.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "fuse-rating-calculator",
+        "name": "Fuse Rating Calculator",
+        "category": "mobile_servicing",
+        "description": "Select appropriate continuous and inrush safety margins for SMD polyfuses and protective fuses.",
+        "fields": [
+          {
+            "name": "continuous_load_a",
+            "label": "Continuous Operating Load (A)",
+            "type": "number",
+            "unit": "A",
+            "required": true,
+            "default": 2.0,
+            "options": null,
+            "min": 0.1,
+            "max": 50.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "inrush_current_a",
+            "label": "Peak Surge / Inrush Current (A)",
+            "type": "number",
+            "unit": "A",
+            "required": false,
+            "default": 3.5,
+            "options": null,
+            "min": 0.1,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "safety_factor_pct",
+            "label": "Safety Factor (%)",
+            "type": "number",
+            "unit": "%",
+            "required": false,
+            "default": 125.0,
+            "options": null,
+            "min": 105.0,
+            "max": 200.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "pcb-trace-current-calculator",
+        "name": "PCB Trace Current Calculator",
+        "category": "mobile_servicing",
+        "description": "Compute maximum PCB copper trace current capacity per IPC-2152 standards for smartphone motherboards.",
+        "fields": [
+          {
+            "name": "trace_width_mils",
+            "label": "Trace Width (mils / 0.001 in)",
+            "type": "number",
+            "unit": "mils",
+            "required": true,
+            "default": 25.0,
+            "options": null,
+            "min": 1.0,
+            "max": 500.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "copper_thickness_oz",
+            "label": "Copper Foil Thickness (oz)",
+            "type": "number",
+            "unit": "oz",
+            "required": true,
+            "default": 1.0,
+            "options": null,
+            "min": 0.5,
+            "max": 4.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "temp_rise_c",
+            "label": "Allowable Temperature Rise (°C)",
+            "type": "number",
+            "unit": "°C",
+            "required": true,
+            "default": 10.0,
+            "options": null,
+            "min": 1.0,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "layer_type",
+            "label": "Trace Layer",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "external",
+            "options": [
+              {
+                "value": "external",
+                "label": "External Layer (Microstrip)"
+              },
+              {
+                "value": "internal",
+                "label": "Internal Layer (Stripline)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "repair-cost-vs-phone-value-calculator",
+        "name": "Repair Cost vs. Phone Value Calculator",
+        "category": "mobile_servicing",
+        "description": "Evaluate smartphone repair feasibility comparing repair quote against current secondary device market value.",
+        "fields": [
+          {
+            "name": "phone_market_value",
+            "label": "Phone Current Market Value ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 350.0,
+            "options": null,
+            "min": 10.0,
+            "max": 3000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "repair_quote",
+            "label": "Total Quoted Repair Cost ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 120.0,
+            "options": null,
+            "min": 1.0,
+            "max": 2000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "phone_age_months",
+            "label": "Phone Age (Months)",
+            "type": "number",
+            "unit": "mo",
+            "required": false,
+            "default": 18,
+            "options": null,
+            "min": 1,
+            "max": 120,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "expected_extra_life_months",
+            "label": "Expected Added Life After Repair (Months)",
+            "type": "number",
+            "unit": "mo",
+            "required": true,
+            "default": 12,
+            "options": null,
+            "min": 1,
+            "max": 60,
+            "step": null,
+            "help": ""
+          }
+        ]
+      }
+    ],
+    "repair_business": [
+      {
+        "id": "mobile-repair-quote-calculator",
+        "name": "Mobile Repair Quote Calculator",
+        "category": "repair_business",
+        "description": "Generate comprehensive repair price estimates including parts markup, technician labor, and local taxes.",
+        "fields": [
+          {
+            "name": "parts_cost",
+            "label": "Replacement Parts Cost ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 45.0,
+            "options": null,
+            "min": 0.0,
+            "max": 5000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "labor_hours",
+            "label": "Bench Labor Time (Hours)",
+            "type": "number",
+            "unit": "hrs",
+            "required": true,
+            "default": 1.5,
+            "options": null,
+            "min": 0.1,
+            "max": 20.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "labor_rate_hourly",
+            "label": "Labor Hourly Rate ($)",
+            "type": "number",
+            "unit": "$/hr",
+            "required": true,
+            "default": 30.0,
+            "options": null,
+            "min": 5.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "target_margin_pct",
+            "label": "Parts Markup Margin (%)",
+            "type": "number",
+            "unit": "%",
+            "required": false,
+            "default": 25.0,
+            "options": null,
+            "min": 0.0,
+            "max": 200.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "tax_rate_pct",
+            "label": "Sales Tax / VAT (%)",
+            "type": "number",
+            "unit": "%",
+            "required": false,
+            "default": 10.0,
+            "options": null,
+            "min": 0.0,
+            "max": 50.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "screen-replacement-price-calculator",
+        "name": "Screen Replacement Price Calculator",
+        "category": "repair_business",
+        "description": "Price smartphone display replacements across OLED, OEM Refurb, and Incell tiers with warranty reserves.",
+        "fields": [
+          {
+            "name": "screen_grade",
+            "label": "Screen Quality Tier",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "premium_oled",
+            "options": [
+              {
+                "value": "original_oem",
+                "label": "Original OEM Service Pack"
+              },
+              {
+                "value": "premium_oled",
+                "label": "Premium OLED (Hard/Soft)"
+              },
+              {
+                "value": "incell_lcd",
+                "label": "Incell LCD (Budget Option)"
+              },
+              {
+                "value": "glass_only",
+                "label": "OCA Refurbished Glass"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "screen_wholesale_cost",
+            "label": "Screen Wholesale Cost ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 65.0,
+            "options": null,
+            "min": 5.0,
+            "max": 1500.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "installation_difficulty",
+            "label": "Chassis Structure Difficulty",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "standard",
+            "options": [
+              {
+                "value": "standard",
+                "label": "Standard Bezel (Flat Glass)"
+              },
+              {
+                "value": "curved_edge",
+                "label": "Curved Edge Display (High Care)"
+              },
+              {
+                "value": "foldable",
+                "label": "Foldable / Flip Screen (Complex)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "warranty_days",
+            "label": "Warranty Period (Days)",
+            "type": "number",
+            "unit": "days",
+            "required": false,
+            "default": 90,
+            "options": null,
+            "min": 0,
+            "max": 365,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "battery-replacement-price-calculator",
+        "name": "Battery Replacement Price Calculator",
+        "category": "repair_business",
+        "description": "Standardize smartphone battery replacement charges including OEM BMS flex transplant surcharges.",
+        "fields": [
+          {
+            "name": "battery_cost",
+            "label": "Battery Cell Wholesale Cost ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 18.0,
+            "options": null,
+            "min": 5.0,
+            "max": 250.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "bms_flex_transplant",
+            "label": "Transfer Original BMS Flex & Spot Weld?",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "no",
+            "options": [
+              {
+                "value": "no",
+                "label": "No (Standard Drop-in Cell)"
+              },
+              {
+                "value": "yes",
+                "label": "Yes (Transfer BMS & Reprogram Cycles)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "adhesive_waterproof_gasket_cost",
+            "label": "Adhesive & Seal Gasket Cost ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 3.0,
+            "options": null,
+            "min": 0.0,
+            "max": 30.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "labor_markup",
+            "label": "Standard Installation Labor ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 25.0,
+            "options": null,
+            "min": 5.0,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "charging-port-repair-quote-calculator",
+        "name": "Charging-Port Repair Quote Calculator",
+        "category": "repair_business",
+        "description": "Quote Type-C & Lightning port repairs for sub-board swaps versus board-level micro-soldering.",
+        "fields": [
+          {
+            "name": "repair_type",
+            "label": "Repair Technique",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "microsoldering_port",
+            "options": [
+              {
+                "value": "microsoldering_port",
+                "label": "Type-C Pin Micro-soldering"
+              },
+              {
+                "value": "sub_board_swap",
+                "label": "Sub-Board PCB Swap"
+              },
+              {
+                "value": "flex_cable",
+                "label": "Interconnect Flex Cable Replacement"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "component_cost",
+            "label": "Component Hardware Cost ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 4.0,
+            "options": null,
+            "min": 0.5,
+            "max": 50.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "bench_time_minutes",
+            "label": "Bench Work Duration (Minutes)",
+            "type": "number",
+            "unit": "min",
+            "required": true,
+            "default": 40,
+            "options": null,
+            "min": 10,
+            "max": 180,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "hourly_rate",
+            "label": "Technician Hourly Rate ($)",
+            "type": "number",
+            "unit": "$/hr",
+            "required": true,
+            "default": 45.0,
+            "options": null,
+            "min": 15.0,
+            "max": 200.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "motherboard-level-repair-quote-calculator",
+        "name": "Motherboard-Level Repair Quote Calculator",
+        "category": "repair_business",
+        "description": "Quote advanced logic board diagnostics, BGA IC reballing, and sandwich PCB repairs.",
+        "fields": [
+          {
+            "name": "repair_scope",
+            "label": "Board Repair Scope",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "pmic_audio_reball",
+            "options": [
+              {
+                "value": "vbatt_short",
+                "label": "V_BAT / Main Line Short Finding"
+              },
+              {
+                "value": "pmic_audio_reball",
+                "label": "PMIC / Audio IC Reballing"
+              },
+              {
+                "value": "cpu_ram_sandwich",
+                "label": "CPU + RAM Dual-Decker Split"
+              },
+              {
+                "value": "layer_jumper",
+                "label": "Torn Pad / Inner-Layer Jumper"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "base_ic_cost",
+            "label": "Replacement IC & Solder Consumables ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 15.0,
+            "options": null,
+            "min": 2.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "risk_level",
+            "label": "Thermal Risk Profile",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "medium",
+            "options": [
+              {
+                "value": "low",
+                "label": "Low Risk (Single BGA chip)"
+              },
+              {
+                "value": "medium",
+                "label": "Medium Risk (Adjacent Underfill)"
+              },
+              {
+                "value": "high",
+                "label": "High Risk (Sandwich / Memory)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "shop_hourly_rate",
+            "label": "Master Technician Hourly Rate ($)",
+            "type": "number",
+            "unit": "$/hr",
+            "required": true,
+            "default": 50.0,
+            "options": null,
+            "min": 20.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "software-unlock-service-price-calculator",
+        "name": "Software / Unlock Service Price Calculator",
+        "category": "repair_business",
+        "description": "Calculate profitable pricing for firmware flashing, FRP bypass, bootloop recovery, and SIM unlocking.",
+        "fields": [
+          {
+            "name": "service_category",
+            "label": "Software Service Category",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "firmware_flashing",
+            "options": [
+              {
+                "value": "firmware_flashing",
+                "label": "Stock ROM Flashing & Unbrick"
+              },
+              {
+                "value": "bootloop_recovery",
+                "label": "Bootloop Recovery / Cache Reset"
+              },
+              {
+                "value": "frp_bypass",
+                "label": "FRP Google Account Bypass"
+              },
+              {
+                "value": "carrier_sim_unlock",
+                "label": "Carrier Network SIM Unlock"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "server_credit_token_cost",
+            "label": "Server Credits / Dongle Authorization ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 10.0,
+            "options": null,
+            "min": 0.0,
+            "max": 200.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "technician_minutes",
+            "label": "Technician Time (Minutes)",
+            "type": "number",
+            "unit": "min",
+            "required": true,
+            "default": 30,
+            "options": null,
+            "min": 5,
+            "max": 180,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "data-recovery-price-calculator",
+        "name": "Data-Recovery Price Calculator",
+        "category": "repair_business",
+        "description": "Quote smartphone data recovery based on hardware damage severity and storage volume extraction.",
+        "fields": [
+          {
+            "name": "damage_condition",
+            "label": "Hardware / System Condition",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "damaged_screen_locked",
+            "options": [
+              {
+                "value": "damaged_screen_locked",
+                "label": "Locked Device with Broken Screen"
+              },
+              {
+                "value": "logical_loop",
+                "label": "Corrupted OS / Boot Partition"
+              },
+              {
+                "value": "dead_motherboard",
+                "label": "Dead Motherboard (Temporary Power Bypass)"
+              },
+              {
+                "value": "corrupted_emmc_ufs",
+                "label": "Chip-off UFS/eMMC Reader Extraction"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "data_volume_gb",
+            "label": "Target Data Volume (GB)",
+            "type": "number",
+            "unit": "GB",
+            "required": true,
+            "default": 64.0,
+            "options": null,
+            "min": 1.0,
+            "max": 1024.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "priority",
+            "label": "Turnaround Priority",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "standard",
+            "options": [
+              {
+                "value": "standard",
+                "label": "Standard Queue (3-5 Days)"
+              },
+              {
+                "value": "express_24h",
+                "label": "Emergency Priority (24-Hour Express)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "water-damage-repair-estimate-calculator",
+        "name": "Water-Damage Repair Estimate Calculator",
+        "category": "repair_business",
+        "description": "Estimate ultrasonic desoxidation, parts replacement, and long-term phone survival probabilities.",
+        "fields": [
+          {
+            "name": "liquid_type",
+            "label": "Liquid Contaminant",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "freshwater",
+            "options": [
+              {
+                "value": "freshwater",
+                "label": "Freshwater (Rain / Clean Tap)"
+              },
+              {
+                "value": "saltwater",
+                "label": "Saltwater / Sea Water (Extreme Corrosion)"
+              },
+              {
+                "value": "soda_coffee",
+                "label": "Coffee, Soda or Sugary Drink"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "time_since_exposure_hours",
+            "label": "Hours Elapsed Since Exposure",
+            "type": "number",
+            "unit": "hrs",
+            "required": true,
+            "default": 24,
+            "options": null,
+            "min": 1,
+            "max": 300,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "ultrasonic_cleaning_fee",
+            "label": "Ultrasonic Desoxidation Fee ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 30.0,
+            "options": null,
+            "min": 10.0,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "components_replaced_cost",
+            "label": "Estimated Corroded Parts ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 40.0,
+            "options": null,
+            "min": 0.0,
+            "max": 500.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "parts-markup-calculator",
+        "name": "Parts Markup Calculator",
+        "category": "repair_business",
+        "description": "Calculate spare parts retail prices and gross margin percentages across multiple pricing formulas.",
+        "fields": [
+          {
+            "name": "wholesale_cost",
+            "label": "Parts Wholesale Cost ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 25.0,
+            "options": null,
+            "min": 0.5,
+            "max": 5000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "pricing_strategy",
+            "label": "Pricing Strategy",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "percentage_markup",
+            "options": [
+              {
+                "value": "percentage_markup",
+                "label": "Cost-Plus Percentage Markup"
+              },
+              {
+                "value": "target_gross_margin",
+                "label": "Target Gross Margin %"
+              },
+              {
+                "value": "keystone_2x",
+                "label": "Keystone Pricing (2x Wholesale Cost)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "markup_pct",
+            "label": "Markup / Margin Percentage (%)",
+            "type": "number",
+            "unit": "%",
+            "required": false,
+            "default": 50.0,
+            "options": null,
+            "min": 0.0,
+            "max": 500.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "labor-rate-calculator",
+        "name": "Labor-Rate Calculator",
+        "category": "repair_business",
+        "description": "Calculate hourly technician billable rates based on shop overhead expenses and profit targets.",
+        "fields": [
+          {
+            "name": "technician_level",
+            "label": "Technician Skill Band",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "intermediate",
+            "options": [
+              {
+                "value": "junior",
+                "label": "Junior Technician (Modular Swaps)"
+              },
+              {
+                "value": "intermediate",
+                "label": "Intermediate Technician (Displays & Soldering)"
+              },
+              {
+                "value": "master_microsolder",
+                "label": "Master Technician (BGA & Micro-soldering)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "monthly_bench_overhead",
+            "label": "Monthly Bench Overhead Share ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 1200.0,
+            "options": null,
+            "min": 100.0,
+            "max": 10000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "billable_hours_monthly",
+            "label": "Monthly Billable Bench Hours",
+            "type": "number",
+            "unit": "hrs",
+            "required": true,
+            "default": 120.0,
+            "options": null,
+            "min": 20.0,
+            "max": 250.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "desired_profit_pct",
+            "label": "Shop Target Profit Margin (%)",
+            "type": "number",
+            "unit": "%",
+            "required": false,
+            "default": 30.0,
+            "options": null,
+            "min": 5.0,
+            "max": 70.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "technician-hourly-cost-calculator",
+        "name": "Technician Hourly Cost Calculator",
+        "category": "repair_business",
+        "description": "Calculate true employer burdened hourly cost for mobile phone repair technicians.",
+        "fields": [
+          {
+            "name": "monthly_salary",
+            "label": "Technician Monthly Base Salary ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 2500.0,
+            "options": null,
+            "min": 500.0,
+            "max": 15000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "benefits_taxes_pct",
+            "label": "Taxes, Insurance & Benefits Overhead (%)",
+            "type": "number",
+            "unit": "%",
+            "required": false,
+            "default": 15.0,
+            "options": null,
+            "min": 0.0,
+            "max": 50.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "hours_worked_per_week",
+            "label": "Weekly Scheduled Hours",
+            "type": "number",
+            "unit": "hrs",
+            "required": true,
+            "default": 40.0,
+            "options": null,
+            "min": 10.0,
+            "max": 60.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "utilization_rate_pct",
+            "label": "Billable Bench Utilization Rate (%)",
+            "type": "number",
+            "unit": "%",
+            "required": true,
+            "default": 70.0,
+            "options": null,
+            "min": 20.0,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "callout-home-service-fee-calculator",
+        "name": "Callout / Home-Service Fee Calculator",
+        "category": "repair_business",
+        "description": "Calculate on-site doorstep mobile repair callout dispatch fees factoring distance and technician transit time.",
+        "fields": [
+          {
+            "name": "travel_distance_km",
+            "label": "Roundtrip Distance (km)",
+            "type": "number",
+            "unit": "km",
+            "required": true,
+            "default": 15.0,
+            "options": null,
+            "min": 0.5,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "travel_time_minutes",
+            "label": "Roundtrip Travel Time (Minutes)",
+            "type": "number",
+            "unit": "min",
+            "required": true,
+            "default": 35,
+            "options": null,
+            "min": 5,
+            "max": 240,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "vehicle_cost_per_km",
+            "label": "Vehicle Wear & Fuel Rate ($/km)",
+            "type": "number",
+            "unit": "$/km",
+            "required": false,
+            "default": 0.75,
+            "options": null,
+            "min": 0.1,
+            "max": 3.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "bench_hourly_opportunity_cost",
+            "label": "Technician Opportunity Cost ($/hr)",
+            "type": "number",
+            "unit": "$/hr",
+            "required": true,
+            "default": 35.0,
+            "options": null,
+            "min": 10.0,
+            "max": 150.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "dispatch_fee",
+            "label": "Base Dispatch Administration Fee ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 15.0,
+            "options": null,
+            "min": 0.0,
+            "max": 100.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "pickup-and-delivery-charge-calculator",
+        "name": "Pickup-and-Delivery Charge Calculator",
+        "category": "repair_business",
+        "description": "Calculate courier transit, insurance, and packaging fees for phone repair pickup-and-return services.",
+        "fields": [
+          {
+            "name": "roundtrip_km",
+            "label": "Courier Roundtrip (km)",
+            "type": "number",
+            "unit": "km",
+            "required": true,
+            "default": 12.0,
+            "options": null,
+            "min": 0.5,
+            "max": 80.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "courier_base_fare",
+            "label": "Base Fare ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 5.0,
+            "options": null,
+            "min": 1.0,
+            "max": 30.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "per_km_rate",
+            "label": "Distance Rate per km ($)",
+            "type": "number",
+            "unit": "$/km",
+            "required": false,
+            "default": 1.2,
+            "options": null,
+            "min": 0.2,
+            "max": 5.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "packaging_insurance_fee",
+            "label": "Protective Pouch & Insurance ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 3.0,
+            "options": null,
+            "min": 0.0,
+            "max": 25.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "express_turnaround",
+            "label": "Express Rush Delivery (+50%)?",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "no",
+            "options": [
+              {
+                "value": "no",
+                "label": "No (Standard Same-Day)"
+              },
+              {
+                "value": "yes",
+                "label": "Yes (Express Rush Delivery)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "warranty-rework-cost-calculator",
+        "name": "Warranty / Rework Cost Calculator",
+        "category": "repair_business",
+        "description": "Calculate warranty claim reserve funds and rework cost burden per repaired device.",
+        "fields": [
+          {
+            "name": "total_jobs_monthly",
+            "label": "Monthly Completed Repairs",
+            "type": "number",
+            "unit": "jobs",
+            "required": true,
+            "default": 150,
+            "options": null,
+            "min": 10,
+            "max": 5000,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "rework_return_rate_pct",
+            "label": "Warranty Claim / Return Rate (%)",
+            "type": "number",
+            "unit": "%",
+            "required": true,
+            "default": 4.0,
+            "options": null,
+            "min": 0.1,
+            "max": 30.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "avg_rework_cost_per_job",
+            "label": "Average Cost to Re-repair ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 35.0,
+            "options": null,
+            "min": 5.0,
+            "max": 500.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "repair-vs-replace-calculator",
+        "name": "Repair-vs-Replace Calculator",
+        "category": "repair_business",
+        "description": "Compare monthly ownership costs between repairing an existing phone versus buying a brand new replacement.",
+        "fields": [
+          {
+            "name": "repair_cost",
+            "label": "Total Quoted Repair Cost ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 140.0,
+            "options": null,
+            "min": 10.0,
+            "max": 2000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "replacement_phone_cost",
+            "label": "New Replacement Phone Price ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 450.0,
+            "options": null,
+            "min": 50.0,
+            "max": 3000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "current_phone_months_left",
+            "label": "Expected Repaired Phone Life (Months)",
+            "type": "number",
+            "unit": "mo",
+            "required": true,
+            "default": 14,
+            "options": null,
+            "min": 1,
+            "max": 60,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "new_phone_expected_months",
+            "label": "Expected New Phone Life (Months)",
+            "type": "number",
+            "unit": "mo",
+            "required": true,
+            "default": 36,
+            "options": null,
+            "min": 1,
+            "max": 120,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "old-phone-trade-in-value-calculator",
+        "name": "Old-Phone Trade-In Value Calculator",
+        "category": "repair_business",
+        "description": "Appraise smartphone buyback trade-in values based on screen condition, battery health, and cosmetics.",
+        "fields": [
+          {
+            "name": "base_used_market_price",
+            "label": "Flawless Grade-A Market Value ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 280.0,
+            "options": null,
+            "min": 10.0,
+            "max": 2500.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "screen_condition",
+            "label": "Screen Display State",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "minor_scratches",
+            "options": [
+              {
+                "value": "flawless",
+                "label": "Flawless (No Marks)"
+              },
+              {
+                "value": "minor_scratches",
+                "label": "Light Micro-Scratches (-10%)"
+              },
+              {
+                "value": "cracked",
+                "label": "Cracked Glass / Defective LCD (-45%)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "battery_health_condition",
+            "label": "Battery Health Condition",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "above_85",
+            "options": [
+              {
+                "value": "above_85",
+                "label": "Good Health (> 85%)"
+              },
+              {
+                "value": "75_to_85",
+                "label": "Moderate Health (75-85%) (-10%)"
+              },
+              {
+                "value": "needs_service",
+                "label": "Service Required (< 75%) (-25%)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "housing_cosmetics",
+            "label": "Chassis & Back Housing",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "scuffed",
+            "options": [
+              {
+                "value": "mint",
+                "label": "Mint / Like New"
+              },
+              {
+                "value": "scuffed",
+                "label": "Pocket Scuffs / Minor Paint Chips (-10%)"
+              },
+              {
+                "value": "bent_dented",
+                "label": "Bent Frame / Impact Dents (-30%)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "shop_resale_margin_pct",
+            "label": "Shop Target Resale Margin (%)",
+            "type": "number",
+            "unit": "%",
+            "required": false,
+            "default": 20.0,
+            "options": null,
+            "min": 5.0,
+            "max": 50.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "refurbished-phone-price-calculator",
+        "name": "Refurbished Phone Price Calculator",
+        "category": "repair_business",
+        "description": "Price refurbished and renewed mobile phones covering parts spent, tech labor, and warranty reserve.",
+        "fields": [
+          {
+            "name": "device_acquisition_cost",
+            "label": "Device Acquisition / Buyback Cost ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 150.0,
+            "options": null,
+            "min": 10.0,
+            "max": 2000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "parts_spent",
+            "label": "Parts & Glass Replaced ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 45.0,
+            "options": null,
+            "min": 0.0,
+            "max": 1000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "technician_labor_hours",
+            "label": "Refurbishing Labor (Hours)",
+            "type": "number",
+            "unit": "hrs",
+            "required": true,
+            "default": 1.2,
+            "options": null,
+            "min": 0.1,
+            "max": 10.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "hourly_rate",
+            "label": "Labor Hourly Rate ($)",
+            "type": "number",
+            "unit": "$/hr",
+            "required": true,
+            "default": 30.0,
+            "options": null,
+            "min": 10.0,
+            "max": 150.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "warranty_months",
+            "label": "Included Warranty (Months)",
+            "type": "number",
+            "unit": "mo",
+            "required": false,
+            "default": 6,
+            "options": null,
+            "min": 1,
+            "max": 24,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "target_profit_margin_pct",
+            "label": "Target Net Profit Margin (%)",
+            "type": "number",
+            "unit": "%",
+            "required": false,
+            "default": 25.0,
+            "options": null,
+            "min": 5.0,
+            "max": 60.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "daily-revenue-calculator",
+        "name": "Daily Revenue Calculator",
+        "category": "repair_business",
+        "description": "Track daily mobile repair shop tickets, accessory sales, and projected monthly sales volume.",
+        "fields": [
+          {
+            "name": "screen_repairs_count",
+            "label": "Screen Repairs Completed",
+            "type": "number",
+            "unit": "qty",
+            "required": true,
+            "default": 4,
+            "options": null,
+            "min": 0,
+            "max": 100,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "screen_avg_price",
+            "label": "Screen Average Ticket ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 85.0,
+            "options": null,
+            "min": 10.0,
+            "max": 1000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "battery_repairs_count",
+            "label": "Battery Replacements Completed",
+            "type": "number",
+            "unit": "qty",
+            "required": true,
+            "default": 3,
+            "options": null,
+            "min": 0,
+            "max": 100,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "battery_avg_price",
+            "label": "Battery Average Ticket ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 45.0,
+            "options": null,
+            "min": 10.0,
+            "max": 300.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "board_repairs_count",
+            "label": "Board / IC Repairs Completed",
+            "type": "number",
+            "unit": "qty",
+            "required": true,
+            "default": 1,
+            "options": null,
+            "min": 0,
+            "max": 50,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "board_avg_price",
+            "label": "Board Repair Average Ticket ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 110.0,
+            "options": null,
+            "min": 20.0,
+            "max": 1000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "accessory_sales",
+            "label": "Accessories / Cable Sales ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 60.0,
+            "options": null,
+            "min": 0.0,
+            "max": 2000.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "monthly-shop-profit-calculator",
+        "name": "Monthly Shop Profit Calculator",
+        "category": "repair_business",
+        "description": "Calculate monthly net repair shop profit, overhead expense breakdown, and daily break-even sales.",
+        "fields": [
+          {
+            "name": "monthly_gross_revenue",
+            "label": "Monthly Gross Sales Revenue ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 12500.0,
+            "options": null,
+            "min": 100.0,
+            "max": 500000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "parts_inventory_cost",
+            "label": "Parts & Hardware Inventory Costs ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 4200.0,
+            "options": null,
+            "min": 0.0,
+            "max": 200000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "staff_wages",
+            "label": "Technician & Front Desk Wages ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 3400.0,
+            "options": null,
+            "min": 0.0,
+            "max": 100000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "shop_rent_utilities",
+            "label": "Shop Rent, Power & Internet ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 1600.0,
+            "options": null,
+            "min": 0.0,
+            "max": 50000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "software_tools_subscriptions",
+            "label": "Schematic Tools & Server Subscriptions ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 300.0,
+            "options": null,
+            "min": 0.0,
+            "max": 10000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "misc_expenses",
+            "label": "Merchant Fees, Packaging & Misc ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 400.0,
+            "options": null,
+            "min": 0.0,
+            "max": 20000.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      },
+      {
+        "id": "customer-estimate-invoice-generator",
+        "name": "Customer Estimate & Invoice Generator",
+        "category": "repair_business",
+        "description": "Generate itemized repair invoices with parts, labor charges, discounts, and sales tax breakdown.",
+        "fields": [
+          {
+            "name": "customer_name",
+            "label": "Customer Name",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "John Smith",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "phone_model",
+            "label": "Phone Model & IMEI",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "Samsung Galaxy S22",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "service_description",
+            "label": "Service Description",
+            "type": "text",
+            "unit": "",
+            "required": true,
+            "default": "Screen Replacement & Port Cleaning",
+            "options": null,
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "parts_amount",
+            "label": "Parts Subtotal ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 85.0,
+            "options": null,
+            "min": 0.0,
+            "max": 5000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "labor_amount",
+            "label": "Labor Subtotal ($)",
+            "type": "number",
+            "unit": "$",
+            "required": true,
+            "default": 40.0,
+            "options": null,
+            "min": 0.0,
+            "max": 2000.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "discount_amount",
+            "label": "Discount / Promotion ($)",
+            "type": "number",
+            "unit": "$",
+            "required": false,
+            "default": 10.0,
+            "options": null,
+            "min": 0.0,
+            "max": 500.0,
+            "step": null,
+            "help": ""
+          },
+          {
+            "name": "tax_rate_pct",
+            "label": "Sales Tax Rate (%)",
+            "type": "number",
+            "unit": "%",
+            "required": false,
+            "default": 8.0,
+            "options": null,
+            "min": 0.0,
+            "max": 50.0,
+            "step": null,
+            "help": ""
+          }
+        ]
+      }
+    ],
     "storage": [
       {
         "id": "audio-conversion-calculator",
@@ -29605,9 +32839,9 @@
       },
       {
         "id": "raid-calculator",
-        "name": "RAID Calculator",
+        "name": "RAID Storage Calculator",
         "category": "storage",
-        "description": "Calculate usable array capacity, parity overhead, mirror redundancy, fault tolerance, read/write throughput multipliers, estimated rebuild time, and URE (Unrecoverable Read Error) risk for RAID 0, 1, 5, 6, 10, 50, 60, and OpenZFS RAID-Z1/Z2/Z3.",
+        "description": "Calculate usable capacity, parity protection, rebuild times, and failure resilience for Dynamic Hybrid Arrays (DHA), RAID 0/1/5/6/10, and OpenZFS.",
         "fields": [
           {
             "name": "raid_type",
@@ -29618,54 +32852,62 @@
             "default": "raid5",
             "options": [
               {
+                "value": "shr1",
+                "label": "Dynamic Hybrid Array 1 (DHA-1 Single Protection)"
+              },
+              {
+                "value": "shr2",
+                "label": "Dynamic Hybrid Array 2 (DHA-2 Dual Protection)"
+              },
+              {
                 "value": "raid0",
-                "label": "RAID 0 (Striping — Max Speed & Capacity, 0 Redundancy)"
+                "label": "RAID 0 (Striping - No Redundancy)"
               },
               {
                 "value": "raid1",
-                "label": "RAID 1 (Mirroring — 1 Drive Tolerance, 50% Capacity)"
+                "label": "RAID 1 (Mirroring)"
               },
               {
                 "value": "raid5",
-                "label": "RAID 5 (Single Distributed Parity — 1 Drive Tolerance, Min 3 Drives)"
+                "label": "RAID 5 (Single Distributed Parity)"
               },
               {
                 "value": "raid6",
-                "label": "RAID 6 (Dual Distributed Parity — 2 Drive Tolerance, Min 4 Drives)"
+                "label": "RAID 6 (Dual Distributed Parity)"
               },
               {
                 "value": "raid10",
-                "label": "RAID 10 (1+0 Striped Mirrors — High IOPS, Min 4 Even Drives)"
+                "label": "RAID 10 (Striped Mirrors)"
               },
               {
                 "value": "raid50",
-                "label": "RAID 50 (Striped RAID 5 Sets — Enterprise Min 6 Drives)"
+                "label": "RAID 50 (Dual Parity Stripes)"
               },
               {
                 "value": "raid60",
-                "label": "RAID 60 (Striped RAID 6 Sets — Enterprise Min 8 Drives)"
-              },
-              {
-                "value": "jbod",
-                "label": "JBOD (Just a Bunch of Disks — Linear Concatenation)"
+                "label": "RAID 60 (Dual Dual-Parity Stripes)"
               },
               {
                 "value": "zfs_z1",
-                "label": "OpenZFS RAID-Z1 (Single Parity Vdev — Min 3 Drives)"
+                "label": "OpenZFS RAID-Z1 (Single Parity)"
               },
               {
                 "value": "zfs_z2",
-                "label": "OpenZFS RAID-Z2 (Dual Parity Vdev — Min 4 Drives)"
+                "label": "OpenZFS RAID-Z2 (Dual Parity)"
               },
               {
                 "value": "zfs_z3",
-                "label": "OpenZFS RAID-Z3 (Triple Parity Vdev — Min 5 Drives)"
+                "label": "OpenZFS RAID-Z3 (Triple Parity)"
+              },
+              {
+                "value": "jbod",
+                "label": "JBOD (Just a Bunch of Disks)"
               }
             ],
             "min": null,
             "max": null,
             "step": null,
-            "help": "Choose the RAID array or ZFS vdev redundancy architecture."
+            "help": "Array architecture."
           },
           {
             "name": "disk_count",
@@ -29678,7 +32920,7 @@
             "min": 1,
             "max": 64,
             "step": 1,
-            "help": "Total physical drive bays or installed disks in array."
+            "help": ""
           },
           {
             "name": "disk_size",
@@ -29691,7 +32933,7 @@
             "min": 0.1,
             "max": 100,
             "step": 0.5,
-            "help": "Uniform capacity of each drive."
+            "help": ""
           },
           {
             "name": "disk_unit",
@@ -29703,90 +32945,124 @@
             "options": [
               {
                 "value": "TB",
-                "label": "TB (Terabytes)"
+                "label": "Terabytes (TB)"
               },
               {
                 "value": "GB",
-                "label": "GB (Gigabytes)"
+                "label": "Gigabytes (GB)"
               },
               {
                 "value": "PB",
-                "label": "PB (Petabytes)"
+                "label": "Petabytes (PB)"
               }
             ],
             "min": null,
             "max": null,
             "step": null,
-            "help": "Capacity metric unit."
+            "help": ""
           },
           {
             "name": "hot_spares",
-            "label": "Dedicated Hot Spares",
+            "label": "Hot Spare Disks",
             "type": "number",
             "unit": "",
             "required": true,
             "default": 0,
             "options": null,
             "min": 0,
-            "max": 4,
+            "max": 10,
             "step": 1,
-            "help": "Unused standby drives ready for automatic rebuild upon disk failure."
+            "help": ""
           },
           {
             "name": "disk_type",
-            "label": "Drive Architecture & URE Rating",
+            "label": "Drive Media & Quality",
             "type": "select",
             "unit": "",
             "required": true,
             "default": "enterprise_hdd",
             "options": [
               {
-                "value": "consumer_hdd",
-                "label": "Consumer Desktop HDD (1 in 10¹⁴ URE rate)"
+                "value": "enterprise_hdd",
+                "label": "Enterprise HDD (7200 RPM / URE 10^15)"
               },
               {
-                "value": "enterprise_hdd",
-                "label": "Enterprise / NAS HDD (WD Red Pro / IronWolf Pro — 1 in 10¹⁵ URE)"
+                "value": "consumer_hdd",
+                "label": "Consumer / NAS HDD (5400-5900 RPM / URE 10^14)"
               },
               {
                 "value": "sata_ssd",
-                "label": "SATA Data Center SSD (1 in 10¹⁶ URE rate)"
+                "label": "SATA SSD (TLC / URE 10^16)"
               },
               {
                 "value": "nvme_ssd",
-                "label": "Enterprise NVMe PCIe Gen4/Gen5 SSD (1 in 10¹⁶ URE)"
+                "label": "NVMe PCIe SSD (Enterprise / URE 10^17)"
               }
             ],
             "min": null,
             "max": null,
             "step": null,
-            "help": "Drive hardware grade determining Unrecoverable Read Error (URE) risk."
+            "help": ""
           },
           {
             "name": "disk_speed_mb",
-            "label": "Sequential Drive Speed (MB/s)",
+            "label": "Single Disk Sustained Speed (MB/s)",
             "type": "number",
-            "unit": "MB/s",
+            "unit": "",
             "required": true,
             "default": 220,
             "options": null,
             "min": 10,
-            "max": 10000,
+            "max": 7500,
             "step": 10,
-            "help": "Sustained sequential read/write speed of individual drives."
+            "help": ""
           },
           {
             "name": "cost_per_disk",
             "label": "Cost per Drive ($)",
             "type": "number",
-            "unit": "$",
+            "unit": "",
             "required": true,
             "default": 180,
             "options": null,
             "min": 0,
-            "max": 10000,
+            "max": 5000,
             "step": 5,
-            "help": "Drive purchase price to estimate total CapEx hardware spend."
+            "help": ""
+          },
+          {
+            "name": "filesystem",
+            "label": "Target Filesystem",
+            "type": "select",
+            "unit": "",
+            "required": true,
+            "default": "btrfs",
+            "options": [
+              {
+                "value": "btrfs",
+                "label": "Btrfs (4% metadata reserve - Linux Btrfs Pool)"
+              },
+              {
+                "value": "zfs",
+                "label": "OpenZFS (1.56% slop space - TrueNAS / Proxmox)"
+              },
+              {
+                "value": "ext4",
+                "label": "EXT4 (2% reserved inodes - Linux)"
+              },
+              {
+                "value": "ntfs",
+                "label": "NTFS / ReFS (1.5% cluster overhead - Windows Server)"
+              },
+              {
+                "value": "raw",
+                "label": "Raw Partition (0% overhead)"
+              }
+            ],
+            "min": null,
+            "max": null,
+            "step": null,
+            "help": ""
           }
         ]
       }
@@ -44634,5 +47910,5 @@
       }
     ]
   },
-  "total": 726
+  "total": 774
 }

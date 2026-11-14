@@ -110,6 +110,8 @@ import WaterDamage from "@mui/icons-material/WaterDamage"
 import WaterDrop from "@mui/icons-material/WaterDrop"
 import Work from "@mui/icons-material/Work"
 import Yard from "@mui/icons-material/Yard"
+import PhoneAndroid from "@mui/icons-material/PhoneAndroid"
+import BatteryChargingFull from "@mui/icons-material/BatteryChargingFull"
 
 // Icon registry map
 export const ICON_REGISTRY: Record<string, React.ComponentType<SvgIconProps>> = {
@@ -221,6 +223,8 @@ export const ICON_REGISTRY: Record<string, React.ComponentType<SvgIconProps>> = 
   WaterDrop,
   Work,
   Yard,
+  PhoneAndroid,
+  BatteryChargingFull,
 }
 
 export const CATEGORY_FALLBACK_ICONS: Record<string, React.ComponentType<SvgIconProps>> = {
@@ -234,6 +238,8 @@ export const CATEGORY_FALLBACK_ICONS: Record<string, React.ComponentType<SvgIcon
   education: School,
   real_estate: House,
   event_budget: Cake,
+  mobile_servicing: PhoneAndroid,
+  repair_business: Build,
 }
 
 export function getIconComponent(name: string, category?: string): React.ComponentType<SvgIconProps> {
