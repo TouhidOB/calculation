@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { GUIDES } from "@/lib/guides-data";
+import AdBanner from "@/components/AdBanner";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -90,6 +91,9 @@ export default async function GuideDetailPage({ params }: Props) {
           </div>
         </header>
 
+        {/* Top Ad Slot (Under Header) */}
+        <AdBanner variant="leaderboard" className="mb-8" />
+
         {/* Embedded Interactive Tool CTA Banner */}
         <aside className="mb-8 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -116,6 +120,9 @@ export default async function GuideDetailPage({ params }: Props) {
             </p>
           ))}
         </div>
+
+        {/* Bottom Ad Slot (Above Footer / After Content) */}
+        <AdBanner variant="rectangle" className="my-8" />
 
         {/* Footer Navigation */}
         <div className="mt-10 pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">

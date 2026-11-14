@@ -1289,6 +1289,9 @@ export default function CalculatorRunnerView({
             </Paper>
           )}
 
+          {/* Top Ad Slot (Above Calculator Chassis / Inputs) */}
+          {!embedded && <AdBanner variant="leaderboard" className="mb-3" />}
+
           <InstrumentChassis
             title={calc.name}
             categoryName={catMeta?.label || calc.category}
@@ -1980,8 +1983,8 @@ export default function CalculatorRunnerView({
                     </TactileButton>
                   </Stack>
 
-                  {/* Below-Result High-Impact AdSense Display Banner */}
-                  <AdBanner minHeight={110} />
+                  {/* Below-Result High-Impact Display Banner */}
+                  <AdBanner variant="native" className="my-3" />
 
                   {/* Print-Only Official Footer Sign-off */}
                   <Box className="print-only" sx={{ display: "none", "@media print": { display: "block !important" }, mt: 3, pt: 1.5, borderTop: "1px solid #cbd5e1", textAlign: "center" }}>
@@ -2019,7 +2022,7 @@ export default function CalculatorRunnerView({
                   </Paper>
 
                   {/* Standby Banner */}
-                  <AdBanner minHeight={100} />
+                  <AdBanner variant="native" className="my-3" />
                 </Stack>
               )}
             </Grid>
@@ -2644,6 +2647,9 @@ export default function CalculatorRunnerView({
               </Grid>
             </Box>
           )}
+
+          {/* Bottom Pre-Footer Ad Slot */}
+          {!embedded && <AdBanner variant="leaderboard" className="mt-4 mb-2" />}
 
           {/* Embedded Footer Link */}
           {embedded && (

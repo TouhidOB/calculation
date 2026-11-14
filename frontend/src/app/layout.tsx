@@ -137,6 +137,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <TrafficTelemetry />
         <ThemeRegistry>{children}</ThemeRegistry>
         <CookieConsent />
+        <script
+          data-cfasync="false"
+          async
+          src="https://bauval.org/14/2309082ed44cbc9e4f1d7274aaad3b58"
+        />
       </body>
     </html>
   )

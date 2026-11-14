@@ -13,6 +13,7 @@ import { getIconComponent } from "@/lib/icon-registry"
 import DOMPurify from "dompurify"
 import QuickCalculator from "./QuickCalculator"
 import fallbackData from "@/lib/calculators-fallback.json"
+import AdBanner from "@/components/AdBanner"
 
 // MUI components
 import AppBar from "@mui/material/AppBar"
@@ -723,6 +724,9 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                 })}
               </Grid>
             </Box>
+
+            {/* AdBanner between Category Grid and Bottom Hero / Popular Calculators */}
+            <AdBanner variant="leaderboard" className="my-5" />
 
             {/* Popular Calculators Grid */}
             <Box component="section" sx={{ mb: 5 }}>
