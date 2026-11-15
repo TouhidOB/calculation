@@ -579,7 +579,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // 2. Action: PURGE DEMO
+    // 2. Action: PURGE DEMO OR CLEAR ALL
     if (action === "purge_demo") {
       const nonDemo = proposals.filter((p) => !p.isDemo)
       writeProposals(nonDemo)
@@ -588,6 +588,16 @@ export async function POST(req: NextRequest) {
         message: "Successfully cleared all demo proposals.",
         count: nonDemo.length,
         proposals: nonDemo
+      })
+    }
+
+    if (action === "clear_all") {
+      writeProposals([])
+      return NextResponse.json({
+        ok: true,
+        message: "Successfully cleared all research and test data.",
+        count: 0,
+        proposals: []
       })
     }
 
