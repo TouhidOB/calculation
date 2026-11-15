@@ -84,7 +84,6 @@ export default function AdBanner({
 
   // Screen size detection (mobile < 768px vs desktop >= 768px)
   const [isMobile, setIsMobile] = useState<boolean>(false)
-  const [mounted, setMounted] = useState<boolean>(false)
 
   // Map format or variant prop
   const effectiveVariant: AdVariant =
@@ -97,9 +96,8 @@ export default function AdBanner({
   // Allow switching to AdSense if explicitly passed and active, default to Adsterra
   const useAdSense = (provider === "adsense" || (Boolean(slot) && provider !== "adsterra")) && Boolean(slot)
 
-  // Screen detection after mount and dynamic resize listener
+  // Dynamic resize listener for mobile screen detection
   useEffect(() => {
-    setMounted(true)
     const checkMobile = () => {
       const mobile = window.innerWidth < 768
       setIsMobile((prev) => (prev !== mobile ? mobile : prev))
@@ -210,26 +208,24 @@ export default function AdBanner({
             mx: "auto",
           }}
         >
-          {mounted ? (
-            <iframe
-              key={`${pathname || ""}-${effectiveVariant}-${isMobile ? "m" : "d"}`}
-              src={`${adConfig.src}?p=${encodeURIComponent(pathname || "")}`}
-              title="Advertisement"
-              width={adConfig.width}
-              height={adConfig.height}
-              loading="lazy"
-              scrolling="no"
-              frameBorder="0"
-              allow="autoplay 'none'; camera 'none'; microphone 'none'"
-              style={{
-                border: 0,
-                overflow: "hidden",
-                display: "block",
-                maxWidth: "100%",
-                margin: "0 auto",
-              }}
-            />
-          ) : null}
+          <iframe
+            key={`${pathname || ""}-${effectiveVariant}-${isMobile ? "m" : "d"}`}
+            src={`${adConfig.src}?p=${encodeURIComponent(pathname || "")}`}
+            title="Advertisement"
+            width={adConfig.width}
+            height={adConfig.height}
+            loading="eager"
+            scrolling="no"
+            frameBorder="0"
+            allow="autoplay 'none'; camera 'none'; microphone 'none'"
+            style={{
+              border: 0,
+              overflow: "hidden",
+              display: "block",
+              maxWidth: "100%",
+              margin: "0 auto",
+            }}
+          />
         </Box>
       )}
     </Box>

@@ -6,6 +6,11 @@ export async function GET() {
   const content = `# TryCalc.net ads.txt
 # Google AdSense Publisher verification
 google.com, pub-2861472312283458, DIRECT, f08c47fec0942fa0
+
+# Adsterra
+adsterra.com, 4b1d7e8cff4b2577bf5cbf149ad2c855, DIRECT
+adsterra.com, ef873b4c24cc419248f5583765492643, DIRECT
+adsterra.com, 54f2b7f73650b7bbb756da04d5c9102b, DIRECT
 `
   return new NextResponse(content, {
     status: 200,
