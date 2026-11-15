@@ -46,11 +46,18 @@ const DATA_DIR = path.resolve(process.cwd(), "..", "data")
 const PRIMARY_PATH = "/home/imon/calculation/data/seo_proposals.json"
 
 function getStoragePath(): string {
-  // Use absolute path if /home/imon/calculation directory exists, else fallback to relative data dir
-  if (fs.existsSync("/home/imon/calculation")) {
-    return PRIMARY_PATH
+  if (fs.existsSync("/home/imon/calculation/data")) {
+    return "/home/imon/calculation/data/seo_proposals.json"
   }
-  return path.join(DATA_DIR, "seo_proposals.json")
+  const appData = path.join(process.cwd(), "data")
+  try {
+    if (!fs.existsSync(appData)) {
+      fs.mkdirSync(appData, { recursive: true })
+    }
+    return path.join(appData, "seo_proposals.json")
+  } catch {
+    return path.join("/tmp", "seo_proposals.json")
+  }
 }
 
 function ensureDirectoryExists(filePath: string) {

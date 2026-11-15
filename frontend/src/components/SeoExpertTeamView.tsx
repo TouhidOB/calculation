@@ -118,7 +118,7 @@ export default function SeoExpertTeamView() {
   const fetchProposals = async () => {
     setLoading(true)
     try {
-      const res = await fetch("/api/seo-team")
+      const res = await fetch("/imon-api/seo-team")
       const data = await res.json()
       if (data.ok && Array.isArray(data.proposals)) {
         setProposals(data.proposals)
@@ -143,7 +143,7 @@ export default function SeoExpertTeamView() {
     if (e) e.stopPropagation()
     setActionLoading(true)
     try {
-      const res = await fetch("/api/seo-team", {
+      const res = await fetch("/imon-api/seo-team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "approve", id }),
@@ -169,7 +169,7 @@ export default function SeoExpertTeamView() {
     if (e) e.stopPropagation()
     setActionLoading(true)
     try {
-      const res = await fetch("/api/seo-team", {
+      const res = await fetch("/imon-api/seo-team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "reject", id }),
@@ -194,7 +194,7 @@ export default function SeoExpertTeamView() {
   const handleDiscover = async () => {
     setActionLoading(true)
     try {
-      const res = await fetch("/api/seo-team", {
+      const res = await fetch("/imon-api/seo-team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "discover" }),
@@ -219,7 +219,7 @@ export default function SeoExpertTeamView() {
 
     setActionLoading(true)
     try {
-      const res = await fetch("/api/seo-team", {
+      const res = await fetch("/imon-api/seo-team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -250,7 +250,7 @@ export default function SeoExpertTeamView() {
   const handleSeedDemo = async () => {
     setActionLoading(true)
     try {
-      const res = await fetch("/api/seo-team", {
+      const res = await fetch("/imon-api/seo-team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "seed_demo" }),
@@ -272,7 +272,7 @@ export default function SeoExpertTeamView() {
   const handlePurgeDemo = async () => {
     setActionLoading(true)
     try {
-      const res = await fetch("/api/seo-team", {
+      const res = await fetch("/imon-api/seo-team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "purge_demo" }),
