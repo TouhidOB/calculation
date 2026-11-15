@@ -14,6 +14,7 @@ services:
       CSRF_TRUSTED_ORIGINS: "https://trycalc.net,https://www.trycalc.net"
     volumes:
       - /root/trycalc/app/backend/db.sqlite3:/app/db.sqlite3
+      - ./data:/app/data
     ports:
       - "127.0.0.1:8088:8000"
       - "172.17.0.1:8088:8000"
