@@ -46,8 +46,17 @@ const DATA_DIR = path.resolve(process.cwd(), "..", "data")
 const PRIMARY_PATH = "/home/imon/calculation/data/seo_proposals.json"
 
 function getStoragePath(): string {
-  if (fs.existsSync("/home/imon/calculation/data")) {
-    return "/home/imon/calculation/data/seo_proposals.json"
+  const candidates = [
+    "/app/data/seo_proposals.json",
+    "/root/trycalc/app/data/seo_proposals.json",
+    "/home/imon/calculation/data/seo_proposals.json",
+    path.join(process.cwd(), "data", "seo_proposals.json"),
+    path.join(process.cwd(), "..", "data", "seo_proposals.json"),
+  ]
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate
+    }
   }
   const appData = path.join(process.cwd(), "data")
   try {

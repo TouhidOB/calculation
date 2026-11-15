@@ -1,5 +1,85 @@
 [
   {
+    "id": "seo-auto-1794751295",
+    "targetKeyword": "Commercial Real Estate Cap Rate and NOI Calculator",
+    "category": "Real Estate",
+    "slug": "/calculators/real-estate/commercial-cap-rate-noi-calculator",
+    "searchVolume": 38200,
+    "searchVolumeFormatted": "38,200/mo",
+    "difficulty": 28,
+    "difficultyLevel": "28 - Low",
+    "cpc": 4.8,
+    "estEcpm": 7.5,
+    "potentialMonthlyTraffic": 11500,
+    "estMonthlyRevenue": 86.25,
+    "status": "pending",
+    "prosBangla": [
+      "বাণিজ্যিক রিয়েল এস্টেট বিনিয়োগকারী এবং ব্রোকারদের জন্য অপরিহার্য ক্যাপিটালাইজেশন রেট ক্যালকুলেটর।",
+      "রিয়েল এস্টেট বিজ্ঞাপনের প্রিমিয়াম eCPM ($৭.৫০+) এবং উচ্চ বাণিজ্যিক সিপিসি।",
+      "নেট অপারেটিং ইনকাম (NOI), গ্রস রেন্ট মাল্টিপ্লায়ার (GRM) এবং ক্যাশ-অন-ক্যাশ রিটার্নের একক স্ক্রিন বিশ্লেষণ।",
+      "ইনভেস্টমেন্ট প্রপার্টি কেনার পূর্বে ঝুঁকি নির্ণয়ের জন্য আদর্শ টুল।"
+    ],
+    "consBangla": [
+      "ভ্যাকেন্সি রেট এবং মেইনটেন্যান্স রিজার্ভ সঠিকভাবে ইনপুট না দিলে ক্যাপ রেট অতিরঞ্জিত হতে পারে।",
+      "লোকাল প্রপার্টি ট্যাক্স এবং ইন্স্যুরেন্সের সঠিক ডেটা প্রয়োজন হয়।"
+    ],
+    "spec": {
+      "inputs": [
+        {
+          "name": "propertyPrice",
+          "type": "number",
+          "label": "Property Purchase Price",
+          "defaultValue": 1250000,
+          "unit": "$"
+        },
+        {
+          "name": "grossRentalIncome",
+          "type": "number",
+          "label": "Annual Gross Rental Income",
+          "defaultValue": 140000,
+          "unit": "$"
+        },
+        {
+          "name": "operatingExpenses",
+          "type": "number",
+          "label": "Annual Operating Expenses",
+          "defaultValue": 35000,
+          "unit": "$"
+        },
+        {
+          "name": "vacancyRate",
+          "type": "number",
+          "label": "Expected Vacancy Rate",
+          "defaultValue": 5,
+          "unit": "%"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "noi",
+          "label": "Net Operating Income (NOI)",
+          "unit": "$"
+        },
+        {
+          "name": "capRate",
+          "label": "Capitalization Rate (Cap Rate)",
+          "unit": "%"
+        },
+        {
+          "name": "grossYield",
+          "label": "Gross Rental Yield",
+          "unit": "%"
+        }
+      ],
+      "formula": "NOI = (GrossIncome * (1 - VacancyRate/100)) - OperatingExpenses; CapRate = (NOI / PurchasePrice) * 100",
+      "editorialGuide": "Comprehensive guide on commercial capitalization rates, Class A/B/C building yield expectations, risk premia, and interest rate sensitivity."
+    },
+    "isDemo": false,
+    "createdAt": "2026-11-15T14:01:35.224188Z",
+    "updatedAt": "2026-11-15T14:01:35.224188Z",
+    "sourceModel": "curated-discovery-pool"
+  },
+  {
     "id": "seo-demo-1",
     "targetKeyword": "Compound Interest Calculator with Monthly Deposits",
     "category": "Finance",
