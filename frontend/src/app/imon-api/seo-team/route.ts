@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
+import { buildAndSaveCustomCalculator, triggerIndexNow, sendSeoTelegramNotification } from "@/lib/custom-calculators"
 
 export interface CalculatorSpec {
   inputs: Array<{
@@ -17,6 +18,7 @@ export interface CalculatorSpec {
   }>
   formula: string
   editorialGuide: string
+  slug?: string
 }
 
 export interface SeoProposal {
@@ -29,10 +31,14 @@ export interface SeoProposal {
   difficulty: number
   difficultyLevel: string
   cpc: number
+  estimatedCpc?: number
   estEcpm: number
   potentialMonthlyTraffic: number
   estMonthlyRevenue: number
   status: "pending" | "approved" | "rejected"
+  liveUrl?: string
+  builtAt?: string
+  indexed?: boolean
   prosBangla: string[]
   consBangla: string[]
   spec: CalculatorSpec
@@ -610,21 +616,40 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // 3. Action: APPROVE
-    if (action === "approve") {
+    // 3. Action: APPROVE & AUTO-BUILD
+    if (action === "approve" || action === "approve_and_build") {
       if (!id) return NextResponse.json({ ok: false, error: "Missing proposal ID" }, { status: 400 })
       const index = proposals.findIndex((p) => p.id === id)
       if (index === -1) {
         return NextResponse.json({ ok: false, error: "Proposal not found" }, { status: 404 })
       }
+
+      // Build and persist custom calculator definition
+      const builtCalc = buildAndSaveCustomCalculator(proposals[index])
+      const livePath = `/calculators/${builtCalc.id}`
+
       proposals[index].status = "approved"
+      proposals[index].liveUrl = livePath
+      proposals[index].builtAt = new Date().toISOString()
+      proposals[index].indexed = true
       proposals[index].updatedAt = new Date().toISOString()
       writeProposals(proposals)
+
+      // Instant Indexing & Telegram Notification asynchronously
+      const liveFullUrl = `https://trycalc.net${livePath}`
+      triggerIndexNow([liveFullUrl]).catch(() => {})
+      sendSeoTelegramNotification(
+        "🚀 New Calculator Built & Live on TryCalc",
+        `**${builtCalc.name}** is now LIVE and submitted to IndexNow!\n\n🔗 [Live Tool](${liveFullUrl})\n📊 Search Volume: ${proposals[index].searchVolume?.toLocaleString() || "N/A"}\n💰 Est. CPC: $${proposals[index].estimatedCpc || proposals[index].cpc || "N/A"}`
+      ).catch(() => {})
+
       return NextResponse.json({
         ok: true,
-        message: "Proposal approved successfully.",
+        message: "Proposal approved and calculator automatically built and indexed!",
+        liveUrl: livePath,
+        calculator: builtCalc,
         proposal: proposals[index],
-        proposals
+        proposals,
       })
     }
 

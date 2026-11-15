@@ -56,6 +56,8 @@ import FunctionsIcon from "@mui/icons-material/Functions"
 import MenuBookIcon from "@mui/icons-material/MenuBook"
 import InputIcon from "@mui/icons-material/Input"
 import OutputIcon from "@mui/icons-material/Output"
+import LaunchIcon from "@mui/icons-material/Launch"
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch"
 
 export interface CalculatorSpec {
   inputs: Array<{
@@ -72,6 +74,7 @@ export interface CalculatorSpec {
   }>
   formula: string
   editorialGuide: string
+  slug?: string
 }
 
 export interface SeoProposal {
@@ -88,6 +91,9 @@ export interface SeoProposal {
   potentialMonthlyTraffic: number
   estMonthlyRevenue: number
   status: "pending" | "approved" | "rejected"
+  liveUrl?: string
+  builtAt?: string
+  indexed?: boolean
   prosBangla: string[]
   consBangla: string[]
   spec: CalculatorSpec
@@ -146,19 +152,19 @@ export default function SeoExpertTeamView() {
       const res = await fetch("/imon-api/seo-team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "approve", id }),
+        body: JSON.stringify({ action: "approve_and_build", id }),
       })
       const data = await res.json()
       if (data.ok && data.proposals) {
         setProposals(data.proposals)
         if (selectedProposal && selectedProposal.id === id) {
-          setSelectedProposal({ ...selectedProposal, status: "approved" })
+          setSelectedProposal(data.proposal || { ...selectedProposal, status: "approved", liveUrl: data.liveUrl })
         }
-        setToastMessage("প্রস্তাবটি সফলভাবে অনুমোদিত হয়েছে! (Proposal Approved)")
+        setToastMessage("ক্যালকুলেটর সফলভাবে তৈরি ও লাইভ করা হয়েছে! (Built & Live)")
         setToastSeverity("success")
       }
     } catch {
-      setToastMessage("Failed to approve proposal")
+      setToastMessage("Failed to approve and build proposal")
       setToastSeverity("error")
     } finally {
       setActionLoading(false)
@@ -1206,11 +1212,33 @@ export default function SeoExpertTeamView() {
                       </Button>
 
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                        {proposal.status !== "approved" && (
+                        {proposal.status === "approved" ? (
                           <Button
                             variant="contained"
                             size="small"
-                            startIcon={<CheckCircleIcon />}
+                            component="a"
+                            href={proposal.liveUrl || `/calculators/${(proposal.spec?.slug || proposal.targetKeyword || proposal.id).split("/").pop()}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            startIcon={<LaunchIcon />}
+                            sx={{
+                              bgcolor: "#2563eb",
+                              color: "#ffffff",
+                              fontWeight: 800,
+                              textTransform: "none",
+                              borderRadius: 2,
+                              px: 2,
+                              boxShadow: "0 2px 8px rgba(37, 99, 235, 0.3)",
+                              "&:hover": { bgcolor: "#1d4ed8" },
+                            }}
+                          >
+                            লাইভ ক্যালকুলেটর (View Live)
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<RocketLaunchIcon />}
                             onClick={(e) => handleApprove(proposal.id, e)}
                             disabled={actionLoading}
                             sx={{
@@ -1224,7 +1252,7 @@ export default function SeoExpertTeamView() {
                               "&:hover": { bgcolor: "#047857" },
                             }}
                           >
-                            অনুমোদন করুন (Approve)
+                            অনুমোদন ও অটো-বিল্ড (Approve & Build)
                           </Button>
                         )}
 
@@ -1462,10 +1490,28 @@ export default function SeoExpertTeamView() {
               <Button onClick={() => setPreviewOpen(false)} sx={{ textTransform: "none", color: "#64748b" }}>
                 Close
               </Button>
-              {selectedProposal.status !== "approved" && (
+              {selectedProposal.status === "approved" ? (
                 <Button
                   variant="contained"
-                  startIcon={<CheckCircleIcon />}
+                  component="a"
+                  href={selectedProposal.liveUrl || `/calculators/${(selectedProposal.spec?.slug || selectedProposal.targetKeyword || selectedProposal.id).split("/").pop()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<LaunchIcon />}
+                  sx={{
+                    bgcolor: "#2563eb",
+                    textTransform: "none",
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    "&:hover": { bgcolor: "#1d4ed8" },
+                  }}
+                >
+                  View Live Tool (লাইভ ক্যালকুলেটর)
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  startIcon={<RocketLaunchIcon />}
                   onClick={() => {
                     handleApprove(selectedProposal.id)
                   }}
@@ -1477,7 +1523,7 @@ export default function SeoExpertTeamView() {
                     "&:hover": { bgcolor: "#047857" },
                   }}
                 >
-                  Approve Blueprint (অনুমোদন করুন)
+                  Approve & Auto-Build (অনুমোদন ও অটো-বিল্ড)
                 </Button>
               )}
             </DialogActions>

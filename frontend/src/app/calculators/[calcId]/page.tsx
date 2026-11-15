@@ -6,6 +6,7 @@ import { seoIntroFor, seoTitleFor, seoFaqFor, seoHowToFor, seoMetaDescriptionFor
 import type { CalculatorDef } from "@/lib/calculator-api"
 import { CATEGORY_META } from "@/lib/calculator-api"
 import fallbackData from "@/lib/calculators-fallback.json"
+import { getCustomCalculator, getCustomCalculators } from "@/lib/custom-calculators"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const BACKEND_URL = process.env.BACKEND_URL || "http://backend:8000"
@@ -34,6 +35,9 @@ function getRelatedCalculators(category: string, currentId: string) {
 }
 
 async function fetchCalc(calcId: string): Promise<CalculatorDef | null> {
+  const custom = getCustomCalculator(calcId)
+  if (custom) return custom
+
   try {
     const res = await fetch(`${BACKEND_URL}/api/calculators/${calcId}/`, {
       headers: { Accept: "application/json" },
@@ -86,6 +90,13 @@ export async function generateStaticParams() {
     const cats = (fallbackData.categories as unknown as Record<string, CalculatorDef[]>) || {}
     for (const list of Object.values(cats)) {
       if (Array.isArray(list)) for (const c of list) ids.push(String(c.id))
+    }
+  }
+
+  // Also include custom calculators
+  for (const custom of getCustomCalculators()) {
+    if (custom.id && !ids.includes(custom.id)) {
+      ids.push(custom.id)
     }
   }
 
