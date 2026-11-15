@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
+import Link from "next/link"
 import Box from "@mui/material/Box"
 import Container from "@mui/material/Container"
 import Grid from "@mui/material/Grid"
@@ -574,6 +575,27 @@ export default function ImonAdminView() {
 
             {/* Actions: Refresh, CSV Export, Timeframe & Logout */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+              <Tooltip title="AI SEO Expert Team & Research War-Room">
+                <Link href="/imon/seo-team" passHref style={{ textDecoration: "none" }}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: 800,
+                      borderRadius: 2,
+                      fontSize: 12,
+                      bgcolor: "#4f46e5",
+                      color: "#ffffff",
+                      boxShadow: "0 4px 14px rgba(79, 70, 229, 0.35)",
+                      "&:hover": { bgcolor: "#4338ca" },
+                    }}
+                  >
+                    🧠 AI SEO Expert Team
+                  </Button>
+                </Link>
+              </Tooltip>
+
               <Tooltip title="Track Google & Bing Page Rankings in real time">
                 <Button
                   size="small"

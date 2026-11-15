@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "indexnow": "python3 ../backend/cron_indexnow.py"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",

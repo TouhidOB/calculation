@@ -2611,74 +2611,15 @@ export default function CalculatorRunnerView({
           )}
 
           {/* Related / Category Calculators Internal Linking */}
-          {relatedCalcs.length > 0 && (
-            <Box className="no-print" sx={{ mt: 5, mb: 2, "@media print": { display: "none !important" } }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5 }}>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                    Related {catMeta?.label || calc.category} Calculators
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#64748b" }}>
-                    Explore other free online tools in the same category
-                  </Typography>
-                </Box>
-                <Button
-                  component={Link}
-                  href={`/category/${calc.category}`}
-                  endIcon={<ArrowForwardIcon />}
-                  sx={{
-                    textTransform: "none",
-                    fontWeight: 700,
-                    color: "#4f46e5",
-                  }}
-                >
-                  View All in {catMeta?.label || "Category"}
-                </Button>
-              </Box>
-
-              <Grid container spacing={2}>
-                {relatedCalcs.slice(0, 4).map((rel) => (
-                  <Grid key={rel.id} size={{ xs: 12, sm: 6, md: 3 }}>
-                    <Card
-                      elevation={0}
-                      sx={{
-                        height: "100%",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: 3,
-                        transition: "all 0.15s ease",
-                        "&:hover": {
-                          borderColor: "#4f46e5",
-                          boxShadow: "0 4px 12px rgba(79, 70, 229, 0.08)",
-                          transform: "translateY(-2px)",
-                        },
-                      }}
-                    >
-                      <CardActionArea
-                        component={Link}
-                        href={`/calculators/${rel.id}`}
-                        sx={{ p: 2.5, height: "100%", display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start" }}
-                      >
-                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a", mb: 0.5 }}>
-                          {rel.name}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: "#64748b",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                          }}
-                        >
-                          {rel.description || "Free instant online calculation tool."}
-                        </Typography>
-                      </CardActionArea>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
+          {!embedded && relatedCalcs.length > 0 && (
+            <RelatedCalculatorsSection
+              calculators={relatedCalcs.length > 4 ? relatedCalcs.slice(4, 8) : relatedCalcs.slice(0, 4)}
+              currentCategory={calc.category}
+              categoryLabel={catMeta?.label}
+              categoryColor={catMeta?.color}
+              title={`Related ${catMeta?.label || calc.category} Calculators`}
+              subtitle={`Explore other verified calculation tools in the ${catMeta?.label || calc.category} suite`}
+            />
           )}
 
           {/* Bottom Pre-Footer Ad Slot */}
