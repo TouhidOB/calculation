@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useEffect, useRef, useState, useId } from "react"
+import React, { useEffect, useRef, useState } from "react"
+import { usePathname } from "next/navigation"
 import Box from "@mui/material/Box"
 import Typography from "@mui/material/Typography"
 
@@ -18,44 +19,52 @@ export interface AdBannerProps {
   minHeight?: number | string
 }
 
-const ADSTERRA_CONFIGS = {
-  leaderboard_desktop: {
-    key: "de76315577db984790c237ee9c2956b7",
-    width: 728,
-    height: 90,
-    src: "https://bauval.org/22/de76315577db984790c237ee9c2956b7",
-  },
-  leaderboard_mobile: {
-    key: "588309ac0db6954132d031da985925e6",
-    width: 320,
-    height: 50,
-    src: "https://bauval.org/22/588309ac0db6954132d031da985925e6",
-  },
-  rectangle: {
-    key: "2998d7717a6167b642b7e993ac6b83cd",
-    width: 300,
-    height: 250,
-    src: "https://bauval.org/22/2998d7717a6167b642b7e993ac6b83cd",
-  },
-  skyscraper: {
-    key: "9c34faf322cd1e96726811c02338f33e",
-    width: 160,
-    height: 600,
-    src: "https://bauval.org/22/9c34faf322cd1e96726811c02338f33e",
-  },
-  native: {
-    containerId: "container-629019d94e390a3219d8e53e10cec964",
-    src: "https://bauval.org/21/629019d94e390a3219d8e53e10cec964",
-  },
+interface AdsterraConfig {
+  src: string
+  width: number | string
+  height: number
+  maxWidth: number | string
 }
 
-// Module-level serial queue ensuring multiple Adsterra instances inject and execute in top window
-// without global atOptions race conditions or DOM collisions.
-type AdsterraTask = () => Promise<void>
-let adQueue: Promise<void> = Promise.resolve()
-
-function enqueueAdsterra(task: AdsterraTask) {
-  adQueue = adQueue.then(task).catch(() => {})
+const getAdsterraConfig = (variant: AdVariant, isMobile: boolean): AdsterraConfig => {
+  switch (variant) {
+    case "rectangle":
+      return {
+        src: "/ads/banner-300x250.html",
+        width: 300,
+        height: 250,
+        maxWidth: 300,
+      }
+    case "skyscraper":
+      return {
+        src: "/ads/skyscraper-160x600.html",
+        width: 160,
+        height: 600,
+        maxWidth: 160,
+      }
+    case "native":
+      return {
+        src: "/ads/native-banner.html",
+        width: "100%",
+        height: 160,
+        maxWidth: "100%",
+      }
+    case "leaderboard":
+    default:
+      return isMobile
+        ? {
+            src: "/ads/banner-320x50.html",
+            width: 320,
+            height: 50,
+            maxWidth: 320,
+          }
+        : {
+            src: "/ads/banner-728x90.html",
+            width: 728,
+            height: 90,
+            maxWidth: 728,
+          }
+  }
 }
 
 export default function AdBanner({
@@ -69,11 +78,9 @@ export default function AdBanner({
   className = "",
   minHeight,
 }: AdBannerProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null)
+  const pathname = usePathname()
   const adsenseRef = useRef<HTMLModElement | null>(null)
   const isPushed = useRef(false)
-  const rawId = useId()
-  const adId = rawId.replace(/[^a-zA-Z0-9_-]/g, "_")
 
   // Screen size detection (mobile < 768px vs desktop >= 768px)
   const [isMobile, setIsMobile] = useState<boolean>(false)
@@ -90,11 +97,12 @@ export default function AdBanner({
   // Allow switching to AdSense if explicitly passed and active, default to Adsterra
   const useAdSense = (provider === "adsense" || (Boolean(slot) && provider !== "adsterra")) && Boolean(slot)
 
-  // Screen detection after mount
+  // Screen detection after mount and dynamic resize listener
   useEffect(() => {
     setMounted(true)
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      const mobile = window.innerWidth < 768
+      setIsMobile((prev) => (prev !== mobile ? mobile : prev))
     }
     checkMobile()
     window.addEventListener("resize", checkMobile)
@@ -114,127 +122,9 @@ export default function AdBanner({
     } catch {
       // Ignore adsbygoogle errors
     }
-  }, [useAdSense])
+  }, [useAdSense, pathname])
 
-  // Direct DOM Container Ref Pattern for Adsterra (top window execution for anti-fraud checks)
-  useEffect(() => {
-    if (useAdSense || !mounted) return
-
-    let isCancelled = false
-    const container = containerRef.current
-    if (!container) return
-
-    enqueueAdsterra(() => {
-      return new Promise<void>((resolve) => {
-        if (isCancelled || !containerRef.current) {
-          resolve()
-          return
-        }
-
-        const currentContainer = containerRef.current
-        currentContainer.innerHTML = ""
-
-        if (effectiveVariant === "native") {
-          // Native Banner (HTML container + async script)
-          const nativeContainer = document.createElement("div")
-          nativeContainer.id = ADSTERRA_CONFIGS.native.containerId
-          nativeContainer.style.width = "100%"
-          nativeContainer.style.maxWidth = "100%"
-
-          const adScript = document.createElement("script")
-          adScript.type = "text/javascript"
-          adScript.async = true
-          adScript.setAttribute("data-cfasync", "false")
-          adScript.src = ADSTERRA_CONFIGS.native.src
-
-          let completed = false
-          const done = () => {
-            if (completed) return
-            completed = true
-            clearTimeout(timeoutTimer)
-            setTimeout(resolve, 80)
-          }
-
-          adScript.onload = done
-          adScript.onerror = done
-          const timeoutTimer = setTimeout(done, 2500)
-
-          try {
-            currentContainer.appendChild(nativeContainer)
-            currentContainer.appendChild(adScript)
-          } catch {
-            done()
-          }
-          return
-        }
-
-        // Leaderboard (desktop 728x90, mobile 320x50), Rectangle (300x250), or Skyscraper (160x600)
-        const config =
-          effectiveVariant === "rectangle"
-            ? ADSTERRA_CONFIGS.rectangle
-            : effectiveVariant === "skyscraper"
-            ? ADSTERRA_CONFIGS.skyscraper
-            : isMobile
-            ? ADSTERRA_CONFIGS.leaderboard_mobile
-            : ADSTERRA_CONFIGS.leaderboard_desktop
-
-        // Set global top window atOptions for Adsterra
-        if (typeof window !== "undefined") {
-          ;(window as unknown as { atOptions?: unknown }).atOptions = {
-            key: config.key,
-            format: "iframe",
-            height: config.height,
-            width: config.width,
-            params: {},
-          }
-        }
-
-        // Inline config script
-        const confScript = document.createElement("script")
-        confScript.type = "text/javascript"
-        confScript.text = `atOptions = {
-          'key' : '${config.key}',
-          'format' : 'iframe',
-          'height' : ${config.height},
-          'width' : ${config.width},
-          'params' : {}
-        };`
-
-        // External invocation script
-        const adScript = document.createElement("script")
-        adScript.type = "text/javascript"
-        adScript.src = config.src
-        adScript.async = true
-
-        let completed = false
-        const done = () => {
-          if (completed) return
-          completed = true
-          clearTimeout(timeoutTimer)
-          // Short delay to allow DOM attachment to settle before next queued ad
-          setTimeout(resolve, 80)
-        }
-
-        adScript.onload = done
-        adScript.onerror = done
-        const timeoutTimer = setTimeout(done, 2500)
-
-        try {
-          currentContainer.appendChild(confScript)
-          currentContainer.appendChild(adScript)
-        } catch {
-          done()
-        }
-      })
-    })
-
-    return () => {
-      isCancelled = true
-      if (container) {
-        container.innerHTML = ""
-      }
-    }
-  }, [useAdSense, mounted, isMobile, effectiveVariant])
+  const adConfig = getAdsterraConfig(effectiveVariant, isMobile)
 
   const calculatedMinHeight =
     minHeight ??
@@ -243,23 +133,10 @@ export default function AdBanner({
       : effectiveVariant === "rectangle"
       ? 270
       : effectiveVariant === "native"
-      ? 140
+      ? 180
       : isMobile
       ? 66
       : 106)
-
-  const innerDimensions =
-    effectiveVariant === "rectangle"
-      ? { maxWidth: 300, minHeight: 250, height: 250 }
-      : effectiveVariant === "skyscraper"
-      ? { maxWidth: 160, minHeight: 600, height: 600 }
-      : effectiveVariant === "native"
-      ? { maxWidth: "100%", minHeight: 120, height: "auto" }
-      : {
-          maxWidth: isMobile ? 320 : 728,
-          minHeight: isMobile ? 50 : 90,
-          height: isMobile ? 50 : 90,
-        }
 
   return (
     <Box
@@ -322,27 +199,38 @@ export default function AdBanner({
         </Box>
       ) : (
         <Box
-          ref={containerRef}
-          id={`adsterra-banner-${adId}`}
           sx={{
             width: "100%",
-            ...innerDimensions,
+            maxWidth: adConfig.maxWidth,
+            height: adConfig.height,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             overflow: "hidden",
             mx: "auto",
-            "& iframe": {
-              maxWidth: "100%",
-              display: "block",
-              margin: "0 auto",
-            },
-            "& #container-629019d94e390a3219d8e53e10cec964": {
-              width: "100%",
-              maxWidth: "100%",
-            },
           }}
-        />
+        >
+          {mounted ? (
+            <iframe
+              key={`${pathname || ""}-${effectiveVariant}-${isMobile ? "m" : "d"}`}
+              src={`${adConfig.src}?p=${encodeURIComponent(pathname || "")}`}
+              title="Advertisement"
+              width={adConfig.width}
+              height={adConfig.height}
+              loading="lazy"
+              scrolling="no"
+              frameBorder="0"
+              allow="autoplay 'none'; camera 'none'; microphone 'none'"
+              style={{
+                border: 0,
+                overflow: "hidden",
+                display: "block",
+                maxWidth: "100%",
+                margin: "0 auto",
+              }}
+            />
+          ) : null}
+        </Box>
       )}
     </Box>
   )
