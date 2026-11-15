@@ -28,6 +28,7 @@ services:
   frontend:
     build: ./frontend
     container_name: trycalc_frontend
+    user: "0:0"
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_SITE_URL: "https://trycalc.net"

@@ -32,6 +32,7 @@ function getStoragePaths(): string[] {
     path.join(process.cwd(), "data", "custom_calculators.json"),
     path.join(process.cwd(), "..", "data", "custom_calculators.json"),
     path.join(__dirname, "../../../data/custom_calculators.json"),
+    "/tmp/custom_calculators.json",
   ]
 }
 
@@ -202,7 +203,10 @@ ${formula || "Result = f(Inputs)"}
   try {
     fs.writeFileSync(writePath, JSON.stringify(currentList, null, 2), "utf-8")
   } catch (err) {
-    console.error("Failed to write custom calculators:", err)
+    console.error("Failed to write custom calculators to " + writePath + ", trying fallback /tmp:", err)
+    try {
+      fs.writeFileSync("/tmp/custom_calculators.json", JSON.stringify(currentList, null, 2), "utf-8")
+    } catch {}
   }
 
   return newCalc

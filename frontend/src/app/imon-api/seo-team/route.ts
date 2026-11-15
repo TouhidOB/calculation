@@ -85,10 +85,20 @@ function ensureDirectoryExists(filePath: string) {
 function readProposals(): SeoProposal[] {
   const filePath = getStoragePath()
   try {
+    if (fs.existsSync("/tmp/seo_proposals.json") && !fs.existsSync(filePath)) {
+      const rawTmp = fs.readFileSync("/tmp/seo_proposals.json", "utf-8")
+      const parsed = JSON.parse(rawTmp)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
+
     if (!fs.existsSync(filePath)) {
       ensureDirectoryExists(filePath)
       const initial = getDemoProposals()
-      fs.writeFileSync(filePath, JSON.stringify(initial, null, 2), "utf-8")
+      try {
+        fs.writeFileSync(filePath, JSON.stringify(initial, null, 2), "utf-8")
+      } catch {
+        fs.writeFileSync("/tmp/seo_proposals.json", JSON.stringify(initial, null, 2), "utf-8")
+      }
       return initial
     }
     const raw = fs.readFileSync(filePath, "utf-8")
@@ -102,8 +112,15 @@ function readProposals(): SeoProposal[] {
 
 function writeProposals(proposals: SeoProposal[]) {
   const filePath = getStoragePath()
-  ensureDirectoryExists(filePath)
-  fs.writeFileSync(filePath, JSON.stringify(proposals, null, 2), "utf-8")
+  try {
+    ensureDirectoryExists(filePath)
+    fs.writeFileSync(filePath, JSON.stringify(proposals, null, 2), "utf-8")
+  } catch (err) {
+    console.warn(`Write to ${filePath} failed, falling back to /tmp/seo_proposals.json`, err)
+    try {
+      fs.writeFileSync("/tmp/seo_proposals.json", JSON.stringify(proposals, null, 2), "utf-8")
+    } catch {}
+  }
 }
 
 function getDemoProposals(): SeoProposal[] {
