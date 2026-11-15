@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
 import { buildAndSaveCustomCalculator, triggerIndexNow } from "@/lib/custom-calculators"
+import { verifyToken } from "@/app/imon-api/auth/route"
 
 export interface CalculatorSpec {
   inputs: Array<{
@@ -576,8 +577,13 @@ const DISCOVERY_POOL = [
   }
 ]
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const token = req.cookies.get("imon_token")?.value || req.headers.get("authorization")?.replace("Bearer ", "")
+    if (!token || !verifyToken(token)) {
+      return NextResponse.json({ ok: false, error: "Unauthorized: Super Admin access required" }, { status: 401 })
+    }
+
     const proposals = readProposals()
     return NextResponse.json({
       ok: true,
@@ -591,6 +597,11 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const token = req.cookies.get("imon_token")?.value || req.headers.get("authorization")?.replace("Bearer ", "")
+    if (!token || !verifyToken(token)) {
+      return NextResponse.json({ ok: false, error: "Unauthorized: Super Admin access required" }, { status: 401 })
+    }
+
     const body = await req.json()
     const { action, id, keyword, category } = body
 

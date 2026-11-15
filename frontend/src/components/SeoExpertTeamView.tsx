@@ -125,6 +125,10 @@ export default function SeoExpertTeamView() {
     setLoading(true)
     try {
       const res = await fetch("/imon-api/seo-team")
+      if (res.status === 401) {
+        window.location.href = "/imon"
+        return
+      }
       const data = await res.json()
       if (data.ok && Array.isArray(data.proposals)) {
         setProposals(data.proposals)
@@ -154,6 +158,10 @@ export default function SeoExpertTeamView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "approve_and_build", id }),
       })
+      if (res.status === 401) {
+        window.location.href = "/imon"
+        return
+      }
       const data = await res.json()
       if (data.ok && data.proposals) {
         setProposals(data.proposals)
