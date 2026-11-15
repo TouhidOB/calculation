@@ -28,6 +28,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 
 import GlobalNavbar from "@/components/GlobalNavbar"
 import GlobalFooter from "@/components/GlobalFooter"
+import AdBanner from "@/components/AdBanner"
 import { CATEGORY_META, type CategoryMap, type CalculatorDef } from "@/lib/calculator-api"
 import fallbackData from "@/lib/calculators-fallback.json"
 
@@ -436,6 +437,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
               />
             </Stack>
           </Paper>
+
+          <AdBanner variant="leaderboard" className="my-5" />
 
           {/* Calculator Grid */}
           <Box sx={{ mb: 6 }}>
