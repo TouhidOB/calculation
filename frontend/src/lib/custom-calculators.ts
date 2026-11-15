@@ -29,6 +29,8 @@ export interface CustomCalculatorDef extends CalculatorDef {
 function getStoragePaths(): string[] {
   return [
     "/app/data/custom_calculators.json",
+    "/root/trycalc/app/data/custom_calculators.json",
+    "/home/imon/calculation/data/custom_calculators.json",
     path.join(process.cwd(), "data", "custom_calculators.json"),
     path.join(process.cwd(), "..", "data", "custom_calculators.json"),
     path.join(__dirname, "../../../data/custom_calculators.json"),
@@ -179,9 +181,9 @@ ${formula || "Result = f(Inputs)"}
     meta: {
       keyword: targetKeyword,
       searchVolume: proposal.searchVolume,
-      keywordDifficulty: proposal.keywordDifficulty,
-      estimatedCpc: proposal.estimatedCpc,
-      monthlyEarnings: proposal.monetization?.monthlyEarnings,
+      keywordDifficulty: proposal.difficulty ?? proposal.keywordDifficulty,
+      estimatedCpc: proposal.cpc ?? proposal.estimatedCpc,
+      monthlyEarnings: proposal.estMonthlyRevenue ?? proposal.monetization?.monthlyEarnings,
       prosBangla: proposal.prosBangla || [],
       consBangla: proposal.consBangla || [],
       builtAt: new Date().toISOString(),

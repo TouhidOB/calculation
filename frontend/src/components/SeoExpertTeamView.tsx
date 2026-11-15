@@ -33,9 +33,12 @@ import Alert from "@mui/material/Alert"
 import Snackbar from "@mui/material/Snackbar"
 import Badge from "@mui/material/Badge"
 import Divider from "@mui/material/Divider"
+import { useTheme } from "@mui/material/styles"
+import useMediaQuery from "@mui/material/useMediaQuery"
 
 // Icons
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
+import CloseIcon from "@mui/icons-material/Close"
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
 import SearchIcon from "@mui/icons-material/Search"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
@@ -50,6 +53,7 @@ import SpeedIcon from "@mui/icons-material/Speed"
 import BarChartIcon from "@mui/icons-material/BarChart"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt"
+import ThumbDownIcon from "@mui/icons-material/ThumbDown"
 import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 import PsychologyIcon from "@mui/icons-material/Psychology"
 import FunctionsIcon from "@mui/icons-material/Functions"
@@ -103,6 +107,10 @@ export interface SeoProposal {
 }
 
 export default function SeoExpertTeamView() {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"))
+
   const [proposals, setProposals] = useState<SeoProposal[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
@@ -368,80 +376,84 @@ export default function SeoExpertTeamView() {
           boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{ px: { xs: 1.5, sm: 2.5, md: 3 } }}>
           <Box
             sx={{
-              py: 2,
+              py: { xs: 1.5, sm: 2 },
               display: "flex",
-              alignItems: "center",
+              alignItems: { xs: "flex-start", md: "center" },
               justifyContent: "space-between",
-              flexWrap: "wrap",
+              flexDirection: { xs: "column", md: "row" },
               gap: 2,
             }}
           >
             {/* Title & Navigation */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Link href="/imon" passHref style={{ textDecoration: "none" }}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<ArrowBackIcon />}
-                  sx={{
-                    textTransform: "none",
-                    fontWeight: 700,
-                    borderRadius: 2,
-                    borderColor: "#cbd5e1",
-                    color: "#475569",
-                    bgcolor: "#f8fafc",
-                    "&:hover": { bgcolor: "#f1f5f9", borderColor: "#94a3b8" },
-                  }}
-                >
-                  Telemetry Cockpit
-                </Button>
-              </Link>
-
-              <Divider orientation="vertical" flexItem sx={{ height: 28, alignSelf: "center" }} />
-
-              <Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <Typography
-                    variant="h5"
-                    component="h1"
+            <Box sx={{ width: { xs: "100%", md: "auto" } }}>
+              <Box sx={{ display: "flex", alignItems: { xs: "flex-start", sm: "center" }, flexDirection: { xs: "column", sm: "row" }, gap: { xs: 1, sm: 2 } }}>
+                <Link href="/imon" passHref style={{ textDecoration: "none" }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<ArrowBackIcon />}
                     sx={{
-                      fontWeight: 800,
-                      color: "#0f172a",
-                      letterSpacing: "-0.5px",
-                      fontSize: { xs: 18, sm: 22 },
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
+                      textTransform: "none",
+                      fontWeight: 700,
+                      borderRadius: 2,
+                      borderColor: "#cbd5e1",
+                      color: "#475569",
+                      bgcolor: "#f8fafc",
+                      "&:hover": { bgcolor: "#f1f5f9", borderColor: "#94a3b8" },
                     }}
                   >
-                    <span>🧠</span> AI SEO Expert Team & Research War-Room
+                    Telemetry Cockpit
+                  </Button>
+                </Link>
+
+                <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center", display: { xs: "none", sm: "block" } }} />
+
+                <Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                    <Typography
+                      variant="h5"
+                      component="h1"
+                      sx={{
+                        fontWeight: 800,
+                        color: "#0f172a",
+                        letterSpacing: "-0.5px",
+                        fontSize: { xs: 17, sm: 21 },
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.75,
+                      }}
+                    >
+                      <span>🧠</span> AI SEO Expert Team War-Room
+                    </Typography>
+                    <Chip
+                      size="small"
+                      label="AUTONOMOUS BLUEPRINTING"
+                      sx={{
+                        bgcolor: "#eff6ff",
+                        color: "#2563eb",
+                        fontWeight: 800,
+                        fontSize: 10,
+                        border: "1px solid #bfdbfe",
+                        display: { xs: "none", sm: "inline-flex" },
+                      }}
+                    />
+                  </Box>
+                  <Typography variant="caption" sx={{ color: "#64748b", display: "block", mt: 0.25, fontSize: { xs: 11, sm: 12 } }}>
+                    Targeted Keyword Intelligence • Bengali Pros/Cons Analysis • E-E-A-T Calculator Blueprinting
                   </Typography>
-                  <Chip
-                    size="small"
-                    label="AUTONOMOUS BLUEPRINTING"
-                    sx={{
-                      bgcolor: "#eff6ff",
-                      color: "#2563eb",
-                      fontWeight: 800,
-                      fontSize: 11,
-                      border: "1px solid #bfdbfe",
-                    }}
-                  />
                 </Box>
-                <Typography variant="caption" sx={{ color: "#64748b", display: "block", mt: 0.25 }}>
-                  Targeted Keyword Intelligence • Bengali Pros/Cons Analysis • E-E-A-T Calculator Blueprinting
-                </Typography>
               </Box>
             </Box>
 
             {/* Action Bar */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", width: { xs: "100%", md: "auto" } }}>
               <Button
                 variant="contained"
                 size="medium"
+                fullWidth={isMobile}
                 startIcon={<AutoAwesomeIcon />}
                 onClick={handleDiscover}
                 disabled={actionLoading}
@@ -452,6 +464,7 @@ export default function SeoExpertTeamView() {
                   textTransform: "none",
                   borderRadius: 2,
                   px: 2,
+                  py: { xs: 1.25, sm: 0.75 },
                   boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
                   "&:hover": { bgcolor: "#4338ca" },
                 }}
@@ -462,6 +475,7 @@ export default function SeoExpertTeamView() {
               <Button
                 variant="outlined"
                 size="medium"
+                fullWidth={isMobile}
                 startIcon={<SearchIcon />}
                 onClick={() => setCustomModalOpen(true)}
                 disabled={actionLoading}
@@ -472,6 +486,7 @@ export default function SeoExpertTeamView() {
                   textTransform: "none",
                   borderRadius: 2,
                   px: 2,
+                  py: { xs: 1.25, sm: 0.75 },
                   bgcolor: "#eff6ff",
                   "&:hover": { bgcolor: "#dbeafe", borderColor: "#1d4ed8" },
                 }}
@@ -479,231 +494,236 @@ export default function SeoExpertTeamView() {
                 Custom Keyword Research
               </Button>
 
-              <Tooltip title="Populate realistic demo SEO proposals across Finance, Health, Construction, Tech">
-                <Button
-                  variant="outlined"
-                  size="medium"
-                  startIcon={<PostAddIcon />}
-                  onClick={handleSeedDemo}
-                  disabled={actionLoading}
-                  sx={{
-                    textTransform: "none",
-                    fontWeight: 700,
-                    borderRadius: 2,
-                    borderColor: "#cbd5e1",
-                    color: "#334155",
-                    "&:hover": { bgcolor: "#f1f5f9" },
-                  }}
-                >
-                  Seed Demo Data
-                </Button>
-              </Tooltip>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, width: { xs: "100%", sm: "auto" }, justifyContent: { xs: "space-between", sm: "flex-start" }, mt: { xs: 0.5, sm: 0 } }}>
+                <Tooltip title="Populate realistic demo SEO proposals across Finance, Health, Construction, Tech">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<PostAddIcon />}
+                    onClick={handleSeedDemo}
+                    disabled={actionLoading}
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: 700,
+                      borderRadius: 2,
+                      borderColor: "#cbd5e1",
+                      color: "#334155",
+                      fontSize: { xs: 11, sm: 12 },
+                      "&:hover": { bgcolor: "#f1f5f9" },
+                    }}
+                  >
+                    Seed Demo
+                  </Button>
+                </Tooltip>
 
-              <Tooltip title="Remove all demo proposals for a clean slate">
-                <Button
-                  variant="outlined"
-                  size="medium"
-                  color="error"
-                  startIcon={<DeleteSweepIcon />}
-                  onClick={handlePurgeDemo}
-                  disabled={actionLoading}
-                  sx={{
-                    textTransform: "none",
-                    fontWeight: 700,
-                    borderRadius: 2,
-                  }}
-                >
-                  Clear Demo Data
-                </Button>
-              </Tooltip>
+                <Tooltip title="Remove all demo proposals for a clean slate">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    color="error"
+                    startIcon={<DeleteSweepIcon />}
+                    onClick={handlePurgeDemo}
+                    disabled={actionLoading}
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: 700,
+                      borderRadius: 2,
+                      fontSize: { xs: 11, sm: 12 },
+                    }}
+                  >
+                    Clear Demo
+                  </Button>
+                </Tooltip>
 
-              <Tooltip title="Refresh from persistent database">
-                <IconButton
-                  onClick={fetchProposals}
-                  disabled={loading}
-                  sx={{
-                    border: "1px solid #cbd5e1",
-                    borderRadius: 2,
-                    p: 1,
-                    color: "#64748b",
-                    "&:hover": { bgcolor: "#f1f5f9" },
-                  }}
-                >
-                  <RefreshIcon />
-                </IconButton>
-              </Tooltip>
+                <Tooltip title="Refresh from persistent database">
+                  <IconButton
+                    onClick={fetchProposals}
+                    disabled={loading}
+                    size="small"
+                    sx={{
+                      border: "1px solid #cbd5e1",
+                      borderRadius: 2,
+                      p: 0.75,
+                      color: "#64748b",
+                      "&:hover": { bgcolor: "#f1f5f9" },
+                    }}
+                  >
+                    <RefreshIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             </Box>
           </Box>
         </Container>
       </Box>
 
       {/* Main Content Area */}
-      <Container maxWidth="xl" sx={{ mt: 3 }}>
+      <Container maxWidth="xl" sx={{ mt: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2.5, md: 3 } }}>
         {/* KPI Metric Cards */}
-        <Grid container spacing={2.5} sx={{ mb: 4 }}>
+        <Grid container spacing={{ xs: 1.5, sm: 2.5 }} sx={{ mb: { xs: 2.5, sm: 4 } }}>
           {/* 1. Researched Keywords */}
-          <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          <Grid size={{ xs: 6, sm: 4, md: 2.4 }}>
             <Paper
               elevation={0}
               sx={{
-                p: 2.5,
-                borderRadius: 3,
+                p: { xs: 1.5, sm: 2.5 },
+                borderRadius: { xs: 2.5, sm: 3 },
                 bgcolor: "#ffffff",
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 1,
+                gap: { xs: 0.5, sm: 1 },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5 }}>
-                  RESEARCHED KEYWORDS
+                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5, fontSize: { xs: 10, sm: 12 } }}>
+                  KEYWORDS
                 </Typography>
                 <Box sx={{ bgcolor: "#eff6ff", p: 0.8, borderRadius: 2, color: "#2563eb", display: "flex" }}>
                   <PsychologyIcon fontSize="small" />
                 </Box>
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: "#0f172a" }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: "1.35rem", sm: "1.75rem", md: "2.125rem" } }}>
                 {metrics.totalKeywords}
               </Typography>
-              <Typography variant="caption" sx={{ color: "#059669", fontWeight: 600 }}>
-                High-intent Calculator Niches
+              <Typography variant="caption" sx={{ color: "#059669", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
+                High-intent Niches
               </Typography>
             </Paper>
           </Grid>
 
           {/* 2. Pending Approvals */}
-          <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          <Grid size={{ xs: 6, sm: 4, md: 2.4 }}>
             <Paper
               elevation={0}
               sx={{
-                p: 2.5,
-                borderRadius: 3,
+                p: { xs: 1.5, sm: 2.5 },
+                borderRadius: { xs: 2.5, sm: 3 },
                 bgcolor: "#ffffff",
                 border: "1px solid #fef3c7",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 1,
+                gap: { xs: 0.5, sm: 1 },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography variant="caption" sx={{ color: "#b45309", fontWeight: 700, letterSpacing: 0.5 }}>
-                  PENDING APPROVALS
+                <Typography variant="caption" sx={{ color: "#b45309", fontWeight: 700, letterSpacing: 0.5, fontSize: { xs: 10, sm: 12 } }}>
+                  PENDING
                 </Typography>
                 <Box sx={{ bgcolor: "#fffbeb", p: 0.8, borderRadius: 2, color: "#d97706", display: "flex" }}>
                   <WarningAmberIcon fontSize="small" />
                 </Box>
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: "#b45309" }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: "#b45309", fontSize: { xs: "1.35rem", sm: "1.75rem", md: "2.125rem" } }}>
                 {metrics.pendingCount}
               </Typography>
-              <Typography variant="caption" sx={{ color: "#92400e", fontWeight: 600 }}>
-                অনুমোদনের অপেক্ষায় রয়েছে
+              <Typography variant="caption" sx={{ color: "#92400e", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
+                অনুমোদনের অপেক্ষায়
               </Typography>
             </Paper>
           </Grid>
 
           {/* 3. Approved */}
-          <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          <Grid size={{ xs: 6, sm: 4, md: 2.4 }}>
             <Paper
               elevation={0}
               sx={{
-                p: 2.5,
-                borderRadius: 3,
+                p: { xs: 1.5, sm: 2.5 },
+                borderRadius: { xs: 2.5, sm: 3 },
                 bgcolor: "#ffffff",
                 border: "1px solid #d1fae5",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 1,
+                gap: { xs: 0.5, sm: 1 },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography variant="caption" sx={{ color: "#065f46", fontWeight: 700, letterSpacing: 0.5 }}>
-                  APPROVED BLUEPRINTS
+                <Typography variant="caption" sx={{ color: "#065f46", fontWeight: 700, letterSpacing: 0.5, fontSize: { xs: 10, sm: 12 } }}>
+                  APPROVED
                 </Typography>
                 <Box sx={{ bgcolor: "#ecfdf5", p: 0.8, borderRadius: 2, color: "#059669", display: "flex" }}>
                   <CheckCircleIcon fontSize="small" />
                 </Box>
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: "#065f46" }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: "#065f46", fontSize: { xs: "1.35rem", sm: "1.75rem", md: "2.125rem" } }}>
                 {metrics.approvedCount}
               </Typography>
-              <Typography variant="caption" sx={{ color: "#059669", fontWeight: 600 }}>
-                ডেভেলপমেন্টের জন্য চূড়ান্ত
+              <Typography variant="caption" sx={{ color: "#059669", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
+                লাইভ ক্যালকুলেটর
               </Typography>
             </Paper>
           </Grid>
 
           {/* 4. Potential Monthly Traffic */}
-          <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          <Grid size={{ xs: 6, sm: 4, md: 2.4 }}>
             <Paper
               elevation={0}
               sx={{
-                p: 2.5,
-                borderRadius: 3,
+                p: { xs: 1.5, sm: 2.5 },
+                borderRadius: { xs: 2.5, sm: 3 },
                 bgcolor: "#ffffff",
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 1,
+                gap: { xs: 0.5, sm: 1 },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5 }}>
-                  POTENTIAL TRAFFIC
+                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5, fontSize: { xs: 10, sm: 12 } }}>
+                  TRAFFIC
                 </Typography>
                 <Box sx={{ bgcolor: "#f3e8ff", p: 0.8, borderRadius: 2, color: "#7e22ce", display: "flex" }}>
                   <TrendingUpIcon fontSize="small" />
                 </Box>
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: "#0f172a" }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: "1.35rem", sm: "1.75rem", md: "2.125rem" } }}>
                 {metrics.potentialTraffic > 1000
                   ? `${(metrics.potentialTraffic / 1000).toFixed(1)}k`
                   : metrics.potentialTraffic}{" "}
-                <Typography component="span" sx={{ fontSize: 16, color: "#64748b", fontWeight: 600 }}>
+                <Typography component="span" sx={{ fontSize: { xs: 13, sm: 16 }, color: "#64748b", fontWeight: 600 }}>
                   /mo
                 </Typography>
               </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
                 Est. Organic Clicks
               </Typography>
             </Paper>
           </Grid>
 
           {/* 5. Est. Ad Revenue */}
-          <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+          <Grid size={{ xs: 12, sm: 4, md: 2.4 }}>
             <Paper
               elevation={0}
               sx={{
-                p: 2.5,
-                borderRadius: 3,
+                p: { xs: 1.5, sm: 2.5 },
+                borderRadius: { xs: 2.5, sm: 3 },
                 bgcolor: "#ffffff",
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 1,
+                gap: { xs: 0.5, sm: 1 },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5 }}>
+                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5, fontSize: { xs: 10, sm: 12 } }}>
                   EST. AD REVENUE
                 </Typography>
                 <Box sx={{ bgcolor: "#fef9c3", p: 0.8, borderRadius: 2, color: "#a16207", display: "flex" }}>
                   <MonetizationOnIcon fontSize="small" />
                 </Box>
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: "#059669" }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: "#059669", fontSize: { xs: "1.35rem", sm: "1.75rem", md: "2.125rem" } }}>
                 ${metrics.estRevenue.toFixed(2)}{" "}
-                <Typography component="span" sx={{ fontSize: 16, color: "#64748b", fontWeight: 600 }}>
+                <Typography component="span" sx={{ fontSize: { xs: 13, sm: 16 }, color: "#64748b", fontWeight: 600 }}>
                   /mo
                 </Typography>
               </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
                 AdSense + Adsterra eCPM
               </Typography>
             </Paper>
@@ -714,15 +734,15 @@ export default function SeoExpertTeamView() {
         <Paper
           elevation={0}
           sx={{
-            p: 2,
+            p: { xs: 1.5, sm: 2 },
             mb: 3,
-            borderRadius: 3,
+            borderRadius: { xs: 2.5, sm: 3 },
             bgcolor: "#ffffff",
             border: "1px solid #e2e8f0",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            flexWrap: "wrap",
+            flexDirection: { xs: "column", md: "row" },
             gap: 2,
           }}
         >
@@ -730,12 +750,18 @@ export default function SeoExpertTeamView() {
           <Tabs
             value={activeTab}
             onChange={(_, val) => setActiveTab(val)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
+              width: { xs: "100%", md: "auto" },
+              minHeight: 44,
               "& .MuiTab-root": {
                 textTransform: "none",
                 fontWeight: 700,
-                fontSize: 14,
+                fontSize: { xs: 13, sm: 14 },
                 minHeight: 44,
+                px: { xs: 1.5, sm: 2 },
                 color: "#64748b",
                 "&.Mui-selected": {
                   color: "#4f46e5",
@@ -750,8 +776,8 @@ export default function SeoExpertTeamView() {
           >
             <Tab
               label={
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <span>All Proposals</span>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <span>All</span>
                   <Chip size="small" label={metrics.totalKeywords} sx={{ height: 20, fontSize: 11, fontWeight: 700 }} />
                 </Box>
               }
@@ -759,8 +785,8 @@ export default function SeoExpertTeamView() {
             />
             <Tab
               label={
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <span>Pending Review (অনুমোদনের অপেক্ষায়)</span>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <span>{isMobile ? "Pending" : "Pending Review (অনুমোদন)"}</span>
                   <Chip
                     size="small"
                     label={metrics.pendingCount}
@@ -778,8 +804,8 @@ export default function SeoExpertTeamView() {
             />
             <Tab
               label={
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <span>Approved (অনুমোদিত)</span>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <span>{isMobile ? "Approved" : "Approved (অনুমোদিত)"}</span>
                   <Chip
                     size="small"
                     label={metrics.approvedCount}
@@ -797,7 +823,7 @@ export default function SeoExpertTeamView() {
             />
             <Tab
               label={
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                   <span>Rejected</span>
                   <Chip
                     size="small"
@@ -822,7 +848,7 @@ export default function SeoExpertTeamView() {
               },
             }}
             sx={{
-              minWidth: 280,
+              width: { xs: "100%", md: 300 },
               bgcolor: "#f8fafc",
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
@@ -894,8 +920,8 @@ export default function SeoExpertTeamView() {
                   <Paper
                     elevation={0}
                     sx={{
-                      p: 3,
-                      borderRadius: 3,
+                      p: { xs: 2, sm: 2.5, md: 3 },
+                      borderRadius: { xs: 2.5, sm: 3 },
                       bgcolor: "#ffffff",
                       border: "1px solid",
                       borderColor: isApproved ? "#a7f3d0" : isRejected ? "#fecaca" : "#e2e8f0",
@@ -915,17 +941,17 @@ export default function SeoExpertTeamView() {
                         display: "flex",
                         alignItems: "flex-start",
                         justifyContent: "space-between",
-                        flexWrap: "wrap",
-                        gap: 2,
+                        flexDirection: { xs: "column", sm: "row" },
+                        gap: 1.5,
                         mb: 2,
                       }}
                     >
-                      <Box sx={{ flex: 1, minWidth: 300 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", mb: 0.75 }}>
+                      <Box sx={{ flex: 1, minWidth: { xs: "100%", sm: 280 } }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: 0.75 }}>
                           <Typography
                             variant="h6"
                             component="h2"
-                            sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: 17, sm: 20 } }}
+                            sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: 16, sm: 19 } }}
                           >
                             {proposal.targetKeyword}
                           </Typography>
@@ -951,7 +977,7 @@ export default function SeoExpertTeamView() {
                                   ? "#b45309"
                                   : "#6b21a8",
                               fontWeight: 700,
-                              fontSize: 12,
+                              fontSize: 11,
                             }}
                           />
 
@@ -959,15 +985,15 @@ export default function SeoExpertTeamView() {
                             <Chip
                               size="small"
                               variant="outlined"
-                              label="Demo Sample"
-                              sx={{ fontSize: 11, color: "#94a3b8", borderColor: "#e2e8f0" }}
+                              label="Demo"
+                              sx={{ fontSize: 10, color: "#94a3b8", borderColor: "#e2e8f0" }}
                             />
                           )}
                         </Box>
 
                         {/* Suggested Slug */}
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <Typography variant="body2" sx={{ color: "#64748b", fontFamily: "monospace", fontSize: 13 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                          <Typography variant="body2" sx={{ color: "#64748b", fontFamily: "monospace", fontSize: { xs: 12, sm: 13 }, wordBreak: "break-all" }}>
                             Slug: <strong style={{ color: "#4f46e5" }}>{proposal.slug}</strong>
                           </Typography>
                           <Tooltip title="Copy Slug">
@@ -979,41 +1005,41 @@ export default function SeoExpertTeamView() {
                       </Box>
 
                       {/* Status Badge & Fast Action */}
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, alignSelf: { xs: "flex-start", sm: "auto" } }}>
                         {isPending && (
                           <Chip
-                            label="অনুমোদনের অপেক্ষায় (Pending Review)"
+                            label="অনুমোদনের অপেক্ষায় (Pending)"
                             sx={{
                               bgcolor: "#fef3c7",
                               color: "#92400e",
                               fontWeight: 800,
-                              fontSize: 12,
+                              fontSize: { xs: 11, sm: 12 },
                               border: "1px solid #fde68a",
                             }}
                           />
                         )}
                         {isApproved && (
                           <Chip
-                            icon={<CheckCircleIcon sx={{ fontSize: "16px !important", color: "#065f46 !important" }} />}
-                            label="অনুমোদিত (Approved Blueprint)"
+                            icon={<CheckCircleIcon sx={{ fontSize: "15px !important", color: "#065f46 !important" }} />}
+                            label="অনুমোদিত (Approved)"
                             sx={{
                               bgcolor: "#d1fae5",
                               color: "#065f46",
                               fontWeight: 800,
-                              fontSize: 12,
+                              fontSize: { xs: 11, sm: 12 },
                               border: "1px solid #a7f3d0",
                             }}
                           />
                         )}
                         {isRejected && (
                           <Chip
-                            icon={<CancelIcon sx={{ fontSize: "16px !important", color: "#991b1b !important" }} />}
+                            icon={<CancelIcon sx={{ fontSize: "15px !important", color: "#991b1b !important" }} />}
                             label="বাতিলকৃত (Rejected)"
                             sx={{
                               bgcolor: "#fee2e2",
                               color: "#991b1b",
                               fontWeight: 800,
-                              fontSize: 12,
+                              fontSize: { xs: 11, sm: 12 },
                               border: "1px solid #fecaca",
                             }}
                           />
@@ -1024,95 +1050,87 @@ export default function SeoExpertTeamView() {
                     {/* SEO Metrics Badges Strip */}
                     <Box
                       sx={{
-                        p: 1.5,
+                        p: { xs: 1.5, sm: 2 },
                         mb: 2.5,
                         bgcolor: "#f8fafc",
                         borderRadius: 2.5,
                         border: "1px solid #f1f5f9",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: { xs: 2, md: 4 },
-                        flexWrap: "wrap",
+                        display: "grid",
+                        gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(6, 1fr)" },
+                        gap: { xs: 1.5, sm: 2 },
                       }}
                     >
                       <Box>
-                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block" }}>
+                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
                           SEARCH VOLUME
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: 14, sm: 16 } }}>
                           {proposal.searchVolumeFormatted}
                         </Typography>
                       </Box>
 
-                      <Divider orientation="vertical" flexItem />
-
                       <Box>
-                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block" }}>
-                          KEYWORD DIFFICULTY (KD)
+                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
+                          DIFFICULTY (KD)
                         </Typography>
                         <Typography
                           variant="body1"
                           sx={{
                             fontWeight: 800,
                             color: proposal.difficulty < 25 ? "#059669" : "#d97706",
+                            fontSize: { xs: 14, sm: 16 },
                           }}
                         >
                           {proposal.difficultyLevel}
                         </Typography>
                       </Box>
 
-                      <Divider orientation="vertical" flexItem />
-
                       <Box>
-                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block" }}>
+                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
                           EST. eCPM
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#059669" }}>
+                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#059669", fontSize: { xs: 14, sm: 16 } }}>
                           ${proposal.estEcpm.toFixed(2)}
                         </Typography>
                       </Box>
 
-                      <Divider orientation="vertical" flexItem />
-
                       <Box>
-                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block" }}>
+                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
                           GOOGLE CPC
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#475569" }}>
+                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#475569", fontSize: { xs: 14, sm: 16 } }}>
                           ${proposal.cpc.toFixed(2)}
                         </Typography>
                       </Box>
 
-                      <Divider orientation="vertical" flexItem />
-
                       <Box>
-                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block" }}>
-                          EST. MONTHLY TRAFFIC
+                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
+                          EST. TRAFFIC
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#2563eb" }}>
-                          {proposal.potentialMonthlyTraffic.toLocaleString()} clicks/mo
+                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#2563eb", fontSize: { xs: 14, sm: 16 } }}>
+                          {proposal.potentialMonthlyTraffic > 1000
+                            ? `${(proposal.potentialMonthlyTraffic / 1000).toFixed(1)}k`
+                            : proposal.potentialMonthlyTraffic}/mo
                         </Typography>
                       </Box>
 
-                      <Divider orientation="vertical" flexItem />
-
                       <Box>
-                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block" }}>
+                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
                           EST. AD REVENUE
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#059669" }}>
-                          ${proposal.estMonthlyRevenue.toFixed(2)} / mo
+                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#059669", fontSize: { xs: 14, sm: 16 } }}>
+                          ${proposal.estMonthlyRevenue.toFixed(2)}/mo
                         </Typography>
                       </Box>
                     </Box>
 
                     {/* Bengali Analysis Boxes: Pros & Cons */}
-                    <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
+                    <Grid container spacing={2} sx={{ mb: 2.5 }}>
                       {/* সুবিধা (Pros strictly in Bengali) */}
                       <Grid size={{ xs: 12, md: 6 }}>
                         <Box
                           sx={{
-                            p: 2,
+                            p: { xs: 1.5, sm: 2 },
                             borderRadius: 2.5,
                             bgcolor: "#f0fdf4",
                             border: "1px solid #bbf7d0",
@@ -1128,18 +1146,19 @@ export default function SeoExpertTeamView() {
                               alignItems: "center",
                               gap: 1,
                               mb: 1.25,
+                              fontSize: { xs: 13, sm: 14 },
                             }}
                           >
                             <ThumbUpAltIcon sx={{ fontSize: 18, color: "#16a34a" }} />
-                            সুবিধা ও এসইও সম্ভাবনা (Key Advantages & Monetization)
+                            সুবিধা ও সম্ভাবনা (Key Advantages)
                           </Typography>
-                          <Box component="ul" sx={{ m: 0, pl: 2.5, display: "flex", flexDirection: "column", gap: 0.75 }}>
+                          <Box component="ul" sx={{ m: 0, pl: 2, display: "flex", flexDirection: "column", gap: 0.75 }}>
                             {proposal.prosBangla.map((pro, idx) => (
                               <Typography
                                 component="li"
                                 variant="body2"
                                 key={idx}
-                                sx={{ color: "#14532d", fontWeight: 500, lineHeight: 1.6 }}
+                                sx={{ color: "#14532d", fontWeight: 500, lineHeight: 1.6, fontSize: { xs: 12, sm: 13 } }}
                               >
                                 {pro}
                               </Typography>
@@ -1152,10 +1171,10 @@ export default function SeoExpertTeamView() {
                       <Grid size={{ xs: 12, md: 6 }}>
                         <Box
                           sx={{
-                            p: 2,
+                            p: { xs: 1.5, sm: 2 },
                             borderRadius: 2.5,
-                            bgcolor: "#fff7ed",
-                            border: "1px solid #fed7aa",
+                            bgcolor: "#fff1f2",
+                            border: "1px solid #fecdd3",
                             height: "100%",
                           }}
                         >
@@ -1163,23 +1182,24 @@ export default function SeoExpertTeamView() {
                             variant="subtitle2"
                             sx={{
                               fontWeight: 800,
-                              color: "#9a3412",
+                              color: "#9f1239",
                               display: "flex",
                               alignItems: "center",
                               gap: 1,
                               mb: 1.25,
+                              fontSize: { xs: 13, sm: 14 },
                             }}
                           >
-                            <WarningAmberIcon sx={{ fontSize: 18, color: "#ea580c" }} />
-                            অসুবিধা ও ঝুঁকি সতর্কতা (Challenges, Competitors & Risks)
+                            <ThumbDownIcon sx={{ fontSize: 18, color: "#e11d48" }} />
+                            চ্যালেঞ্জ ও সতর্কতা (Potential Challenges)
                           </Typography>
-                          <Box component="ul" sx={{ m: 0, pl: 2.5, display: "flex", flexDirection: "column", gap: 0.75 }}>
+                          <Box component="ul" sx={{ m: 0, pl: 2, display: "flex", flexDirection: "column", gap: 0.75 }}>
                             {proposal.consBangla.map((con, idx) => (
                               <Typography
                                 component="li"
                                 variant="body2"
                                 key={idx}
-                                sx={{ color: "#7c2d12", fontWeight: 500, lineHeight: 1.6 }}
+                                sx={{ color: "#881337", fontWeight: 500, lineHeight: 1.6, fontSize: { xs: 12, sm: 13 } }}
                               >
                                 {con}
                               </Typography>
@@ -1193,17 +1213,18 @@ export default function SeoExpertTeamView() {
                     <Box
                       sx={{
                         display: "flex",
-                        alignItems: "center",
+                        alignItems: { xs: "stretch", sm: "center" },
                         justifyContent: "space-between",
-                        flexWrap: "wrap",
-                        gap: 2,
-                        pt: 1,
+                        flexDirection: { xs: "column", sm: "row" },
+                        gap: 1.5,
+                        pt: 1.5,
                         borderTop: "1px solid #f1f5f9",
                       }}
                     >
                       <Button
                         variant="outlined"
-                        size="small"
+                        size="medium"
+                        fullWidth={isMobile}
                         startIcon={<VisibilityIcon />}
                         onClick={() => openPreview(proposal)}
                         sx={{
@@ -1213,17 +1234,28 @@ export default function SeoExpertTeamView() {
                           color: "#4f46e5",
                           borderColor: "#c7d2fe",
                           bgcolor: "#eef2ff",
+                          py: { xs: 1.25, sm: 0.75 },
+                          fontSize: { xs: 13, sm: 14 },
                           "&:hover": { bgcolor: "#e0e7ff", borderColor: "#818cf8" },
                         }}
                       >
-                        প্রিভিউ দেখুন (Preview Calculator Spec & Formula)
+                        প্রিভিউ দেখুন (Preview Spec)
                       </Button>
 
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.5,
+                          flexDirection: { xs: "column", sm: "row" },
+                          width: { xs: "100%", sm: "auto" },
+                        }}
+                      >
                         {proposal.status === "approved" ? (
                           <Button
                             variant="contained"
-                            size="small"
+                            size="medium"
+                            fullWidth={isMobile}
                             component="a"
                             href={proposal.liveUrl || `/calculators/${(proposal.spec?.slug || proposal.targetKeyword || proposal.id).split("/").pop()}`}
                             target="_blank"
@@ -1235,7 +1267,9 @@ export default function SeoExpertTeamView() {
                               fontWeight: 800,
                               textTransform: "none",
                               borderRadius: 2,
-                              px: 2,
+                              px: 2.5,
+                              py: { xs: 1.25, sm: 0.75 },
+                              fontSize: { xs: 13, sm: 14 },
                               boxShadow: "0 2px 8px rgba(37, 99, 235, 0.3)",
                               "&:hover": { bgcolor: "#1d4ed8" },
                             }}
@@ -1245,8 +1279,9 @@ export default function SeoExpertTeamView() {
                         ) : (
                           <Button
                             variant="contained"
-                            size="small"
-                            startIcon={<RocketLaunchIcon />}
+                            size="medium"
+                            fullWidth={isMobile}
+                            startIcon={actionLoading ? <CircularProgress size={16} sx={{ color: "#ffffff" }} /> : <RocketLaunchIcon />}
                             onClick={(e) => handleApprove(proposal.id, e)}
                             disabled={actionLoading}
                             sx={{
@@ -1255,7 +1290,9 @@ export default function SeoExpertTeamView() {
                               fontWeight: 800,
                               textTransform: "none",
                               borderRadius: 2,
-                              px: 2,
+                              px: 2.5,
+                              py: { xs: 1.25, sm: 0.75 },
+                              fontSize: { xs: 13, sm: 14 },
                               boxShadow: "0 2px 8px rgba(5, 150, 105, 0.3)",
                               "&:hover": { bgcolor: "#047857" },
                             }}
@@ -1267,7 +1304,8 @@ export default function SeoExpertTeamView() {
                         {proposal.status !== "rejected" && (
                           <Button
                             variant="outlined"
-                            size="small"
+                            size="medium"
+                            fullWidth={isMobile}
                             color="error"
                             startIcon={<CancelIcon />}
                             onClick={(e) => handleReject(proposal.id, e)}
@@ -1276,7 +1314,8 @@ export default function SeoExpertTeamView() {
                               fontWeight: 700,
                               textTransform: "none",
                               borderRadius: 2,
-                              px: 2,
+                              py: { xs: 1.25, sm: 0.75 },
+                              fontSize: { xs: 13, sm: 14 },
                             }}
                           >
                             বাতিল করুন (Reject)
@@ -1298,28 +1337,35 @@ export default function SeoExpertTeamView() {
         onClose={() => setPreviewOpen(false)}
         maxWidth="md"
         fullWidth
+        fullScreen={isMobile}
         slotProps={{
           paper: {
             sx: {
-              borderRadius: 3.5,
-              p: 1,
+              borderRadius: isMobile ? 0 : 3.5,
+              p: isMobile ? 0 : 1,
               bgcolor: "#ffffff",
+              m: isMobile ? 0 : 2,
             },
           },
         }}
       >
         {selectedProposal && (
           <>
-            <DialogTitle sx={{ pb: 1 }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+            <DialogTitle sx={{ pb: 1, px: { xs: 2, sm: 3 }, pt: { xs: 2, sm: 2.5 } }}>
+              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: 16, sm: 18 } }}>
                     📐 Calculator Architecture & Engineering Spec
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "#64748b" }}>
+                  <Typography variant="body2" sx={{ color: "#64748b", fontSize: { xs: 12, sm: 13 } }}>
                     {selectedProposal.targetKeyword} • {selectedProposal.category}
                   </Typography>
                 </Box>
+                <IconButton onClick={() => setPreviewOpen(false)} size="small" sx={{ color: "#64748b" }}>
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+              <Box sx={{ mt: 1 }}>
                 <Chip
                   size="small"
                   label={selectedProposal.status.toUpperCase()}
@@ -1342,7 +1388,7 @@ export default function SeoExpertTeamView() {
               </Box>
             </DialogTitle>
 
-            <DialogContent dividers sx={{ borderColor: "#f1f5f9", display: "flex", flexDirection: "column", gap: 3 }}>
+            <DialogContent dividers sx={{ borderColor: "#f1f5f9", display: "flex", flexDirection: "column", gap: 3, px: { xs: 2, sm: 3 } }}>
               {/* Formula Blueprint */}
               <Box>
                 <Typography
@@ -1391,7 +1437,7 @@ export default function SeoExpertTeamView() {
                   <InputIcon sx={{ color: "#2563eb" }} />
                   Planned Input Fields ({selectedProposal.spec.inputs.length})
                 </Typography>
-                <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: 2 }}>
+                <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: 2, overflowX: "auto" }}>
                   <Table size="small">
                     <TableHead sx={{ bgcolor: "#f8fafc" }}>
                       <TableRow>
@@ -1437,7 +1483,7 @@ export default function SeoExpertTeamView() {
                   <OutputIcon sx={{ color: "#059669" }} />
                   Planned Output Metrics ({selectedProposal.spec.outputs.length})
                 </Typography>
-                <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: 2 }}>
+                <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: 2, overflowX: "auto" }}>
                   <Table size="small">
                     <TableHead sx={{ bgcolor: "#f8fafc" }}>
                       <TableRow>
@@ -1494,13 +1540,14 @@ export default function SeoExpertTeamView() {
               </Box>
             </DialogContent>
 
-            <DialogActions sx={{ px: 3, py: 2 }}>
-              <Button onClick={() => setPreviewOpen(false)} sx={{ textTransform: "none", color: "#64748b" }}>
+            <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: 2, flexDirection: { xs: "column-reverse", sm: "row" }, gap: 1 }}>
+              <Button onClick={() => setPreviewOpen(false)} fullWidth={isMobile} sx={{ textTransform: "none", color: "#64748b", py: { xs: 1, sm: 0.75 } }}>
                 Close
               </Button>
               {selectedProposal.status === "approved" ? (
                 <Button
                   variant="contained"
+                  fullWidth={isMobile}
                   component="a"
                   href={selectedProposal.liveUrl || `/calculators/${(selectedProposal.spec?.slug || selectedProposal.targetKeyword || selectedProposal.id).split("/").pop()}`}
                   target="_blank"
@@ -1511,6 +1558,7 @@ export default function SeoExpertTeamView() {
                     textTransform: "none",
                     fontWeight: 700,
                     borderRadius: 2,
+                    py: { xs: 1.25, sm: 0.75 },
                     "&:hover": { bgcolor: "#1d4ed8" },
                   }}
                 >
@@ -1519,6 +1567,7 @@ export default function SeoExpertTeamView() {
               ) : (
                 <Button
                   variant="contained"
+                  fullWidth={isMobile}
                   startIcon={<RocketLaunchIcon />}
                   onClick={() => {
                     handleApprove(selectedProposal.id)
@@ -1528,6 +1577,7 @@ export default function SeoExpertTeamView() {
                     textTransform: "none",
                     fontWeight: 700,
                     borderRadius: 2,
+                    py: { xs: 1.25, sm: 0.75 },
                     "&:hover": { bgcolor: "#047857" },
                   }}
                 >
@@ -1545,21 +1595,28 @@ export default function SeoExpertTeamView() {
         onClose={() => setCustomModalOpen(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={isMobile}
         slotProps={{
           paper: {
             sx: {
-              borderRadius: 3,
-              p: 1,
+              borderRadius: isMobile ? 0 : 3,
+              p: isMobile ? 0 : 1,
+              m: isMobile ? 0 : 2,
             },
           },
         }}
       >
         <form onSubmit={handleCustomResearch}>
-          <DialogTitle sx={{ fontWeight: 800, color: "#0f172a" }}>
-            🔍 Custom Keyword SEO Analysis & Blueprinting
+          <DialogTitle sx={{ fontWeight: 800, color: "#0f172a", px: { xs: 2, sm: 3 }, pt: { xs: 2, sm: 2.5 }, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: 16, sm: 18 } }}>
+              🔍 Custom Keyword SEO Analysis
+            </Typography>
+            <IconButton onClick={() => setCustomModalOpen(false)} size="small" sx={{ color: "#64748b" }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
           </DialogTitle>
-          <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1 }}>
-            <Typography variant="body2" sx={{ color: "#64748b" }}>
+          <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1, px: { xs: 2, sm: 3 } }}>
+            <Typography variant="body2" sx={{ color: "#64748b", fontSize: { xs: 12, sm: 13 } }}>
               যেকোনো ক্যালকুলেটর কিওয়ার্ড ইনপুট দিন। এআই এসইও টিম সার্চ ভলিউম, eCPM, বাংলা সুবিধা ও অসুবিধা এবং সম্পূর্ণ ক্যালকুলেটর স্পেসিফিকেশন তৈরি করবে।
             </Typography>
 
@@ -1596,13 +1653,14 @@ export default function SeoExpertTeamView() {
             </FormControl>
           </DialogContent>
 
-          <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button onClick={() => setCustomModalOpen(false)} sx={{ textTransform: "none", color: "#64748b" }}>
+          <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2.5 }, pt: 1.5, flexDirection: { xs: "column-reverse", sm: "row" }, gap: 1 }}>
+            <Button onClick={() => setCustomModalOpen(false)} fullWidth={isMobile} sx={{ textTransform: "none", color: "#64748b", py: { xs: 1, sm: 0.75 } }}>
               Cancel
             </Button>
             <Button
               type="submit"
               variant="contained"
+              fullWidth={isMobile}
               disabled={actionLoading || !customKeyword.trim()}
               startIcon={<AutoAwesomeIcon />}
               sx={{
@@ -1610,6 +1668,7 @@ export default function SeoExpertTeamView() {
                 textTransform: "none",
                 fontWeight: 700,
                 borderRadius: 2,
+                py: { xs: 1.25, sm: 0.75 },
                 "&:hover": { bgcolor: "#4338ca" },
               }}
             >

@@ -652,29 +652,39 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: false, error: "Proposal not found" }, { status: 404 })
       }
 
-      // Build and persist custom calculator definition
-      const builtCalc = buildAndSaveCustomCalculator(proposals[index])
-      const livePath = `/calculators/${builtCalc.id}`
+      try {
+        // Build and persist custom calculator definition
+        const builtCalc = buildAndSaveCustomCalculator(proposals[index])
+        const livePath = `/calculators/${builtCalc.id}`
 
-      proposals[index].status = "approved"
-      proposals[index].liveUrl = livePath
-      proposals[index].builtAt = new Date().toISOString()
-      proposals[index].indexed = true
-      proposals[index].updatedAt = new Date().toISOString()
-      writeProposals(proposals)
+        proposals[index].status = "approved"
+        proposals[index].liveUrl = livePath
+        proposals[index].builtAt = new Date().toISOString()
+        proposals[index].indexed = true
+        proposals[index].updatedAt = new Date().toISOString()
+        writeProposals(proposals)
 
-      // Instant Indexing asynchronously
-      const liveFullUrl = `https://trycalc.net${livePath}`
-      triggerIndexNow([liveFullUrl]).catch(() => {})
+        // Instant Indexing asynchronously
+        const liveFullUrl = `https://trycalc.net${livePath}`
+        triggerIndexNow([liveFullUrl]).catch((indexErr) => {
+          console.warn("IndexNow ping warning:", indexErr)
+        })
 
-      return NextResponse.json({
-        ok: true,
-        message: "Proposal approved and calculator automatically built and indexed!",
-        liveUrl: livePath,
-        calculator: builtCalc,
-        proposal: proposals[index],
-        proposals,
-      })
+        return NextResponse.json({
+          ok: true,
+          message: "Proposal approved and calculator automatically built and indexed!",
+          liveUrl: livePath,
+          calculator: builtCalc,
+          proposal: proposals[index],
+          proposals,
+        })
+      } catch (buildErr: any) {
+        console.error("Auto-build error for proposal:", id, buildErr)
+        return NextResponse.json({
+          ok: false,
+          error: `Auto-build failed: ${buildErr?.message || "Unknown error during build"}`,
+        }, { status: 500 })
+      }
     }
 
     // 4. Action: REJECT
