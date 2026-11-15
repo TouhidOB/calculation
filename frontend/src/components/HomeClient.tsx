@@ -174,7 +174,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
     initialTotal ||
       (initialCategories && Object.keys(initialCategories).length > 0
         ? Object.values(initialCategories).reduce((s, a) => s + a.length, 0)
-        : fallbackData.total || 725)
+        : fallbackData.total || 774)
   )
   const [activeCat, setActiveCat] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
@@ -511,7 +511,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
 
             {/* Category Quick Count Badge */}
             <Chip
-              label={`${total || 725} Tools`}
+              label={`${total || 774} Tools`}
               size="small"
               color="primary"
               variant="outlined"
@@ -601,7 +601,7 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                     TryCalc — Free Calculators for Everyday Decisions
                   </Typography>
                   <Typography variant="body1" sx={{ color: "#475569", fontSize: 16, lineHeight: 1.6, mb: 2 }}>
-                    Access {total || 725}+ high-precision tools across 12 categories: Mortgage, Loans, Health & BMI,
+                    Access {total || 774}+ high-precision tools across 14 categories: Mortgage, Loans, Health & BMI,
                     Construction, Currency, Date & Time, AI Helper, Storage, and Unit Converters.
                   </Typography>
 

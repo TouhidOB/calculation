@@ -19,7 +19,7 @@ import LockOpenIcon from "@mui/icons-material/LockOpen"
 export const metadata: Metadata = {
   title: "About Us & Computational Methodology — TryCalc (2026)",
   description:
-    "Learn about TryCalc's mission to provide 725+ deterministic, free, fast online calculators. Our editorial standards, mathematical formula verification, and team methodology.",
+    "Learn about TryCalc's mission to provide 774+ deterministic, free, fast online calculators. Our editorial standards, mathematical formula verification, and team methodology.",
   alternates: {
     canonical: "https://trycalc.net/about",
   },
@@ -54,7 +54,7 @@ export default function AboutUsPage() {
           </Typography>
 
           <Typography variant="h6" sx={{ color: "#475569", fontWeight: 400, lineHeight: 1.6, maxWidth: 900, mb: 3 }}>
-            TryCalc was created with a straightforward mission: eliminate clunky, paywalled, ad-choked calculator websites and provide instant, deterministic, and scientifically accurate calculations across 725+ specialized domains.
+            TryCalc was created with a straightforward mission: eliminate clunky, paywalled, ad-choked calculator websites and provide instant, deterministic, and scientifically accurate calculations across 774+ specialized domains.
           </Typography>
 
           <Divider sx={{ my: 3, borderColor: "#e2e8f0" }} />
@@ -230,7 +230,7 @@ export default function AboutUsPage() {
                   </Box>
                 </Stack>
                 <Typography variant="body2" sx={{ color: "#334155", lineHeight: 1.7 }}>
-                  Systems architect specializing in high-throughput computational platforms, cloud infrastructure, and deterministic algorithmic engines. Leads architectural validation, numerical precision bounds, and zero-hallucination computation across all 725+ online utilities.
+                  Systems architect specializing in high-throughput computational platforms, cloud infrastructure, and deterministic algorithmic engines. Leads architectural validation, numerical precision bounds, and zero-hallucination computation across all 774+ online utilities.
                 </Typography>
               </Paper>
             </Grid>

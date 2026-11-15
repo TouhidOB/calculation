@@ -11,7 +11,7 @@ export async function GET() {
 
   let lines: string[] = [
     `# TryCalc Complete Tool Catalog (https://trycalc.net)`,
-    `> Comprehensive machine-readable directory of 725 deterministic calculators across 12 categories.`,
+    `> Comprehensive machine-readable directory of 774 deterministic calculators across 14 categories.`,
     `> Built for AI agents, LLMs, researchers, and automated assistants. Instant free calculations with zero registration.`,
     "",
     `## Table of Contents`,
