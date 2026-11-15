@@ -85,6 +85,15 @@ export default function AdBanner({
   // Screen size detection (mobile < 768px vs desktop >= 768px)
   const [isMobile, setIsMobile] = useState<boolean>(false)
 
+  // Guard: NEVER render any AdBanner on /imon admin pages or internal routes
+  if (
+    pathname?.startsWith("/imon") ||
+    pathname?.startsWith("/embed") ||
+    pathname?.startsWith("/api")
+  ) {
+    return null
+  }
+
   // Map format or variant prop
   const effectiveVariant: AdVariant =
     variant !== "auto"

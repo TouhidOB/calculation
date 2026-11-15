@@ -5,6 +5,7 @@ import ThemeRegistry from "@/theme/ThemeRegistry"
 import OrganizationJsonLd from "@/components/OrganizationJsonLd"
 import TrafficTelemetry from "@/components/TrafficTelemetry"
 import CookieConsent from "@/components/CookieConsent"
+import AdScripts from "@/components/AdScripts"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-KXFZGDCLVQ"
@@ -107,11 +108,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="icon" href="/favicon-32.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2861472312283458"
-          crossOrigin="anonymous"
-        />
       </head>
       <body>
         {/* Google Analytics (GA4) */}
@@ -137,11 +133,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <TrafficTelemetry />
         <ThemeRegistry>{children}</ThemeRegistry>
         <CookieConsent />
-        <script
-          data-cfasync="false"
-          async
-          src="https://bauval.org/14/2309082ed44cbc9e4f1d7274aaad3b58"
-        />
+        <AdScripts />
       </body>
     </html>
   )
