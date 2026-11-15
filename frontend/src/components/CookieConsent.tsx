@@ -16,6 +16,9 @@ export default function CookieConsent() {
 
   useEffect(() => {
     setMounted(true)
+    if (window.location.pathname.startsWith("/embed") || window.self !== window.top) {
+      return
+    }
     const consent = localStorage.getItem(CONSENT_KEY)
     if (!consent) {
       setVisible(true)

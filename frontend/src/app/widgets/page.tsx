@@ -184,7 +184,7 @@ export default function WidgetsPage() {
 
         <Grid container spacing={3.5} sx={{ mb: 6 }}>
           {FEATURED_WIDGETS.map((w) => {
-            const iframeCode = `<iframe src="https://trycalc.net/embed/${w.slug}" width="100%" height="${w.height}" frameborder="0" style="border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);" title="${w.name}"></iframe>\n<p style="font-size:12px;color:#64748b;margin-top:6px;text-align:right;">Powered by <a href="https://trycalc.net/calculators/${w.slug}" target="_blank" rel="noopener noreferrer" style="color:#4f46e5;font-weight:600;text-decoration:none;">TryCalc</a></p>`
+            const iframeCode = `<iframe src="https://trycalc.net/embed/${w.slug}" width="100%" height="${w.height || 600}" frameborder="0" style="border:1px solid #e2e8f0; border-radius:8px;"></iframe><div style="font-size:11px; text-align:right; margin-top:4px;">Powered by <a href="https://trycalc.net/calculators/${w.slug}" target="_blank" rel="noopener">TryCalc</a></div>`
 
             return (
               <Grid size={{ xs: 12, md: 6 }} key={w.id}>

@@ -29,8 +29,8 @@ function getRelatedCalculators(category: string, currentId: string) {
   const list = cats[category] || []
   return list
     .filter((c) => c.id !== currentId)
-    .slice(0, 4)
-    .map((c) => ({ id: c.id, name: c.name, description: c.description || "" }))
+    .slice(0, 8)
+    .map((c) => ({ id: c.id, name: c.name, description: c.description || "", category: c.category || category }))
 }
 
 async function fetchCalc(calcId: string): Promise<CalculatorDef | null> {
@@ -107,6 +107,8 @@ export async function generateMetadata({
   const metaDesc = seoMetaDescriptionFor(calc)
   const url = `${SITE_URL}/calculators/${canonicalId}`
   const catLabel = CATEGORY_META[calc.category]?.label || calc.category
+  const ogImageUrl = `${SITE_URL}/api/og?title=${encodeURIComponent(calc.name)}&cat=${encodeURIComponent(catLabel)}&desc=${encodeURIComponent(calc.description || metaDesc)}`
+
   return {
     title,
     description: metaDesc,
@@ -128,20 +130,44 @@ export async function generateMetadata({
       },
     },
     openGraph: {
-      title,
+      title: `${calc.name} — Free Online Calculator | TryCalc`,
       description: metaDesc,
       url,
       type: "website",
       siteName: "TryCalc",
       locale: "en_US",
       alternateLocale: ["en_GB", "en_CA", "en_AU", "en_IN"],
-      images: [{ url: "/og-image.png", width: 1200, height: 630, alt: `${calc.name} - Free Online Calculator` }],
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${calc.name} — Free Online Calculator | TryCalc`,
+          type: "image/png",
+        },
+        {
+          url: `${SITE_URL}/og-image.png`,
+          width: 1200,
+          height: 630,
+          alt: `${calc.name} - Free Online Calculator`,
+          type: "image/png",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      site: "@trycalc",
+      creator: "@trycalc",
+      title: `${calc.name} — Free Online Calculator | TryCalc`,
       description: metaDesc,
-      images: ["/og-image.png"],
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${calc.name} — Free Online Calculator | TryCalc`,
+        },
+      ],
     },
     keywords: [
       calc.name.toLowerCase(),

@@ -35,6 +35,9 @@ import { AiTokenCalculatorView } from "@/components/AiTokenCalculatorView"
 import { CctvStorageCalculatorView } from "@/components/CctvStorageCalculatorView"
 import { RaidCalculatorView } from "@/components/RaidCalculatorView"
 import AdBanner from "@/components/AdBanner"
+import SocialViralShareBar from "@/components/SocialViralShareBar"
+import CalculatorEmbedDialog from "@/components/CalculatorEmbedDialog"
+import RelatedCalculatorsSection, { type RelatedCalcItem } from "@/components/RelatedCalculatorsSection"
 
 // MUI components
 import Box from "@mui/material/Box"
@@ -382,7 +385,7 @@ function extractPrimaryResult(result: Record<string, unknown> | null): {
 interface CalculatorRunnerViewProps {
   calc: CalculatorDef
   embedded?: boolean
-  initialRelatedCalcs?: { id: string; name: string; description: string }[]
+  initialRelatedCalcs?: RelatedCalcItem[]
 }
 
 const WORLD_CURRENCIES = [
@@ -464,7 +467,7 @@ export default function CalculatorRunnerView({
       } catch {}
     }
   }, [])
-  const [relatedCalcs, setRelatedCalcs] = useState<{ id: string; name: string; description: string }[]>(
+  const [relatedCalcs, setRelatedCalcs] = useState<RelatedCalcItem[]>(
     () => initialRelatedCalcs || []
   )
 
@@ -485,11 +488,20 @@ export default function CalculatorRunnerView({
   }, [values, calc.fields])
 
   useEffect(() => {
-    if (relatedCalcs.length > 0) return
+    if (relatedCalcs.length >= 4) return
     listCalculators()
       .then((data) => {
         const list = data.categories[calc.category] || []
-        setRelatedCalcs(list.filter((c) => c.id !== calc.id))
+        setRelatedCalcs(
+          list
+            .filter((c) => c.id !== calc.id)
+            .map((c) => ({
+              id: c.id,
+              name: c.name,
+              description: c.description || "",
+              category: c.category || calc.category,
+            }))
+        )
       })
       .catch(() => {})
   }, [calc.id, calc.category, relatedCalcs.length])
@@ -1289,6 +1301,15 @@ export default function CalculatorRunnerView({
             </Paper>
           )}
 
+          {/* Social Viral Share Bar with Quick Sharing & Embed triggers */}
+          {!embedded && (
+            <SocialViralShareBar
+              calc={calc}
+              onEmbedClick={() => setEmbedOpen(true)}
+              onToast={(msg) => setToast({ open: true, message: msg })}
+            />
+          )}
+
           {/* Top Ad Slot (Above Calculator Chassis / Inputs) */}
           {!embedded && <AdBanner variant="leaderboard" className="mb-3" />}
 
@@ -2030,6 +2051,18 @@ export default function CalculatorRunnerView({
           )}
         </InstrumentChassis>
 
+        {/* High-Visibility Smart Related & Recommended Next Tools Section */}
+        {!embedded && relatedCalcs.length > 0 && (
+          <RelatedCalculatorsSection
+            calculators={relatedCalcs.slice(0, 4)}
+            currentCategory={calc.category}
+            categoryLabel={catMeta?.label}
+            categoryColor={catMeta?.color}
+            title="Recommended Next Tools"
+            subtitle={`Explore companion calculators in ${catMeta?.label || calc.category} to continue your analysis`}
+          />
+        )}
+
           {/* Detailed Overview, Methodology & Guides — Below-the-Fold Content */}
           {!embedded && (
             <Box className="no-print" sx={{ mt: 5, "@media print": { display: "none !important" } }}>
@@ -2653,18 +2686,37 @@ export default function CalculatorRunnerView({
 
           {/* Embedded Footer Link */}
           {embedded && (
-            <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid #e2e8f0", textAlign: "center" }}>
-              <Typography variant="caption" sx={{ color: "#64748b", display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+            <Box
+              sx={{
+                mt: 2.5,
+                pt: 1.5,
+                borderTop: "1px solid #e2e8f0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 1,
+              }}
+            >
+              <Typography variant="caption" sx={{ color: "#475569", fontWeight: 600, fontSize: 11.5 }}>
+                {calc.name} — Interactive Calculator
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#0f172a", fontWeight: 700, fontSize: 11.5 }}>
                 Powered by{" "}
                 <MuiLink
-                  href={`https://trycalc.net/calculators/${calc.id}`}
+                  href="https://trycalc.net"
                   target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ color: "#4f46e5", fontWeight: 700, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+                  rel="noopener"
+                  sx={{
+                    color: "#0f172a",
+                    fontWeight: 800,
+                    textDecoration: "underline",
+                    textUnderlineOffset: "3px",
+                    "&:hover": { color: "#2563eb" },
+                  }}
                 >
-                  TryCalc.net
-                </MuiLink>{" "}
-                — Free Online Calculators
+                  TryCalc (https://trycalc.net)
+                </MuiLink>
               </Typography>
             </Box>
           )}
@@ -2793,71 +2845,12 @@ export default function CalculatorRunnerView({
 
       {/* Embed Code Dialog */}
       {!embedded && (
-        <Dialog
+        <CalculatorEmbedDialog
           open={embedOpen}
           onClose={() => setEmbedOpen(false)}
-          maxWidth="sm"
-          fullWidth
-          slotProps={{
-            backdrop: {
-              sx: { bgcolor: "rgba(15, 23, 42, 0.35)", backdropFilter: "blur(2px)" },
-            },
-          }}
-        >
-          <DialogTitle sx={{ fontWeight: 800, color: "#0f172a", pb: 1 }}>
-            Embed This Calculator on Your Website
-          </DialogTitle>
-          <DialogContent>
-            <Typography variant="body2" sx={{ color: "#475569", mb: 2 }}>
-              Copy and paste the HTML code below into your blog, CMS, or website to embed the interactive <strong>{calc.name}</strong> directly on your page.
-            </Typography>
-            <Box
-              sx={{
-                p: 2,
-                bgcolor: "#0f172a",
-                color: "#e2e8f0",
-                borderRadius: 2,
-                fontFamily: "monospace",
-                fontSize: 12.5,
-                wordBreak: "break-all",
-                userSelect: "all",
-                border: "1px solid #334155",
-              }}
-            >
-              {`<iframe src="https://trycalc.net/embed/${calc.id}" width="100%" height="700" frameborder="0" style="border:1px solid #e2e8f0;border-radius:12px;max-width:900px;" title="${calc.name} — TryCalc"></iframe>\n<p style="font-size:12px;color:#64748b;margin-top:6px;font-family:sans-serif;">Powered by <a href="https://trycalc.net/calculators/${calc.id}" target="_blank" rel="noopener" style="color:#4f46e5;text-decoration:none;font-weight:600;">TryCalc — Free Online Calculators</a></p>`}
-            </Box>
-            <Typography variant="caption" sx={{ color: "#64748b", mt: 1.5, display: "block" }}>
-              💡 Responsive design: The widget automatically adapts to desktop, tablet, and mobile layouts. Includes an authoritative TryCalc attribution link.
-            </Typography>
-          </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2.5 }}>
-            <Button
-              onClick={() => setEmbedOpen(false)}
-              sx={{ textTransform: "none", color: "#64748b", fontWeight: 600 }}
-            >
-              Close
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<ContentCopyIcon />}
-              onClick={() => {
-                const code = `<iframe src="https://trycalc.net/embed/${calc.id}" width="100%" height="700" frameborder="0" style="border:1px solid #e2e8f0;border-radius:12px;max-width:900px;" title="${calc.name} — TryCalc"></iframe>\n<p style="font-size:12px;color:#64748b;margin-top:6px;font-family:sans-serif;">Powered by <a href="https://trycalc.net/calculators/${calc.id}" target="_blank" rel="noopener" style="color:#4f46e5;text-decoration:none;font-weight:600;">TryCalc — Free Online Calculators</a></p>`
-                navigator.clipboard.writeText(code).then(() => {
-                  setToast({ open: true, message: "Embed code copied to clipboard!" })
-                  setEmbedOpen(false)
-                })
-              }}
-              sx={{
-                textTransform: "none",
-                fontWeight: 700,
-                bgcolor: "#4f46e5",
-                "&:hover": { bgcolor: "#4338ca" },
-              }}
-            >
-              Copy Embed Code
-            </Button>
-          </DialogActions>
-        </Dialog>
+          calc={calc}
+          onToast={(msg) => setToast({ open: true, message: msg })}
+        />
       )}
     </>
   )
