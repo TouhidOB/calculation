@@ -687,6 +687,46 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 3.5 Action: APPROVE ALL PENDING
+    if (action === "approve_all_pending") {
+      let approvedCount = 0
+      const approvedUrls: string[] = []
+      const now = new Date().toISOString()
+
+      for (let i = 0; i < proposals.length; i++) {
+        if (proposals[i].status === "pending") {
+          try {
+            const builtCalc = buildAndSaveCustomCalculator(proposals[i])
+            const livePath = `/calculators/${builtCalc.id}`
+            proposals[i].status = "approved"
+            proposals[i].liveUrl = livePath
+            proposals[i].builtAt = now
+            proposals[i].indexed = true
+            proposals[i].updatedAt = now
+            approvedCount++
+            approvedUrls.push(`https://trycalc.net${livePath}`)
+          } catch (e) {
+            console.error(`Failed to build proposal ${proposals[i].id}:`, e)
+          }
+        }
+      }
+
+      writeProposals(proposals)
+
+      if (approvedUrls.length > 0) {
+        triggerIndexNow(approvedUrls).catch((indexErr) => {
+          console.warn("Batch IndexNow ping warning:", indexErr)
+        })
+      }
+
+      return NextResponse.json({
+        ok: true,
+        message: `Successfully approved and built ${approvedCount} calculators!`,
+        count: approvedCount,
+        proposals,
+      })
+    }
+
     // 4. Action: REJECT
     if (action === "reject") {
       if (!id) return NextResponse.json({ ok: false, error: "Missing proposal ID" }, { status: 400 })
