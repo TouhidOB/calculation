@@ -88,10 +88,10 @@ export function getCustomCalculator(id: string): CustomCalculatorDef | null {
 }
 
 export function buildAndSaveCustomCalculator(proposal: any): CustomCalculatorDef {
-  const targetKeyword = proposal.keyword || proposal.spec?.name || "Online Calculator"
+  const targetKeyword = proposal.targetKeyword || proposal.keyword || proposal.spec?.name || "Online Calculator"
   
   // Clean slug
-  let rawSlug = proposal.spec?.slug || ""
+  let rawSlug = proposal.slug || proposal.spec?.slug || ""
   rawSlug = rawSlug.replace(/^\/calculators\/[^\/]+\//, "")
   rawSlug = rawSlug.replace(/^\/calculators\//, "")
   rawSlug = rawSlug.replace(/^\//, "").trim()
