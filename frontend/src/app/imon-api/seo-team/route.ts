@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
-import { buildAndSaveCustomCalculator, triggerIndexNow, sendSeoTelegramNotification } from "@/lib/custom-calculators"
+import { buildAndSaveCustomCalculator, triggerIndexNow } from "@/lib/custom-calculators"
 
 export interface CalculatorSpec {
   inputs: Array<{
@@ -652,13 +652,9 @@ export async function POST(req: NextRequest) {
       proposals[index].updatedAt = new Date().toISOString()
       writeProposals(proposals)
 
-      // Instant Indexing & Telegram Notification asynchronously
+      // Instant Indexing asynchronously
       const liveFullUrl = `https://trycalc.net${livePath}`
       triggerIndexNow([liveFullUrl]).catch(() => {})
-      sendSeoTelegramNotification(
-        "🚀 New Calculator Built & Live on TryCalc",
-        `**${builtCalc.name}** is now LIVE and submitted to IndexNow!\n\n🔗 [Live Tool](${liveFullUrl})\n📊 Search Volume: ${proposals[index].searchVolume?.toLocaleString() || "N/A"}\n💰 Est. CPC: $${proposals[index].estimatedCpc || proposals[index].cpc || "N/A"}`
-      ).catch(() => {})
 
       return NextResponse.json({
         ok: true,
