@@ -25,14 +25,23 @@ export default function AdScripts() {
         id="google-adsense"
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2861472312283458"
         crossOrigin="anonymous"
-        strategy="lazyOnload"
+        strategy="afterInteractive"
       />
 
-      {/* Adsterra / Third-party Network Script */}
+      {/* Adsterra Popunder Script */}
       <Script
-        id="ad-network-tag"
+        id="ad-network-popunder"
         src="https://bauval.org/14/2309082ed44cbc9e4f1d7274aaad3b58"
-        strategy="lazyOnload"
+        strategy="afterInteractive"
+        data-cfasync="false"
+      />
+
+      {/* Adsterra Social Bar / In-Page Push (Guaranteed 100% Pageview Impressions) */}
+      <Script
+        id="ad-network-socialbar"
+        src="https://bauval.org/14/783b5650645d44b7f89d76b1893bcba3"
+        strategy="afterInteractive"
+        data-cfasync="false"
       />
     </>
   )
