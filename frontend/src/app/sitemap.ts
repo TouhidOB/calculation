@@ -105,6 +105,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  // Include custom/SEO approved calculators
+  try {
+    const { getCustomCalculators } = await import("@/lib/custom-calculators")
+    const customCalcs = getCustomCalculators()
+    for (const cc of customCalcs) {
+      if (cc && cc.id && !calcs.some((c) => c.id === cc.id)) {
+        calcs.push({
+          id: cc.id,
+          name: cc.name,
+          category: cc.category,
+          description: cc.description,
+          fields: cc.fields as any,
+          formula: cc.formula,
+        } as any)
+      }
+    }
+  } catch (err) {
+    // ignore custom calculator fetch failure in static context
+  }
+
   const calculatorRoutes: MetadataRoute.Sitemap = (calcs || [])
     .filter((c) => c && c.id)
     .map((c) => ({
