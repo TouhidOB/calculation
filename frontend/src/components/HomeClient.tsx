@@ -657,6 +657,11 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
               </Grid>
             </Paper>
 
+            {/* Above the Fold Top AdBanner on Homepage */}
+            <Box sx={{ display: "flex", justifyContent: "center", my: 4 }} className="print:hidden">
+              <AdBanner variant="leaderboard" className="mx-auto" />
+            </Box>
+
             {/* 11 Category Cards Grid (Wide responsive distribution) */}
             <Box component="section" sx={{ mb: 5 }}>
               <Typography variant="h5" component="h2" sx={{ fontWeight: 800, color: "#0f172a", mb: 2.5 }}>

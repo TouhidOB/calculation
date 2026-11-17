@@ -1,7 +1,9 @@
 import type { Metadata } from "next"
 import { notFound, permanentRedirect } from "next/navigation"
+import Box from "@mui/material/Box"
 import CalculatorRunnerView from "@/components/CalculatorRunnerView"
 import CalculatorDocumentationGuide from "@/components/CalculatorDocumentationGuide"
+import AdBanner from "@/components/AdBanner"
 import { seoIntroFor, seoTitleFor, seoFaqFor, seoHowToFor, seoMetaDescriptionFor, seoDirectAnswerFor } from "@/lib/seo-helpers"
 import type { CalculatorDef } from "@/lib/calculator-api"
 import { CATEGORY_META } from "@/lib/calculator-api"
@@ -373,7 +375,17 @@ export default async function CalculatorPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToLd) }}
       />
 
+      {/* Above the fold Leaderboard Ad */}
+      <Box sx={{ width: "100%", display: "flex", justifyContent: "center", my: 3 }} className="print:hidden">
+        <AdBanner variant="leaderboard" className="mx-auto" />
+      </Box>
+
       <CalculatorRunnerView calc={calc} initialRelatedCalcs={relatedCalcs} />
+
+      {/* Mid-content Native / Rectangle Ad */}
+      <Box sx={{ width: "100%", display: "flex", justifyContent: "center", my: 4 }} className="print:hidden">
+        <AdBanner variant="native" className="mx-auto" />
+      </Box>
 
       {/* ── Fully visible, crawlable, high-value editorial & mathematical guide (E-E-A-T) ── */}
       <CalculatorDocumentationGuide calc={calc} catLabel={catLabel} />
