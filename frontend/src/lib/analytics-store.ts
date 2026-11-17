@@ -724,12 +724,13 @@ class AnalyticsStore {
     const humanPercentage = totalInTimeframe > 0 ? Number(((humanVisitsCount / totalInTimeframe) * 100).toFixed(1)) : 0
     const botPercentage = totalInTimeframe > 0 ? Number(((botVisitsCount / totalInTimeframe) * 100).toFixed(1)) : 0
 
-    // 5. Audience filtering
+    // 5. Audience filtering - strictly Real Human Visitors by default
     let audienceFiltered = timeFiltered
-    if (audience === "human") {
-      audienceFiltered = timeFiltered.filter((e) => !e.isBot)
-    } else if (audience === "bots") {
+    if (audience === "bots") {
       audienceFiltered = timeFiltered.filter((e) => e.isBot)
+    } else {
+      // Default to real human visitors only (filters out scrapers, bots, crawlers)
+      audienceFiltered = timeFiltered.filter((e) => !e.isBot)
     }
 
     // 6. Country filtering

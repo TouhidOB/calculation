@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   }
 
   const timeframe = req.nextUrl.searchParams.get("timeframe") || "all"
-  const audience = req.nextUrl.searchParams.get("audience") || "all"
+  const audience = req.nextUrl.searchParams.get("audience") || "human"
   const country = req.nextUrl.searchParams.get("country") || "ALL"
   const stats = analyticsStore.getStats({ timeframe, audience, country })
 
@@ -125,12 +125,12 @@ export async function GET(req: NextRequest) {
             stats.totalHitsLogged = Math.max(stats.totalHitsLogged, stats.totalVisits)
           }
 
-          if (audience === "human") {
-            stats.filteredVisits = stats.humanVisitsCount
-          } else if (audience === "bots") {
+          if (audience === "bots") {
             stats.filteredVisits = stats.botVisitsCount
           } else {
-            stats.filteredVisits = stats.totalVisits
+            // Default to real human visitors
+            stats.filteredVisits = stats.humanVisitsCount
+            stats.totalVisits = stats.humanVisitsCount
           }
 
           // Recalculate human / bot ratio
