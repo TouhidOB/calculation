@@ -49,7 +49,7 @@ import RefreshIcon from "@mui/icons-material/Refresh"
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep"
 import PostAddIcon from "@mui/icons-material/PostAdd"
 import TrendingUpIcon from "@mui/icons-material/TrendingUp"
-import MonetizationOnIcon from "@mui/icons-material/MonetizationOn"
+import TrackChangesIcon from "@mui/icons-material/TrackChanges"
 import SpeedIcon from "@mui/icons-material/Speed"
 import BarChartIcon from "@mui/icons-material/BarChart"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
@@ -125,7 +125,7 @@ export default function SeoExpertTeamView() {
   const [activeTab, setActiveTab] = useState<"all" | "pending" | "approved" | "rejected">("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [sortBy, setSortBy] = useState<"revenue" | "difficulty" | "volume" | "ecpm" | "newest">("revenue")
+  const [sortBy, setSortBy] = useState<"difficulty" | "volume" | "newest">("volume")
   const [simInputs, setSimInputs] = useState<Record<string, number>>({})
 
   // Modals & Dialogs
@@ -393,8 +393,8 @@ export default function SeoExpertTeamView() {
   const getOpportunityScore = (proposal: SeoProposal) => {
     const volScore = Math.min(35, ((proposal.searchVolume || 0) / 12000) * 35)
     const kdScore = Math.max(10, 35 - ((proposal.difficulty || 0) * 0.45))
-    const revScore = Math.min(30, ((proposal.estEcpm || 0) / 8) * 15 + ((proposal.cpc || 0) / 4) * 15)
-    const total = Math.round(Math.min(99, Math.max(52, volScore + kdScore + revScore)))
+    const intentScore = Math.min(30, volScore * 0.5 + kdScore * 0.3)
+    const total = Math.round(Math.min(99, Math.max(52, volScore + kdScore + intentScore)))
     let tier = "Tier-A High Value"
     let color = "#059669"
     if (total >= 90) {
@@ -412,7 +412,7 @@ export default function SeoExpertTeamView() {
 
   const getSearchIntent = (p: SeoProposal) => {
     const cat = (p.category || "").toLowerCase()
-    if (cat.includes("finance") || cat.includes("estate")) return { label: "Commercial / High CPC 💳", color: "#166534", bg: "#dcfce7" }
+    if (cat.includes("finance") || cat.includes("estate")) return { label: "Commercial / High Intent 🎯", color: "#166534", bg: "#dcfce7" }
     if (cat.includes("construction") || cat.includes("tech")) return { label: "Transactional & Tool 🛠️", color: "#1e40af", bg: "#dbeafe" }
     return { label: "Informational & Solving 📖", color: "#6b21a8", bg: "#f3e8ff" }
   }
@@ -445,10 +445,8 @@ export default function SeoExpertTeamView() {
         return matchesTab && matchesCategory && matchesSearch
       })
       .sort((a, b) => {
-        if (sortBy === "revenue") return (b.estMonthlyRevenue || 0) - (a.estMonthlyRevenue || 0)
         if (sortBy === "difficulty") return (a.difficulty || 0) - (b.difficulty || 0)
         if (sortBy === "volume") return (b.searchVolume || 0) - (a.searchVolume || 0)
-        if (sortBy === "ecpm") return (b.estEcpm || 0) - (a.estEcpm || 0)
         if (sortBy === "newest") return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
         return 0
       })
@@ -465,17 +463,12 @@ export default function SeoExpertTeamView() {
       .filter((p) => p.status !== "rejected")
       .reduce((sum, p) => sum + (p.potentialMonthlyTraffic || 0), 0)
 
-    const estRevenue = proposals
-      .filter((p) => p.status !== "rejected")
-      .reduce((sum, p) => sum + (p.estMonthlyRevenue || 0), 0)
-
     return {
       totalKeywords,
       pendingCount,
       approvedCount,
       rejectedCount,
       potentialTraffic,
-      estRevenue,
     }
   }, [proposals])
 
@@ -789,7 +782,7 @@ export default function SeoExpertTeamView() {
               </Box>
             </Grid>
 
-            {/* Agent 2: Monetization Architect */}
+            {/* Agent 2: Search Intent & UX Architect */}
             <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
               <Box
                 sx={{
@@ -801,17 +794,17 @@ export default function SeoExpertTeamView() {
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.75 }}>
-                  <MonetizationOnIcon sx={{ fontSize: 18, color: "#facc15" }} />
+                  <TrackChangesIcon sx={{ fontSize: 18, color: "#facc15" }} />
                   <Typography variant="body2" sx={{ fontWeight: 800, color: "#f1f5f9", fontSize: 13 }}>
-                    Monetization Architect
+                    Search Intent & UX Architect
                   </Typography>
                 </Box>
                 <Typography variant="caption" sx={{ color: "#94a3b8", display: "block", fontSize: 11.5, lineHeight: 1.4 }}>
-                  AdSense & Adsterra eCPM forecast • High-intent placement & revenue valuation.
+                  Search intent analysis, user journey, and on-page engagement optimization.
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
-                  <Chip size="small" label="Target eCPM: $4.50+" sx={{ height: 18, fontSize: 10, bgcolor: "#0f172a", color: "#facc15" }} />
-                  <Typography variant="caption" sx={{ color: "#4ade80", fontWeight: 700, fontSize: 10 }}>● Optimized</Typography>
+                  <Chip size="small" label="Intent: Informational & Tool" sx={{ height: 18, fontSize: 10, bgcolor: "#0f172a", color: "#facc15" }} />
+                  <Typography variant="caption" sx={{ color: "#4ade80", fontWeight: 700, fontSize: 10 }}>● Active</Typography>
                 </Box>
               </Box>
             </Grid>
@@ -875,7 +868,7 @@ export default function SeoExpertTeamView() {
         {/* KPI Metric Cards */}
         <Grid container spacing={{ xs: 1.5, sm: 2.5 }} sx={{ mb: { xs: 2.5, sm: 4 } }}>
           {/* 1. Researched Keywords */}
-          <Grid size={{ xs: 6, sm: 4, md: 2.4 }}>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <Paper
               elevation={0}
               sx={{
@@ -907,7 +900,7 @@ export default function SeoExpertTeamView() {
           </Grid>
 
           {/* 2. Pending Approvals */}
-          <Grid size={{ xs: 6, sm: 4, md: 2.4 }}>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <Paper
               elevation={0}
               sx={{
@@ -939,7 +932,7 @@ export default function SeoExpertTeamView() {
           </Grid>
 
           {/* 3. Approved */}
-          <Grid size={{ xs: 6, sm: 4, md: 2.4 }}>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <Paper
               elevation={0}
               sx={{
@@ -971,7 +964,7 @@ export default function SeoExpertTeamView() {
           </Grid>
 
           {/* 4. Potential Monthly Traffic */}
-          <Grid size={{ xs: 6, sm: 4, md: 2.4 }}>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <Paper
               elevation={0}
               sx={{
@@ -1003,41 +996,6 @@ export default function SeoExpertTeamView() {
               </Typography>
               <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
                 Est. Organic Clicks
-              </Typography>
-            </Paper>
-          </Grid>
-
-          {/* 5. Est. Ad Revenue */}
-          <Grid size={{ xs: 12, sm: 4, md: 2.4 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 1.5, sm: 2.5 },
-                borderRadius: { xs: 2.5, sm: 3 },
-                bgcolor: "#ffffff",
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
-                display: "flex",
-                flexDirection: "column",
-                gap: { xs: 0.5, sm: 1 },
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, letterSpacing: 0.5, fontSize: { xs: 10, sm: 12 } }}>
-                  EST. AD REVENUE
-                </Typography>
-                <Box sx={{ bgcolor: "#fef9c3", p: 0.8, borderRadius: 2, color: "#a16207", display: "flex" }}>
-                  <MonetizationOnIcon fontSize="small" />
-                </Box>
-              </Box>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: "#059669", fontSize: { xs: "1.35rem", sm: "1.75rem", md: "2.125rem" } }}>
-                ${metrics.estRevenue.toFixed(2)}{" "}
-                <Typography component="span" sx={{ fontSize: { xs: 13, sm: 16 }, color: "#64748b", fontWeight: 600 }}>
-                  /mo
-                </Typography>
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
-                AdSense + Adsterra eCPM
               </Typography>
             </Paper>
           </Grid>
@@ -1230,10 +1188,8 @@ export default function SeoExpertTeamView() {
                   height: 36,
                 }}
               >
-                <MenuItem value="revenue">Highest Ad Revenue ($)</MenuItem>
-                <MenuItem value="difficulty">Lowest Difficulty (Fast Rank)</MenuItem>
                 <MenuItem value="volume">Highest Search Volume</MenuItem>
-                <MenuItem value="ecpm">Highest eCPM ($)</MenuItem>
+                <MenuItem value="difficulty">Lowest Difficulty (Fast Rank)</MenuItem>
                 <MenuItem value="newest">Newest First</MenuItem>
               </Select>
             </Box>
@@ -1481,7 +1437,7 @@ export default function SeoExpertTeamView() {
                         borderRadius: 2.5,
                         border: "1px solid #f1f5f9",
                         display: "grid",
-                        gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(6, 1fr)" },
+                        gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(4, 1fr)" },
                         gap: { xs: 1.5, sm: 2 },
                       }}
                     >
@@ -1512,24 +1468,6 @@ export default function SeoExpertTeamView() {
 
                       <Box>
                         <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
-                          EST. eCPM
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#059669", fontSize: { xs: 14, sm: 16 } }}>
-                          ${proposal.estEcpm.toFixed(2)}
-                        </Typography>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
-                          GOOGLE CPC
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#475569", fontSize: { xs: 14, sm: 16 } }}>
-                          ${proposal.cpc.toFixed(2)}
-                        </Typography>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
                           EST. TRAFFIC
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 800, color: "#2563eb", fontSize: { xs: 14, sm: 16 } }}>
@@ -1541,10 +1479,18 @@ export default function SeoExpertTeamView() {
 
                       <Box>
                         <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
-                          EST. AD REVENUE
+                          PROPOSAL STATUS
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 800, color: "#059669", fontSize: { xs: 14, sm: 16 } }}>
-                          ${proposal.estMonthlyRevenue.toFixed(2)}/mo
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontWeight: 800,
+                            color: proposal.status === "approved" ? "#059669" : proposal.status === "rejected" ? "#dc2626" : "#d97706",
+                            fontSize: { xs: 14, sm: 16 },
+                            textTransform: "capitalize",
+                          }}
+                        >
+                          {proposal.status}
                         </Typography>
                       </Box>
                     </Box>
@@ -2147,7 +2093,7 @@ export default function SeoExpertTeamView() {
           </DialogTitle>
           <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1, px: { xs: 2, sm: 3 } }}>
             <Typography variant="body2" sx={{ color: "#64748b", fontSize: { xs: 12, sm: 13 } }}>
-              যেকোনো ক্যালকুলেটর কিওয়ার্ড ইনপুট দিন। এআই এসইও টিম সার্চ ভলিউম, eCPM, বাংলা সুবিধা ও অসুবিধা এবং সম্পূর্ণ ক্যালকুলেটর স্পেসিফিকেশন তৈরি করবে।
+              যেকোনো ক্যালকুলেটর কিওয়ার্ড ইনপুট দিন। এআই এসইও টিম সার্চ ভলিউম, সার্চ ইন্টেন্ট, বাংলা সুবিধা ও অসুবিধা এবং সম্পূর্ণ ক্যালকুলেটর স্পেসিফিকেশন তৈরি করবে।
             </Typography>
 
             <TextField
