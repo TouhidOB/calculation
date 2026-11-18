@@ -1,0 +1,6 @@
+Contact: mailto:security@trycalc.net
+Expires: 2027-01-01T00:00:00.000Z
+Canonical: https://trycalc.net/.well-known/security.txt
+Preferred-Languages: en, bn
+Policy: https://trycalc.net/privacy-policy
+Acknowledgments: https://trycalc.net/about

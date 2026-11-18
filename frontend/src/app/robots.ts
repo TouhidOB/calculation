@@ -36,6 +36,27 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: ["/api/"],
       },
+      // Regional search engines
+      {
+        userAgent: "Baiduspider",
+        allow: "/",
+        disallow: ["/api/"],
+      },
+      {
+        userAgent: "YandexBot",
+        allow: "/",
+        disallow: ["/api/"],
+      },
+      {
+        userAgent: "Yeti",
+        allow: "/",
+        disallow: ["/api/"],
+      },
+      {
+        userAgent: "Applebot",
+        allow: "/",
+        disallow: ["/api/"],
+      },
       // Block AI training scrapers (not search/citation bots)
       {
         userAgent: "CCBot",

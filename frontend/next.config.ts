@@ -5,9 +5,28 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   async redirects() {
+    const synonymRedirects = [
+      "loan-calculator",
+      "emi-calculator",
+      "bmi-calculator",
+      "sip-calculator",
+      "age-calculator",
+      "gst-calculator",
+      "mortgage-calculator",
+      "compound-interest-calculator",
+      "percentage-calculator",
+      "salary-calculator",
+      "scientific-calculator",
+    ].map((slug) => ({
+      source: `/${slug}`,
+      destination: `/calculators/${slug}`,
+      permanent: true,
+    }));
+
     return [
       { source: "/calculators", destination: "/", permanent: true },
       { source: "/category/math", destination: "/category/basic", permanent: true },
+      ...synonymRedirects,
     ];
   },
   async headers() {
