@@ -130,10 +130,12 @@ Return strictly a JSON object with this exact schema:
 """
 
     models_to_try = [
-        model,
-        "google/gemini-2.0-flash-exp:free",
-        "mistralai/mistral-7b-instruct:free",
-        "openrouter/free"
+        "google/gemma-4-26b-a4b-it:free",
+        "google/gemma-4-31b-it:free",
+        "nvidia/nemotron-3.5-lightning:free",
+        "nvidia/nemotron-3.5-super-vl:free",
+        "openrouter/free",
+        model
     ]
 
     for current_model in models_to_try:
@@ -143,8 +145,8 @@ Return strictly a JSON object with this exact schema:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            "temperature": 0.7,
-            "max_tokens": 1600
+            "temperature": 0.5,
+            "max_tokens": 4096
         }
 
         req = urllib.request.Request(
@@ -162,14 +164,27 @@ Return strictly a JSON object with this exact schema:
             print(f"[{datetime.now().isoformat()}] Querying OpenRouter using model: {current_model}...")
             with urllib.request.urlopen(req, timeout=45) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                content = data["choices"][0]["message"]["content"].strip()
+                choice = data.get("choices", [{}])[0]
+                message = choice.get("message", {})
+                content = message.get("content") or choice.get("text") or ""
+                if not content:
+                    print(f"[{datetime.now().isoformat()}] Empty content from model: {data}")
+                    continue
+                content = content.strip()
                 
                 # Strip markdown json blocks if returned
-                if content.startswith("```"):
+                m_match = re.search(r"\{.*\}", content, re.DOTALL)
+                if m_match:
+                    content = m_match.group(0)
+                elif content.startswith("```"):
                     content = re.sub(r"^```(?:json)?\s*", "", content)
                     content = re.sub(r"\s*```$", "", content)
 
-                parsed = json.loads(content)
+                try:
+                    parsed = json.loads(content)
+                except Exception as je:
+                    print(f"[{datetime.now().isoformat()}] JSON parse error from {current_model}: {je}. Raw snippet: {content[:150]}")
+                    continue
                 if isinstance(parsed, dict) and "targetKeyword" in parsed:
                     print(f"[{datetime.now().isoformat()}] LLM generated: {parsed['targetKeyword']}")
                     return parsed, current_model
@@ -191,6 +206,73 @@ def get_curated_fallback(existing_keywords):
     even during OpenRouter daily rate-limit windows.
     """
     curated_pool = [
+        {
+            "targetKeyword": "Shopify Profit Margin and Break-Even RoAS Calculator",
+            "category": "Business",
+            "slug": "/calculators/business/shopify-profit-margin-roas-calculator",
+            "searchVolume": 45000,
+            "difficulty": 24,
+            "cpc": 3.85,
+            "estEcpm": 5.90,
+            "potentialMonthlyTraffic": 14200,
+            "estMonthlyRevenue": 83.78,
+            "prosBangla": [
+                "ই-কমার্স ও ড্রপশিপিং উদ্যোক্তাদের জন্য সবচেয়ে প্রয়োজনীয় ও নিয়মিত ব্যবহৃত টুল।",
+                "উচ্চ সিপিসি এবং অ্যাডস্টেরা/গুগল অ্যাডসেন্স হাই পেয়িং ইকমার্স ক্যাটাগরি।",
+                "ব্রেক-ইভেন রিটার্ন অন অ্যাড স্পেন্ড (RoAS) সরাসরি নির্ণয় করে বিজ্ঞাপনের ক্ষতি ঠেকায়।"
+            ],
+            "consBangla": [
+                "পেমেন্ট গেটওয়ে ফি দেশভেদে কিছুটা ভিন্ন হতে পারে।"
+            ],
+            "spec": {
+                "inputs": [
+                    {"name": "sellingPrice", "type": "number", "label": "Product Selling Price ($)", "defaultValue": 49.99, "unit": "$"},
+                    {"name": "productCost", "type": "number", "label": "Product Cost / COGS ($)", "defaultValue": 18.50, "unit": "$"},
+                    {"name": "shippingCost", "type": "number", "label": "Shipping Cost ($)", "defaultValue": 5.00, "unit": "$"},
+                    {"name": "gatewayFeePercent", "type": "number", "label": "Payment Processing Fee (%)", "defaultValue": 2.9, "unit": "%"},
+                    {"name": "fixedFee", "type": "number", "label": "Fixed Transaction Fee ($)", "defaultValue": 0.30, "unit": "$"}
+                ],
+                "outputs": [
+                    {"name": "netProfit", "label": "Net Profit Per Unit", "unit": "$"},
+                    {"name": "profitMargin", "label": "Net Profit Margin", "unit": "%"},
+                    {"name": "breakEvenRoas", "label": "Target Break-Even RoAS", "unit": "x"}
+                ],
+                "formula": "Total Cost = productCost + shippingCost + (sellingPrice * gatewayFeePercent / 100) + fixedFee; Net Profit = sellingPrice - Total Cost; Break-Even RoAS = sellingPrice / Net Profit",
+                "editorialGuide": "Calculate exact unit economics and break-even advertising targets for e-commerce stores."
+            }
+        },
+        {
+            "targetKeyword": "HVAC Duct Sizing and CFM Airflow Calculator",
+            "category": "Construction",
+            "slug": "/calculators/construction/hvac-duct-sizing-cfm-calculator",
+            "searchVolume": 32000,
+            "difficulty": 26,
+            "cpc": 4.50,
+            "estEcpm": 6.80,
+            "potentialMonthlyTraffic": 9800,
+            "estMonthlyRevenue": 66.64,
+            "prosBangla": [
+                "কনস্ট্রাকশন এবং হোম ইমপ্রুভমেন্টের অন্যতম হাই-সিপিসি ট্রাফিক সোর্স।",
+                "ইঞ্জিনিয়ার এবং কন্ট্রাক্টরদের জন্য জরুরি নির্ভুল এয়ারফ্লো ও ডাক্ট সাইজিং টুল।"
+            ],
+            "consBangla": [
+                "ইনস্টলেশন মেটেরিয়ালের ফ্রিকশন রেটের কারণে ডিজাইনে সামান্য পরিবর্তন হতে পারে।"
+            ],
+            "spec": {
+                "inputs": [
+                    {"name": "roomArea", "type": "number", "label": "Total Room Area (Sq Ft)", "defaultValue": 1500, "unit": "sq ft"},
+                    {"name": "ceilingHeight", "type": "number", "label": "Ceiling Height (Feet)", "defaultValue": 9, "unit": "ft"},
+                    {"name": "airChangesPerHour", "type": "number", "label": "Air Changes Per Hour (ACH)", "defaultValue": 6, "unit": "ACH"},
+                    {"name": "airVelocity", "type": "number", "label": "Duct Air Velocity (FPM)", "defaultValue": 700, "unit": "FPM"}
+                ],
+                "outputs": [
+                    {"name": "requiredCfm", "label": "Total Required Airflow (CFM)", "unit": "CFM"},
+                    {"name": "ductAreaSqInches", "label": "Required Duct Area", "unit": "sq in"}
+                ],
+                "formula": "Volume = roomArea * ceilingHeight; Required CFM = (Volume * airChangesPerHour) / 60; Duct Area = (Required CFM / airVelocity) * 144",
+                "editorialGuide": "Accurate HVAC duct friction sizing guide for contractors and mechanical engineers."
+            }
+        },
         {
             "targetKeyword": "Commercial Real Estate Cap Rate and NOI Calculator",
             "category": "Real Estate",
