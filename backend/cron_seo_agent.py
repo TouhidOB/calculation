@@ -129,6 +129,61 @@ Return strictly a JSON object with this exact schema:
 }}
 """
 
+    # 1. First Priority: OmniRoute local/tunneled endpoint (Fast, unlimited, no rate limits)
+    omniroute_candidates = [
+        "agy/gemini-4-argon",
+        "auto/best-coding",
+        "gemini-3.8-flash-tiered",
+        "auto/best-fast"
+    ]
+    
+    for om_model in omniroute_candidates:
+        payload = {
+            "model": om_model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.3,
+            "max_tokens": 4096
+        }
+        req = urllib.request.Request(
+            "http://127.0.0.1:20128/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"}
+        )
+        try:
+            print(f"[{datetime.now().isoformat()}] Querying OmniRoute using model: {om_model}...")
+            with urllib.request.urlopen(req, timeout=45) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                choice = data.get("choices", [{}])[0]
+                message = choice.get("message", {})
+                content = message.get("content") or choice.get("text") or ""
+                if not content:
+                    continue
+                content = content.strip()
+                m_match = re.search(r"\{.*\}", content, re.DOTALL)
+                if m_match:
+                    content = m_match.group(0)
+                elif content.startswith("```"):
+                    content = re.sub(r"^```(?:json)?\s*", "", content)
+                    content = re.sub(r"\s*```$", "", content)
+                try:
+                    parsed = json.loads(content)
+                except Exception as je:
+                    print(f"[{datetime.now().isoformat()}] JSON parse error from OmniRoute {om_model}: {je}")
+                    continue
+                if isinstance(parsed, dict) and "targetKeyword" in parsed:
+                    print(f"[{datetime.now().isoformat()}] OmniRoute generated successfully: {parsed['targetKeyword']}")
+                    return parsed, f"omniroute:{om_model}"
+        except Exception as e:
+            print(f"[{datetime.now().isoformat()}] OmniRoute notice on model {om_model}: {e}")
+
+    # 2. Second Priority: OpenRouter Free Models fallback
+    if not api_key:
+        print(f"[{datetime.now().isoformat()}] No OpenRouter API key found for fallback.")
+        return None, None
+
     models_to_try = [
         "google/gemma-4-26b-a4b-it:free",
         "google/gemma-4-31b-it:free",
@@ -397,14 +452,12 @@ def run_seo_agent():
     new_item = None
     source_model = "heuristic-curated"
 
-    if api_key:
-        print(f"[{datetime.now().isoformat()}] OpenRouter API Key detected (prefix: {api_key[:12]}...). Requesting LLM...")
-        new_item, source_model = query_openrouter_llm(api_key, existing_keywords)
-    else:
-        print(f"[{datetime.now().isoformat()}] No OpenRouter API key found in env or files.")
+    # Always attempt OmniRoute / LLM first
+    print(f"[{datetime.now().isoformat()}] Initiating AI proposal discovery via OmniRoute / OpenRouter...")
+    new_item, source_model = query_openrouter_llm(api_key, existing_keywords)
 
     if not new_item:
-        print(f"[{datetime.now().isoformat()}] OpenRouter unavailable or exhausted daily quota. Utilizing high-value curated intelligence pool...")
+        print(f"[{datetime.now().isoformat()}] AI endpoints unavailable or rate-limited. Utilizing high-value curated intelligence pool...")
         new_item = get_curated_fallback(existing_keywords)
         source_model = "curated-discovery-pool"
 
