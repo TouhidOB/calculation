@@ -19,52 +19,153 @@ export interface AdBannerProps {
   minHeight?: number | string
 }
 
-interface AdsterraConfig {
-  src: string
+interface AdsterraSlotConfig {
+  key: string
+  invokeUrl: string
   width: number | string
   height: number
   maxWidth: number | string
+  // native slots use a container div instead of atOptions/iframe format
+  isNative?: boolean
 }
 
-const getAdsterraConfig = (variant: AdVariant, isMobile: boolean): AdsterraConfig => {
+const ADSTERRA_SLOTS: Record<string, AdsterraSlotConfig> = {
+  "leaderboard-desktop": {
+    key: "de76315577db984790c237ee9c2956b7",
+    invokeUrl: "https://bauval.org/22/de76315577db984790c237ee9c2956b7",
+    width: 728,
+    height: 90,
+    maxWidth: 728,
+  },
+  "leaderboard-mobile": {
+    key: "588309ac0db6954132d031da985925e6",
+    invokeUrl: "https://bauval.org/22/588309ac0db6954132d031da985925e6",
+    width: 320,
+    height: 50,
+    maxWidth: 320,
+  },
+  rectangle: {
+    key: "2998d7717a6167b642b7e993ac6b83cd",
+    invokeUrl: "https://bauval.org/22/2998d7717a6167b642b7e993ac6b83cd",
+    width: 300,
+    height: 250,
+    maxWidth: 300,
+  },
+  skyscraper: {
+    key: "9c34faf322cd1e96726811c02338f33e",
+    invokeUrl: "https://bauval.org/22/9c34faf322cd1e96726811c02338f33e",
+    width: 160,
+    height: 600,
+    maxWidth: 160,
+  },
+  native: {
+    key: "629019d94e390a3219d8e53e10cec964",
+    invokeUrl: "https://bauval.org/21/629019d94e390a3219d8e53e10cec964",
+    width: "100%",
+    height: 160,
+    maxWidth: "100%",
+    isNative: true,
+  },
+}
+
+function getSlotKey(variant: AdVariant, isMobile: boolean): string {
   switch (variant) {
     case "rectangle":
-      return {
-        src: "/ads/banner-300x250.html",
-        width: 300,
-        height: 250,
-        maxWidth: 300,
-      }
+      return "rectangle"
     case "skyscraper":
-      return {
-        src: "/ads/skyscraper-160x600.html",
-        width: 160,
-        height: 600,
-        maxWidth: 160,
-      }
+      return "skyscraper"
     case "native":
-      return {
-        src: "/ads/native-banner.html",
-        width: "100%",
-        height: 160,
-        maxWidth: "100%",
-      }
+      return "native"
     case "leaderboard":
     default:
-      return isMobile
-        ? {
-            src: "/ads/banner-320x50.html",
-            width: 320,
-            height: 50,
-            maxWidth: 320,
-          }
-        : {
-            src: "/ads/banner-728x90.html",
-            width: 728,
-            height: 90,
-            maxWidth: 728,
-          }
+      return isMobile ? "leaderboard-mobile" : "leaderboard-desktop"
   }
+}
+
+// Injects atOptions + invoke.js directly into the container div (Adsterra SPA pattern).
+// Returns a cleanup function that removes the injected nodes.
+function injectAdsterraSlot(container: HTMLDivElement, config: AdsterraSlotConfig): () => void {
+  // Clear any previous content to prevent duplicate injection on re-render
+  container.innerHTML = ""
+
+  if (config.isNative) {
+    // Native banner: async script + container div (no atOptions)
+    const containerDiv = document.createElement("div")
+    containerDiv.id = `container-${config.key}`
+    container.appendChild(containerDiv)
+
+    const script = document.createElement("script")
+    script.async = true
+    script.dataset.cfasync = "false"
+    script.src = config.invokeUrl
+    container.appendChild(script)
+
+    return () => {
+      container.innerHTML = ""
+    }
+  }
+
+  // Standard banner: atOptions config script + invoke.js script
+  const optionsScript = document.createElement("script")
+  optionsScript.type = "text/javascript"
+  optionsScript.text = [
+    "atOptions = {",
+    `  'key': '${config.key}',`,
+    "  'format': 'iframe',",
+    `  'height': ${config.height},`,
+    `  'width': ${config.width},`,
+    "  'params': {}",
+    "};",
+  ].join("\n")
+  container.appendChild(optionsScript)
+
+  const invokeScript = document.createElement("script")
+  invokeScript.type = "text/javascript"
+  invokeScript.src = config.invokeUrl
+  container.appendChild(invokeScript)
+
+  return () => {
+    container.innerHTML = ""
+  }
+}
+
+function AdsterraSlot({ slotKey }: { slotKey: string }) {
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const injectedKey = useRef<string | null>(null)
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    // Skip re-injection if slotKey unchanged (avoids duplicate on StrictMode double-invoke)
+    if (injectedKey.current === slotKey) return
+    injectedKey.current = slotKey
+
+    const config = ADSTERRA_SLOTS[slotKey]
+    if (!config) return
+
+    const cleanup = injectAdsterraSlot(container, config)
+    return () => {
+      injectedKey.current = null
+      cleanup()
+    }
+  }, [slotKey])
+
+  const config = ADSTERRA_SLOTS[slotKey]
+  if (!config) return null
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: config.width,
+        height: config.height,
+        maxWidth: config.maxWidth,
+        margin: "0 auto",
+        overflow: "hidden",
+      }}
+    />
+  )
 }
 
 export default function AdBanner({
@@ -82,30 +183,8 @@ export default function AdBanner({
   const adsenseRef = useRef<HTMLModElement | null>(null)
   const isPushed = useRef(false)
 
-  // Screen size detection (mobile < 768px vs desktop >= 768px)
   const [isMobile, setIsMobile] = useState<boolean>(false)
 
-  // Guard: NEVER render any AdBanner on /imon admin pages or internal routes
-  if (
-    pathname?.startsWith("/imon") ||
-    pathname?.startsWith("/embed") ||
-    pathname?.startsWith("/api")
-  ) {
-    return null
-  }
-
-  // Map format or variant prop
-  const effectiveVariant: AdVariant =
-    variant !== "auto"
-      ? variant
-      : format === "rectangle"
-      ? "rectangle"
-      : "leaderboard"
-
-  // Allow switching to AdSense if explicitly passed and active, default to Adsterra
-  const useAdSense = (provider === "adsense" || (Boolean(slot) && provider !== "adsterra")) && Boolean(slot)
-
-  // Dynamic resize listener for mobile screen detection
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 768
@@ -116,8 +195,28 @@ export default function AdBanner({
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  // AdSense execution fallback
+  // Guard: never render ads on admin/embed/api routes
+  if (
+    pathname?.startsWith("/imon") ||
+    pathname?.startsWith("/embed") ||
+    pathname?.startsWith("/api")
+  ) {
+    return null
+  }
+
+  const effectiveVariant: AdVariant =
+    variant !== "auto"
+      ? variant
+      : format === "rectangle"
+      ? "rectangle"
+      : "leaderboard"
+
+  const useAdSense =
+    (provider === "adsense" || (Boolean(slot) && provider !== "adsterra")) && Boolean(slot)
+
   const publisherId = "ca-pub-2861472312283458"
+
+  // AdSense push (only once per mount)
   useEffect(() => {
     if (!useAdSense || isPushed.current) return
     try {
@@ -127,11 +226,12 @@ export default function AdBanner({
         isPushed.current = true
       }
     } catch {
-      // Ignore adsbygoogle errors
+      // ignore
     }
   }, [useAdSense, pathname])
 
-  const adConfig = getAdsterraConfig(effectiveVariant, isMobile)
+  const slotKey = getSlotKey(effectiveVariant, isMobile)
+  const adConfig = ADSTERRA_SLOTS[slotKey]
 
   const calculatedMinHeight =
     minHeight ??
@@ -208,8 +308,8 @@ export default function AdBanner({
         <Box
           sx={{
             width: "100%",
-            maxWidth: adConfig.maxWidth,
-            height: adConfig.height,
+            maxWidth: adConfig?.maxWidth ?? "100%",
+            height: adConfig?.height ?? "auto",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -217,24 +317,7 @@ export default function AdBanner({
             mx: "auto",
           }}
         >
-          <iframe
-            key={`${pathname || ""}-${effectiveVariant}-${isMobile ? "m" : "d"}`}
-            src={`${adConfig.src}?p=${encodeURIComponent(pathname || "")}`}
-            title="Advertisement"
-            width={adConfig.width}
-            height={adConfig.height}
-            loading="eager"
-            scrolling="no"
-            frameBorder="0"
-            allow="autoplay 'none'; camera 'none'; microphone 'none'"
-            style={{
-              border: 0,
-              overflow: "hidden",
-              display: "block",
-              maxWidth: "100%",
-              margin: "0 auto",
-            }}
-          />
+          <AdsterraSlot key={slotKey} slotKey={slotKey} />
         </Box>
       )}
     </Box>
