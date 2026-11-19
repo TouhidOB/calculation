@@ -23,6 +23,9 @@ export function seoMetaDescriptionFor(calc: CalculatorDef): string {
  * 40-55 word direct answer capsule targeted for Google AI Overviews, Perplexity & ChatGPT Search.
  */
 export function seoDirectAnswerFor(calc: CalculatorDef): string {
+  if ((calc as any).directAnswer && typeof (calc as any).directAnswer === "string") {
+    return (calc as any).directAnswer
+  }
   const name = calc.name.toLowerCase()
 
   if (name.includes("mortgage")) {
@@ -109,6 +112,9 @@ export interface WorkedExample {
 }
 
 export function seoWorkedExampleFor(calc: CalculatorDef): WorkedExample {
+  if ((calc as any).practicalExamples && Array.isArray((calc as any).practicalExamples) && (calc as any).practicalExamples.length > 0) {
+    return (calc as any).practicalExamples[0]
+  }
   const name = calc.name.toLowerCase()
 
   if (name.includes("token") || name.includes("ai prompt") || calc.category === "ai_helper") {
@@ -408,6 +414,12 @@ export function seoWorkedExampleFor(calc: CalculatorDef): WorkedExample {
  * Domain-specific, highly relevant FAQs (E-E-A-T compliant) preventing thin-content penalties.
  */
 export function seoFaqFor(calc: CalculatorDef): { q: string; a: string }[] {
+  if ((calc as any).faqs && Array.isArray((calc as any).faqs) && (calc as any).faqs.length > 0) {
+    return (calc as any).faqs
+  }
+  if ((calc as any).spec?.faqs && Array.isArray((calc as any).spec.faqs) && (calc as any).spec.faqs.length > 0) {
+    return (calc as any).spec.faqs
+  }
   const name = calc.name.toLowerCase()
   const cat = CATEGORY_META[calc.category]?.label || "General"
 
@@ -647,6 +659,20 @@ export interface FormulaInfo {
 }
 
 export function seoFormulaFor(calc: CalculatorDef): FormulaInfo {
+  if ((calc as any).formulaInfo && typeof (calc as any).formulaInfo === "object") {
+    return (calc as any).formulaInfo
+  }
+  if ((calc as any).formula && typeof (calc as any).formula === "string") {
+    return {
+      formula: (calc as any).formula,
+      explanation: `Deterministic formula model evaluated by the ${calc.name} calculation engine.`,
+      variables: (calc.fields || []).slice(0, 4).map((f) => ({
+        symbol: f.name,
+        meaning: `${f.label} (${f.unit || "unit"})`,
+      })),
+      source: "TryCalc Mathematics & Algorithmic Engine (2026)",
+    }
+  }
   const name = calc.name.toLowerCase()
 
   if (name.includes("token") || name.includes("ai prompt") || calc.category === "ai_helper") {

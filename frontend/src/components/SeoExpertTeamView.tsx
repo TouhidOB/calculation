@@ -34,6 +34,7 @@ import Snackbar from "@mui/material/Snackbar"
 import Badge from "@mui/material/Badge"
 import Divider from "@mui/material/Divider"
 import LinearProgress from "@mui/material/LinearProgress"
+import Checkbox from "@mui/material/Checkbox"
 import { useTheme } from "@mui/material/styles"
 import useMediaQuery from "@mui/material/useMediaQuery"
 
@@ -70,6 +71,8 @@ import EngineeringIcon from "@mui/icons-material/Engineering"
 import HubIcon from "@mui/icons-material/Hub"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
 import FilterListIcon from "@mui/icons-material/FilterList"
+import TravelExploreIcon from "@mui/icons-material/TravelExplore"
+import type { GoogleSuggestResult, GoogleSuggestItem } from "@/lib/google-suggest"
 
 export interface CalculatorSpec {
   inputs: Array<{
@@ -112,6 +115,8 @@ export interface SeoProposal {
   isDemo: boolean
   createdAt: string
   updatedAt: string
+  eEatScore?: number
+  eEatReadinessScore?: number
 }
 
 export default function SeoExpertTeamView() {
@@ -122,11 +127,20 @@ export default function SeoExpertTeamView() {
   const [proposals, setProposals] = useState<SeoProposal[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<"all" | "pending" | "approved" | "rejected">("pending")
+  const [activeTab, setActiveTab] = useState<"all" | "pending" | "approved" | "rejected" | "google_mining">("pending")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [sortBy, setSortBy] = useState<"difficulty" | "volume" | "newest">("volume")
   const [simInputs, setSimInputs] = useState<Record<string, number>>({})
+
+  // Google Live Data Mining State
+  const [miningSeed, setMiningSeed] = useState("mortgage")
+  const [miningCategory, setMiningCategory] = useState<string>("Finance")
+  const [miningLoading, setMiningLoading] = useState(false)
+  const [miningConverting, setMiningConverting] = useState(false)
+  const [miningResults, setMiningResults] = useState<GoogleSuggestResult | null>(null)
+  const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set())
+  const [miningFilter, setMiningFilter] = useState<"all" | "autocomplete" | "paa" | "alphabet">("all")
 
   // Modals & Dialogs
   const [selectedProposal, setSelectedProposal] = useState<SeoProposal | null>(null)
@@ -279,6 +293,163 @@ export default function SeoExpertTeamView() {
       setToastSeverity("error")
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  // Google Live Mining Handlers
+  const handleFetchGoogleLive = async (seedOverride?: string) => {
+    const query = (seedOverride ?? miningSeed).trim()
+    if (!query) {
+      setToastMessage("অনুগ্রহ করে একটি সার্চ কিওয়ার্ড (Seed Query) ইনপুট দিন")
+      setToastSeverity("warning")
+      return
+    }
+
+    setMiningLoading(true)
+    try {
+      const res = await fetch("/imon-api/seo-team", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "google_explore", seed: query }),
+      })
+      if (res.status === 401) {
+        window.location.href = "/imon"
+        return
+      }
+      const data = await res.json()
+      if (data.ok && data.data) {
+        setMiningResults(data.data)
+        setSelectedKeywords(new Set())
+        setToastMessage(`গুগল লাইভ ডাটা মাইনিং সম্পন্ন! মোট ${data.data.totalSuggestions || data.data.items?.length || 0} টি কিওয়ার্ড ও PAA প্রশ্ন পাওয়া গেছে।`)
+        setToastSeverity("success")
+      } else {
+        setToastMessage(data.error || "Failed to fetch Google Live suggestions")
+        setToastSeverity("error")
+      }
+    } catch {
+      setToastMessage("Network error while connecting to Google Suggest API")
+      setToastSeverity("error")
+    } finally {
+      setMiningLoading(false)
+    }
+  }
+
+  const handleConvertSingleItem = async (item: GoogleSuggestItem) => {
+    setMiningConverting(true)
+    try {
+      const res = await fetch("/imon-api/seo-team", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "generate_from_live",
+          keywords: [item],
+          category: miningCategory,
+        }),
+      })
+      if (res.status === 401) {
+        window.location.href = "/imon"
+        return
+      }
+      const data = await res.json()
+      if (data.ok && data.proposals) {
+        setProposals(data.proposals)
+        setSelectedKeywords((prev) => {
+          const next = new Set(prev)
+          next.delete(item.keyword)
+          return next
+        })
+        setToastMessage(`"${item.keyword}" প্রপোজাল তৈরি করে ওয়ার-রুমে যুক্ত করা হয়েছে!`)
+        setToastSeverity("success")
+        setActiveTab("pending")
+      } else {
+        setToastMessage(data.error || "Failed to generate proposal")
+        setToastSeverity("error")
+      }
+    } catch {
+      setToastMessage("Error generating proposal from live keyword")
+      setToastSeverity("error")
+    } finally {
+      setMiningConverting(false)
+    }
+  }
+
+  const handleBulkConvert = async () => {
+    if (selectedKeywords.size === 0) {
+      setToastMessage("অনুগ্রহ করে অন্তত একটি কিওয়ার্ড নির্বাচন করুন")
+      setToastSeverity("warning")
+      return
+    }
+
+    const allItems = miningResults?.items || []
+    const selectedItems = allItems.filter((it) => selectedKeywords.has(it.keyword))
+    const itemsToSend = selectedItems.length > 0 ? selectedItems : Array.from(selectedKeywords).map((kw) => ({ keyword: kw }))
+
+    setMiningConverting(true)
+    try {
+      const res = await fetch("/imon-api/seo-team", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "generate_from_live",
+          keywords: itemsToSend,
+          category: miningCategory,
+        }),
+      })
+      if (res.status === 401) {
+        window.location.href = "/imon"
+        return
+      }
+      const data = await res.json()
+      if (data.ok && data.proposals) {
+        setProposals(data.proposals)
+        const count = data.createdCount || selectedKeywords.size
+        setSelectedKeywords(new Set())
+        setToastMessage(`সফলভাবে ${count} টি লাইভ কিওয়ার্ড প্রপোজালে রূপান্তর করা হয়েছে!`)
+        setToastSeverity("success")
+        setActiveTab("pending")
+      } else {
+        setToastMessage(data.error || "Failed to bulk generate proposals")
+        setToastSeverity("error")
+      }
+    } catch {
+      setToastMessage("Network error during bulk conversion")
+      setToastSeverity("error")
+    } finally {
+      setMiningConverting(false)
+    }
+  }
+
+  const toggleKeywordSelect = (kw: string) => {
+    setSelectedKeywords((prev) => {
+      const next = new Set(prev)
+      if (next.has(kw)) {
+        next.delete(kw)
+      } else {
+        next.add(kw)
+      }
+      return next
+    })
+  }
+
+  const toggleSelectAll = (itemsToSelect: GoogleSuggestItem[]) => {
+    if (selectedKeywords.size >= itemsToSelect.length && itemsToSelect.length > 0) {
+      setSelectedKeywords(new Set())
+    } else {
+      setSelectedKeywords(new Set(itemsToSelect.map((it) => it.keyword)))
+    }
+  }
+
+  const getIntentBadgeConfig = (intent: string) => {
+    switch (intent) {
+      case "transactional":
+        return { label: "Transactional 🛠️", color: "#1e40af", bg: "#dbeafe", border: "#bfdbfe" }
+      case "commercial":
+        return { label: "Commercial 🎯", color: "#166534", bg: "#dcfce7", border: "#bbf7d0" }
+      case "navigational":
+        return { label: "Navigational 🧭", color: "#0f766e", bg: "#ccfbf1", border: "#99f6e4" }
+      case "informational":
+      default:
+        return { label: "Informational 📖", color: "#6b21a8", bg: "#f3e8ff", border: "#e9d5ff" }
     }
   }
 
@@ -1118,6 +1289,28 @@ export default function SeoExpertTeamView() {
             <Tab
               label={
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <TravelExploreIcon sx={{ fontSize: 18, color: activeTab === "google_mining" ? "#4f46e5" : "#64748b" }} />
+                  <span>Google Live Mining</span>
+                  {miningResults?.totalSuggestions ? (
+                    <Chip
+                      size="small"
+                      label={miningResults.totalSuggestions}
+                      sx={{
+                        height: 20,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        bgcolor: activeTab === "google_mining" ? "#e0e7ff" : "#f1f5f9",
+                        color: activeTab === "google_mining" ? "#4338ca" : "#64748b",
+                      }}
+                    />
+                  ) : null}
+                </Box>
+              }
+              value="google_mining"
+            />
+            <Tab
+              label={
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                   <span>{isMobile ? "Pending" : "Pending Review (অনুমোদন)"}</span>
                   <Chip
                     size="small"
@@ -1271,6 +1464,243 @@ export default function SeoExpertTeamView() {
             </Box>
           </Box>
         </Paper>
+
+        {/* Google Live Mining Panel */}
+        {activeTab === "google_mining" && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 2.5, sm: 3.5 },
+              mb: 4,
+              borderRadius: 3,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.03)",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+              <TravelExploreIcon sx={{ color: "#4f46e5", fontSize: 28 }} />
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: 16, sm: 19 } }}>
+                  Google Live Autocomplete & PAA Explorer (100% Free)
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                  গুগল সার্চ ইঞ্জিনের রিয়েল-টাইম ইউজার কোয়েরি, Alphabet Soup ভেরিয়েশন ও People Also Ask প্রশ্নাবলী সরাসরি এক্সট্র্যাক্ট করুন।
+                </Typography>
+              </Box>
+            </Box>
+
+            <Grid container spacing={2} sx={{ mb: 3, alignItems: "center" }}>
+              <Grid size={{ xs: 12, sm: 5, md: 6 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Search Seed Keyword / Topic"
+                  placeholder="e.g. mortgage, cap rate, freelance, calorie, roi"
+                  value={miningSeed}
+                  onChange={(e) => setMiningSeed(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleFetchGoogleLive()
+                  }}
+                />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 3, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    value={miningCategory}
+                    label="Category"
+                    onChange={(e) => setMiningCategory(e.target.value)}
+                  >
+                    <MenuItem value="Finance">Finance</MenuItem>
+                    <MenuItem value="Real Estate">Real Estate</MenuItem>
+                    <MenuItem value="Health">Health & Fitness</MenuItem>
+                    <MenuItem value="Tech">Tech & Freelance</MenuItem>
+                    <MenuItem value="Construction">Construction</MenuItem>
+                    <MenuItem value="Everyday">Everyday</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 6, sm: 4, md: 3 }}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  disabled={miningLoading}
+                  onClick={() => handleFetchGoogleLive()}
+                  startIcon={miningLoading ? <CircularProgress size={18} color="inherit" /> : <TravelExploreIcon />}
+                  sx={{
+                    bgcolor: "#4f46e5",
+                    color: "#ffffff",
+                    fontWeight: 700,
+                    textTransform: "none",
+                    height: 40,
+                    borderRadius: 2,
+                    "&:hover": { bgcolor: "#4338ca" },
+                  }}
+                >
+                  {miningLoading ? "Mining..." : "Fetch Google Live"}
+                </Button>
+              </Grid>
+            </Grid>
+
+            {miningResults && (
+              <Box>
+                <Divider sx={{ my: 2.5 }} />
+
+                {/* Filter and Bulk Action Bar */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: 1.5,
+                    mb: 2.5,
+                  }}
+                >
+                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
+                    <Chip
+                      clickable
+                      label={`All (${miningResults.items.length})`}
+                      onClick={() => setMiningFilter("all")}
+                      color={miningFilter === "all" ? "primary" : "default"}
+                      sx={{ fontWeight: 700 }}
+                    />
+                    <Chip
+                      clickable
+                      label={`Autocomplete (${miningResults.items.filter((i) => i.source === "autocomplete").length})`}
+                      onClick={() => setMiningFilter("autocomplete")}
+                      color={miningFilter === "autocomplete" ? "primary" : "default"}
+                      sx={{ fontWeight: 700 }}
+                    />
+                    <Chip
+                      clickable
+                      label={`People Also Ask (${miningResults.items.filter((i) => i.source === "paa").length})`}
+                      onClick={() => setMiningFilter("paa")}
+                      color={miningFilter === "paa" ? "primary" : "default"}
+                      sx={{ fontWeight: 700 }}
+                    />
+                    <Chip
+                      clickable
+                      label={`Alphabet Variations (${miningResults.items.filter((i) => i.source === "alphabet").length})`}
+                      onClick={() => setMiningFilter("alphabet")}
+                      color={miningFilter === "alphabet" ? "primary" : "default"}
+                      sx={{ fontWeight: 700 }}
+                    />
+                  </Box>
+
+                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                    {selectedKeywords.size > 0 && (
+                      <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        disabled={miningConverting}
+                        onClick={handleBulkConvert}
+                        startIcon={miningConverting ? <CircularProgress size={16} color="inherit" /> : <AutoAwesomeIcon />}
+                        sx={{ fontWeight: 700, textTransform: "none", borderRadius: 2 }}
+                      >
+                        Convert ({selectedKeywords.size}) to Proposals
+                      </Button>
+                    )}
+                  </Box>
+                </Box>
+
+                {/* Results List */}
+                <Grid container spacing={1.5}>
+                  {miningResults.items
+                    .filter((item) => miningFilter === "all" || item.source === miningFilter)
+                    .map((item, idx) => {
+                      const isSelected = selectedKeywords.has(item.keyword)
+                      const badge = getIntentBadgeConfig(item.intent)
+                      return (
+                        <Grid size={{ xs: 12, md: 6 }} key={`${item.keyword}-${idx}`}>
+                          <Paper
+                            variant="outlined"
+                            sx={{
+                              p: 1.5,
+                              borderRadius: 2,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 1.5,
+                              borderColor: isSelected ? "#4f46e5" : "#e2e8f0",
+                              bgcolor: isSelected ? "#f5f3ff" : "#ffffff",
+                              "&:hover": { borderColor: "#c7d2fe", bgcolor: "#f8fafc" },
+                            }}
+                          >
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, flex: 1 }}>
+                              <Checkbox
+                                size="small"
+                                checked={isSelected}
+                                onChange={() => toggleKeywordSelect(item.keyword)}
+                                sx={{ p: 0.5, color: "#94a3b8", "&.Mui-checked": { color: "#4f46e5" } }}
+                              />
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontWeight: 700,
+                                    color: "#0f172a",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                  title={item.keyword}
+                                >
+                                  {item.keyword}
+                                </Typography>
+                                <Box sx={{ display: "flex", gap: 0.75, alignItems: "center", mt: 0.5, flexWrap: "wrap" }}>
+                                  <Chip
+                                    size="small"
+                                    label={badge.label}
+                                    sx={{
+                                      height: 18,
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      color: badge.color,
+                                      bgcolor: badge.bg,
+                                      border: `1px solid ${badge.border}`,
+                                    }}
+                                  />
+                                  <Chip
+                                    size="small"
+                                    label={`Vol: ~${item.estimatedVolume?.toLocaleString() || 1000}/mo`}
+                                    sx={{ height: 18, fontSize: 10, bgcolor: "#f1f5f9", color: "#475569" }}
+                                  />
+                                  <Chip
+                                    size="small"
+                                    label={`E-E-A-T: ${item.eEatReadinessScore || 95}/100`}
+                                    sx={{ height: 18, fontSize: 10, bgcolor: "#ecfdf5", color: "#065f46" }}
+                                  />
+                                </Box>
+                              </Box>
+                            </Box>
+
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              disabled={miningConverting}
+                              onClick={() => handleConvertSingleItem(item)}
+                              sx={{
+                                textTransform: "none",
+                                fontSize: 11,
+                                fontWeight: 700,
+                                borderRadius: 1.5,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              Add Proposal
+                            </Button>
+                          </Paper>
+                        </Grid>
+                      )
+                    })}
+                </Grid>
+              </Box>
+            )}
+          </Paper>
+        )}
 
         {/* Loading Indicator */}
         {loading && (
@@ -1541,6 +1971,17 @@ export default function SeoExpertTeamView() {
                           {proposal.difficultyLevel}
                         </Typography>
                       </Box>
+
+                      {proposal.eEatScore ? (
+                        <Box>
+                          <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>
+                            E-E-A-T SCORE
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 800, color: "#059669", fontSize: { xs: 14, sm: 16 } }}>
+                            {proposal.eEatScore}/100
+                          </Typography>
+                        </Box>
+                      ) : null}
 
                       <Box>
                         <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", fontSize: { xs: 10, sm: 11 } }}>

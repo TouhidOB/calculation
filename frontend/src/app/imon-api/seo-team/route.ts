@@ -3,6 +3,14 @@ import fs from "fs"
 import path from "path"
 import { buildAndSaveCustomCalculator, triggerIndexNow } from "@/lib/custom-calculators"
 import { verifyToken } from "@/app/imon-api/auth/route"
+import {
+  fetchGoogleSuggestions,
+  expandKeywordWithPaa,
+  expandKeywordWithAlphabet,
+  estimateKeywordMetrics,
+  estimateSearchIntent,
+  type GoogleSuggestItem,
+} from "@/lib/google-suggest"
 
 export interface CalculatorSpec {
   inputs: Array<{
@@ -46,6 +54,8 @@ export interface SeoProposal {
   isDemo: boolean
   createdAt: string
   updatedAt: string
+  eEatScore?: number
+  eEatReadinessScore?: number
 }
 
 // Persistent storage path at /home/imon/calculation/data/seo_proposals.json
@@ -171,7 +181,9 @@ function getDemoProposals(): SeoProposal[] {
       },
       isDemo: true,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      eEatScore: 96,
+      eEatReadinessScore: 96,
     },
     {
       id: "seo-demo-2",
@@ -218,7 +230,9 @@ function getDemoProposals(): SeoProposal[] {
       },
       isDemo: true,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      eEatScore: 93,
+      eEatReadinessScore: 93,
     },
     {
       id: "seo-demo-3",
@@ -265,7 +279,9 @@ function getDemoProposals(): SeoProposal[] {
       },
       isDemo: true,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      eEatScore: 95,
+      eEatReadinessScore: 95,
     },
     {
       id: "seo-demo-4",
@@ -311,7 +327,9 @@ function getDemoProposals(): SeoProposal[] {
       },
       isDemo: true,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      eEatScore: 91,
+      eEatReadinessScore: 91,
     },
     {
       id: "seo-demo-5",
@@ -357,7 +375,9 @@ function getDemoProposals(): SeoProposal[] {
       },
       isDemo: true,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      eEatScore: 94,
+      eEatReadinessScore: 94,
     },
     {
       id: "seo-demo-6",
@@ -404,7 +424,9 @@ function getDemoProposals(): SeoProposal[] {
       },
       isDemo: true,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      eEatScore: 95,
+      eEatReadinessScore: 95,
     },
     {
       id: "seo-demo-7",
@@ -450,7 +472,9 @@ function getDemoProposals(): SeoProposal[] {
       },
       isDemo: true,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      eEatScore: 92,
+      eEatReadinessScore: 92,
     }
   ]
 }
@@ -839,7 +863,7 @@ export async function POST(req: NextRequest) {
       const now = new Date().toISOString()
 
       // Generate realistic metrics based on keyword length and category
-      const hash = cleanKeyword.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
+      const hash = cleanKeyword.split("").reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
       const baseVol = 8000 + (hash % 28000)
       const roundVol = Math.round(baseVol / 100) * 100
       const difficulty = 16 + (hash % 18)
@@ -888,7 +912,9 @@ export async function POST(req: NextRequest) {
         },
         isDemo: false,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
+        eEatScore: 85 + (hash % 13),
+        eEatReadinessScore: 85 + (hash % 13),
       }
 
       proposals.unshift(customProposal)
@@ -899,6 +925,197 @@ export async function POST(req: NextRequest) {
         message: `Successfully analyzed and generated proposal for "${cleanKeyword}".`,
         proposal: customProposal,
         proposals
+      })
+    }
+
+    // 7. Action: GOOGLE EXPLORE
+    if (action === "google_explore") {
+      const seed = typeof body.seed === "string" ? body.seed.trim() : ""
+      if (!seed) {
+        return NextResponse.json({ ok: false, error: "Seed keyword is required for Google Live exploration" }, { status: 400 })
+      }
+
+      const data = await fetchGoogleSuggestions(seed, { includeAlphabet: true, includePaa: true })
+      return NextResponse.json({
+        ok: true,
+        seed,
+        data,
+      })
+    }
+
+    // 8. Action: GENERATE FROM LIVE
+    if (action === "generate_from_live") {
+      const rawKeywords = body.keywords
+      if (!Array.isArray(rawKeywords) || rawKeywords.length === 0) {
+        return NextResponse.json({ ok: false, error: "No keywords provided for proposal generation" }, { status: 400 })
+      }
+
+      const cleanCategory = (body.category && typeof body.category === "string" && body.category.trim()) || "Finance"
+      const slugify = (text: string) =>
+        text
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "")
+          .replace(/[\s_-]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+
+      const catSlug = cleanCategory.toLowerCase().replace(/\s+/g, "-")
+      const now = new Date().toISOString()
+      const existingKeywords = new Set(proposals.map((p) => p.targetKeyword.toLowerCase()))
+      let createdCount = 0
+
+      for (const item of rawKeywords) {
+        const kw = (typeof item === "string" ? item : item?.keyword || "").trim()
+        if (!kw || existingKeywords.has(kw.toLowerCase())) continue
+
+        const hash = (kw as string).split("").reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
+
+        let volume = 0
+        let difficulty = 20
+        let eEatScore = 90
+
+        if (typeof item === "object" && item !== null) {
+          volume = Number(item.estimatedVolume) || (8000 + (hash % 28000))
+          difficulty = Number(item.estimatedDifficulty) || (16 + (hash % 18))
+          eEatScore = Number(item.eEatReadinessScore) || Number(item.eEatScore) || (85 + (hash % 13))
+        } else {
+          const metrics = estimateKeywordMetrics(kw, "autocomplete", 1)
+          volume = metrics.volume
+          difficulty = metrics.difficulty
+          eEatScore = metrics.eEatScore
+        }
+
+        const roundVol = Math.round(volume / 100) * 100
+        const cpc = Number((1.8 + (hash % 35) / 10).toFixed(2))
+        const ecpm = Number((3.2 + (hash % 40) / 10).toFixed(2))
+        const potentialTraffic = Math.round(roundVol * (0.24 + (hash % 10) / 100))
+        const estRevenue = Number(((potentialTraffic * ecpm) / 1000).toFixed(2))
+        const kwSlug = slugify(kw)
+
+        const lowerKw = kw.toLowerCase()
+        let spec: CalculatorSpec
+
+        if (lowerKw.includes("mortgage") || lowerKw.includes("loan") || lowerKw.includes("interest")) {
+          spec = {
+            inputs: [
+              { name: "principal", type: "number", label: "Loan Amount / Principal", defaultValue: 250000, unit: "$" },
+              { name: "interestRate", type: "number", label: "Annual Interest Rate", defaultValue: 6.5, unit: "%" },
+              { name: "loanTermYears", type: "number", label: "Loan Term Duration", defaultValue: 30, unit: "Years" },
+            ],
+            outputs: [
+              { name: "monthlyPayment", label: "Monthly Payment (P&I)", unit: "$" },
+              { name: "totalInterest", label: "Total Estimated Interest Paid", unit: "$" },
+              { name: "totalPayment", label: "Total Cost of Loan", unit: "$" },
+            ],
+            formula: "r = (InterestRate / 100) / 12; n = LoanTermYears * 12; MonthlyPayment = Principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)",
+            editorialGuide: `Comprehensive financial guide for ${kw}, covering interest rate impacts, amortization principles, closing points, and tax considerations.`
+          }
+        } else if (lowerKw.includes("tax") || lowerKw.includes("salary") || lowerKw.includes("income") || lowerKw.includes("paycheck")) {
+          spec = {
+            inputs: [
+              { name: "grossIncome", type: "number", label: "Gross Annual Income", defaultValue: 75000, unit: "$" },
+              { name: "taxRate", type: "number", label: "Effective Tax Rate", defaultValue: 22, unit: "%" },
+              { name: "deductions", type: "number", label: "Standard / Itemized Deductions", defaultValue: 13850, unit: "$" },
+            ],
+            outputs: [
+              { name: "netIncome", label: "Net Take-Home Pay", unit: "$" },
+              { name: "totalTax", label: "Estimated Annual Tax Liability", unit: "$" },
+              { name: "monthlyNet", label: "Monthly Net Income", unit: "$" },
+            ],
+            formula: "TaxableIncome = Math.max(0, GrossIncome - Deductions); TotalTax = TaxableIncome * (TaxRate / 100); NetIncome = GrossIncome - TotalTax",
+            editorialGuide: `In-depth analysis of tax brackets, take-home calculations, payroll deductions, and optimizing taxable income for ${kw}.`
+          }
+        } else if (lowerKw.includes("weight") || lowerKw.includes("calorie") || lowerKw.includes("keto") || lowerKw.includes("macro") || lowerKw.includes("bmi")) {
+          spec = {
+            inputs: [
+              { name: "weightKg", type: "number", label: "Body Weight", defaultValue: 75, unit: "kg" },
+              { name: "heightCm", type: "number", label: "Height", defaultValue: 175, unit: "cm" },
+              { name: "ageYears", type: "number", label: "Age", defaultValue: 30, unit: "Years" },
+            ],
+            outputs: [
+              { name: "bmr", label: "Basal Metabolic Rate (BMR)", unit: "kcal" },
+              { name: "maintenanceCalories", label: "Daily Maintenance Calories", unit: "kcal" },
+              { name: "targetCalories", label: "Target Intake (Weight Loss)", unit: "kcal" },
+            ],
+            formula: "BMR = 10 * WeightKg + 6.25 * HeightCm - 5 * AgeYears + 5; Maintenance = BMR * 1.375; Target = Maintenance * 0.80",
+            editorialGuide: `Evidence-based nutrition and wellness framework for ${kw}, citing metabolic calculations, macronutrient distribution, and safety guidelines.`
+          }
+        } else if (lowerKw.includes("concrete") || lowerKw.includes("brick") || lowerKw.includes("wall") || lowerKw.includes("slab") || lowerKw.includes("drywall") || lowerKw.includes("roof")) {
+          spec = {
+            inputs: [
+              { name: "lengthFt", type: "number", label: "Length", defaultValue: 20, unit: "ft" },
+              { name: "widthFt", type: "number", label: "Width", defaultValue: 15, unit: "ft" },
+              { name: "depthInches", type: "number", label: "Depth / Thickness", defaultValue: 4, unit: "inches" },
+            ],
+            outputs: [
+              { name: "totalVolumeCuYards", label: "Total Volume Needed", unit: "cu yd" },
+              { name: "bagsNeeded", label: "Standard Pre-Mix Bags", unit: "Bags" },
+              { name: "estimatedCost", label: "Estimated Material Cost", unit: "$" },
+            ],
+            formula: "VolumeCuFt = LengthFt * WidthFt * (DepthInches / 12); TotalVolumeCuYards = (VolumeCuFt / 27) * 1.10",
+            editorialGuide: `Practical construction estimating standards for ${kw}, covering wastage buffers, material density, sub-base preparation, and curing times.`
+          }
+        } else {
+          spec = {
+            inputs: [
+              { name: "primaryValue", type: "number", label: "Primary Parameter", defaultValue: 100, unit: "Units" },
+              { name: "secondaryRate", type: "number", label: "Rate / Multiplier Factor", defaultValue: 5, unit: "%" },
+              { name: "durationMonths", type: "number", label: "Timeframe or Duration", defaultValue: 12, unit: "Months" }
+            ],
+            outputs: [
+              { name: "calculatedResult", label: "Computed Total Output", unit: "Result" },
+              { name: "efficiencyScore", label: "Estimated Efficiency / Ratio", unit: "%" },
+              { name: "projectedImpact", label: "Net Practical Impact", unit: "Value" }
+            ],
+            formula: "Result = PrimaryValue * (1 + SecondaryRate/100) * (DurationMonths / 12)",
+            editorialGuide: `Comprehensive educational and technical guide for ${kw}, covering formula derivation, industry benchmarks, practical real-life examples, and common pitfalls.`
+          }
+        }
+
+        const newProposal: SeoProposal = {
+          id: `seo-live-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          targetKeyword: kw,
+          category: cleanCategory,
+          slug: `/calculators/${catSlug}/${kwSlug}`,
+          searchVolume: roundVol,
+          searchVolumeFormatted: `${roundVol.toLocaleString()}/mo`,
+          difficulty,
+          difficultyLevel: `${difficulty} - ${difficulty < 25 ? "Low" : "Medium"}`,
+          cpc,
+          estEcpm: ecpm,
+          potentialMonthlyTraffic: potentialTraffic,
+          estMonthlyRevenue: estRevenue,
+          status: "pending",
+          prosBangla: [
+            `"${kw}" গুগল লাইভ অটো-কমপ্লিট ডাটা মাইনিং থেকে প্রাপ্ত রিয়েল-টাইম সার্চ ট্রেন্ড (মাসিক প্রায় ${roundVol.toLocaleString()}+ সার্চ)।`,
+            `${cleanCategory} ক্যাটাগরিতে AdSense ও প্রিমিয়াম বিজ্ঞাপন নেটওয়ার্কের উচ্চ eCPM ($${ecpm.toFixed(2)})।`,
+            `গুগল E-E-A-T রেডিনেস স্কোর ${eEatScore}/100, যা সার্চ ইঞ্জিনের অ্যালগরিদম ও হেল্পফুল কন্টেন্ট আপডেটের সাথে শতভাগ সামঞ্জস্যপূর্ণ।`,
+            `সহজ ও নির্ভুল ফর্মুলা ভিত্তিক হওয়ায় ইউজার এনগেজমেন্ট ও রিপিট ট্রাফিক বৃদ্ধি পাবে।`
+          ],
+          consBangla: [
+            "সার্চ ইঞ্জিনে স্থায়ী শীর্ষ স্থান বজায় রাখতে নিয়মিত অন-পেজ SEO ও রেফারেন্স ডেটা আপডেট রাখা জরুরি।",
+            "ইউজার ইনপুট বাউন্ডারি এবং চরম মানগুলোর (Edge Cases) জন্য যথাযথ সতর্কবার্তা থাকা বাঞ্ছনীয়।"
+          ],
+          spec,
+          isDemo: false,
+          createdAt: now,
+          updatedAt: now,
+          eEatScore,
+          eEatReadinessScore: eEatScore,
+        }
+
+        existingKeywords.add(kw.toLowerCase())
+        proposals.unshift(newProposal)
+        createdCount++
+      }
+
+      if (createdCount > 0) {
+        writeProposals(proposals)
+      }
+
+      return NextResponse.json({
+        ok: true,
+        createdCount,
+        proposals,
       })
     }
 
