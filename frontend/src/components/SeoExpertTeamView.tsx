@@ -122,7 +122,7 @@ export default function SeoExpertTeamView() {
   const [proposals, setProposals] = useState<SeoProposal[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<"all" | "pending" | "approved" | "rejected">("all")
+  const [activeTab, setActiveTab] = useState<"all" | "pending" | "approved" | "rejected">("pending")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [sortBy, setSortBy] = useState<"difficulty" | "volume" | "newest">("volume")
@@ -189,6 +189,7 @@ export default function SeoExpertTeamView() {
         }
         setToastMessage("ক্যালকুলেটর সফলভাবে তৈরি ও লাইভ করা হয়েছে! (Built & Live)")
         setToastSeverity("success")
+        setActiveTab("approved")
       }
     } catch {
       setToastMessage("Failed to approve and build proposal")
@@ -215,6 +216,7 @@ export default function SeoExpertTeamView() {
         }
         setToastMessage("প্রস্তাবটি বাতিল করা হয়েছে (Proposal Rejected)")
         setToastSeverity("warning")
+        setActiveTab("rejected")
       }
     } catch {
       setToastMessage("Failed to reject proposal")
@@ -350,6 +352,7 @@ export default function SeoExpertTeamView() {
         setProposals(data.proposals)
         setToastMessage(`অভিনন্দন! মোট ${data.count} টি ক্যালকুলেটর সফলভাবে তৈরি ও লাইভ করা হয়েছে!`)
         setToastSeverity("success")
+        setActiveTab("approved")
       } else {
         setToastMessage(data.error || "Failed to batch approve")
         setToastSeverity("error")
@@ -871,15 +874,32 @@ export default function SeoExpertTeamView() {
           <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <Paper
               elevation={0}
+              role="button"
+              tabIndex={0}
+              onClick={() => setActiveTab("all")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  setActiveTab("all")
+                }
+              }}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: { xs: 2.5, sm: 3 },
                 bgcolor: "#ffffff",
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+                border: "1px solid",
+                borderColor: activeTab === "all" ? "#2563eb" : "#e2e8f0",
+                boxShadow: activeTab === "all" ? "0 0 0 2px #2563eb, 0 4px 12px rgba(37, 99, 235, 0.15)" : "0 1px 3px rgba(0,0,0,0.03)",
                 display: "flex",
                 flexDirection: "column",
                 gap: { xs: 0.5, sm: 1 },
+                cursor: "pointer",
+                transition: "all 0.2s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 20px rgba(37, 99, 235, 0.15)",
+                  borderColor: "#2563eb",
+                },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -894,7 +914,7 @@ export default function SeoExpertTeamView() {
                 {metrics.totalKeywords}
               </Typography>
               <Typography variant="caption" sx={{ color: "#059669", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
-                High-intent Niches
+                High-intent Niches (View All)
               </Typography>
             </Paper>
           </Grid>
@@ -903,15 +923,32 @@ export default function SeoExpertTeamView() {
           <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <Paper
               elevation={0}
+              role="button"
+              tabIndex={0}
+              onClick={() => setActiveTab("pending")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  setActiveTab("pending")
+                }
+              }}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: { xs: 2.5, sm: 3 },
                 bgcolor: "#ffffff",
-                border: "1px solid #fef3c7",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+                border: "1px solid",
+                borderColor: activeTab === "pending" ? "#d97706" : "#fef3c7",
+                boxShadow: activeTab === "pending" ? "0 0 0 2px #d97706, 0 4px 12px rgba(217, 119, 6, 0.15)" : "0 1px 3px rgba(0,0,0,0.03)",
                 display: "flex",
                 flexDirection: "column",
                 gap: { xs: 0.5, sm: 1 },
+                cursor: "pointer",
+                transition: "all 0.2s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 20px rgba(217, 119, 6, 0.18)",
+                  borderColor: "#d97706",
+                },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -926,7 +963,7 @@ export default function SeoExpertTeamView() {
                 {metrics.pendingCount}
               </Typography>
               <Typography variant="caption" sx={{ color: "#92400e", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
-                অনুমোদনের অপেক্ষায়
+                অনুমোদনের অপেক্ষায় (View Pending)
               </Typography>
             </Paper>
           </Grid>
@@ -935,15 +972,32 @@ export default function SeoExpertTeamView() {
           <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <Paper
               elevation={0}
+              role="button"
+              tabIndex={0}
+              onClick={() => setActiveTab("approved")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  setActiveTab("approved")
+                }
+              }}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: { xs: 2.5, sm: 3 },
                 bgcolor: "#ffffff",
-                border: "1px solid #d1fae5",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+                border: "1px solid",
+                borderColor: activeTab === "approved" ? "#059669" : "#d1fae5",
+                boxShadow: activeTab === "approved" ? "0 0 0 2px #059669, 0 4px 12px rgba(5, 150, 105, 0.15)" : "0 1px 3px rgba(0,0,0,0.03)",
                 display: "flex",
                 flexDirection: "column",
                 gap: { xs: 0.5, sm: 1 },
+                cursor: "pointer",
+                transition: "all 0.2s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 20px rgba(5, 150, 105, 0.18)",
+                  borderColor: "#059669",
+                },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -958,7 +1012,7 @@ export default function SeoExpertTeamView() {
                 {metrics.approvedCount}
               </Typography>
               <Typography variant="caption" sx={{ color: "#059669", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
-                লাইভ ক্যালকুলেটর
+                লাইভ ক্যালকুলেটর (View Approved)
               </Typography>
             </Paper>
           </Grid>
@@ -967,6 +1021,15 @@ export default function SeoExpertTeamView() {
           <Grid size={{ xs: 6, sm: 6, md: 3 }}>
             <Paper
               elevation={0}
+              role="button"
+              tabIndex={0}
+              onClick={() => setActiveTab("approved")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  setActiveTab("approved")
+                }
+              }}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: { xs: 2.5, sm: 3 },
@@ -976,6 +1039,13 @@ export default function SeoExpertTeamView() {
                 display: "flex",
                 flexDirection: "column",
                 gap: { xs: 0.5, sm: 1 },
+                cursor: "pointer",
+                transition: "all 0.2s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 20px rgba(126, 34, 206, 0.15)",
+                  borderColor: "#a855f7",
+                },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -995,7 +1065,7 @@ export default function SeoExpertTeamView() {
                 </Typography>
               </Typography>
               <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, fontSize: { xs: 10, sm: 12 } }}>
-                Est. Organic Clicks
+                Est. Organic Clicks (Live Tools)
               </Typography>
             </Paper>
           </Grid>
@@ -1048,15 +1118,6 @@ export default function SeoExpertTeamView() {
             <Tab
               label={
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                  <span>All</span>
-                  <Chip size="small" label={metrics.totalKeywords} sx={{ height: 20, fontSize: 11, fontWeight: 700 }} />
-                </Box>
-              }
-              value="all"
-            />
-            <Tab
-              label={
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                   <span>{isMobile ? "Pending" : "Pending Review (অনুমোদন)"}</span>
                   <Chip
                     size="small"
@@ -1065,8 +1126,8 @@ export default function SeoExpertTeamView() {
                       height: 20,
                       fontSize: 11,
                       fontWeight: 700,
-                      bgcolor: "#fef3c7",
-                      color: "#b45309",
+                      bgcolor: activeTab === "pending" ? "#fef3c7" : "#f1f5f9",
+                      color: activeTab === "pending" ? "#b45309" : "#64748b",
                     }}
                   />
                 </Box>
@@ -1084,8 +1145,8 @@ export default function SeoExpertTeamView() {
                       height: 20,
                       fontSize: 11,
                       fontWeight: 700,
-                      bgcolor: "#d1fae5",
-                      color: "#065f46",
+                      bgcolor: activeTab === "approved" ? "#d1fae5" : "#f1f5f9",
+                      color: activeTab === "approved" ? "#065f46" : "#64748b",
                     }}
                   />
                 </Box>
@@ -1095,15 +1156,30 @@ export default function SeoExpertTeamView() {
             <Tab
               label={
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                  <span>Rejected</span>
+                  <span>{isMobile ? "Rejected" : "Rejected (বাতিল)"}</span>
                   <Chip
                     size="small"
                     label={metrics.rejectedCount}
-                    sx={{ height: 20, fontSize: 11, fontWeight: 700 }}
+                    sx={{
+                      height: 20,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      bgcolor: activeTab === "rejected" ? "#fee2e2" : "#f1f5f9",
+                      color: activeTab === "rejected" ? "#991b1b" : "#64748b",
+                    }}
                   />
                 </Box>
               }
               value="rejected"
+            />
+            <Tab
+              label={
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <span>All Proposals</span>
+                  <Chip size="small" label={metrics.totalKeywords} sx={{ height: 20, fontSize: 11, fontWeight: 700 }} />
+                </Box>
+              }
+              value="all"
             />
           </Tabs>
 
