@@ -564,69 +564,89 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
         ) : activeCat === null && !search ? (
           /* Home Dashboard (Wide Screen Container) */
           <Container maxWidth="xl" disableGutters sx={{ px: { xs: 0, sm: 1, md: 2 } }}>
-            {/* Hero Banner */}
+            {/* Hero Banner (Unslop: Quiet, Precision Engineering Header) */}
             <Paper
               elevation={0}
               sx={{
-                p: { xs: 3, sm: 4.5, md: 5 },
+                p: { xs: 3, sm: 4, md: 4.5 },
                 mb: 4,
-                borderRadius: 4,
+                borderRadius: 3,
                 bgcolor: "#ffffff",
                 border: "1px solid #e2e8f0",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
-                background: "linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(255, 255, 255, 1) 100%)",
               }}
             >
               <Grid container spacing={3} sx={{ alignItems: "center" }}>
                 <Grid size={{ xs: 12, md: 7 }}>
-                  <Chip
-                    icon={<SpeedIcon />}
-                    label="Instant, Accurate & 100% Free"
-                    size="small"
-                    color="primary"
-                    sx={{ mb: 2, fontWeight: 700 }}
-                  />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      display: "inline-block",
+                      color: "#2563eb",
+                      bgcolor: "#eff6ff",
+                      border: "1px solid #dbeafe",
+                      borderRadius: 1.5,
+                      px: 1.25,
+                      py: 0.35,
+                      fontWeight: 700,
+                      letterSpacing: "0.4px",
+                      textTransform: "uppercase",
+                      fontSize: 11,
+                      mb: 1.5,
+                    }}
+                  >
+                    Computational Suite &amp; Numerical Models
+                  </Typography>
                   <Typography
                     variant="h3"
                     component="h1"
                     sx={{
                       fontWeight: 800,
-                      fontSize: { xs: "1.8rem", sm: "2.5rem", md: "2.8rem" },
-                      letterSpacing: "-0.8px",
+                      fontSize: { xs: "1.75rem", sm: "2.3rem", md: "2.6rem" },
+                      letterSpacing: "-0.03em",
                       lineHeight: 1.2,
                       color: "#0f172a",
                       mb: 1.5,
                     }}
                   >
-                    TryCalc — Free Calculators for Everyday Decisions
+                    Precision Calculators &amp; Mathematical Tools
                   </Typography>
-                  <Typography variant="body1" sx={{ color: "#475569", fontSize: 16, lineHeight: 1.6, mb: 2 }}>
-                    Access {total || 774}+ high-precision tools across 14 categories: Mortgage, Loans, Health & BMI,
-                    Construction, Currency, Date & Time, AI Helper, Storage, and Unit Converters.
+                  <Typography variant="body1" sx={{ color: "#475569", fontSize: 15, lineHeight: 1.6, mb: 2.5 }}>
+                    Over {total || 780} client-side deterministic models spanning finance, health, real estate, engineering, construction, and unit conversions.
                   </Typography>
 
-                  {/* High Visibility Quick Tags */}
+                  {/* High Utility Direct Links */}
                   <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: "wrap", gap: 1 }}>
                     <Chip
-                      icon={<VideocamIcon sx={{ fontSize: "16px !important", color: "#4338ca !important" }} />}
-                      label="NEW: CCTV Storage & Bandwidth Calculator (2026)"
-                      onClick={() => router.push("/calculators/cctv-storage-calculator")}
-                      clickable
-                      sx={{
-                        bgcolor: "#eef2ff",
-                        color: "#4338ca",
-                        fontWeight: 700,
-                        border: "1px solid #c7d2fe",
-                        "&:hover": { bgcolor: "#e0e7ff" },
-                      }}
-                    />
-                    <Chip
-                      label="AI Token Cost Estimator"
-                      onClick={() => router.push("/calculators/ai-token-calculator")}
+                      label="Mortgage &amp; Amortization"
+                      onClick={() => router.push("/calculators/mortgage")}
                       clickable
                       size="small"
                       variant="outlined"
-                      sx={{ borderColor: "#cbd5e1", color: "#475569", fontWeight: 600 }}
+                      sx={{ borderColor: "#e2e8f0", color: "#334155", fontWeight: 600, "&:hover": { bgcolor: "#f1f5f9" } }}
+                    />
+                    <Chip
+                      label="Compound Interest"
+                      onClick={() => router.push("/calculators/compound-interest-calculator")}
+                      clickable
+                      size="small"
+                      variant="outlined"
+                      sx={{ borderColor: "#e2e8f0", color: "#334155", fontWeight: 600, "&:hover": { bgcolor: "#f1f5f9" } }}
+                    />
+                    <Chip
+                      label="CCTV Storage &amp; Bandwidth"
+                      onClick={() => router.push("/calculators/cctv-storage-calculator")}
+                      clickable
+                      size="small"
+                      variant="outlined"
+                      sx={{ borderColor: "#e2e8f0", color: "#334155", fontWeight: 600, "&:hover": { bgcolor: "#f1f5f9" } }}
+                    />
+                    <Chip
+                      label="BMI &amp; Health Metrics"
+                      onClick={() => router.push("/calculators/bmi")}
+                      clickable
+                      size="small"
+                      variant="outlined"
+                      sx={{ borderColor: "#e2e8f0", color: "#334155", fontWeight: 600, "&:hover": { bgcolor: "#f1f5f9" } }}
                     />
                   </Stack>
 
@@ -734,11 +754,11 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
             <AdBanner variant="leaderboard" className="my-5" />
 
             {/* Popular Calculators Grid */}
-            <Box component="section" sx={{ mb: 5 }}>
+            <Box component="section" sx={{ mb: 6 }}>
               <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 3 }}>
-                <AutoAwesomeIcon color="primary" />
-                <Typography variant="h5" component="h2" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                  Most Popular Calculators
+                <TrendingUpIcon sx={{ color: "#2563eb" }} />
+                <Typography variant="h5" component="h2" sx={{ fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
+                  High-Usage Calculators &amp; Verified Models
                 </Typography>
               </Stack>
               <Grid container spacing={2}>
@@ -754,6 +774,59 @@ export default function HomeClient({ initialCategories, initialTotal }: HomeClie
                       <CalcCard calc={calc} onOpen={(c) => router.push(`/calculators/${c.id}`)} />
                     </Grid>
                   ))}
+              </Grid>
+            </Box>
+
+            {/* Comprehensive Directory Index (A-Z Taxonomy & Internal Crawl Hub) */}
+            <Box component="section" sx={{ mb: 6, p: { xs: 2.5, sm: 4 }, bgcolor: "#ffffff", borderRadius: 3, border: "1px solid #e2e8f0" }}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", mb: 0.5 }}>
+                  Comprehensive Computational Directory
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#64748b" }}>
+                  Direct access to all {total || 780} calculators grouped across 14 specialized engineering, financial, and scientific domains.
+                </Typography>
+              </Box>
+              <Grid container spacing={3}>
+                {Object.entries(CATEGORY_META).map(([key, meta]) => {
+                  const catList = categories[key] || []
+                  return (
+                    <Grid key={key} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                      <Box sx={{ pb: 1, borderBottom: "1px solid #f1f5f9", mb: 1.5 }}>
+                        <Link href={`/category/${key}`} style={{ textDecoration: "none" }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0f172a", "&:hover": { color: "#2563eb" } }}>
+                            {meta.label} ({catList.length})
+                          </Typography>
+                        </Link>
+                      </Box>
+                      <Stack spacing={0.75}>
+                        {catList.slice(0, 5).map((c) => (
+                          <Link key={c.id} href={`/calculators/${c.id}`} style={{ textDecoration: "none" }}>
+                            <Typography
+                              variant="caption"
+                              noWrap
+                              sx={{
+                                display: "block",
+                                color: "#475569",
+                                "&:hover": { color: "#0f172a", textDecoration: "underline" },
+                                fontSize: 12,
+                              }}
+                            >
+                              • {c.name}
+                            </Typography>
+                          </Link>
+                        ))}
+                        {catList.length > 5 && (
+                          <Link href={`/category/${key}`} style={{ textDecoration: "none" }}>
+                            <Typography variant="caption" sx={{ color: "#2563eb", fontWeight: 600, fontSize: 11 }}>
+                              + {catList.length - 5} more {meta.label} tools →
+                            </Typography>
+                          </Link>
+                        )}
+                      </Stack>
+                    </Grid>
+                  )
+                })}
               </Grid>
             </Box>
           </Container>

@@ -7,16 +7,17 @@ import type { CalculatorDef } from "@/lib/calculator-api"
 import { CATEGORY_META } from "@/lib/calculator-api"
 
 export function seoTitleFor(calc: CalculatorDef): string {
-  const cat = CATEGORY_META[calc.category]?.label || calc.category
-  return `${calc.name} (2026) — Free Online ${cat.replace(" Calculators", " Calculator")} & Breakdown | TryCalc`
+  return `${calc.name} — Formulas, Steps & Calculator | TryCalc`
 }
 
 export function seoMetaDescriptionFor(calc: CalculatorDef): string {
   const cat = (CATEGORY_META[calc.category]?.label || calc.category).replace(/ Calculators?$/i, "")
   const fieldList = calc.fields.slice(0, 3).map((f) => f.label).join(", ")
-  const base = `Free online ${calc.name} for instant ${cat.toLowerCase()} results. Enter ${fieldList} for accurate figures, formula breakdown, and insights. Try it now!`
+  const base = fieldList
+    ? `Calculate ${calc.name} using ${fieldList}. Deterministic ${cat.toLowerCase()} formula breakdown, worked examples, and step-by-step methodology.`
+    : `Calculate ${calc.name}. Deterministic ${cat.toLowerCase()} formula breakdown, worked numerical examples, and step-by-step methodology.`
   if (base.length <= 160) return base
-  return `Calculate ${calc.name} instantly with our free online tool. Accurate ${cat.toLowerCase()} calculations with step-by-step breakdown. 100% free, no signup.`
+  return `Calculate ${calc.name} with mathematical formulas, worked examples, and step-by-step derivations for ${cat.toLowerCase()} reference.`
 }
 
 /**
@@ -68,24 +69,24 @@ export function seoIntroFor(calc: CalculatorDef): string {
   const fieldList = calc.fields.slice(0, 4).map((f) => f.label.toLowerCase()).join(", ")
 
   const intros: Record<string, string> = {
-    finance: `Use this free online ${fname} to get instant, accurate results for your financial planning. Enter ${fieldList} and get detailed breakdowns with charts-ready numbers — ideal for loans, savings, investments, and budgeting decisions.`,
-    health: `Calculate your ${fname.replace(" calculator", "")} results instantly with this free online health tool. Enter ${fieldList} for a personalized health assessment used by fitness enthusiasts and healthcare screening.`,
-    construction: `Estimate materials, costs, and quantities with this free online ${fname}. Enter ${fieldList} to plan your construction project accurately — concrete, paint, tiles, gravel, and more.`,
-    conversion: `Convert instantly with this free online ${fname}. Enter your value in ${fieldList} and get precise conversions — length, weight, temperature, area, volume, data, and currency units.`,
-    date_time: `Find exact dates and durations with this free online ${fname}. Enter ${fieldList} to calculate ages, date differences, working days, and countdowns in seconds.`,
-    real_estate: `Plan property decisions with this free online ${fname}. Enter ${fieldList} to estimate mortgage payments, affordability, rental yield, and closing costs.`,
-    basic: `Solve everyday math instantly with this free online ${fname}. Enter ${fieldList} for percentage, discount, tip, and ratio results you can trust.`,
-    education: `Compute grades and academic scores with this free online ${fname}. Enter ${fieldList} to get GPA, percentages, test scores, and grade point averages.`,
-    math: `Solve math problems step-by-step with this free online ${fname}. Enter ${fieldList} for fractions, statistics, algebra, and geometry answers.`,
-    event_budget: `Budget your events perfectly with this free online ${fname}. Enter ${fieldList} to estimate costs, split expenses, and track spending.`,
-    business_investment: `Project returns and business metrics with this free online ${fname}. Enter ${fieldList} for ROI, growth, margin, and investment analysis.`,
-    ai_helper: `Calculate AI prompt tokens, subword chunking, context window saturation, and real-time API inference costs with this free online ${fname}. Compare pricing across 34 leading models including OpenAI GPT-4o, Anthropic Claude 3.7 Sonnet, Google Gemini 2.0 Flash, DeepSeek-R1, and Meta Llama 3.3.`,
-    storage: `Calculate CCTV camera storage, NVR/DVR retention days, bandwidth throughput (Mbps), and drive capacities (WD Purple, Seagate SkyHawk) with this free online ${fname}. Analyze video codecs, bitrates, and data storage conversions accurately.`,
-    mobile_servicing: `Diagnose smartphone hardware issues, calculate battery health percentages (SoH), verify USB-C Power Delivery (PD) fast-charging wattage, screen PPI, and decode SMD components with this free online ${fname}. Get bench-tested, accurate diagnostics instantly.`,
-    repair_business: `Streamline your smartphone repair shop billing, calculate technician hourly labor rates, parts markups, warranty rework buffers, and customer invoices with this free online ${fname}. Optimize shop profitability with instant, accurate numbers.`,
-    science: `Compute scientific values with this free online ${fname}. Enter ${fieldList} for physics, chemistry, and engineering calculations.`,
-    misc: `Get quick answers with this free online ${fname}. Enter ${fieldList} for instant, accurate results.`,
-    other: `Get quick answers with this free online ${fname}. Enter ${fieldList} for instant, accurate results.`,
+    finance: `Compute ${fname} with deterministic financial equations. Evaluate ${fieldList} to analyze loan amortizations, interest compounding, and portfolio returns.`,
+    health: `Evaluate ${fname.replace(" calculator", "")} using verified physiological standards. Enter ${fieldList} to assess clinical benchmarks and metabolic metrics.`,
+    construction: `Calculate material volumes, dimensional estimates, and structural quantities with ${fname}. Enter ${fieldList} for construction and site engineering calculations.`,
+    conversion: `Convert units precisely using ${fname}. Standardized conversion factors for ${fieldList} across metric, imperial, and international scientific systems.`,
+    date_time: `Compute calendar durations, elapsed time intervals, and schedule projections using ${fname}. Enter ${fieldList} for calendar mathematics.`,
+    real_estate: `Analyze real estate financing metrics with ${fname}. Enter ${fieldList} to determine loan amortizations, cap rates, rental yield, and acquisition costs.`,
+    basic: `Perform mathematical and proportional computations with ${fname}. Enter ${fieldList} for arithmetic, percentage, and ratio evaluations.`,
+    education: `Calculate academic metrics with ${fname}. Enter ${fieldList} to determine grade point averages (GPA), weighted percentages, and test percentiles.`,
+    math: `Evaluate mathematical formulas with ${fname}. Enter ${fieldList} for statistical, algebraic, and geometric computations.`,
+    event_budget: `Model event finances and itemized cost allocations with ${fname}. Enter ${fieldList} to project expense distributions and budgets.`,
+    business_investment: `Model capital returns and financial performance with ${fname}. Enter ${fieldList} for net present value, ROI, and margin calculations.`,
+    ai_helper: `Calculate AI prompt tokens, subword chunking, context window saturation, and real-time API inference costs with ${fname}. Compare pricing across leading models including OpenAI GPT-4o, Anthropic Claude 3.7 Sonnet, Google Gemini 2.0 Flash, DeepSeek-R1, and Meta Llama 3.3.`,
+    storage: `Calculate CCTV camera storage, NVR/DVR retention days, bandwidth throughput (Mbps), and drive capacities (WD Purple, Seagate SkyHawk) with ${fname}. Analyze video codecs, bitrates, and data storage conversions accurately.`,
+    mobile_servicing: `Diagnose smartphone hardware issues, calculate battery health percentages (SoH), verify USB-C Power Delivery (PD) fast-charging wattage, screen PPI, and decode SMD components with ${fname}. Standard bench-tested diagnostic metrics.`,
+    repair_business: `Evaluate smartphone repair shop billing, calculate technician hourly labor rates, parts markups, warranty rework buffers, and customer invoices with ${fname}. Optimize shop margins with accurate unit economics.`,
+    science: `Compute scientific values with ${fname}. Enter ${fieldList} for physics, chemistry, and engineering calculations.`,
+    misc: `Evaluate ${fname} using standard mathematical equations. Enter ${fieldList} for deterministic calculations.`,
+    other: `Evaluate ${fname} using standard mathematical equations. Enter ${fieldList} for deterministic calculations.`,
   }
   return intros[calc.category] || intros.misc
 }
@@ -98,8 +99,8 @@ export function seoHowToFor(calc: CalculatorDef): string[] {
     const unit = f.unit ? ` (in ${f.unit})` : ""
     steps.push(`Enter your ${f.label.toLowerCase()}${unit} — step ${i + 1} of ${fields.length}.`)
   })
-  steps.push("Click the Calculate button — your result appears instantly on the right panel.")
-  steps.push("Adjust any input and recalculate as many times as you need — it's 100% free, no signup required.")
+  steps.push("Execute the calculation to generate itemized results, formula steps, and output tables.")
+  steps.push("Adjust input parameters to recalculate values and review updated step-by-step derivations.")
   return steps
 }
 
@@ -641,8 +642,8 @@ export function seoFaqFor(calc: CalculatorDef): { q: string; a: string }[] {
       a: `The ${calc.name} evaluates your input parameters (${calc.fields.slice(0, 3).map((f) => f.label).join(", ")}) using verified, standardized algorithms in ${cat.toLowerCase()} to deliver instantaneous, accurate telemetry.`,
     },
     {
-      q: `Is the ${calc.name} completely free to use?`,
-      a: `Yes — TryCalc provides 100% free access to all 774+ calculators with unlimited runs, zero account registration requirements, and no paywalls.`,
+      q: `Is registration required to use the ${calc.name}?`,
+      a: `No registration or account is required. All TryCalc computational tools run client-side without usage caps or paywalls.`,
     },
     {
       q: "Can I use this calculator on mobile devices?",
@@ -670,7 +671,7 @@ export function seoFormulaFor(calc: CalculatorDef): FormulaInfo {
         symbol: f.name,
         meaning: `${f.label} (${f.unit || "unit"})`,
       })),
-      source: "TryCalc Mathematics & Algorithmic Engine (2026)",
+      source: "TryCalc Mathematics & Algorithmic Engine",
     }
   }
   const name = calc.name.toLowerCase()

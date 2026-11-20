@@ -121,14 +121,14 @@ body {
   }
 }
 
-@keyframes pulseGlow {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(0.95);
-  }
+/* Tabular figures for consistent financial and mathematical alignment */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Crisp monospace formula styling */
+.font-mono-formula {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-feature-settings: "tnum" 1, "zero" 1;
 }
 

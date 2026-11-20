@@ -64,13 +64,13 @@ export default function CalculatorDocumentationGuide({
               color: "#64748b",
             }}
           >
-            <Link href="/" style={{ color: "#4f46e5", textDecoration: "none", fontWeight: 600 }}>
+            <Link href="/" style={{ color: "#2563eb", textDecoration: "none", fontWeight: 600 }}>
               TryCalc
             </Link>
             <span>/</span>
             <Link
               href={`/category/${calc.category}`}
-              style={{ color: "#4f46e5", textDecoration: "none", fontWeight: 600 }}
+              style={{ color: "#2563eb", textDecoration: "none", fontWeight: 600 }}
             >
               {catLabel}
             </Link>
@@ -112,10 +112,10 @@ export default function CalculatorDocumentationGuide({
           <Box
             sx={{
               p: { xs: 2.5, sm: 3 },
-              borderRadius: 3,
-              bgcolor: "rgba(79, 70, 229, 0.04)",
-              border: "1px solid rgba(79, 70, 229, 0.15)",
-              borderLeft: "5px solid #4f46e5",
+              borderRadius: 2.5,
+              bgcolor: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              borderLeft: "4px solid #2563eb",
               mb: 4,
             }}
           >
@@ -123,9 +123,10 @@ export default function CalculatorDocumentationGuide({
               variant="subtitle2"
               sx={{
                 fontWeight: 800,
-                color: "#4f46e5",
+                color: "#0f172a",
                 textTransform: "uppercase",
                 letterSpacing: "0.5px",
+                fontSize: 12,
                 mb: 1,
               }}
             >
@@ -134,7 +135,7 @@ export default function CalculatorDocumentationGuide({
             <Typography
               variant="body1"
               sx={{
-                color: "#1e1b4b",
+                color: "#1e293b",
                 lineHeight: 1.75,
                 fontWeight: 500,
                 fontSize: { xs: 14.5, sm: 15.5 },
@@ -309,8 +310,9 @@ export default function CalculatorDocumentationGuide({
                         width: 26,
                         height: 26,
                         borderRadius: "50%",
-                        bgcolor: "#e0e7ff",
-                        color: "#4f46e5",
+                        bgcolor: "#f1f5f9",
+                        color: "#0f172a",
+                        border: "1px solid #cbd5e1",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",

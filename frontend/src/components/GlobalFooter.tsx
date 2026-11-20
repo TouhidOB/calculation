@@ -85,12 +85,12 @@ export default function GlobalFooter() {
             </Typography>
 
             <Typography variant="caption" sx={{ color: "#64748b", display: "block" }}>
-              ⚡ 100% Free · No Registration · Instant Results
+              Deterministic client-side computation. No data storage or tracking.
             </Typography>
           </Grid>
 
-          {/* Popular Categories */}
-          <Grid size={{ xs: 6, sm: 4, md: 2.7 }}>
+          {/* All 14 Categories Navigation Hub */}
+          <Grid size={{ xs: 12, sm: 6, md: 3.5 }}>
             <Typography
               variant="subtitle2"
               sx={{
@@ -102,50 +102,88 @@ export default function GlobalFooter() {
                 mb: 2,
               }}
             >
-              Popular Categories
+              Calculators &amp; Models
             </Typography>
-            <Stack spacing={1.25}>
-              <Link href="/category/finance" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  Finance &amp; Investment
-                </Typography>
-              </Link>
-              <Link href="/category/health" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  Health &amp; Fitness
-                </Typography>
-              </Link>
-              <Link href="/category/construction" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  Construction &amp; Building
-                </Typography>
-              </Link>
-              <Link href="/category/conversion" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  Unit Conversion
-                </Typography>
-              </Link>
-              <Link href="/category/basic" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  Math &amp; Statistics
-                </Typography>
-              </Link>
-              <Link href="/category/ai_helper" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  AI Prompt &amp; Token Math
-                </Typography>
-              </Link>
-              <Link href="/category/real_estate" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#4f46e5" } }}>
-                  Real Estate &amp; Mortgages
-                </Typography>
-              </Link>
-              <Link href="/" style={{ textDecoration: "none" }}>
-                <Typography variant="body2" sx={{ color: "#4f46e5", fontWeight: 700, mt: 0.5 }}>
-                  Browse All {total} Calculators →
-                </Typography>
-              </Link>
-            </Stack>
+            <Grid container spacing={1}>
+              <Grid size={{ xs: 6 }}>
+                <Stack spacing={1.1}>
+                  <Link href="/category/finance" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Finance
+                    </Typography>
+                  </Link>
+                  <Link href="/category/real_estate" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Real Estate
+                    </Typography>
+                  </Link>
+                  <Link href="/category/business_investment" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Business &amp; Valuation
+                    </Typography>
+                  </Link>
+                  <Link href="/category/health" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Health &amp; Fitness
+                    </Typography>
+                  </Link>
+                  <Link href="/category/construction" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Construction
+                    </Typography>
+                  </Link>
+                  <Link href="/category/conversion" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Unit Conversion
+                    </Typography>
+                  </Link>
+                  <Link href="/category/basic" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Math &amp; Stats
+                    </Typography>
+                  </Link>
+                </Stack>
+              </Grid>
+              <Grid size={{ xs: 6 }}>
+                <Stack spacing={1.1}>
+                  <Link href="/category/date_time" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Date &amp; Time
+                    </Typography>
+                  </Link>
+                  <Link href="/category/education" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Education &amp; GPA
+                    </Typography>
+                  </Link>
+                  <Link href="/category/storage" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Storage &amp; CCTV
+                    </Typography>
+                  </Link>
+                  <Link href="/category/mobile_servicing" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Mobile Diagnostics
+                    </Typography>
+                  </Link>
+                  <Link href="/category/repair_business" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Repair Economics
+                    </Typography>
+                  </Link>
+                  <Link href="/category/event_budget" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      Event &amp; Budget
+                    </Typography>
+                  </Link>
+                  <Link href="/category/ai_helper" style={{ textDecoration: "none" }}>
+                    <Typography variant="body2" sx={{ color: "#475569", "&:hover": { color: "#0f172a" }, fontSize: 13 }}>
+                      AI &amp; Tokens
+                    </Typography>
+                  </Link>
+                </Stack>
+              </Grid>
+            </Grid>
           </Grid>
 
           {/* Company & Support */}

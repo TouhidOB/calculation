@@ -219,8 +219,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     ? catMeta.label
     : `${catMeta.label} Calculators`
 
-  const title = `${displayCategoryName} (2026) — Free Online Precision Tools | TryCalc`
-  const description = `${editorial.tagline} (2026 Updated). ${editorial.intro.slice(0, 150)}`
+  const title = `${displayCategoryName} — Precision Online Computational Models | TryCalc`
+  const description = `${editorial.tagline}. ${editorial.intro.slice(0, 155)}`
   const canonicalUrl = `${SITE_URL}/category/${slug}`
 
   return {

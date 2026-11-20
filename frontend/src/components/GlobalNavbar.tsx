@@ -52,24 +52,24 @@ import SwapHorizIcon from "@mui/icons-material/SwapHoriz"
 import ScheduleIcon from "@mui/icons-material/Schedule"
 import SchoolIcon from "@mui/icons-material/School"
 import HomeWorkIcon from "@mui/icons-material/HomeWork"
-import CelebrationIcon from "@mui/icons-material/Celebration"
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import StorageIcon from "@mui/icons-material/Storage"
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
+import MemoryIcon from "@mui/icons-material/Memory"
 import fallbackData from "@/lib/calculators-fallback.json"
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  finance: <AttachMoneyIcon />,
-  business_investment: <TrendingUpIcon />,
-  health: <FavoriteIcon />,
-  construction: <ConstructionIcon />,
-  basic: <FunctionsIcon />,
-  conversion: <SwapHorizIcon />,
-  date_time: <ScheduleIcon />,
-  education: <SchoolIcon />,
-  real_estate: <HomeWorkIcon />,
-  event_budget: <CelebrationIcon />,
-  ai_helper: <AutoAwesomeIcon />,
-  storage: <StorageIcon />,
+  finance: <AttachMoneyIcon fontSize="small" />,
+  business_investment: <TrendingUpIcon fontSize="small" />,
+  health: <FavoriteIcon fontSize="small" />,
+  construction: <ConstructionIcon fontSize="small" />,
+  basic: <FunctionsIcon fontSize="small" />,
+  conversion: <SwapHorizIcon fontSize="small" />,
+  date_time: <ScheduleIcon fontSize="small" />,
+  education: <SchoolIcon fontSize="small" />,
+  real_estate: <HomeWorkIcon fontSize="small" />,
+  event_budget: <ReceiptLongIcon fontSize="small" />,
+  ai_helper: <MemoryIcon fontSize="small" />,
+  storage: <StorageIcon fontSize="small" />,
 }
 
 const DRAWER_WIDTH = 290
@@ -176,21 +176,20 @@ export default function GlobalNavbar({
         >
           <Box
             sx={{
-              width: 36,
-              height: 36,
-              borderRadius: "10px",
-              background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+              width: 32,
+              height: 32,
+              borderRadius: "8px",
+              bgcolor: "#0f172a",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#fff",
-              boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)",
+              color: "#ffffff",
             }}
           >
-            <CalculatorLogoIcon size={22} color="#ffffff" />
+            <CalculatorLogoIcon size={18} color="#ffffff" />
           </Box>
           <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 800, lineHeight: 1.1, color: "#0f172a" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.1, color: "#0f172a" }}>
               TryCalc
             </Typography>
             <Typography variant="caption" sx={{ color: "#475569", fontSize: 11 }}>
@@ -212,19 +211,19 @@ export default function GlobalNavbar({
           sx={{
             borderRadius: 2,
             mb: 0.5,
-            py: 1.2,
-            "&:hover": { bgcolor: "rgba(79, 70, 229, 0.06)" },
+            py: 1,
+            "&:hover": { bgcolor: "#f1f5f9" },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 38, color: "#4f46e5" }}>
-            <HomeIcon />
+          <ListItemIcon sx={{ minWidth: 34, color: "#2563eb" }}>
+            <HomeIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            primary="All Calculators"
+            primary="All calculators"
             secondary="Browse full directory"
             slotProps={{
-              primary: { sx: { fontWeight: 700, fontSize: 14, color: "#0f172a" } },
-              secondary: { sx: { fontSize: 12, color: "#475569" } },
+              primary: { sx: { fontWeight: 600, fontSize: 13.5, color: "#0f172a" } },
+              secondary: { sx: { fontSize: 11.5, color: "#64748b" } },
             }}
           />
         </ListItemButton>
@@ -232,7 +231,7 @@ export default function GlobalNavbar({
         <Divider sx={{ my: 1, borderColor: "#e2e8f0" }} />
         <Typography
           variant="caption"
-          sx={{ px: 1.5, py: 0.5, display: "block", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5, fontSize: 11 }}
+          sx={{ px: 1.5, py: 0.5, display: "block", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5, fontSize: 11 }}
         >
           Categories
         </Typography>
@@ -250,37 +249,37 @@ export default function GlobalNavbar({
               sx={{
                 borderRadius: 2,
                 mb: 0.5,
-                py: 1,
-                bgcolor: isSelected ? "rgba(79, 70, 229, 0.08)" : "transparent",
-                "&:hover": { bgcolor: "rgba(79, 70, 229, 0.05)" },
+                py: 0.9,
+                bgcolor: isSelected ? "#eff6ff" : "transparent",
+                "&:hover": { bgcolor: isSelected ? "#e0e7ff" : "#f8fafc" },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 38, color: meta.color }}>
-                {CATEGORY_ICONS[catKey] || <CalculateIcon />}
+              <ListItemIcon sx={{ minWidth: 34, color: isSelected ? "#2563eb" : "#64748b" }}>
+                {CATEGORY_ICONS[catKey] || <CalculateIcon fontSize="small" />}
               </ListItemIcon>
               <ListItemText
                 primary={meta.label}
                 slotProps={{
                   primary: {
                     sx: {
-                      fontWeight: isSelected ? 700 : 500,
-                      fontSize: 13.5,
-                      color: isSelected ? "#4f46e5" : "#0f172a",
+                      fontWeight: isSelected ? 600 : 500,
+                      fontSize: 13,
+                      color: isSelected ? "#2563eb" : "#0f172a",
                     },
                   },
                 }}
               />
               <Chip
-                label={count > 0 ? count : meta.emoji}
+                label={count}
                 size="small"
                 sx={{
                   height: 20,
                   fontSize: 11,
-                  fontWeight: 700,
-                  bgcolor: isSelected ? "#4f46e5" : "#f1f5f9",
-                  color: isSelected ? "#fff" : "#475569",
+                  fontWeight: 600,
+                  bgcolor: isSelected ? "#dbeafe" : "#f1f5f9",
+                  color: isSelected ? "#1d4ed8" : "#64748b",
                   border: "1px solid",
-                  borderColor: isSelected ? "#4f46e5" : "#e2e8f0",
+                  borderColor: isSelected ? "#bfdbfe" : "#e2e8f0",
                 }}
               />
             </ListItemButton>

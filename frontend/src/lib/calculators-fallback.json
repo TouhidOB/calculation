@@ -11521,9 +11521,9 @@
       },
       {
         "id": "if-window-planner",
-        "name": "⏰ Intermittent Fasting Window Planner",
+        "name": "Intermittent Fasting Window Planner",
         "category": "health",
-        "description": "⏰ Intermittent Fasting Window Planner",
+        "description": "Intermittent Fasting Window Planner",
         "fields": [
           {
             "name": "protocol_select",
@@ -12174,9 +12174,9 @@
       },
       {
         "id": "race-pace-planner",
-        "name": "⏱ Race Pace Strategy Planner",
+        "name": "Race Pace Strategy Planner",
         "category": "health",
-        "description": "⏱ Race Pace Strategy Planner",
+        "description": "Race Pace Strategy Planner",
         "fields": [
           {
             "name": "race_distance",
@@ -12401,9 +12401,9 @@
       },
       {
         "id": "running-pace-calculator",
-        "name": "⏱ Running Pace Calculator",
+        "name": "Running Pace Calculator",
         "category": "health",
-        "description": "⏱ Running Pace Calculator",
+        "description": "Running Pace Calculator",
         "fields": [
           {
             "name": "distance",
@@ -26477,7 +26477,7 @@
     "date_time": [
       {
         "id": "half-birthday-calculator",
-        "name": "🎂 'Half-Birthday' Calculator",
+        "name": "'Half-Birthday' Calculator",
         "category": "date_time",
         "description": "Calculate your exact half-birthday date (6 months away) and countdown timer.",
         "fields": [
@@ -26498,7 +26498,7 @@
       },
       {
         "id": "age-calculator",
-        "name": "🎂 Age Calculator",
+        "name": "Age Calculator",
         "category": "date_time",
         "description": "Calculate precise age in years, months, days, hours, and countdown to next birthday.",
         "fields": [
@@ -26519,7 +26519,7 @@
       },
       {
         "id": "chronological-age-calculator",
-        "name": "📅 Chronological Age Calculator",
+        "name": "Chronological Age Calculator",
         "category": "date_time",
         "description": "Calculate exact chronological age from date of birth to current or target date.",
         "fields": [
@@ -26540,7 +26540,7 @@
       },
       {
         "id": "age-difference-calculator",
-        "name": "🧮 Age Difference Calculator",
+        "name": "Age Difference Calculator",
         "category": "date_time",
         "description": "Calculate the exact difference in years, months, and days between two birthdays.",
         "fields": [
@@ -26574,7 +26574,7 @@
       },
       {
         "id": "date-difference-calculator",
-        "name": "📆 Date Difference Calculator",
+        "name": "Date Difference Calculator",
         "category": "date_time",
         "description": "Calculate elapsed time, days, weeks, and hours between any two calendar dates.",
         "fields": [
@@ -26608,7 +26608,7 @@
       },
       {
         "id": "pregnancy-week-calculator",
-        "name": "🤰 Pregnancy Week Calculator",
+        "name": "Pregnancy Week Calculator",
         "category": "date_time",
         "description": "Calculate gestational age, current trimester, and estimated delivery due date (EDC).",
         "fields": [
@@ -26642,7 +26642,7 @@
       },
       {
         "id": "anniversary-and-milestone-calculator",
-        "name": "💖 Anniversary & Milestone Calculator",
+        "name": "Anniversary & Milestone Calculator",
         "category": "date_time",
         "description": "Calculate elapsed relationship milestones, next anniversary date, and days together.",
         "fields": [
@@ -26663,7 +26663,7 @@
       },
       {
         "id": "animal-age-calculator",
-        "name": "🐾 Animal Age Converter",
+        "name": "Animal Age Converter",
         "category": "date_time",
         "description": "Convert between dog/cat years and equivalent human years with veterinary accuracy.",
         "fields": [
@@ -26706,9 +26706,9 @@
       },
       {
         "id": "airport-time-zone-finder",
-        "name": "✈️ Airport Time Zone Finder",
+        "name": "Airport Time Zone Finder",
         "category": "date_time",
-        "description": "✈️ Airport Time Zone Finder",
+        "description": "Airport Time Zone Finder",
         "fields": [
           {
             "name": "iata-code",
@@ -26727,9 +26727,9 @@
       },
       {
         "id": "business-days-calculator",
-        "name": "💼 Business Days Calculator",
+        "name": "Business Days Calculator",
         "category": "date_time",
-        "description": "💼 Business Days Calculator",
+        "description": "Business Days Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -26774,9 +26774,9 @@
       },
       {
         "id": "copyright-expiration-calculator",
-        "name": "📜 Copyright Expiration Calculator",
+        "name": "Copyright Expiration Calculator",
         "category": "date_time",
-        "description": "📜 Copyright Expiration Calculator",
+        "description": "Copyright Expiration Calculator",
         "fields": [
           {
             "name": "death-year",
@@ -26843,9 +26843,9 @@
       },
       {
         "id": "countdown-to-specific-event",
-        "name": "📅 Countdown to Specific Event",
+        "name": "Countdown to Specific Event",
         "category": "date_time",
-        "description": "📅 Countdown to Specific Event",
+        "description": "Countdown to Specific Event",
         "fields": [
           {
             "name": "event-name",
@@ -26890,9 +26890,9 @@
       },
       {
         "id": "court-filing-deadline-calculator",
-        "name": "⚖️ Court Filing Deadline Calculator",
+        "name": "Court Filing Deadline Calculator",
         "category": "date_time",
-        "description": "⚖️ Court Filing Deadline Calculator",
+        "description": "Court Filing Deadline Calculator",
         "fields": [
           {
             "name": "trigger-date",
@@ -26924,9 +26924,9 @@
       },
       {
         "id": "credit-card-payment-due-date-calculator",
-        "name": "💳 Credit Card Payment Due Date Calculator",
+        "name": "Credit Card Payment Due Date Calculator",
         "category": "date_time",
-        "description": "💳 Credit Card Payment Due Date Calculator",
+        "description": "Credit Card Payment Due Date Calculator",
         "fields": [
           {
             "name": "closing-date",
@@ -26958,9 +26958,9 @@
       },
       {
         "id": "custom-countdown-timer",
-        "name": "⏱️ Custom Countdown Timer",
+        "name": "Custom Countdown Timer",
         "category": "date_time",
-        "description": "⏱️ Custom Countdown Timer",
+        "description": "Custom Countdown Timer",
         "fields": [
           {
             "name": "target-date",
@@ -26992,9 +26992,9 @@
       },
       {
         "id": "date-addition-and-subtraction-calculator",
-        "name": "🗓️ Date Addition/Subtraction Calculator",
+        "name": "Date Addition/Subtraction Calculator",
         "category": "date_time",
-        "description": "🗓️ Date Addition/Subtraction Calculator",
+        "description": "Date Addition/Subtraction Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -27069,9 +27069,9 @@
       },
       {
         "id": "day-of-the-week-calculator",
-        "name": "📅 Day of the Week Calculator",
+        "name": "Day of the Week Calculator",
         "category": "date_time",
-        "description": "📅 Day of the Week Calculator",
+        "description": "Day of the Week Calculator",
         "fields": [
           {
             "name": "target-date",
@@ -27090,9 +27090,9 @@
       },
       {
         "id": "day-of-year-calculator",
-        "name": "📅 Day of Year (Ordinal Date) Calculator",
+        "name": "Day of Year (Ordinal Date) Calculator",
         "category": "date_time",
-        "description": "📅 Day of Year (Ordinal Date) Calculator",
+        "description": "Day of Year (Ordinal Date) Calculator",
         "fields": [
           {
             "name": "target-date",
@@ -27111,9 +27111,9 @@
       },
       {
         "id": "digital-stopwatch",
-        "name": "⏱️ Digital Stopwatch",
+        "name": "Digital Stopwatch",
         "category": "date_time",
-        "description": "⏱️ Digital Stopwatch",
+        "description": "Digital Stopwatch",
         "fields": [
           {
             "name": "value",
@@ -27132,9 +27132,9 @@
       },
       {
         "id": "floating-holiday-date-calculator",
-        "name": "🗓️ Holiday Date Calculator",
+        "name": "Holiday Date Calculator",
         "category": "date_time",
-        "description": "🗓️ Holiday Date Calculator",
+        "description": "Holiday Date Calculator",
         "fields": [
           {
             "name": "target-year",
@@ -27183,9 +27183,9 @@
       },
       {
         "id": "galactic-time-converter",
-        "name": "🚀 Galactic Time Converter",
+        "name": "Galactic Time Converter",
         "category": "date_time",
-        "description": "🚀 Galactic Time Converter",
+        "description": "Galactic Time Converter",
         "fields": [
           {
             "name": "earth-days",
@@ -27243,9 +27243,9 @@
       },
       {
         "id": "half-and-double-time-calculator",
-        "name": "💵 Overtime Pay Calculator",
+        "name": "Overtime Pay Calculator",
         "category": "date_time",
-        "description": "💵 Overtime Pay Calculator",
+        "description": "Overtime Pay Calculator",
         "fields": [
           {
             "name": "regular-rate",
@@ -27290,9 +27290,9 @@
       },
       {
         "id": "historical-period-duration-calculator",
-        "name": "🏛️ Historical Period Duration Calculator",
+        "name": "Historical Period Duration Calculator",
         "category": "date_time",
-        "description": "🏛️ Historical Period Duration Calculator",
+        "description": "Historical Period Duration Calculator",
         "fields": [
           {
             "name": "start-year",
@@ -27368,9 +27368,9 @@
       },
       {
         "id": "interest-accrual-date-calculator",
-        "name": "💰 Interest Accrual Date Calculator",
+        "name": "Interest Accrual Date Calculator",
         "category": "date_time",
-        "description": "💰 Interest Accrual Date Calculator",
+        "description": "Interest Accrual Date Calculator",
         "fields": [
           {
             "name": "last-accrual-date",
@@ -27444,9 +27444,9 @@
       },
       {
         "id": "international-phone-call-time-planner",
-        "name": "📞 International Phone Call Time Planner",
+        "name": "International Phone Call Time Planner",
         "category": "date_time",
-        "description": "📞 International Phone Call Time Planner",
+        "description": "International Phone Call Time Planner",
         "fields": [
           {
             "name": "origin-time",
@@ -27541,9 +27541,9 @@
       },
       {
         "id": "lease-end-date-calculator",
-        "name": "🗓️ Lease End Date Calculator",
+        "name": "Lease End Date Calculator",
         "category": "date_time",
-        "description": "🗓️ Lease End Date Calculator",
+        "description": "Lease End Date Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -27575,9 +27575,9 @@
       },
       {
         "id": "moon-phase-calendar-calculator",
-        "name": "🌕 Moon Phase Calendar Calculator",
+        "name": "Moon Phase Calendar Calculator",
         "category": "date_time",
-        "description": "🌕 Moon Phase Calendar Calculator",
+        "description": "Moon Phase Calendar Calculator",
         "fields": [
           {
             "name": "target-date",
@@ -27596,9 +27596,9 @@
       },
       {
         "id": "overtime-hours-pay-calculator",
-        "name": "🕰️ Overtime Hours & Pay Calculator",
+        "name": "Overtime Hours & Pay Calculator",
         "category": "date_time",
-        "description": "🕰️ Overtime Hours & Pay Calculator",
+        "description": "Overtime Hours & Pay Calculator",
         "fields": [
           {
             "name": "weekly-threshold",
@@ -27656,9 +27656,9 @@
       },
       {
         "id": "pay-period-date-calculator",
-        "name": "💸 Pay Period Calculator",
+        "name": "Pay Period Calculator",
         "category": "date_time",
-        "description": "💸 Pay Period Calculator",
+        "description": "Pay Period Calculator",
         "fields": [
           {
             "name": "last-pay-date",
@@ -27707,9 +27707,9 @@
       },
       {
         "id": "project-deadline-calculator",
-        "name": "📅 Project Deadline Calculator",
+        "name": "Project Deadline Calculator",
         "category": "date_time",
-        "description": "📅 Project Deadline Calculator",
+        "description": "Project Deadline Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -27741,9 +27741,9 @@
       },
       {
         "id": "retirement-date-calculator",
-        "name": "🏖️ Retirement Date Calculator",
+        "name": "Retirement Date Calculator",
         "category": "date_time",
-        "description": "🏖️ Retirement Date Calculator",
+        "description": "Retirement Date Calculator",
         "fields": [
           {
             "name": "current-age",
@@ -27788,9 +27788,9 @@
       },
       {
         "id": "seasons-start-end-calculator",
-        "name": "🌎 Seasons Start/End Calculator",
+        "name": "Seasons Start/End Calculator",
         "category": "date_time",
-        "description": "🌎 Seasons Start/End Calculator",
+        "description": "Seasons Start/End Calculator",
         "fields": [
           {
             "name": "target-year",
@@ -27831,9 +27831,9 @@
       },
       {
         "id": "seconds-to-time-converter",
-        "name": "⏳ Seconds to Time Converter",
+        "name": "Seconds to Time Converter",
         "category": "date_time",
-        "description": "⏳ Seconds to Time Converter",
+        "description": "Seconds to Time Converter",
         "fields": [
           {
             "name": "total-seconds",
@@ -27852,9 +27852,9 @@
       },
       {
         "id": "semester-quarter-end-date-calculator",
-        "name": "📅 Academic Term End Date Calculator",
+        "name": "Academic Term End Date Calculator",
         "category": "date_time",
-        "description": "📅 Academic Term End Date Calculator",
+        "description": "Academic Term End Date Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -27908,9 +27908,9 @@
       },
       {
         "id": "shipping-delivery-date-estimator",
-        "name": "🚚 Shipping Delivery Date Estimator",
+        "name": "Shipping Delivery Date Estimator",
         "category": "date_time",
-        "description": "🚚 Shipping Delivery Date Estimator",
+        "description": "Shipping Delivery Date Estimator",
         "fields": [
           {
             "name": "shipping-date",
@@ -27955,9 +27955,9 @@
       },
       {
         "id": "statute-of-limitations-calculator",
-        "name": "⚖️ Statute of Limitations Calculator",
+        "name": "Statute of Limitations Calculator",
         "category": "date_time",
-        "description": "⚖️ Statute of Limitations Calculator",
+        "description": "Statute of Limitations Calculator",
         "fields": [
           {
             "name": "discovery-date",
@@ -28015,9 +28015,9 @@
       },
       {
         "id": "subscription-renewal-date-calculator",
-        "name": "📅 Subscription Renewal Date Calculator",
+        "name": "Subscription Renewal Date Calculator",
         "category": "date_time",
-        "description": "📅 Subscription Renewal Date Calculator",
+        "description": "Subscription Renewal Date Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -28079,9 +28079,9 @@
       },
       {
         "id": "sunrise-sunset-calculator",
-        "name": "🌅 Sunrise & Sunset Calculator",
+        "name": "Sunrise & Sunset Calculator",
         "category": "date_time",
-        "description": "🌅 Sunrise & Sunset Calculator",
+        "description": "Sunrise & Sunset Calculator",
         "fields": [
           {
             "name": "target-date",
@@ -28139,9 +28139,9 @@
       },
       {
         "id": "tax-filing-deadline-calculator",
-        "name": "🏛️ Tax Filing Deadline Calculator (US Federal)",
+        "name": "Tax Filing Deadline Calculator (US Federal)",
         "category": "date_time",
-        "description": "🏛️ Tax Filing Deadline Calculator (US Federal)",
+        "description": "Tax Filing Deadline Calculator (US Federal)",
         "fields": [
           {
             "name": "target-year",
@@ -28160,9 +28160,9 @@
       },
       {
         "id": "time-duration-calculator",
-        "name": "⏰ Time Duration Calculator",
+        "name": "Time Duration Calculator",
         "category": "date_time",
-        "description": "⏰ Time Duration Calculator",
+        "description": "Time Duration Calculator",
         "fields": [
           {
             "name": "start-date",
@@ -28220,9 +28220,9 @@
       },
       {
         "id": "time-until-solar-eclipse-meteor-shower",
-        "name": "🔭 Time Until Astronomical Event Countdown",
+        "name": "Time Until Astronomical Event Countdown",
         "category": "date_time",
-        "description": "🔭 Time Until Astronomical Event Countdown",
+        "description": "Time Until Astronomical Event Countdown",
         "fields": [
           {
             "name": "target-date",
@@ -28259,20 +28259,20 @@
             "default": null,
             "options": [
               {
-                "value": "Solar Eclipse 🌑",
-                "label": "Solar Eclipse 🌑"
+                "value": "Solar Eclipse",
+                "label": "Solar Eclipse"
               },
               {
-                "value": "Lunar Eclipse 🌕",
-                "label": "Lunar Eclipse 🌕"
+                "value": "Lunar Eclipse",
+                "label": "Lunar Eclipse"
               },
               {
-                "value": "Meteor Shower ✨",
-                "label": "Meteor Shower ✨"
+                "value": "Meteor Shower",
+                "label": "Meteor Shower"
               },
               {
-                "value": "Comet Flyby ☄️",
-                "label": "Comet Flyby ☄️"
+                "value": "Comet Flyby",
+                "label": "Comet Flyby"
               },
               {
                 "value": "Other Celestial Event",
@@ -28288,9 +28288,9 @@
       },
       {
         "id": "vacation-day-accrual-calculator",
-        "name": "🏝️ Vacation Day Accrual Calculator",
+        "name": "Vacation Day Accrual Calculator",
         "category": "date_time",
-        "description": "🏝️ Vacation Day Accrual Calculator",
+        "description": "Vacation Day Accrual Calculator",
         "fields": [
           {
             "name": "starting-balance",
@@ -28382,9 +28382,9 @@
       },
       {
         "id": "warranty-expiry-date-calculator",
-        "name": "🛡️ Warranty Expiry Date Calculator",
+        "name": "Warranty Expiry Date Calculator",
         "category": "date_time",
-        "description": "🛡️ Warranty Expiry Date Calculator",
+        "description": "Warranty Expiry Date Calculator",
         "fields": [
           {
             "name": "purchase-date",
@@ -28442,9 +28442,9 @@
       },
       {
         "id": "week-number-calculator",
-        "name": "🗓️ ISO Week Number Calculator",
+        "name": "ISO Week Number Calculator",
         "category": "date_time",
-        "description": "🗓️ ISO Week Number Calculator",
+        "description": "ISO Week Number Calculator",
         "fields": [
           {
             "name": "target-date",
@@ -28463,9 +28463,9 @@
       },
       {
         "id": "weekly-timesheet-pay-calculator",
-        "name": "📈 Weekly Timesheet Calculator",
+        "name": "Weekly Timesheet Calculator",
         "category": "date_time",
-        "description": "📈 Weekly Timesheet Calculator",
+        "description": "Weekly Timesheet Calculator",
         "fields": [
           {
             "name": "hourly-wage",
@@ -28497,9 +28497,9 @@
       },
       {
         "id": "work-hours-net-pay-calculator",
-        "name": "🕥 Work Hours Calculator",
+        "name": "Work Hours Calculator",
         "category": "date_time",
-        "description": "🕥 Work Hours Calculator",
+        "description": "Work Hours Calculator",
         "fields": [
           {
             "name": "start-time",
@@ -28557,9 +28557,9 @@
       },
       {
         "id": "workday-time-calculator",
-        "name": "⏱️ Workday Start/End Time Calculator",
+        "name": "Workday Start/End Time Calculator",
         "category": "date_time",
-        "description": "⏱️ Workday Start/End Time Calculator",
+        "description": "Workday Start/End Time Calculator",
         "fields": [
           {
             "name": "start-time",
@@ -28604,9 +28604,9 @@
       },
       {
         "id": "world-clock-meeting-planner",
-        "name": "🤝 World Clock Meeting Planner",
+        "name": "World Clock Meeting Planner",
         "category": "date_time",
-        "description": "🤝 World Clock Meeting Planner",
+        "description": "World Clock Meeting Planner",
         "fields": [
           {
             "name": "base-date",
@@ -33070,9 +33070,9 @@
     "education": [
       {
         "id": "academic-paper-formatting-checker",
-        "name": "✍️ Paper Length Estimator",
+        "name": "Paper Length Estimator",
         "category": "education",
-        "description": "✍️ Paper Length Estimator",
+        "description": "Paper Length Estimator",
         "fields": [
           {
             "name": "word-count",
@@ -33208,9 +33208,9 @@
       },
       {
         "id": "act-to-sat-score-converter",
-        "name": "🔄 ACT ↔ SAT Score Converter",
+        "name": "ACT ↔ SAT Score Converter",
         "category": "education",
-        "description": "🔄 ACT ↔ SAT Score Converter",
+        "description": "ACT ↔ SAT Score Converter",
         "fields": [
           {
             "name": "sat-math",
@@ -33255,9 +33255,9 @@
       },
       {
         "id": "citation-generator",
-        "name": "📚 Academic Citation Generator",
+        "name": "Academic Citation Generator",
         "category": "education",
-        "description": "📚 Academic Citation Generator",
+        "description": "Academic Citation Generator",
         "fields": [
           {
             "name": "{f.id}",
@@ -33427,9 +33427,9 @@
       },
       {
         "id": "class-schedule-conflict-checker",
-        "name": "🗓️ Class Schedule Conflict Checker",
+        "name": "Class Schedule Conflict Checker",
         "category": "education",
-        "description": "🗓️ Class Schedule Conflict Checker",
+        "description": "Class Schedule Conflict Checker",
         "fields": [
           {
             "name": "day-{day}-{rowId}",
@@ -33500,9 +33500,9 @@
       },
       {
         "id": "college-gpa-calculator",
-        "name": "🎓 College GPA Calculator",
+        "name": "College GPA Calculator",
         "category": "education",
-        "description": "🎓 College GPA Calculator",
+        "description": "College GPA Calculator",
         "fields": [
           {
             "name": "prev_gpa",
@@ -33573,9 +33573,9 @@
       },
       {
         "id": "college-savings-plan-calculator",
-        "name": "🏦 529 College Savings Plan Calculator",
+        "name": "529 College Savings Plan Calculator",
         "category": "education",
-        "description": "🏦 529 College Savings Plan Calculator",
+        "description": "529 College Savings Plan Calculator",
         "fields": [
           {
             "name": "initial_deposit",
@@ -33685,9 +33685,9 @@
       },
       {
         "id": "course-load-difficulty-calculator",
-        "name": "🧠 Course Load Difficulty Calculator",
+        "name": "Course Load Difficulty Calculator",
         "category": "education",
-        "description": "🧠 Course Load Difficulty Calculator",
+        "description": "Course Load Difficulty Calculator",
         "fields": [
           {
             "name": "input-credits",
@@ -33719,9 +33719,9 @@
       },
       {
         "id": "dorm-room-size-usable-area-calculator",
-        "name": "📏 Dorm Room Usable Space Calculator",
+        "name": "Dorm Room Usable Space Calculator",
         "category": "education",
-        "description": "📏 Dorm Room Usable Space Calculator",
+        "description": "Dorm Room Usable Space Calculator",
         "fields": [
           {
             "name": "room-width",
@@ -33899,9 +33899,9 @@
       },
       {
         "id": "final-grade-calculator",
-        "name": "🎯 Final Grade Target Calculator",
+        "name": "Final Grade Target Calculator",
         "category": "education",
-        "description": "🎯 Final Grade Target Calculator",
+        "description": "Final Grade Target Calculator",
         "fields": [
           {
             "name": "final_weight",
@@ -33959,9 +33959,9 @@
       },
       {
         "id": "gpa-calculator",
-        "name": "📊 Advanced Cumulative GPA Calculator",
+        "name": "Advanced Cumulative GPA Calculator",
         "category": "education",
-        "description": "📊 Advanced Cumulative GPA Calculator",
+        "description": "Advanced Cumulative GPA Calculator",
         "fields": [
           {
             "name": "prior_gpa",
@@ -34042,9 +34042,9 @@
       },
       {
         "id": "graduation-timeline-planner",
-        "name": "🗓️ Graduation Timeline Planner",
+        "name": "Graduation Timeline Planner",
         "category": "education",
-        "description": "🗓️ Graduation Timeline Planner",
+        "description": "Graduation Timeline Planner",
         "fields": [
           {
             "name": "required-credits",
@@ -34175,9 +34175,9 @@
       },
       {
         "id": "high-school-gpa-calculator",
-        "name": "🏫 High School GPA Calculator",
+        "name": "High School GPA Calculator",
         "category": "education",
-        "description": "🏫 High School GPA Calculator",
+        "description": "High School GPA Calculator",
         "fields": [
           {
             "name": "course-credits",
@@ -34232,9 +34232,9 @@
       },
       {
         "id": "internship-stipend-budget-calculator",
-        "name": "💵 Internship Stipend Budget Planner",
+        "name": "Internship Stipend Budget Planner",
         "category": "education",
-        "description": "💵 Internship Stipend Budget Planner",
+        "description": "Internship Stipend Budget Planner",
         "fields": [
           {
             "name": "total-stipend",
@@ -34600,9 +34600,9 @@
       },
       {
         "id": "minimum-grade-required-calculator",
-        "name": "✨ Minimum Grade Required Calculator",
+        "name": "Minimum Grade Required Calculator",
         "category": "education",
-        "description": "✨ Minimum Grade Required Calculator",
+        "description": "Minimum Grade Required Calculator",
         "fields": [
           {
             "name": "remaining_weight",
@@ -34707,9 +34707,9 @@
       },
       {
         "id": "paragraph-structure-planner",
-        "name": "📝 Paragraph Structure Planner",
+        "name": "Paragraph Structure Planner",
         "category": "education",
-        "description": "📝 Paragraph Structure Planner",
+        "description": "Paragraph Structure Planner",
         "fields": [
           {
             "name": "target-word-count",
@@ -34780,9 +34780,9 @@
       },
       {
         "id": "percentile-rank-calculator",
-        "name": "📈 Percentile Rank Calculator",
+        "name": "Percentile Rank Calculator",
         "category": "education",
-        "description": "📈 Percentile Rank Calculator",
+        "description": "Percentile Rank Calculator",
         "fields": [
           {
             "name": "total-scores-n",
@@ -34827,9 +34827,9 @@
       },
       {
         "id": "plagiarism-checker-score-estimator",
-        "name": "🕵️‍♂️ Plagiarism Score Estimator",
+        "name": "Plagiarism Score Estimator",
         "category": "education",
-        "description": "🕵️‍♂️ Plagiarism Score Estimator",
+        "description": "Plagiarism Score Estimator",
         "fields": [
           {
             "name": "quote-percentage",
@@ -35028,9 +35028,9 @@
       },
       {
         "id": "scholarship-finder-match-score-calculator",
-        "name": "⭐ Scholarship Match Score Generator",
+        "name": "Scholarship Match Score Generator",
         "category": "education",
-        "description": "⭐ Scholarship Match Score Generator",
+        "description": "Scholarship Match Score Generator",
         "fields": [
           {
             "name": "gpa-input",
@@ -35208,9 +35208,9 @@
       },
       {
         "id": "semester-workload-calculator",
-        "name": "🎓 Semester Workload Calculator",
+        "name": "Semester Workload Calculator",
         "category": "education",
-        "description": "🎓 Semester Workload Calculator",
+        "description": "Semester Workload Calculator",
         "fields": [
           {
             "name": "input-credit-hours",
@@ -35242,9 +35242,9 @@
       },
       {
         "id": "speech-and-presentation-length-calculator",
-        "name": "🎙️ Speech Length Calculator",
+        "name": "Speech Length Calculator",
         "category": "education",
-        "description": "🎙️ Speech Length Calculator",
+        "description": "Speech Length Calculator",
         "fields": [
           {
             "name": "wpm-input",
@@ -35276,9 +35276,9 @@
       },
       {
         "id": "student-loan-amortization-calculator",
-        "name": "💸 Student Loan Repayment Calculator",
+        "name": "Student Loan Repayment Calculator",
         "category": "education",
-        "description": "💸 Student Loan Repayment Calculator",
+        "description": "Student Loan Repayment Calculator",
         "fields": [
           {
             "name": "principal",
@@ -35383,9 +35383,9 @@
       },
       {
         "id": "student-loan-forgiveness-eligibility-calculator",
-        "name": "✅ Loan Forgiveness Eligibility Calculator",
+        "name": "Loan Forgiveness Eligibility Calculator",
         "category": "education",
-        "description": "✅ Loan Forgiveness Eligibility Calculator",
+        "description": "Loan Forgiveness Eligibility Calculator",
         "fields": [
           {
             "name": "payments-made-pslf",
@@ -35491,9 +35491,9 @@
       },
       {
         "id": "student-loan-refinance-savings-calculator",
-        "name": "🔄 Student Loan Refinance Calculator",
+        "name": "Student Loan Refinance Calculator",
         "category": "education",
-        "description": "🔄 Student Loan Refinance Calculator",
+        "description": "Student Loan Refinance Calculator",
         "fields": [
           {
             "name": "current_principal",
@@ -35577,9 +35577,9 @@
       },
       {
         "id": "student-monthly-budget-calculator",
-        "name": "📊 Student Monthly Budget",
+        "name": "Student Monthly Budget",
         "category": "education",
-        "description": "📊 Student Monthly Budget",
+        "description": "Student Monthly Budget",
         "fields": [
           {
             "name": "form-control-sm",
@@ -35783,9 +35783,9 @@
       },
       {
         "id": "text-character-and-word-counter",
-        "name": "📝 Text Character & Word Counter",
+        "name": "Text Character & Word Counter",
         "category": "education",
-        "description": "📝 Text Character & Word Counter",
+        "description": "Text Character & Word Counter",
         "fields": [
           {
             "name": "text-input",
@@ -35804,9 +35804,9 @@
       },
       {
         "id": "text-reading-time-calculator",
-        "name": "⏱️ Reading Time Calculator",
+        "name": "Reading Time Calculator",
         "category": "education",
-        "description": "⏱️ Reading Time Calculator",
+        "description": "Reading Time Calculator",
         "fields": [
           {
             "name": "wpm-input",
@@ -35838,9 +35838,9 @@
       },
       {
         "id": "textbook-cost-calculator",
-        "name": "💰 Textbook Cost Calculator",
+        "name": "Textbook Cost Calculator",
         "category": "education",
-        "description": "💰 Textbook Cost Calculator",
+        "description": "Textbook Cost Calculator",
         "fields": [
           {
             "name": "input-price",
@@ -35859,9 +35859,9 @@
       },
       {
         "id": "thesis-page-count-estimator",
-        "name": "📚 Thesis Page Count Estimator",
+        "name": "Thesis Page Count Estimator",
         "category": "education",
-        "description": "📚 Thesis Page Count Estimator",
+        "description": "Thesis Page Count Estimator",
         "fields": [
           {
             "name": "target-word-count",
@@ -35962,9 +35962,9 @@
       },
       {
         "id": "weekly-study-time-planner-and-workload-organizer",
-        "name": "📅 Weekly Study Time Planner",
+        "name": "Weekly Study Time Planner",
         "category": "education",
-        "description": "📅 Weekly Study Time Planner",
+        "description": "Weekly Study Time Planner",
         "fields": [
           {
             "name": "available-hours",
@@ -35996,9 +35996,9 @@
       },
       {
         "id": "words-per-minute-typing-speed-calculator",
-        "name": "⌨️ Professional Typing Test",
+        "name": "Professional Typing Test",
         "category": "education",
-        "description": "⌨️ Professional Typing Test",
+        "description": "Professional Typing Test",
         "fields": [
           {
             "name": "hidden-input",
@@ -36017,9 +36017,9 @@
       },
       {
         "id": "work-study-earnings-calculator",
-        "name": "💰 Work-Study Earnings Calculator",
+        "name": "Work-Study Earnings Calculator",
         "category": "education",
-        "description": "💰 Work-Study Earnings Calculator",
+        "description": "Work-Study Earnings Calculator",
         "fields": [
           {
             "name": "total-award",
