@@ -25,7 +25,6 @@ interface AdsterraSlotConfig {
   width: number | string
   height: number
   maxWidth: number | string
-  // native slots use a container div instead of atOptions/iframe format
   isNative?: boolean
 }
 
@@ -82,88 +81,83 @@ function getSlotKey(variant: AdVariant, isMobile: boolean): string {
   }
 }
 
-// Injects atOptions + invoke.js directly into the container div (Adsterra SPA pattern).
-// Returns a cleanup function that removes the injected nodes.
-function injectAdsterraSlot(container: HTMLDivElement, config: AdsterraSlotConfig): () => void {
-  // Clear any previous content to prevent duplicate injection on re-render
-  container.innerHTML = ""
-
-  if (config.isNative) {
-    // Native banner: async script + container div (no atOptions)
-    const containerDiv = document.createElement("div")
-    containerDiv.id = `container-${config.key}`
-    container.appendChild(containerDiv)
-
-    const script = document.createElement("script")
-    script.async = true
-    script.dataset.cfasync = "false"
-    script.src = config.invokeUrl
-    container.appendChild(script)
-
-    return () => {
-      container.innerHTML = ""
-    }
-  }
-
-  // Standard banner: atOptions config script + invoke.js script
-  const optionsScript = document.createElement("script")
-  optionsScript.type = "text/javascript"
-  optionsScript.text = [
-    "atOptions = {",
-    `  'key': '${config.key}',`,
-    "  'format': 'iframe',",
-    `  'height': ${config.height},`,
-    `  'width': ${config.width},`,
-    "  'params': {}",
-    "};",
-  ].join("\n")
-  container.appendChild(optionsScript)
-
-  const invokeScript = document.createElement("script")
-  invokeScript.type = "text/javascript"
-  invokeScript.src = config.invokeUrl
-  container.appendChild(invokeScript)
-
-  return () => {
-    container.innerHTML = ""
-  }
-}
-
 function AdsterraSlot({ slotKey }: { slotKey: string }) {
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const injectedKey = useRef<string | null>(null)
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    // Skip re-injection if slotKey unchanged (avoids duplicate on StrictMode double-invoke)
-    if (injectedKey.current === slotKey) return
-    injectedKey.current = slotKey
-
-    const config = ADSTERRA_SLOTS[slotKey]
-    if (!config) return
-
-    const cleanup = injectAdsterraSlot(container, config)
-    return () => {
-      injectedKey.current = null
-      cleanup()
-    }
-  }, [slotKey])
-
   const config = ADSTERRA_SLOTS[slotKey]
   if (!config) return null
 
+  const srcDoc = config.isNative
+    ? `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="container-${config.key}"></div>
+  <script async="async" data-cfasync="false" src="${config.invokeUrl}"></script>
+</body>
+</html>`
+    : `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+  <script type="text/javascript">
+    atOptions = {
+      'key': '${config.key}',
+      'format': 'iframe',
+      'height': ${config.height},
+      'width': ${config.width},
+      'params': {}
+    };
+  </script>
+  <script type="text/javascript" src="${config.invokeUrl}"></script>
+</body>
+</html>`
+
+  const widthStyle = typeof config.width === "number" ? `${config.width}px` : config.width
+  const maxWidthStyle = typeof config.maxWidth === "number" ? `${config.maxWidth}px` : config.maxWidth
+
   return (
-    <div
-      ref={containerRef}
+    <iframe
+      key={slotKey}
+      title={`ad-${slotKey}`}
+      srcDoc={srcDoc}
+      width={config.width}
+      height={config.height}
       style={{
-        width: config.width,
-        height: config.height,
-        maxWidth: config.maxWidth,
-        margin: "0 auto",
+        width: widthStyle,
+        height: `${config.height}px`,
+        maxWidth: maxWidthStyle,
+        border: "none",
         overflow: "hidden",
+        display: "block",
+        margin: "0 auto",
       }}
+      scrolling="no"
     />
   )
 }
@@ -184,8 +178,10 @@ export default function AdBanner({
   const isPushed = useRef(false)
 
   const [isMobile, setIsMobile] = useState<boolean>(false)
+  const [mounted, setMounted] = useState<boolean>(false)
 
   useEffect(() => {
+    setMounted(true)
     const checkMobile = () => {
       const mobile = window.innerWidth < 768
       setIsMobile((prev) => (prev !== mobile ? mobile : prev))
@@ -199,7 +195,8 @@ export default function AdBanner({
   if (
     pathname?.startsWith("/imon") ||
     pathname?.startsWith("/embed") ||
-    pathname?.startsWith("/api")
+    pathname?.startsWith("/api") ||
+    pathname?.startsWith("/imon-api")
   ) {
     return null
   }
@@ -244,6 +241,19 @@ export default function AdBanner({
       : isMobile
       ? 66
       : 106)
+
+  if (!mounted) {
+    return (
+      <Box
+        className={`no-print ${className}`}
+        sx={{
+          my: 2.5,
+          minHeight: calculatedMinHeight,
+          ...style,
+        }}
+      />
+    )
+  }
 
   return (
     <Box
@@ -317,7 +327,7 @@ export default function AdBanner({
             mx: "auto",
           }}
         >
-          <AdsterraSlot key={slotKey} slotKey={slotKey} />
+          <AdsterraSlot slotKey={slotKey} />
         </Box>
       )}
     </Box>

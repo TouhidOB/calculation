@@ -6,6 +6,7 @@ import OrganizationJsonLd from "@/components/OrganizationJsonLd"
 import TrafficTelemetry from "@/components/TrafficTelemetry"
 import CookieConsent from "@/components/CookieConsent"
 import AdScripts from "@/components/AdScripts"
+import StickyAdBanner from "@/components/StickyAdBanner"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trycalc.net"
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-KXFZGDCLVQ"
@@ -134,6 +135,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeRegistry>{children}</ThemeRegistry>
         <CookieConsent />
         <AdScripts />
+        <StickyAdBanner />
       </body>
     </html>
   )
